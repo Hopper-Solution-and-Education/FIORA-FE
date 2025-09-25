@@ -86,7 +86,7 @@ const PaymentWalletOverview = ({
         <MetricCard
           title="Total Balance"
           value={metrics.totalBalance}
-          type="neutral"
+          type="total"
           icon="wallet"
           description="Total FX Balance"
           currency={CURRENCY.FX}
@@ -104,8 +104,9 @@ const PaymentWalletOverview = ({
         <MetricCard
           title="Frozen"
           value={metrics.totalFrozen}
-          type="expense"
+          type="neutral"
           icon="lock"
+          className="opacity-80"
           description="Total FX being processed"
           currency={CURRENCY.FX}
         />
@@ -113,7 +114,7 @@ const PaymentWalletOverview = ({
         <MetricCard
           title="Accumulated Earn"
           value={metrics.accumulatedEarn}
-          type="income"
+          type="neutral"
           icon="trendingUp"
           description="Accumulated Reward Earned"
           currency={CURRENCY.FX}

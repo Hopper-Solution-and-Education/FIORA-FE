@@ -18,12 +18,12 @@ const PaymentWalletTable = () => {
   // Column configuration
   const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(() => ({
     no: { isVisible: true, index: 0, align: 'center' },
-    date: { isVisible: true, index: 1, align: 'left' },
+    date: { isVisible: true, index: 1, align: 'center' },
     type: { isVisible: true, index: 2, align: 'center' },
-    amount: { isVisible: true, index: 3, align: 'right' },
-    from: { isVisible: true, index: 4, align: 'left' },
-    to: { isVisible: true, index: 5, align: 'left' },
-    remark: { isVisible: true, index: 6, align: 'left' },
+    amount: { isVisible: true, index: 3, align: 'center' },
+    from: { isVisible: true, index: 4, align: 'center' },
+    to: { isVisible: true, index: 5, align: 'center' },
+    remark: { isVisible: true, index: 6, align: 'center' },
     actions: { isVisible: true, index: 7, align: 'center' },
   }));
 

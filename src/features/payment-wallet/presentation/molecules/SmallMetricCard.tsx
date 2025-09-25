@@ -104,26 +104,14 @@ const SmallMetricCard = ({
   };
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-2">
-        <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
-        {renderIconOrImage(icon)}
+    <Card className={cn('flex justify-between items-center overflow-hidden', className)}>
+      <CardHeader className="flex w-fit flex-row items-center justify-start space-y-0 py-2 pr-0">
+        <CardTitle className="w-fit text-nowrap text-sm sm:text-md font-medium">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 pb-2">
+      <CardContent className="py-0 pl-0">
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
           {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
-        {(description || trend) && (
-          <div className="mt-1 flex items-center text-[10px] sm:text-xs">
-            {description && <p className="text-muted-foreground">{description}</p>}
-            {trend && (
-              <div className={cn('ml-2 flex items-center', getTrendColor())}>
-                {getTrendIcon()}
-                <span className="ml-1">{Math.abs(Number(trend.value))}%</span>
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );

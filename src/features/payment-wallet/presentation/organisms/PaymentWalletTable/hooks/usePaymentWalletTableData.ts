@@ -11,6 +11,7 @@ export const usePaymentWalletTableData = () => {
     transactionsError,
     hasNextPage,
     totalCount,
+    pagination,
     loadMoreTransactions,
     searchTransactions,
     filterTransactions,
@@ -24,8 +25,8 @@ export const usePaymentWalletTableData = () => {
   useEffect(() => {
     if (transactionsResponse && Array.isArray(transactionsResponse)) {
       setDisplayData((prevDisplayData) => {
-        const startingRowNumber =
-          paginationParams.currentPage === 1 ? 1 : prevDisplayData.length + 1;
+        // Continuous row numbering regardless of cursor-based pagination
+        const startingRowNumber = prevDisplayData.length + 1;
 
         const mappedData = transactionsResponse.map((item: any, index: number) => ({
           id: item.id,
@@ -33,27 +34,43 @@ export const usePaymentWalletTableData = () => {
           type: item.type,
           amount: item.amount,
           // Prefer wallet names from nested objects; fall back to flat fields or 'Unknown'
-          from: item?.fromWallet?.name ?? item?.from ?? 'Unknown',
-          to: item?.toWallet?.name ?? item?.to ?? 'Unknown',
+          from: item?.fromWallet?.name ?? item?.fromWallet?.type,
+          fromId: item?.fromWallet?.id ?? item?.fromId,
+          toId: item?.toWallet?.id ?? item?.toId,
+          to: item?.toWallet?.name ?? item?.toWallet?.type,
           remark: item.description || item.remark || 'No remark',
           currency: item.currency || CURRENCY.FX,
           rowNumber: startingRowNumber + index,
         }));
 
-        if (paginationParams.currentPage === 1) {
+        // If this is a fresh load (we cleared transactions before fetching), replace data
+        if (!prevDisplayData.length || paginationParams.currentPage === 1) {
           return mappedData;
-        } else {
-          return [...prevDisplayData, ...mappedData];
         }
+        return [...prevDisplayData, ...mappedData];
       });
 
+      // Prefer pagination values from API; fallback to computed totalCount or current display length
       setPaginationParams((prev) => ({
         ...prev,
-        totalPage: Math.ceil(totalCount / prev.pageSize),
-        totalItems: totalCount,
+        totalPage:
+          pagination?.totalPage !== undefined
+            ? pagination.totalPage
+            : Math.max(
+                1,
+                Math.ceil(
+                  (pagination?.total || totalCount || transactionsResponse.length) / prev.pageSize,
+                ),
+              ),
+        totalItems:
+          pagination?.total !== undefined && pagination.total > 0
+            ? pagination.total
+            : totalCount > 0
+              ? totalCount
+              : transactionsResponse.length,
       }));
     }
-  }, [transactionsResponse, totalCount, paginationParams.currentPage]);
+  }, [transactionsResponse, totalCount, pagination, paginationParams.currentPage]);
 
   // Handle search functionality
   const handleSearch = useCallback(

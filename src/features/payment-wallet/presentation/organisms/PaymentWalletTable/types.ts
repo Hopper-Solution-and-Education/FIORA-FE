@@ -3,8 +3,10 @@ export type PaymentWalletTransaction = {
   createdAt: string;
   type: string;
   amount: number;
-  from: string;
-  to: string;
+  from?: string;
+  fromId?: string;
+  to?: string;
+  toId?: string;
   remark: string;
   currency: string;
   rowNumber?: number;

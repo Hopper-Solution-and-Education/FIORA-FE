@@ -28,11 +28,14 @@ interface BaseAmountCondition {
   lte?: number;
 }
 
+// Wallet condition now supports id based filtering (preferred) while keeping type for backward compatibility
 interface WalletCondition {
   toWallet?: {
+    id?: string;
     type?: string;
   };
   fromWallet?: {
+    id?: string;
     type?: string;
   };
 }
@@ -48,10 +51,12 @@ interface NestedOrCondition {
 interface FilterAndCondition {
   type?: string;
   toWallet?: {
-    type?: string;
+    id?: string;
+    type?: string; // legacy
   };
   fromWallet?: {
-    type?: string;
+    id?: string;
+    type?: string; // legacy
   };
   amount?: AmountCondition;
   baseAmount?: BaseAmountCondition;
@@ -85,10 +90,13 @@ const filterParamsInitState: FilterParams = {
   amountMax: DEFAULT_MAX_AMOUNT,
 };
 
+// Adjust response type to reflect actual API shape
+type WalletOption = { label: string; value: string };
 type PaymentWalletFilterOptionResponse = {
-  wallets: string[];
-  amountMin: number;
-  amountMax: number;
+  fromWallets: WalletOption[];
+  toWallets: WalletOption[];
+  amountMin: number | string;
+  amountMax: number | string;
 };
 
 type PaymentWalletFilterMenuProps<T> = {
@@ -137,13 +145,13 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
     if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
       // Server returns amounts in base currency, convert to selected currency for display
       const convertedMin = getExchangeAmount({
-        amount: data.data.amountMin,
+        amount: Number(data.data.amountMin),
         fromCurrency: baseCurrency,
         toCurrency: selectedCurrency,
       });
 
       const convertedMax = getExchangeAmount({
-        amount: data.data.amountMax,
+        amount: Number(data.data.amountMax),
         fromCurrency: baseCurrency,
         toCurrency: selectedCurrency,
       });
@@ -160,7 +168,7 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
   const extractFilterData = useCallback(
     (filters: FilterStructure) => {
       const types: Set<string> = new Set();
-      const wallets: Set<string> = new Set();
+      const wallets: Set<string> = new Set(); // stores wallet ids
       let currentAmountMin = 0;
       let currentAmountMax = DEFAULT_MAX_AMOUNT;
       let dateFrom: Date | undefined;
@@ -188,8 +196,11 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
             types.add(condition.type);
           }
 
-          if (condition.toWallet?.type) wallets.add(condition.toWallet.type);
-          if (condition.fromWallet?.type) wallets.add(condition.fromWallet.type);
+          // Prefer id, fallback to type (legacy)
+          if (condition.toWallet?.id) wallets.add(condition.toWallet.id);
+          else if (condition.toWallet?.type) wallets.add(condition.toWallet.type);
+          if (condition.fromWallet?.id) wallets.add(condition.fromWallet.id);
+          else if (condition.fromWallet?.type) wallets.add(condition.fromWallet.type);
 
           // Handle baseAmount conditions (prioritize over amount)
           if (condition.baseAmount) {
@@ -285,19 +296,27 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
                 Array.isArray((c as NestedOrCondition).OR) &&
                 (c as NestedOrCondition).OR!.some(
                   (n) =>
-                    ('toWallet' in n && (n as WalletCondition).toWallet?.type !== undefined) ||
-                    ('fromWallet' in n && (n as WalletCondition).fromWallet?.type !== undefined),
+                    ('toWallet' in n &&
+                      ((n as WalletCondition).toWallet?.id !== undefined ||
+                        (n as WalletCondition).toWallet?.type !== undefined)) ||
+                    ('fromWallet' in n &&
+                      ((n as WalletCondition).fromWallet?.id !== undefined ||
+                        (n as WalletCondition).fromWallet?.type !== undefined)),
                 ),
             )
           ) {
             condition.OR.forEach((orCondition) => {
               if ('OR' in orCondition && Array.isArray((orCondition as NestedOrCondition).OR)) {
                 (orCondition as NestedOrCondition).OR!.forEach((nested) => {
-                  if ('toWallet' in nested && (nested as WalletCondition).toWallet?.type) {
-                    wallets.add((nested as WalletCondition).toWallet!.type!);
+                  if ('toWallet' in nested) {
+                    const tw = (nested as WalletCondition).toWallet;
+                    if (tw?.id) wallets.add(tw.id);
+                    else if (tw?.type) wallets.add(tw.type);
                   }
-                  if ('fromWallet' in nested && (nested as WalletCondition).fromWallet?.type) {
-                    wallets.add((nested as WalletCondition).fromWallet!.type!);
+                  if ('fromWallet' in nested) {
+                    const fw = (nested as WalletCondition).fromWallet;
+                    if (fw?.id) wallets.add(fw.id);
+                    else if (fw?.type) wallets.add(fw.type);
                   }
                 });
               }
@@ -365,6 +384,23 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
     }));
   }, []);
 
+  // Memoized wallet options (merged from fromWallets & toWallets, deduplicated)
+  const walletOptions = useMemo(() => {
+    const from = data?.data?.fromWallets || [];
+    const to = data?.data?.toWallets || [];
+    const merged = [...from, ...to];
+    if (!merged.length) {
+      return [{ label: 'No option available', value: 'none', disabled: true }];
+    }
+    const map = new Map<string, { label: string; value: string }>();
+    merged.forEach((w) => {
+      if (w?.value && !map.has(w.value)) {
+        map.set(w.value, { label: w.label, value: w.value });
+      }
+    });
+    return Array.from(map.values());
+  }, [data]);
+
   // Create filter components configuration - each component is memoized
   const filterComponents = useMemo(() => {
     // Create memoized filter components
@@ -379,13 +415,6 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
       />
     );
 
-    const walletOptions = (() => {
-      if (!data?.data?.wallets) {
-        return [{ label: 'No option available', value: 'none', disabled: true }];
-      }
-      return data.data.wallets.map((option: string) => ({ value: option, label: option }));
-    })();
-
     const amountFilterComponent = (
       <NumberRangeFilter
         minValue={filterParams.amountMin}
@@ -394,7 +423,7 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
         maxRange={
           data?.data?.amountMax
             ? getExchangeAmount({
-                amount: data.data.amountMax,
+                amount: Number(data.data.amountMax),
                 fromCurrency: baseCurrency,
                 toCurrency: selectedCurrency,
               }).convertedAmount
@@ -455,7 +484,7 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
         order: 0,
       },
     ];
-  }, [filterParams, isLoading, handleEditFilter, selectedCurrency, data?.data?.wallets]);
+  }, [filterParams, isLoading, handleEditFilter, selectedCurrency, walletOptions]);
 
   const createFilterStructure = useCallback(
     (params: FilterParams): Record<string, any> => {
@@ -483,8 +512,8 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
       // Wallets OR group
       if (params.wallets?.length) {
         andConditions.push({
-          OR: params.wallets.map((wallet) => ({
-            OR: [{ toWallet: { type: wallet } }, { fromWallet: { type: wallet } }],
+          OR: params.wallets.map((walletId) => ({
+            OR: [{ toWallet: { id: walletId } }, { fromWallet: { id: walletId } }],
           })),
         });
       }

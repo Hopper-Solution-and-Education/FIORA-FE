@@ -99,12 +99,12 @@ const MetricCard = ({
   };
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-2">
+    <Card className={cn('flex justify-between items-center overflow-hidden py-1', className)}>
+      <CardHeader className="flex flex-row items-center justify-start gap-2 space-y-0 py-2 pr-0">
         <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
         {renderIconOrImage(icon)}
       </CardHeader>
-      <CardContent className="pt-0 pb-2">
+      <CardContent className="py-0 pl-0">
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>{value}%</div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">

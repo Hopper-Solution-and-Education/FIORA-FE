@@ -6,6 +6,7 @@ import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 const WalletWithdrawButton = () => {
   const router = useRouter();
 
@@ -14,15 +15,24 @@ const WalletWithdrawButton = () => {
   }, [router]);
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      aria-label="Deposit"
-      onClick={handleDeposit}
-      className="h-fit w-fit !px-4 !py-2"
-    >
-      <Icons.banknoteArrowDown className="!h-6 !w-6 text-red-600" />
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Deposit"
+            onClick={handleDeposit}
+            className="h-fit w-fit !px-4 !py-2"
+          >
+            <Icons.banknoteArrowDown className="!h-6 !w-6 text-red-600" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Withdraw</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
