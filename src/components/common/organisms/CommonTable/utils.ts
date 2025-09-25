@@ -1,4 +1,4 @@
-import { ColumnConfigMap } from './types';
+import { ColumnConfigMap, TableAlign } from './types';
 
 export const loadColumnConfigFromStorage = (storageKey?: string): ColumnConfigMap | null => {
   try {
@@ -21,4 +21,11 @@ export const saveColumnConfigToStorage = (
   } catch {
     // ignore
   }
+};
+
+export const getAlignClass = (align?: TableAlign) => {
+  if (align === 'left') return 'text-left justify-start';
+  if (align === 'right') return 'text-right justify-end';
+
+  return 'text-center justify-center';
 };
