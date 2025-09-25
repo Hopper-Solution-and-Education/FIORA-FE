@@ -23,25 +23,13 @@ class smartSavingRepository implements ISmartSavingRepository {
     page: number,
     pageSize: number,
     filter?: any,
-    // search?: string,
+    search?: string,
   ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }> {
     const skip = (page - 1) * pageSize;
     const where: any = {
       typeCronJob: TypeCronJob.SMART_SAVING_INTEREST,
     };
     const orFilter: any[] = [];
-    if (filter?.search) {
-      where.OR = [
-        { dynamicValue: { path: ['email'], string_contains: filter?.search, mode: 'insensitive' } },
-        {
-          dynamicValue: {
-            path: ['tierName'],
-            string_contains: filter?.search,
-            mode: 'insensitive',
-          },
-        },
-      ];
-    }
     if (filter?.status) {
       where.status = {
         in: Array.isArray(filter.status) ? filter.status : [filter.status],
@@ -61,7 +49,7 @@ class smartSavingRepository implements ISmartSavingRepository {
         lte: new Date(filter.toDate + 'T23:59:59.999Z'),
       };
     }
-    console.log('🚀 ~ getSmartSavingPaginated ~ filter?.email:', filter?.email);
+    // console.log('🚀 ~ getSmartSavingPaginated ~ filter?.email:', filter?.email);
 
     if (filter?.email) {
       if (Array.isArray(filter.email)) {
@@ -131,8 +119,19 @@ class smartSavingRepository implements ISmartSavingRepository {
         userId: dv?.userId ?? null,
       };
     });
-
-    return { items, total, totalSuccess, totalFailed };
+    let searchResult = items;
+    let totalAfterSearch = total;
+    if (search) {
+      searchResult = searchResult.filter((items) => {
+        return (
+          items?.email?.toLowerCase().includes(search.toLowerCase()) ||
+          items?.membershipTier?.toLowerCase().includes(search.toLowerCase()) ||
+          items?.updateBy?.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+      totalAfterSearch = searchResult.length;
+    }
+    return { items: searchResult, total: totalAfterSearch, totalSuccess, totalFailed };
   }
 
   async getSmartSavingStatistics(): Promise<{
