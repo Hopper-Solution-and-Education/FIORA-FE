@@ -52,6 +52,7 @@ const DefaultSubmitButton = ({
             <TooltipTrigger asChild>
               <Button
                 onClick={onSubmit}
+                type="button"
                 disabled={disabled || isSubmitting}
                 className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
               >
