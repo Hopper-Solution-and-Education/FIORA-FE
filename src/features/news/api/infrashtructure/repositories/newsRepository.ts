@@ -224,8 +224,6 @@ export class NewsRepository implements INewsRepository {
         },
       });
 
-      console.log('Query result: ', posts);
-
       const response: ListNewsResponse = {
         news: posts,
         currentPage: page,

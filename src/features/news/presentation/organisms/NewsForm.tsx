@@ -93,14 +93,7 @@ const NewsForm = ({
 
   return (
     <FormProvider {...form}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit(form.getValues());
-        }}
-        className="space-y-8"
-        aria-label="News form"
-      >
+      <div className="space-y-8" aria-label="News form">
         {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Title */}
@@ -252,11 +245,11 @@ const NewsForm = ({
           isSubmitting={isSubmitting}
           disabled={!isValid || isSubmitting}
           onSubmit={() => {
-            // Submit được handle bởi form onSubmit, không cần gọi lại
+            handleSubmit(form.getValues());
           }}
           onBack={onCancel}
         />
-      </form>
+      </div>
     </FormProvider>
   );
 };

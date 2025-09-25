@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { uploadToFirebase } from '@/shared/lib';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ConfirmExitDialog from '../../../../components/common/organisms/ConfirmExitDialog';
 import { useNewsUpsert } from '../../hooks/useNewsUpsert';
@@ -13,7 +13,6 @@ import NewsCategoryCreationDialog, {
 import NewsForm, { NewsFormValues } from '../organisms/NewsForm';
 
 const CreateNewsPage = () => {
-  const { id } = useParams() as { id: string };
   const router = useRouter();
   const {
     categories,
@@ -64,7 +63,6 @@ const CreateNewsPage = () => {
     }
   };
 
-  const handleOpenCreateCategoryDialog = () => setIsCategoryDialogOpen(true);
   const handleCategoryCreated = (newCategory: NewsCategoryFormValues) => {
     if (typeof session?.user === 'undefined') return;
     handleCreateCategory(
@@ -123,10 +121,10 @@ const CreateNewsPage = () => {
           onSubmit={handleSubmit}
           onCancel={() => {
             if (hasChanges) {
-              setPendingExit(() => () => router.push(`/news/details/${id}`));
+              setPendingExit(() => () => router.push('/news'));
               setOpenConfirmExitDialog(true);
             } else {
-              router.push(`/news/details/${id}`);
+              router.push('/news');
             }
           }}
           isSubmitting={isSubmitting}

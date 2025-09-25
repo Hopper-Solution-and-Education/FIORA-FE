@@ -47,7 +47,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     orderBy: String(orderBy),
     orderDirection: String(orderDirection),
   };
-  console.log('log', queryParams);
   const result = await newsUsecase.getAll(queryParams);
   return res
     .status(RESPONSE_CODE.OK)
@@ -100,7 +99,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   }
 
   //Creation
-  console.log('request', request);
   const result = await newsUsecase.createNews(request);
   return res
     .status(RESPONSE_CODE.OK)
