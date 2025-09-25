@@ -50,6 +50,7 @@ export default function CommonTableLoadingState<T>({
           ))}
         </>
       )}
+
       {!hasMore && dataLength > 0 && (
         <TableRow>
           <TableCell

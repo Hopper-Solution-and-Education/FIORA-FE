@@ -42,7 +42,7 @@ const EditTierBenefitForm = () => {
             membershipBenefit: {
               name: data.name || '',
               slug: benefitTierToEdit?.slug || '',
-              description: '',
+              description: data.description || '',
               suffix: data.unit,
               userId: session?.user?.id || '',
             },
