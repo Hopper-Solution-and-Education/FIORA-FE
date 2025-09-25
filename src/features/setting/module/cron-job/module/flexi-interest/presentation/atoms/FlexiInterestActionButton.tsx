@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface FlexiInterestActionButtonProps {
   id: string;
@@ -33,11 +34,11 @@ const FlexiInterestActionButton = ({
 
   const handleConfirm = async () => {
     if (!amount || Number(amount) <= 0) {
-      alert('Vui lòng nhập số tiền hợp lệ!');
+      toast.error('Vui lòng nhập số tiền hợp lệ!');
       return;
     }
     if (!reason.trim()) {
-      alert('Vui lòng nhập lý do!');
+      toast.error('Vui lòng nhập lý do!');
       return;
     }
 
@@ -66,15 +67,14 @@ const FlexiInterestActionButton = ({
       console.log('✅ PUT response:', result);
 
       if (response.ok) {
-        alert('Update success!');
-        // Gọi callback để update row ngay trong UIDF
+        toast.success('Update success!');
         onUpdateRowItem?.(id, result.data.data);
       } else {
-        alert('Update failed: ' + (result?.error || 'Unknown error'));
+        toast.error('Update failed: ' + (result?.error || 'Unknown error'));
       }
     } catch (err) {
       console.error('❌ PUT error:', err);
-      alert('Có lỗi xảy ra khi gọi API: ' + (err as Error).message);
+      toast.error('Có lỗi xảy ra khi gọi API: ' + (err as Error).message);
     } finally {
       setLoading(false);
       setIsModalOpen(false);

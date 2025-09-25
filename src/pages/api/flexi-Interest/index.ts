@@ -72,19 +72,15 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_FLEXI_INTEREST_SUCCESS, flexiInterest));
 }
 
-// --- PUT Handler ---
 export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogId: string) {
   const { amount, reason } = req.body;
 
   try {
-    // 1. Validate input
     if (amount == null || isNaN(Number(amount)) || Number(amount) <= 0) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Invalid amount'));
     }
-
-    // 2. Tìm CronJobLog
     const cronJobLog = await prisma.cronJobLog.findUnique({ where: { id: cronJobLogId } });
     if (!cronJobLog) {
       return res
@@ -97,8 +93,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'Chỉ fix được log có status = FAIL'));
     }
-
-    // 3. Lấy userId từ dynamicValue hoặc từ walletId
     let userId: string | undefined;
     try {
       const dynamic = cronJobLog.dynamicValue as any;
@@ -115,8 +109,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
     } catch (e) {
       console.warn('Không parse được dynamicValue:', e);
     }
-
-    console.log('👉 userId lấy ra:', userId);
     if (!userId) {
       return res
         .status(RESPONSE_CODE.BAD_REQUEST)
@@ -127,14 +119,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
           ),
         );
     }
-
-    // 3b. Lấy thông tin user để dùng sau này
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true },
     });
-
-    // 4. Wallet
     const wallet = await prisma.wallet.findFirst({
       where: { userId, type: WalletType.Payment },
     });
@@ -143,15 +131,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'User chưa có Payment Wallet'));
     }
-    console.log('👉 wallet:', wallet);
     const membershipProgress = await prisma.membershipProgress.findFirst({
       where: { userId },
       select: { tierId: true },
       orderBy: { updatedAt: 'desc' },
     });
-    console.log('👉 membershipProgress:', membershipProgress);
-
-    // 5. Benefit Flexi Interest
     const membershipBenefit = await prisma.membershipBenefit.findFirst({
       where: { name: 'Flexi Interest' },
       select: { id: true },
@@ -166,16 +150,12 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
           ),
         );
     }
-    console.log('👉 membershipBenefit:', membershipBenefit);
     const rateBenefit = await prisma.tierBenefit.findFirst({
       where: {
         benefitId: membershipBenefit.id,
         ...(membershipProgress?.tierId && { tierId: membershipProgress.tierId }),
       },
     });
-    console.log('👉 rateBenefit:', rateBenefit);
-
-    // 6. Tính toán percentValue dựa trên tier hiện tại của user
     const rawAmount = new Prisma.Decimal(amount);
     let percentValue: Prisma.Decimal | null = null;
 
@@ -189,23 +169,17 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         where: { tierId: progress.tierId, benefitId: membershipBenefit.id },
         select: { value: true },
       });
-      console.log('👉 progress:', progress);
       if (tierBenefit?.value != null) {
         percentValue = new Prisma.Decimal(tierBenefit.value);
       }
     }
-    console.log('👉 percentValue:', percentValue?.toString() ?? null);
-    // 7. Admin
     const adminId = (req as any).user?.id ?? undefined;
     const admin = adminId
       ? await prisma.user.findUnique({ where: { id: adminId }, select: { id: true, email: true } })
       : null;
 
     const account = await prisma.account.findFirst({ where: { userId } });
-
-    // 8. Transaction trong DB
     const { createdTxn, notification } = await prisma.$transaction(async (tx) => {
-      // Transaction
       const createdTxn = await tx.transaction.create({
         data: {
           userId,
@@ -234,7 +208,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         data: {
           status: CronJobStatus.SUCCESSFUL,
           updatedAt: new Date(),
-          updatedBy: admin?.email ?? null, // ✅ lưu email admin
+          updatedBy: admin?.email ?? null,
           transactionId: createdTxn.id,
           dynamicValue: {
             tierName: progress?.tier?.tierName,
@@ -245,7 +219,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
             rate: rateBenefit?.value ?? null,
             reason,
             walletId: wallet.id,
-            updatedBy: admin?.email ?? null, // ✅ trong dynamicValue cũng để email admin cho dễ trace
+            updatedBy: admin?.email ?? null,
           },
         },
       });
@@ -269,8 +243,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
 
       return { createdTxn, notification };
     });
-
-    // 9. Trả về response
     const responseData: FlexiInterestCronjobTableData = {
       id: cronJobLog.id,
       email: user?.email ?? undefined,
