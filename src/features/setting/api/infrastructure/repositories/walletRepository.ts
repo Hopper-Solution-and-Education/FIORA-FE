@@ -15,7 +15,7 @@ import { IWalletRepository } from '../../repositories/walletRepository.interface
 import { PackageFXWithAttachments } from '../../types/attachmentTypes';
 
 class WalletRepository implements IWalletRepository {
-  constructor(private _prisma = prisma) {}
+  constructor(private _prisma = prisma) { }
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput): Promise<Wallet> {
     return this._prisma.wallet.create({ data });
@@ -85,9 +85,9 @@ class WalletRepository implements IWalletRepository {
         const attachments: { id: string; url: string }[] =
           pkg.attachment_id && pkg.attachment_id.length > 0
             ? await this._prisma.attachment.findMany({
-                where: { id: { in: pkg.attachment_id } },
-                select: { id: true, url: true },
-              })
+              where: { id: { in: pkg.attachment_id } },
+              select: { id: true, url: true },
+            })
             : [];
         return {
           ...pkg,
@@ -322,30 +322,35 @@ class WalletRepository implements IWalletRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [fromWallets, toWallets] = await Promise.all([
-      prisma.transaction.findMany({
-        where: { userId, fromWalletId: { not: null } },
-        include: { fromWallet: true },
+    const [accounts, categories, memberships, wallets] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        select: { name: true },
       }),
-      prisma.transaction.findMany({
-        where: { userId, toWalletId: { not: null } },
-        include: { toWallet: true },
+      prisma.category.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.membershipBenefit.findMany({
+        where: { userId },
+        select: { name: true, slug: true },
+      }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true, name: true },
       }),
     ]);
 
     return {
-      fromWallets: fromWallets.map((a) => {
+      accounts: accounts.map((a) => a.name),
+      categories: categories.map((c) => c.name),
+      memberships: memberships.map((m) => {
         return {
-          label: a.fromWallet?.name || a.fromWallet?.type,
-          value: a.fromWallet?.id,
+          name: m.name,
+          id: m.slug,
         };
       }),
-      toWallets: toWallets.map((c) => {
-        return {
-          label: c.toWallet?.name || c.toWallet?.type,
-          value: c.toWallet?.id,
-        };
-      }),
+      wallets: wallets.map((w) => w.name),
     };
   }
 }
