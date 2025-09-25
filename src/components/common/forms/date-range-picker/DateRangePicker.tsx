@@ -149,7 +149,7 @@ export default function DateRangePicker(props: DateRangePickerProps) {
           rangeMiddleClasses: 'bg-primary/20 text-primary-foreground hover:bg-primary/30',
           rangeEdgeClasses:
             'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background hover:bg-primary/90', // Changed to full primary for range edge
-          selectedStyle: {},
+          selectedStyle: { color: 'white !important' },
           rangeMiddleStyle: {},
           rangeEdgeStyle: {},
         };
