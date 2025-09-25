@@ -4,8 +4,14 @@ import { SAVING_INTEREST_TYPES } from '../../di/savingInterestDashboardDI.type';
 import {
   SavingInterestChartResponse,
   SavingInterestResponse,
+  SmartSavingStatisticsApiResponse,
+  SmartSavingTableApiResponse,
 } from '../dto/response/SavingInterestResponse';
-import { ISavingInterestDashboardApi, SavingInterestFilters } from './ISavingInterestDashboardApi';
+import {
+  FilterOptions,
+  ISavingInterestDashboardApi,
+  SavingInterestFilters,
+} from './ISavingInterestDashboardApi';
 
 export class SavingInterestDashboardApi implements ISavingInterestDashboardApi {
   private httpClient: IHttpClient;
@@ -19,41 +25,67 @@ export class SavingInterestDashboardApi implements ISavingInterestDashboardApi {
     pageSize: number,
     filters: SavingInterestFilters,
   ): Promise<SavingInterestResponse> {
-    const params = new URLSearchParams();
+    const body = {
+      page,
+      pageSize,
+      search: filters.search || '',
+      status: filters.status.length > 0 ? filters.status : undefined,
+      tierName: filters.membershipTier.length > 0 ? filters.membershipTier : undefined,
+      email: filters.email.length > 0 ? filters.email : undefined,
+      emailUpdateBy: filters.updatedBy.length > 0 ? filters.updatedBy : undefined,
+      fromDate: filters.fromDate || undefined,
+      toDate: filters.toDate || undefined,
+    };
 
-    params.append('page', page.toString());
-    params.append('pageSize', pageSize.toString());
+    // Remove undefined values
+    Object.keys(body).forEach((key) => {
+      if (body[key as keyof typeof body] === undefined) {
+        delete body[key as keyof typeof body];
+      }
+    });
 
-    if (filters.search) params.append('search', filters.search);
-    if (filters.status.length > 0) filters.status.forEach((s) => params.append('status', s));
-    if (filters.membershipTier.length > 0)
-      filters.membershipTier.forEach((t) => params.append('membershipTier', t));
-    if (filters.email.length > 0) filters.email.forEach((e) => params.append('email', e));
-    if (filters.updatedBy.length > 0)
-      filters.updatedBy.forEach((u) => params.append('updatedBy', u));
-    if (filters.fromDate) params.append('fromDate', filters.fromDate);
-    if (filters.toDate) params.append('toDate', filters.toDate);
+    const baseUrl = '/api/smart-saving';
+    const response = await this.httpClient.post<SmartSavingTableApiResponse>(baseUrl, body);
 
-    const baseUrl = '/api/dashboard/saving-interest';
-    const url = `${baseUrl}?${params.toString()}`;
-
-    return this.httpClient.get<SavingInterestResponse>(url);
+    // Extract data from the nested response structure
+    return {
+      items: response.data.items,
+      total: response.data.total,
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+      totalPages: response.data.totalPages,
+      totalSuccess: response.data.totalSuccess,
+      totalFailed: response.data.totalFailed,
+    };
   }
 
   async getSavingInterestChartData(
     filters: Partial<SavingInterestFilters>,
   ): Promise<SavingInterestChartResponse> {
-    const params = new URLSearchParams();
+    const baseUrl = '/api/smart-saving/statistics';
+    const response = await this.httpClient.get<SmartSavingStatisticsApiResponse>(baseUrl);
 
-    if (filters.search) params.append('search', filters.search);
-    if (filters.status?.length) filters.status.forEach((s) => params.append('status', s));
-    if (filters.fromDate) params.append('fromDate', filters.fromDate);
-    if (filters.toDate) params.append('toDate', filters.toDate);
+    // Extract data from the nested response structure
+    return {
+      tierInterestAmount: response.data.tierInterestAmount,
+      totalInterestAmount: response.data.totalInterestAmount,
+    };
+  }
 
-    const baseUrl = '/api/dashboard/saving-interest-chart';
-    const url = `${baseUrl}?${params.toString()}`;
+  async getFilterOptions(): Promise<FilterOptions> {
+    const baseUrl = '/api/smart-saving';
+    const response = await this.httpClient.get<{
+      status: number;
+      message: string;
+      data: FilterOptions;
+    }>(baseUrl);
 
-    return this.httpClient.get<SavingInterestChartResponse>(url);
+    // Extract data from the nested response structure
+    return {
+      emailOptions: response.data.emailOptions,
+      tierNameOptions: response.data.tierNameOptions,
+      updateByOptions: response.data.updateByOptions,
+    };
   }
 }
 

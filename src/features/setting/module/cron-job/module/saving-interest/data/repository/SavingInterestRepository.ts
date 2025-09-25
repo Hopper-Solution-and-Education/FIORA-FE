@@ -1,6 +1,6 @@
 import { decorate, inject, injectable } from 'inversify';
 import { SAVING_INTEREST_TYPES } from '../../di/savingInterestDashboardDI.type';
-import { SavingInterestFilters } from '../api/ISavingInterestDashboardApi';
+import { FilterOptions, SavingInterestFilters } from '../api/ISavingInterestDashboardApi';
 import { SavingInterestDashboardApi } from '../api/SavingInterestDashboardApi';
 import {
   SavingInterestChartResponse,
@@ -16,6 +16,7 @@ export interface ISavingInterestRepository {
   getSavingInterestChartData(
     filters: Partial<SavingInterestFilters>,
   ): Promise<SavingInterestChartResponse>;
+  getFilterOptions(): Promise<FilterOptions>;
 }
 
 export class SavingInterestRepository implements ISavingInterestRepository {
@@ -37,6 +38,10 @@ export class SavingInterestRepository implements ISavingInterestRepository {
     filters: Partial<SavingInterestFilters>,
   ): Promise<SavingInterestChartResponse> {
     return this.api.getSavingInterestChartData(filters);
+  }
+
+  async getFilterOptions(): Promise<FilterOptions> {
+    return this.api.getFilterOptions();
   }
 }
 

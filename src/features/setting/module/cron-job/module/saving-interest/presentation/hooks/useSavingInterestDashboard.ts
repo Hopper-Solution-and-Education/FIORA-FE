@@ -41,7 +41,7 @@ export const useSavingInterestDashboard = () => {
         toDate: '',
       });
 
-      setChartData(res.summary || []);
+      setChartData(res.tierInterestAmount || []);
     } catch (error) {
       console.error('Error fetching saving interest chart:', error);
       setChartData([]);
@@ -81,8 +81,8 @@ export const useSavingInterestDashboard = () => {
           email: filterState.email,
           updatedBy: filterState.updatedBy,
           search: filterState.search,
-          fromDate: filterState.fromDate ? filterState.fromDate.toISOString() : '',
-          toDate: filterState.toDate ? filterState.toDate.toISOString() : '',
+          fromDate: filterState.fromDate ? filterState.fromDate.toISOString().split('T')[0] : '',
+          toDate: filterState.toDate ? filterState.toDate.toISOString().split('T')[0] : '',
         });
 
         const hasMore = page < (res.totalPages || 1);
@@ -110,6 +110,14 @@ export const useSavingInterestDashboard = () => {
             },
           });
           dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
+          // Set statistics from API response
+          dispatchTable({
+            type: 'SET_STATISTICS',
+            payload: {
+              totalSuccess: res.totalSuccess || 0,
+              totalFailed: res.totalFailed || 0,
+            },
+          });
         }
       } catch (error) {
         console.error('Error fetching saving interest data:', error);

@@ -5,6 +5,10 @@ import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types
 import { useAppDispatch } from '@/store';
 import { useCallback, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import { FilterOptions } from '../../data/api/ISavingInterestDashboardApi';
+import { savingInterestContainer } from '../../di/savingInterestDashboardDI';
+import { SAVING_INTEREST_TYPES } from '../../di/savingInterestDashboardDI.type';
+import { IGetSavingInterestFilterOptionsUseCase } from '../../domain/usecase/GetSavingInterestFilterOptionsUseCase';
 import { SavingInterestFilterState } from '../../slices';
 import { SavingInterestTableData } from '../types/saving-interest.type';
 
@@ -15,36 +19,8 @@ interface SavingInterestFilterMenuProps {
 }
 
 const STATUS_OPTIONS = [
-  { label: 'Successful', value: 'successful' },
-  { label: 'Fail', value: 'fail' },
-];
-
-const MEMBERSHIP_TIER_OPTIONS = [
-  { label: 'Titan Egg', value: 'Titan Egg' },
-  { label: 'Silver Egg', value: 'Silver Egg' },
-  { label: 'Platinum Egg', value: 'Platinum Egg' },
-  { label: 'Gold Egg', value: 'Gold Egg' },
-  { label: 'Diamond Egg', value: 'Diamond Egg' },
-  { label: 'Titan Tortoise', value: 'Titan Tortoise' },
-  { label: 'Silver Tortoise', value: 'Silver Tortoise' },
-  { label: 'Gold Tortoise', value: 'Gold Tortoise' },
-  { label: 'Platinum Tortoise', value: 'Platinum Tortoise' },
-  { label: 'Diamond Tortoise', value: 'Diamond Tortoise' },
-  { label: 'Titan Phoenix', value: 'Titan Phoenix' },
-  { label: 'Silver Phoenix', value: 'Silver Phoenix' },
-  { label: 'Gold Phoenix', value: 'Gold Phoenix' },
-  { label: 'Platinum Phoenix', value: 'Platinum Phoenix' },
-  { label: 'Diamond Phoenix', value: 'Diamond Phoenix' },
-  { label: 'Titan Qili', value: 'Titan Qili' },
-  { label: 'Silver Qili', value: 'Silver Qili' },
-  { label: 'Gold Qili', value: 'Gold Qili' },
-  { label: 'Platinum Qili', value: 'Platinum Qili' },
-  { label: 'Diamond Qili', value: 'Diamond Qili' },
-  { label: 'Titan Dragon', value: 'Titan Dragon' },
-  { label: 'Silver Dragon', value: 'Silver Dragon' },
-  { label: 'Gold Dragon', value: 'Gold Dragon' },
-  { label: 'Platinum Dragon', value: 'Platinum Dragon' },
-  { label: 'Diamond Dragon', value: 'Diamond Dragon' },
+  { label: 'Successful', value: 'SUCCESSFUL' },
+  { label: 'Fail', value: 'FAIL' },
 ];
 
 const SavingInterestFilterMenu = ({
@@ -54,17 +30,60 @@ const SavingInterestFilterMenu = ({
 }: SavingInterestFilterMenuProps) => {
   const dispatch = useAppDispatch();
   const [localFilter, setLocalFilter] = useState<SavingInterestFilterState>(value);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    emailOptions: [],
+    tierNameOptions: [],
+    updateByOptions: [],
+  });
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
-  // Extract unique values from data for dynamic options
+  // Fetch filter options only when needed (lazy loading)
+  const fetchFilterOptions = useCallback(async () => {
+    if (isLoadingOptions || filterOptions.emailOptions.length > 0) {
+      return; // Already loading or already loaded
+    }
+
+    setIsLoadingOptions(true);
+    try {
+      const useCase = savingInterestContainer.get<IGetSavingInterestFilterOptionsUseCase>(
+        SAVING_INTEREST_TYPES.IGetSavingInterestFilterOptionsUseCase,
+      );
+      const options = await useCase.execute();
+      setFilterOptions(options);
+    } catch (error) {
+      console.error('Error fetching filter options:', error);
+      // Fallback to empty options
+      setFilterOptions({
+        emailOptions: [],
+        tierNameOptions: [],
+        updateByOptions: [],
+      });
+    } finally {
+      setIsLoadingOptions(false);
+    }
+  }, [isLoadingOptions, filterOptions.emailOptions.length]);
+
+  // Convert API options to select options format
   const emailOptions = useMemo(() => {
-    const uniqueEmails = Array.from(new Set(data.map((item) => item.email)));
-    return uniqueEmails.map((email) => ({ label: email, value: email }));
-  }, [data]);
+    return filterOptions.emailOptions.map((option) => ({
+      label: option.email,
+      value: option.email,
+    }));
+  }, [filterOptions.emailOptions]);
+
+  const membershipTierOptions = useMemo(() => {
+    return filterOptions.tierNameOptions.map((option) => ({
+      label: option.tierName || 'Unknown',
+      value: option.tierName || 'Unknown',
+    }));
+  }, [filterOptions.tierNameOptions]);
 
   const updatedByOptions = useMemo(() => {
-    const uniqueUpdatedBy = Array.from(new Set(data.map((item) => item.updatedBy.email)));
-    return uniqueUpdatedBy.map((email) => ({ label: email, value: email }));
-  }, [data]);
+    return filterOptions.updateByOptions.map((option) => ({
+      label: option.email,
+      value: option.email,
+    }));
+  }, [filterOptions.updateByOptions]);
 
   // Date range state
   const dateRange: DateRange | undefined = useMemo(() => {
@@ -100,14 +119,15 @@ const SavingInterestFilterMenu = ({
   }, [localFilter, onFilterChange]);
 
   const handleResetFilters = useCallback(() => {
+    const today = new Date();
     const newFilter: SavingInterestFilterState = {
       status: [],
       membershipTier: [],
       email: [],
       updatedBy: [],
       search: '',
-      fromDate: null,
-      toDate: null,
+      fromDate: today,
+      toDate: today,
     };
     setLocalFilter(newFilter);
     onFilterChange(newFilter);
@@ -147,11 +167,16 @@ const SavingInterestFilterMenu = ({
         key: 'membershipTier',
         component: (
           <MultiSelectFilter
-            options={MEMBERSHIP_TIER_OPTIONS}
+            options={membershipTierOptions}
             selectedValues={localFilter.membershipTier}
             onChange={(values) => handleLocalFilterChange('membershipTier', values)}
             label="Membership Tier"
-            placeholder="Select membership tier"
+            placeholder={isLoadingOptions ? 'Loading...' : 'Select membership tier'}
+            onOpenChange={(open) => {
+              if (open) {
+                fetchFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.LEFT,
@@ -165,7 +190,12 @@ const SavingInterestFilterMenu = ({
             selectedValues={localFilter.email}
             onChange={(values) => handleLocalFilterChange('email', values)}
             label="Email"
-            placeholder="Select email"
+            placeholder={isLoadingOptions ? 'Loading...' : 'Select email'}
+            onOpenChange={(open) => {
+              if (open) {
+                fetchFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.LEFT,
@@ -195,7 +225,12 @@ const SavingInterestFilterMenu = ({
             selectedValues={localFilter.updatedBy}
             onChange={(values) => handleLocalFilterChange('updatedBy', values)}
             label="Updated By"
-            placeholder="Select updated by"
+            placeholder={isLoadingOptions ? 'Loading...' : 'Select updated by'}
+            onOpenChange={(open) => {
+              if (open) {
+                fetchFilterOptions();
+              }
+            }}
           />
         ),
         column: FilterColumn.RIGHT,
@@ -208,7 +243,10 @@ const SavingInterestFilterMenu = ({
       handleLocalFilterChange,
       handleDateRangeChange,
       emailOptions,
+      membershipTierOptions,
       updatedByOptions,
+      isLoadingOptions,
+      fetchFilterOptions,
     ],
   );
 

@@ -7,6 +7,10 @@ export interface TableState {
   };
   hasMore: boolean;
   isLoadingMore: boolean;
+  statistics: {
+    totalSuccess: number;
+    totalFailed: number;
+  };
 }
 
 export const initialState: TableState = {
@@ -18,6 +22,10 @@ export const initialState: TableState = {
   },
   hasMore: true,
   isLoadingMore: false,
+  statistics: {
+    totalSuccess: 0,
+    totalFailed: 0,
+  },
 };
 
 export type TableAction =
@@ -26,7 +34,8 @@ export type TableAction =
   | { type: 'SET_PAGINATION'; payload: { current: number; pageSize: number; total: number } }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_HAS_MORE'; payload: boolean }
-  | { type: 'SET_IS_LOADING_MORE'; payload: boolean };
+  | { type: 'SET_IS_LOADING_MORE'; payload: boolean }
+  | { type: 'SET_STATISTICS'; payload: { totalSuccess: number; totalFailed: number } };
 
 export const tableReducer = (state: TableState, action: TableAction): TableState => {
   switch (action.type) {
@@ -42,6 +51,8 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
       return { ...state, hasMore: action.payload };
     case 'SET_IS_LOADING_MORE':
       return { ...state, isLoadingMore: action.payload };
+    case 'SET_STATISTICS':
+      return { ...state, statistics: action.payload };
     default:
       return state;
   }

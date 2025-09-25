@@ -13,6 +13,12 @@ export interface SavingInterestFilters {
   toDate: string;
 }
 
+export interface FilterOptions {
+  emailOptions: { id: string; email: string }[];
+  tierNameOptions: { id: string; tierName: string | null }[];
+  updateByOptions: { id: string; email: string }[];
+}
+
 export interface ISavingInterestDashboardApi {
   getSavingInterestData(
     page: number,
@@ -22,4 +28,5 @@ export interface ISavingInterestDashboardApi {
   getSavingInterestChartData(
     filters: Partial<SavingInterestFilters>,
   ): Promise<SavingInterestChartResponse>;
+  getFilterOptions(): Promise<FilterOptions>;
 }

@@ -41,14 +41,14 @@ const SavingInterestCommonTable = ({
         render: (r) => <span className="text-sm text-gray-900 dark:text-gray-100">{r.email}</span>,
       },
       {
-        key: 'executionTime',
+        key: 'dateTime',
         title: 'Datetime',
         align: 'left',
         width: '14%',
         render: (r) => (
           <span className="text-sm text-gray-900 dark:text-gray-100">
-            {new Date(r.executionTime).toLocaleDateString('en-GB')},{' '}
-            {new Date(r.executionTime).toLocaleTimeString('en-GB', { hour12: false })}
+            {new Date(r.dateTime).toLocaleDateString('en-GB')},{' '}
+            {new Date(r.dateTime).toLocaleTimeString('en-GB', { hour12: false })}
           </span>
         ),
       },
@@ -62,12 +62,15 @@ const SavingInterestCommonTable = ({
         ),
       },
       {
-        key: 'savingInterestRate',
-        title: 'Saving Interest Rate',
+        key: 'smartSavingRate',
+        title: 'Smart Saving Rate',
         align: 'left',
         width: '12%',
         render: (r) => (
-          <span className="text-sm text-gray-900 dark:text-gray-100">{r.savingInterestRate}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100">
+            {r.smartSavingRate}
+            {r.smartSavingRate ? '%' : ''}
+          </span>
         ),
       },
       {
@@ -76,16 +79,20 @@ const SavingInterestCommonTable = ({
         align: 'right',
         width: '12%',
         render: (r) => (
-          <span className="text-sm text-gray-900 dark:text-gray-100">{r.activeBalance}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100">
+            {r.activeBalance ? `${r.activeBalance} FX` : ''}
+          </span>
         ),
       },
       {
-        key: 'savingInterestAmount',
-        title: 'Saving Interest Amount',
+        key: 'smartSavingAmount',
+        title: 'Smart Saving Amount',
         align: 'right',
         width: '12%',
         render: (r) => (
-          <span className="text-sm text-gray-900 dark:text-gray-100">{r.savingInterestAmount}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100">
+            {r.smartSavingAmount ? `${r.smartSavingAmount} FX` : ''}
+          </span>
         ),
       },
       {
@@ -101,7 +108,7 @@ const SavingInterestCommonTable = ({
         align: 'left',
         width: '12%',
         render: (r) => (
-          <span className="text-sm text-gray-900 dark:text-gray-100">{r.updatedBy.email}</span>
+          <span className="text-sm text-gray-900 dark:text-gray-100">{r.updateBy}</span>
         ),
       },
       {
@@ -142,11 +149,11 @@ const SavingInterestCommonTable = ({
     () => ({
       id: { isVisible: true, index: 0, align: 'left' },
       email: { isVisible: true, index: 1, align: 'left' },
-      executionTime: { isVisible: true, index: 2, align: 'left' },
+      dateTime: { isVisible: true, index: 2, align: 'left' },
       membershipTier: { isVisible: true, index: 3, align: 'left' },
-      savingInterestRate: { isVisible: true, index: 4, align: 'left' },
+      smartSavingRate: { isVisible: true, index: 4, align: 'left' },
       activeBalance: { isVisible: true, index: 5, align: 'right' },
-      savingInterestAmount: { isVisible: true, index: 6, align: 'right' },
+      smartSavingAmount: { isVisible: true, index: 6, align: 'right' },
       status: { isVisible: true, index: 7, align: 'center' },
       updatedBy: { isVisible: true, index: 8, align: 'left' },
       reason: { isVisible: true, index: 9, align: 'left' },
@@ -157,11 +164,14 @@ const SavingInterestCommonTable = ({
 
   const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(columnConfigMap);
 
-  // Calculate statistics from actual data
+  // Calculate statistics from current visible data only
   const actualStatistics = useMemo(() => {
     const actualTotal = data?.length || 0;
-    const actualSuccessful = data?.filter((item) => item.status === 'successful').length || 0;
-    const actualFailed = data?.filter((item) => item.status === 'fail').length || 0;
+    const actualSuccessful =
+      data?.filter((item) => item.status === 'SUCCESSFUL' || item.status === 'successful').length ||
+      0;
+    const actualFailed =
+      data?.filter((item) => item.status === 'FAIL' || item.status === 'fail').length || 0;
 
     return {
       total: actualTotal,

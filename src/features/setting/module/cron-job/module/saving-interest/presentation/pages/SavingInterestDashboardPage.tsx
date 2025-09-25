@@ -29,21 +29,19 @@ const SavingInterestDashboardPage = () => {
   // Data fetching is handled by useSavingInterestDashboard hook
   // No need for additional useEffect here as it causes duplicate API calls
 
-  // Handle bar chart click to filter table by membershipTier
-  const handleBarClick = (membershipTier: string) => {
-    dispatch(setMembershipTierFilter([membershipTier]));
+  // Handle bar chart click to filter table by tierName
+  const handleBarClick = (tierName: string) => {
+    dispatch(setMembershipTierFilter([tierName]));
+  };
+
+  // Wrapper for fetchData to match expected signature
+  const handleRetrySuccess = () => {
+    fetchData(1, 20, false);
   };
 
   return (
     <section className="sm:px-6 lg:px-8">
       <div className="space-y-6 mb-12">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Cron Job Smart Saving Management
-          </h1>
-        </div>
-
         {/* Chart Section */}
         <SavingInterestChart
           chartData={chartData}
@@ -59,7 +57,7 @@ const SavingInterestDashboardPage = () => {
             hasMore={tableData.hasMore}
             isLoadingMore={tableData.isLoadingMore}
             onLoadMore={loadMore}
-            onRetrySuccess={fetchData}
+            onRetrySuccess={handleRetrySuccess}
           />
         </div>
       </div>

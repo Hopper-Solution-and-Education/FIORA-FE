@@ -4,7 +4,7 @@ import { SavingInterestChartItem } from '../../data/dto/response/SavingInterestR
 interface SavingInterestChartProps {
   chartData: SavingInterestChartItem[];
   loading?: boolean;
-  onBarClick?: (membershipTier: string) => void;
+  onBarClick?: (tierName: string) => void;
 }
 
 const SavingInterestChart = ({
@@ -14,8 +14,8 @@ const SavingInterestChart = ({
 }: SavingInterestChartProps) => {
   // Convert chart data to display format
   const displayData = chartData.map((item) => ({
-    name: item.membershipTier,
-    value: item.totalAmount,
+    name: item.tierName,
+    value: parseFloat(item.interestAmount) || 0,
     color: '#ef4444', // Red color as shown in the image
   }));
 
@@ -30,10 +30,7 @@ const SavingInterestChart = ({
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-base font-semibold text-blue-600 dark:text-blue-400">
-            Saving Interest Chart
-          </h3>
+        <div className="flex justify-end items-center mb-4">
           <div className="bg-gray-100 dark:bg-gray-700 text-blue-800 dark:text-blue-300 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors duration-200">
             Loading...
           </div>
@@ -47,10 +44,7 @@ const SavingInterestChart = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 transition-colors duration-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-base font-semibold text-blue-600 dark:text-blue-400">
-          Saving Interest Chart
-        </h3>
+      <div className="flex justify-end items-center mb-4">
         <div className="bg-gray-100 dark:bg-gray-700 text-blue-800 dark:text-blue-300 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors duration-200">
           Total: {totalAmount.toLocaleString()} FX
         </div>

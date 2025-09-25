@@ -26,13 +26,13 @@ export const useRetrySavingInterest = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/dashboard/saving-interest/${params.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/smart-saving?id=${params.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          savingInterestAmount: params.savingInterestAmount,
+          amount: parseFloat(params.savingInterestAmount),
           reason: params.reason,
         }),
       });

@@ -16,8 +16,8 @@ const initialState: SavingInterestFilterState = {
   email: [],
   updatedBy: [],
   search: '',
-  fromDate: null,
-  toDate: null,
+  fromDate: new Date(), // Default to today
+  toDate: new Date(), // Default to today
 };
 
 const savingInterestSlice = createSlice({
@@ -45,7 +45,11 @@ const savingInterestSlice = createSlice({
     setToDateFilter: (state, action: PayloadAction<Date | null>) => {
       state.toDate = action.payload;
     },
-    resetFilters: () => initialState,
+    resetFilters: () => ({
+      ...initialState,
+      fromDate: new Date(), // Reset to today
+      toDate: new Date(), // Reset to today
+    }),
   },
 });
 

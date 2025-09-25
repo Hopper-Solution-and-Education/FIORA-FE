@@ -4,4 +4,5 @@ export const SAVING_INTEREST_TYPES = {
   ISavingInterestRepository: Symbol.for('ISavingInterestRepository'),
   IGetSavingInterestChartDataUseCase: Symbol.for('IGetSavingInterestChartDataUseCase'),
   IGetSavingInterestPaginatedUseCase: Symbol.for('IGetSavingInterestPaginatedUseCase'),
+  IGetSavingInterestFilterOptionsUseCase: Symbol.for('IGetSavingInterestFilterOptionsUseCase'),
 };

@@ -8,6 +8,10 @@ import {
   IGetSavingInterestChartDataUseCase,
   IGetSavingInterestPaginatedUseCase,
 } from '../domain/usecase';
+import {
+  GetSavingInterestFilterOptionsUseCase,
+  IGetSavingInterestFilterOptionsUseCase,
+} from '../domain/usecase/GetSavingInterestFilterOptionsUseCase';
 import { SAVING_INTEREST_TYPES } from './savingInterestDashboardDI.type';
 
 export const savingInterestContainer = new Container();
@@ -40,4 +44,11 @@ savingInterestContainer
     SAVING_INTEREST_TYPES.IGetSavingInterestChartDataUseCase,
   )
   .to(GetSavingInterestChartDataUseCase)
+  .inSingletonScope();
+
+savingInterestContainer
+  .bind<IGetSavingInterestFilterOptionsUseCase>(
+    SAVING_INTEREST_TYPES.IGetSavingInterestFilterOptionsUseCase,
+  )
+  .to(GetSavingInterestFilterOptionsUseCase)
   .inSingletonScope();
