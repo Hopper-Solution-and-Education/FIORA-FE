@@ -213,7 +213,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
           dynamicValue: {
             tierName: progress?.tier?.tierName,
             tierId: progress?.tierId,
-            activeBalance: wallet.frBalanceActive.toString(),
+            walletBalance: wallet.frBalanceActive.toString(),
             interestAmount: rawAmount.toString(),
             email: user?.email,
             rate: rateBenefit?.value ?? null,
