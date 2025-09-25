@@ -36,8 +36,15 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
 
   useEffect(() => {
     setLoadingImage(true);
-    if (typeof selectedPackage !== 'undefined') {
-      setImageSrc((selectedPackage as PkgFXExtend).attachments[0].url);
+    if (
+      typeof selectedPackage !== 'undefined' &&
+      (selectedPackage as PkgFXExtend).attachments &&
+      (selectedPackage as PkgFXExtend).attachments.length > 0
+    ) {
+      const randomIndex = Math.floor(
+        Math.random() * (selectedPackage as PkgFXExtend).attachments.length,
+      );
+      setImageSrc((selectedPackage as PkgFXExtend).attachments[randomIndex].url);
     }
   }, [selectedPackageId]);
 
