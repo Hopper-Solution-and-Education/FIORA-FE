@@ -107,9 +107,12 @@ class PaymentWalletUseCase {
       this.fetchMinMaxWalletAmount(userId),
     ]);
 
+    // account,category, wallet, membership,
     return {
-      fromWallets: filterOptions.fromWallets ?? [],
-      toWallets: filterOptions.toWallets ?? [],
+      wallets: filterOptions.fromWallets ?? [],
+      accounts: filterOptions.accounts ?? [],
+      categories: filterOptions.categories ?? [],
+      memberships: filterOptions.memberships ?? [],
       amountMin: amountRange.amountMin,
       amountMax: amountRange.amountMax,
     };
