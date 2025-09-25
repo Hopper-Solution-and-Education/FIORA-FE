@@ -461,6 +461,12 @@ model Wallet {
   updatedBy        String?       @db.Uuid
   name             String?       @db.VarChar(50)
   accumulatedEarn  Decimal       @default(0) @db.Decimal(13, 2)
+  accumReward      Decimal       @default(0) @db.Decimal(13, 2)
+  availableReward  Decimal       @default(0) @db.Decimal(13, 2)
+  claimsedReward   Decimal       @default(0) @db.Decimal(13, 2)
+  closingDate      DateTime?     @db.Timestamptz(0)
+  lockedTime       Int           @default(0)
+  openDate         DateTime?     @db.Timestamptz(0)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
   user             User          @relation("UserWallet", fields: [userId], references: [id])
@@ -935,6 +941,26 @@ model Referral {
   User         User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model CommonSetting {
+  id           String   @id @db.Uuid
+  name         String   @db.VarChar(30)
+  dynamicValue Json
+  createdAt    DateTime @default(now()) @db.Timestamptz(0)
+  createdBy    String?  @db.Uuid
+  updatedAt    DateTime @db.Timestamptz(0)
+  updatedBy    String?  @db.Uuid
+}
+
+model ReferralSetting {
+  id                String   @id @db.Uuid
+  bonusFirstAmount  Decimal  @db.Decimal(13, 2)
+  minimumWithdrawal Decimal  @db.Decimal(13, 2)
+  createdAt         DateTime @default(now()) @db.Timestamptz(0)
+  updatedAt         DateTime @db.Timestamptz(0)
+  createdBy         String?  @db.Uuid
+  updatedBy         String?  @db.Uuid
 }
 
 enum BudgetType {

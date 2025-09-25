@@ -28,7 +28,7 @@ const WalletBarChart = () => {
   }, [wallets, filters, search]);
 
   const chartData: TwoSideBarItem[] = useMemo(
-    () => transformWalletsToChartData(filteredWallets, frozenAmount),
+    () => transformWalletsToChartData(filteredWallets, frozenAmount ?? 0),
     [filteredWallets, frozenAmount],
   );
 
@@ -74,7 +74,11 @@ const WalletBarChart = () => {
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
-        const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
+        const rawAmount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
+        const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
+
+        // If main bar already excludes frozen, add it back for display to avoid double-subtract perception
+        const amount = rawAmount + frozenForItem;
         const isPositive = amount > 0;
         const showFrozen = item.type === WalletType.Payment || item.type === 'total';
 
