@@ -53,13 +53,6 @@ const ReferralCronjobDashboardPage = () => {
   return (
     <section className="sm:px-6 lg:px-8">
       <div className="space-y-6 mb-12">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Cron Job Referral Management
-          </h1>
-        </div>
-
         {/* Chart Section */}
         <ReferralCronjobChart
           chartData={chartData}

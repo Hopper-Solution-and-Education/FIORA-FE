@@ -1,6 +1,8 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
+import { Messages } from '@/shared/constants/message';
+import { BadRequestError } from '@/shared/lib/responseUtils/errors';
 import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
 import { formatUnderlineString } from '@/shared/utils/stringHelper';
@@ -405,20 +407,20 @@ class DashboardRepository {
       referralCampaignAwait,
     ]);
 
-    const referralKickbackValue =
-      Number(
-        referralKickback.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralKickbackValue = referralKickback.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralBonusValue =
-      Number(
-        referralBonus.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralBonusValue = referralBonus.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
-    const referralCampaignValue =
-      Number(
-        referralCampaign.reduce((acc, curr) => acc + (curr.dynamicValue as any)?.bonusAmount, 0),
-      ) || 0;
+    const referralCampaignValue = referralCampaign.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
 
     return { referralKickbackValue, referralBonusValue, referralCampaignValue };
   }
@@ -523,14 +525,24 @@ class DashboardRepository {
           foundReferredAwaited,
         ]);
 
+        let updatedByEmail = null;
+
+        if (item.updatedBy) {
+          updatedByEmail = await prisma.user.findFirst({
+            where: { id: item.updatedBy },
+            select: { email: true },
+          });
+        }
+
         const amount = Number(dynamicValue.bonusAmount) || 0;
         const spent = Number(item.Transaction?.amount) || 0;
 
         return {
+          id: item.id,
           dateTime: item.executionTime,
           type: item.typeCronJob,
           status: item.status,
-          updatedBy: 'System',
+          updatedBy: updatedByEmail?.email || null,
           reason: item.reason || 'NaN',
           referrerEmail: foundReferrer?.email || 'NaN',
           referredEmail: foundReferred?.email || 'NaN',
@@ -589,11 +601,45 @@ class DashboardRepository {
     }));
 
     return {
-      updatedBy: Array.from(updatedBy),
+      updatedBy: [...Array.from(updatedBy)],
       emailReferrer: Array.from(emailReferrer),
       emailReferee: Array.from(emailReferee),
       typeOfBenefits,
     };
+  }
+
+  async updateCronjobReferral(id: string, amount: number, reason: string, userId: string) {
+    const cronJobFound = await prisma.cronJobLog.findFirst({
+      where: { id },
+      select: {
+        dynamicValue: true,
+        id: true,
+      },
+    });
+
+    if (!cronJobFound) {
+      throw new BadRequestError(Messages.REFERRAL_CRONJOB_NOT_FOUND);
+    }
+
+    const updatedBy = userId;
+
+    const updatedDynamicJobValue = {
+      ...(cronJobFound.dynamicValue as DynamicCronJobReferralTypes),
+      bonusAmount: amount,
+    };
+
+    const result = await prisma.cronJobLog.update({
+      where: { id },
+      data: {
+        dynamicValue: updatedDynamicJobValue,
+        updatedBy: updatedBy,
+        reason: reason,
+        updatedAt: new Date(),
+        status: CronJobStatus.SUCCESSFUL,
+      },
+    });
+
+    return result;
   }
 }
 

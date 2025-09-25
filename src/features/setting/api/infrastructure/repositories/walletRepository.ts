@@ -56,6 +56,7 @@ class WalletRepository implements IWalletRepository {
   async findAllPackageFX(): Promise<PackageFX[]> {
     return this._prisma.packageFX.findMany();
   }
+
   async findPackageFXPaginated({
     sortBy = { createdAt: 'desc' },
     page,
@@ -114,18 +115,22 @@ class WalletRepository implements IWalletRepository {
       limit: safeLimit,
     };
   }
+
   async getPackageFXById(id: string): Promise<(PackageFX & { attachments?: Attachment[] }) | null> {
     const packageFX = await this._prisma.packageFX.findUnique({ where: { id } });
     if (!packageFX) return null;
+
     const attachments =
       packageFX.attachment_id && packageFX.attachment_id.length > 0
         ? await this._prisma.attachment.findMany({ where: { id: { in: packageFX.attachment_id } } })
         : [];
     return { ...packageFX, attachments };
   }
+
   async createPackageFX(data: Prisma.PackageFXCreateInput): Promise<PackageFX> {
     return this._prisma.packageFX.create({ data });
   }
+
   async updatePackageFX(
     id: string,
     data: { fxAmount: number; attachment_id?: string[] },
@@ -148,6 +153,7 @@ class WalletRepository implements IWalletRepository {
       });
     });
   }
+
   async createDepositRequest(
     data: Prisma.DepositRequestUncheckedCreateInput,
   ): Promise<DepositRequest> {

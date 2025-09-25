@@ -43,35 +43,24 @@ const ReferralCronjobCommonTable = ({
   const columns: CommonTableColumn<ReferralCronjobTableData>[] = useMemo(
     () => [
       {
-        key: 'no',
-        title: 'No.',
-        align: 'center',
-        width: '6%',
-        render: (r: ReferralCronjobTableData) => {
-          // Calculate row number based on current data index
-          const index = data.findIndex((item) => item.id === r.id);
-          return <span className="text-sm font-medium">{index + 1}</span>;
-        },
-      },
-      {
         key: 'emailReferrer',
         title: 'Email Referrer',
         align: 'left',
-        width: '18%',
+        width: '20%',
         render: (r) => <span className="text-sm truncate block">{r.emailReferrer}</span>,
       },
       {
         key: 'emailReferee',
         title: 'Email Referee',
         align: 'left',
-        width: '18%',
+        width: '20%',
         render: (r) => <span className="text-sm truncate block">{r.emailReferee}</span>,
       },
       {
         key: 'datetime',
         title: 'Datetime',
         align: 'left',
-        width: '14%',
+        width: '16%',
         render: (r) => (
           <span className="text-sm block">{formatReferralDateTime(r.executionTime)}</span>
         ),
@@ -80,7 +69,7 @@ const ReferralCronjobCommonTable = ({
         key: 'typeOfBenefit',
         title: 'Type of Benefit',
         align: 'center',
-        width: '12%',
+        width: '14%',
         render: (r) => <span className="text-sm block">{r.typeOfBenefit}</span>,
       },
       {
@@ -101,7 +90,7 @@ const ReferralCronjobCommonTable = ({
         key: 'updatedBy',
         title: 'Updated By',
         align: 'left',
-        width: '18%',
+        width: '20%',
         render: (r) => (
           <span className="text-sm truncate block">{r.updatedBy.email || 'System'}</span>
         ),
@@ -110,7 +99,7 @@ const ReferralCronjobCommonTable = ({
         key: 'action',
         title: 'Action',
         align: 'center',
-        width: '8%',
+        width: '10%',
         render: (r) => (
           <div className="flex items-center justify-center">
             <ReferralActionButton
@@ -128,7 +117,7 @@ const ReferralCronjobCommonTable = ({
         ),
       },
     ],
-    [data, onRetrySuccess],
+    [onRetrySuccess],
   );
 
   const initialConfig: ColumnConfigMap = useMemo(() => {

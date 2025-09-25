@@ -12,6 +12,8 @@ import transactionDataSlice from '@/features/home/module/transaction/slices/tran
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import referralTransactionSlice from '@/features/referral/slices';
+import { referralApi } from '@/features/referral/slices/referralApi';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import referralCronjobSlice from '@/features/setting/module/cron-job/module/referral/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
@@ -55,12 +57,14 @@ const reducer = {
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
   membershipCronjob: membershipCronjobSlice,
+  referralTransaction: referralTransactionSlice,
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [referralApi.reducerPath]: referralApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);
