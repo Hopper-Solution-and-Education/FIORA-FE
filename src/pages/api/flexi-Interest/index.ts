@@ -1,6 +1,6 @@
 // --- External imports ---
-import { NextApiRequest, NextApiResponse } from 'next';
 import { CronJobStatus, Prisma, TransactionType, WalletType } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // --- Config & Utils ---
 import { prisma } from '@/config';
@@ -13,17 +13,22 @@ import { Messages } from '@/shared/constants/message';
 
 // --- Features & Types ---
 import { flexiInterestUsecases } from '@/features/setting/module/cron-job/module/flexi-interest/application/flexiInterestUsecases';
+import { FlexiInterestDashboardFilterParams } from '@/features/setting/module/cron-job/module/flexi-interest/infrastructure/types/dashboardType';
 import { FlexiInterestCronjobTableData } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/types/flexi-interest.type';
 
 // --- API Handler ---
 export default withAuthorization({
-  GET: ['Admin'],
+  POST: ['Admin'],
   PUT: ['Admin'],
+  GET: ['Admin'],
 })(async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'PUT': {
       const { id: cronJobLogId } = req.query;
       return PUT(req, res, String(cronJobLogId));
+    }
+    case 'POST': {
+      return POST(req, res);
     }
     case 'GET': {
       return GET(req, res);
@@ -37,15 +42,29 @@ export default withAuthorization({
 });
 
 // --- GET Handler ---
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { page = 1, pagesize = 20, search = '', filter } = req.query;
-  const filterConverted = typeof filter === 'string' ? JSON.parse(filter) : {};
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
+  const {
+    page = 1,
+    pageSize = 10,
+    search = '',
+    status,
+    fromDate,
+    toDate,
+    email,
+    emailUpdateBy,
+    tierName,
+  } = req.body as FlexiInterestDashboardFilterParams;
 
   const flexiInterest = await flexiInterestUsecases.getFlexiInterestPaginated({
-    page: Number(page),
-    pageSize: Number(pagesize),
-    filter: filterConverted,
-    search: String(search),
+    page,
+    pageSize,
+    search,
+    status,
+    fromDate,
+    toDate,
+    email,
+    emailUpdateBy,
+    tierName,
   });
 
   return res
@@ -278,4 +297,17 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Internal Server Error'));
   }
+}
+
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
+  const filterOptions = await flexiInterestUsecases.getFlexiInterestFilerOptions();
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(
+        RESPONSE_CODE.OK,
+        Messages.GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS,
+        filterOptions,
+      ),
+    );
 }

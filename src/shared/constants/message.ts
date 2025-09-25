@@ -373,4 +373,5 @@ export enum Messages {
   // Flexi Interest
   GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
   GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
+  GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
 }

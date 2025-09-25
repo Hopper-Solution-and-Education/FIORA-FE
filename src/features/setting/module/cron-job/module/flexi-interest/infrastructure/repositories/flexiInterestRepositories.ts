@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { CronJobStatus, TypeCronJob } from '@prisma/client';
+import { CronJobStatus, TypeCronJob, UserRole } from '@prisma/client';
 import { IFlexiInterestRepository } from '../../domain/repositories/flexiInterestRepositories.Interface';
 
 class flexiInterestRepositories implements IFlexiInterestRepository {
@@ -8,7 +8,7 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
     page: number,
     pageSize: number,
     filter?: any,
-    // search?: string,
+    search?: string,
   ): Promise<{ items: any[]; total: number; totalSuccess: number; totalFailed: number }> {
     const skip = (page - 1) * pageSize;
     // query danh sách log
@@ -16,18 +16,6 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       typeCronJob: TypeCronJob.FLEXI_INTEREST,
     };
     const orFilter: any[] = [];
-    if (filter?.search) {
-      where.OR = [
-        { dynamicValue: { path: ['email'], string_contains: filter?.search, mode: 'insensitive' } },
-        {
-          dynamicValue: {
-            path: ['tierName'],
-            string_contains: filter?.search,
-            mode: 'insensitive',
-          },
-        },
-      ];
-    }
     if (filter?.status) {
       where.status = {
         in: Array.isArray(filter.status) ? filter.status : [filter.status],
@@ -51,34 +39,28 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
       if (Array.isArray(filter.email)) {
         orFilter.push(
           ...filter.email.map((email: string) => ({
-            dynamicValue: { path: ['email'], equals: email },
+            dynamicValue: { path: ['userId'], equals: email },
           })),
         );
       } else {
-        where.dynamicValue = { path: ['email'], equals: filter.email };
+        where.dynamicValue = { path: ['userId'], equals: filter.email };
       }
     }
-    if (filter?.membershipTier) {
-      if (Array.isArray(filter.membershipTier)) {
+    if (filter?.tierName) {
+      if (Array.isArray(filter.tierName)) {
         orFilter.push(
-          ...filter.membershipTier.map((tierName: string) => ({
-            dynamicValue: { path: ['tierName'], equals: tierName },
+          ...filter.tierName.map((tierName: string) => ({
+            dynamicValue: { path: ['tierId'], equals: tierName },
           })),
         );
       } else {
-        orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.membershipTier } });
+        orFilter.push({ dynamicValue: { path: ['tierId'], equals: filter.tierName } });
       }
     }
-    if (filter?.updateBy) {
-      if (Array.isArray(filter.updateBy)) {
-        orFilter.push(
-          ...filter.updateBy.map((updateBy: string) => ({
-            dynamicValue: { path: ['updateBy'], equals: updateBy },
-          })),
-        );
-      } else {
-        orFilter.push({ dynamicValue: { path: ['updateBy'], equals: filter.updateBy } });
-      }
+    if (filter?.emailUpdateBy) {
+      where.updatedBy = {
+        in: Array.isArray(filter.emailUpdateBy) ? filter.emailUpdateBy : [filter.emailUpdateBy],
+      };
     }
 
     if (orFilter.length > 0) {
@@ -120,8 +102,49 @@ class flexiInterestRepositories implements IFlexiInterestRepository {
         reason: dv?.reason ?? 'None',
       };
     });
-
-    return { items, total, totalSuccess, totalFailed };
+    let searchResult = items;
+    let totalAfterSearch = total;
+    if (search) {
+      searchResult = searchResult.filter((items) => {
+        return (
+          items?.email?.toLowerCase().includes(search.toLowerCase()) ||
+          items?.membershipTier?.toLowerCase().includes(search.toLowerCase()) ||
+          items?.updateBy?.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+      totalAfterSearch = searchResult.length;
+    }
+    return { items: searchResult, total: totalAfterSearch, totalSuccess, totalFailed };
+  }
+  async getFlexiInterestFilerOptions(): Promise<{
+    emailOptions: { id: string; email: string }[];
+    tierNameOptions: { id: string; tierName: string | null }[];
+    updateByOptions: { id: string; email: string }[];
+  }> {
+    const emailOptions = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+    const tierNameOptions = await prisma.membershipTier.findMany({
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+    const updatedBy = await prisma.user.findMany({
+      where: { role: UserRole.Admin },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+    return {
+      emailOptions: emailOptions,
+      tierNameOptions: tierNameOptions,
+      updateByOptions: updatedBy,
+    };
   }
 }
 

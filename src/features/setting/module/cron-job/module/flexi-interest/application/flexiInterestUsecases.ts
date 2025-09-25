@@ -4,16 +4,34 @@ import { FlexiInterestRepositories } from '../infrastructure/repositories/flexiI
 class FlexiInterestUsecases {
   constructor(private _flexiInterestRepo: IFlexiInterestRepository = FlexiInterestRepositories) {}
   async getFlexiInterestPaginated({
-    page = 1,
-    pageSize = 20,
-    filter = {},
-    search = '',
+    page,
+    pageSize,
+    search,
+    status,
+    fromDate,
+    toDate,
+    emailUpdateBy,
+    email,
+    tierName,
   }: {
-    page?: number;
-    pageSize?: number;
-    filter?: Record<string, any>;
+    page: number;
+    pageSize: number;
     search?: string;
+    status?: string | string[];
+    emailUpdateBy?: string | string[];
+    email?: string | string[];
+    tierName?: string | string[];
+    fromDate?: string;
+    toDate?: string;
   }) {
+    const filter = {
+      status,
+      fromDate,
+      toDate,
+      emailUpdateBy,
+      email,
+      tierName,
+    };
     const { items, total, totalSuccess, totalFailed } =
       await this._flexiInterestRepo.getFlexiInterestPaginated(page, pageSize, filter, search);
     return {
@@ -25,6 +43,9 @@ class FlexiInterestUsecases {
       totalSuccess,
       totalFailed,
     };
+  }
+  async getFlexiInterestFilerOptions() {
+    return await this._flexiInterestRepo.getFlexiInterestFilerOptions();
   }
 }
 export const flexiInterestUsecases = new FlexiInterestUsecases();
