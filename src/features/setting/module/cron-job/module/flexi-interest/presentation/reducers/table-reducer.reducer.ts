@@ -24,7 +24,6 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
         extraData: {
           ...state.extraData,
           ...action.payload,
-          currentItemCount: action.payload.currentItemCount + state.extraData.currentItemCount,
         },
       };
     case 'UPDATE_ITEM':
@@ -49,7 +48,6 @@ export const initialState: TableState = {
   hasMore: true,
   isLoadingMore: false,
   extraData: {
-    currentItemCount: 0,
     totalItems: 0,
     totalSuccess: 0,
     totalFailed: 0,

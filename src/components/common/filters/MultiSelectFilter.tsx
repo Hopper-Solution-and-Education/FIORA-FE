@@ -31,7 +31,7 @@ const MultiSelectFilter = ({
     <div className="w-full max-w-full flex flex-col gap-2">
       {label && <Label>{label}</Label>}
       <MultiSelect
-        className="w-full px-4 py-[7px]"
+        className="w-full px-4 py-[7px] min-w-full"
         options={options.length > 0 ? options : [...options, DEFAULT_OPTION]}
         selected={selectedValues}
         onChange={onChange}

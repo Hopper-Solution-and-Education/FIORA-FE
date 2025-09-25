@@ -47,7 +47,7 @@ export const useFlexiInterestCronjobDashboard = () => {
         const response = await triggerGetFlexiInterest({
           page,
           pageSize,
-          filter: JSON.stringify(formattedFilter),
+          ...formattedFilter,
         }).unwrap();
 
         const rows: FlexiInterestCronjobTableData[] = response?.items || [];
@@ -56,6 +56,8 @@ export const useFlexiInterestCronjobDashboard = () => {
         // else lần đầu tải --> set data
         if (isLoadMore) {
           dispatchTable({ type: 'APPEND_DATA', payload: rows });
+
+          console.log('>>> DATA STATE: ', state.data);
         } else {
           dispatchTable({ type: 'SET_DATA', payload: rows });
         }
@@ -73,7 +75,6 @@ export const useFlexiInterestCronjobDashboard = () => {
         dispatchTable({
           type: 'SET_EXTRA_DATA',
           payload: {
-            currentItemCount: rows.length,
             totalItems: response?.total || 0,
             totalSuccess: response?.totalSuccess || 0,
             totalFailed: response?.totalFailed || 0,

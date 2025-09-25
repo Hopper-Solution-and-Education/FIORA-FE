@@ -7,10 +7,10 @@ export const flexiInterestApi = createApi({
     baseUrl: '/',
     prepareHeaders: (headers) => headers,
   }),
-  tagTypes: ['FlexiInterest', 'MembershipTier', 'FlexiInterestChart'],
+  tagTypes: ['FlexiInterest', 'MembershipTier', 'FlexiInterestChart', 'FlexiInterestOptions'],
   endpoints: (builder) => ({
-    getFlexiInterest: builder.query<any, { page: number; pageSize: number; filter: string }>({
-      query: (params) => ({ url: 'api/flexi-interest', method: 'GET', params }),
+    getFlexiInterest: builder.query<any, any>({
+      query: (body) => ({ url: 'api/flexi-interest', method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['FlexiInterest'],
     }),
@@ -28,6 +28,11 @@ export const flexiInterestApi = createApi({
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['FlexiInterestChart'],
     }),
+    getOptions: builder.query<any, void>({
+      query: () => ({ url: 'api/flexi-interest', method: 'GET' }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['FlexiInterestOptions'],
+    }),
   }),
 });
 
@@ -37,4 +42,6 @@ export const {
   useGetMembershipTierQuery,
   useLazyGetMembershipTierQuery,
   useGetFlexiInterestStatisticsQuery,
+  useGetOptionsQuery,
+  useLazyGetOptionsQuery,
 } = flexiInterestApi;

@@ -13,7 +13,6 @@ import FlexiInterestHeaderTopRight from '../molecules/FlexiInterestHeaderTopRigh
 import { FlexiInterestCronjobTableData } from '../types/flexi-interest.type';
 
 type ExtraDataTableType = {
-  currentItemCount: number;
   totalItems: number;
   totalSuccess: number;
   totalFailed: number;
@@ -29,6 +28,7 @@ interface FlexiInterestCronJobTableProps {
   className?: string;
   extraData?: ExtraDataTableType;
   onUpdateRowItem?: (id: string, data: Partial<FlexiInterestCronjobTableData>) => void;
+  dataFilterOptions: any;
 }
 
 const STORAGE_KEY = 'flexi-interest-cronjob:table';
@@ -42,6 +42,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
   className,
   extraData,
   onUpdateRowItem,
+  dataFilterOptions,
 }) => {
   const getRate = useCallback((rate: string | number) => {
     if (typeof rate === 'number') return rate + ' %/year';
@@ -164,11 +165,11 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
       isLoadingMore={isLoadingMore}
       onLoadMore={onLoadMore}
       className={className}
-      leftHeaderNode={<FlexiInterestHeaderTopLeft />}
+      leftHeaderNode={<FlexiInterestHeaderTopLeft dataFilterOptions={dataFilterOptions} />}
       rightHeaderNode={
         extraData && (
           <FlexiInterestHeaderTopRight
-            current={extraData.currentItemCount}
+            current={data.length || 0}
             total={extraData.totalItems}
             totalFailed={extraData.totalFailed}
             totalSuccess={extraData.totalSuccess}

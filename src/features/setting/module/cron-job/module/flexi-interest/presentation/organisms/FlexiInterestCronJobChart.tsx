@@ -38,14 +38,15 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
   const { filter } = useAppSelector((state) => state.flexiInterestCronjob);
 
   const handleBarClick = (data: any) => {
-    if (data && data.name) {
+    console.log(data);
+    if (data && data.id) {
       dispatch(
         setFilter({
           status: null,
           search: null,
           email: null,
-          membershipTier: [data.name],
-          updatedBy: null,
+          tierName: [data.id],
+          emailUpdateBy: null,
           fromDate: null,
           toDate: null,
         }),
@@ -92,8 +93,9 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
     }
 
     const transformedData = rawData.tierInterestAmount.map((item: any) => {
-      const isSelected = filter.membershipTier?.includes(item.tierName);
+      const isSelected = filter.tierName?.includes(item.tierName);
       return {
+        id: item.tierId,
         name: item.tierName,
         amount: parseFloat(item.interestAmount) || 0,
         fill: isSelected ? '#ee4d4dff' : '#FF8383', // Highlight selected bar

@@ -1,9 +1,9 @@
 export interface FlexiInterestCronjobFilterState {
   status?: string[] | null;
   search?: string | null;
-  membershipTier?: string[] | null;
+  tierName?: string[] | null;
   email?: string[] | null;
-  updatedBy?: string[] | null;
+  emailUpdateBy?: string[] | null;
   fromDate: Date | string | null;
   toDate: Date | string | null;
 }
@@ -12,7 +12,7 @@ export interface FlexiInterestStatistics {
   chartData: Array<{
     name: string;
     amount: number;
-  }>
+  }>;
   totalAmount: number;
 }
 

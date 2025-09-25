@@ -3,9 +3,11 @@
 import { useFlexiInterestCronjobDashboard } from '../hooks/useFlexiInterestCronjobDashboard';
 import FlexiInterestCronJobChart from '../organisms/FlexiInterestCronJobChart';
 import FlexiInterestCronJobTable from '../organisms/FlexiInterestCronJobTable';
+import { useGetOptionsQuery } from '../services/flexi-interest.service';
 
 function FlexiInterestCronjobDashboardPage() {
   const { tableData, loadMore, loading, updateRowItem } = useFlexiInterestCronjobDashboard();
+  const { data: dataFilterOptions } = useGetOptionsQuery();
 
   return (
     <section>
@@ -23,6 +25,7 @@ function FlexiInterestCronjobDashboardPage() {
           isLoadingMore={tableData.isLoadingMore}
           onLoadMore={loadMore}
           onUpdateRowItem={updateRowItem}
+          dataFilterOptions={dataFilterOptions}
         />
       </div>
     </section>

@@ -10,7 +10,6 @@ export interface TableState {
   hasMore: boolean;
   isLoadingMore: boolean;
   extraData: {
-    currentItemCount: number;
     totalItems: number;
     totalSuccess: number;
     totalFailed: number;
@@ -27,10 +26,10 @@ export type TableAction =
   | {
       type: 'SET_EXTRA_DATA';
       payload: {
-        currentItemCount: number;
         totalItems: number;
         totalSuccess: number;
         totalFailed: number;
       };
     }
-  | { type: 'UPDATE_ITEM'; payload: { id: string; data: Partial<FlexiInterestCronjobTableData> } };
+  | { type: 'UPDATE_ITEM'; payload: { id: string; data: Partial<FlexiInterestCronjobTableData> } }
+  | { type: 'APPEND_CURRENT_ITEM'; payload: { numberItemFetching: number } };

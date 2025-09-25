@@ -5,18 +5,17 @@ import { Label } from '@/components/ui/label';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useGetMembershipTierQuery } from '../services/flexi-interest.service';
 import { clearFilter } from '../slices';
 import { FlexiInterestCronjobFilterState } from '../slices/type';
 
 const initialLocalFilterState: FlexiInterestCronjobFilterState = {
   status: [],
   email: [],
-  membershipTier: [],
+  tierName: [],
   search: null,
-  updatedBy: [],
-  fromDate: null,
-  toDate: null,
+  emailUpdateBy: [],
+  fromDate: new Date().toISOString().split('T')[0],
+  toDate: new Date().toISOString().split('T')[0],
 };
 
 // Status filter options
@@ -28,40 +27,62 @@ const STATUS_OPTIONS = [
 interface FlexiInterestFilterMenuProps {
   value: FlexiInterestCronjobFilterState;
   onFilterChange: (newFilter: FlexiInterestCronjobFilterState) => void;
+  dataOptions: any;
 }
 
-const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFilterChange }) => {
+const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({
+  value,
+  onFilterChange,
+  dataOptions,
+}) => {
   const dispatch = useAppDispatch();
   const { filter: reduxFilter } = useAppSelector((state) => state.flexiInterestCronjob);
-  const { data: membershipTierData } = useGetMembershipTierQuery();
 
   const [localFilter, setLocalFilter] = useState<FlexiInterestCronjobFilterState>(() => ({
     status: value?.status || [],
     email: value?.email || [],
-    membershipTier: value?.membershipTier || [],
+    tierName: value?.tierName || [],
     search: value?.search || null,
-    updatedBy: value?.updatedBy || [],
+    updatedBy: value?.emailUpdateBy || [],
     fromDate: value?.fromDate || null,
     toDate: value?.toDate || null,
   }));
 
   const membershipTierOptions = useMemo(() => {
-    if (!membershipTierData) return [];
+    if (!dataOptions?.tierNameOptions) return [];
     // console.log('membershipTierData:', membershipTierData )
 
-    return membershipTierData.map((tier: any) => ({
-      value: tier.tierName,
+    return dataOptions?.tierNameOptions?.map((tier: any) => ({
+      value: tier.id,
       label: tier.tierName,
     }));
-  }, [membershipTierData]);
+  }, [dataOptions]);
+
+  const emailOptions = useMemo(() => {
+    if (!dataOptions?.emailOptions) return [];
+
+    return dataOptions?.emailOptions?.map((item: any) => ({
+      value: item?.id,
+      label: item?.email,
+    }));
+  }, [dataOptions]);
+
+  const updateByOptions = useMemo(() => {
+    if (!dataOptions?.updateByOptions) return [];
+
+    return dataOptions?.updateByOptions?.map((item: any) => ({
+      value: item?.id,
+      label: item?.email,
+    }));
+  }, [dataOptions]);
 
   useEffect(() => {
     setLocalFilter({
       status: reduxFilter?.status || [],
       email: reduxFilter?.email || [],
-      membershipTier: reduxFilter?.membershipTier || [],
+      tierName: reduxFilter?.tierName || [],
       search: reduxFilter?.search || null,
-      updatedBy: reduxFilter?.updatedBy || [],
+      emailUpdateBy: reduxFilter?.emailUpdateBy || [],
       fromDate: reduxFilter?.fromDate || null,
       toDate: reduxFilter?.toDate || null,
     });
@@ -71,8 +92,8 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
     return (
       (reduxFilter.status?.length ?? 0) > 0 ||
       (reduxFilter.email?.length ?? 0) > 0 ||
-      (reduxFilter.membershipTier?.length ?? 0) > 0 ||
-      (reduxFilter.updatedBy?.length ?? 0) > 0 ||
+      (reduxFilter.tierName?.length ?? 0) > 0 ||
+      (reduxFilter.emailUpdateBy?.length ?? 0) > 0 ||
       reduxFilter.fromDate !== null ||
       reduxFilter.toDate !== null
     );
@@ -121,7 +142,7 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
         key: 'email',
         component: (
           <MultiSelectFilter
-            options={[]}
+            options={emailOptions}
             selectedValues={localFilter.email as string[]}
             onChange={(values) => handleLocalFilterChange('email', values)}
             label="Email"
@@ -148,12 +169,12 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
         order: 1,
       },
       {
-        key: 'membershipTier',
+        key: 'tierName',
         component: (
           <MultiSelectFilter
             options={membershipTierOptions}
-            selectedValues={localFilter.membershipTier as string[]}
-            onChange={(values) => handleLocalFilterChange('membershipTier', values)}
+            selectedValues={localFilter.tierName as string[]}
+            onChange={(values) => handleLocalFilterChange('tierName', values)}
             label="Membership Tier"
             placeholder="Select membership tier"
           />
@@ -162,12 +183,12 @@ const FlexiInterestFilterMenu: FC<FlexiInterestFilterMenuProps> = ({ value, onFi
         order: 0,
       },
       {
-        key: 'updateBy',
+        key: 'emailUpdateBy',
         component: (
           <MultiSelectFilter
-            options={[]}
-            selectedValues={localFilter.updatedBy as string[]}
-            onChange={(values) => handleLocalFilterChange('updatedBy', values)}
+            options={updateByOptions}
+            selectedValues={localFilter.emailUpdateBy as string[]}
+            onChange={(values) => handleLocalFilterChange('emailUpdateBy', values)}
             label="Updated By"
             placeholder="Select user"
           />
