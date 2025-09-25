@@ -36,6 +36,40 @@ const setExactDateFilter = (filters: any, isoDate: string) => {
   };
 };
 
+// Build a polymorphic entity-id OR group that works for Wallet, Account, Category, Membership
+// This lets us filter regardless of which source the data came from
+const buildEntityIdFilterGroup = (id?: string) => {
+  if (!id) return null;
+  return {
+    OR: [
+      { toWallet: { id } },
+      { fromWallet: { id } },
+      { membershipBenefit: { id } },
+      { toAccount: { id } },
+      { fromAccount: { id } },
+      { toCategory: { id } },
+      { fromCategory: { id } },
+    ],
+  } as const;
+};
+
+// Check if an AND array already contains an OR group that targets the given id
+const hasEntityIdFilter = (andArr: any[], id: string) =>
+  andArr.some(
+    (c) =>
+      Array.isArray(c?.OR) &&
+      c.OR.some(
+        (cond: any) =>
+          cond?.toWallet?.id === id ||
+          cond?.fromWallet?.id === id ||
+          cond?.membershipBenefit?.id === id ||
+          cond?.toAccount?.id === id ||
+          cond?.fromAccount?.id === id ||
+          cond?.toCategory?.id === id ||
+          cond?.fromCategory?.id === id,
+      ),
+  );
+
 export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletTransaction>[] => {
   const { formatCurrency } = useCurrencyFormatter();
   const { filterCriteria, filterTransactions } = usePaymentWalletTransactions();
@@ -111,7 +145,7 @@ export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletT
 
           return (
             <span className={cn('underline cursor-pointer font-bold', `text-${colorClass}`)}>
-              {formatCurrency(Math.abs(amount), row.currency as any)}
+              {formatCurrency(Math.abs(amount), row.currency as any, { applyExchangeRate: false })}
             </span>
           );
         },
@@ -130,27 +164,14 @@ export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletT
                 row.from ? `underline cursor-pointer text-${colorClass}` : 'text-gray-600',
               )}
               onClick={() => {
-                if (row.from) return;
-                // Treat wallet filter similar to filter menu (single wallet selection)
+                if (!row.fromId) return;
                 handleApplyFilters((prev) => {
                   const next = { ...(prev || {}) };
                   const andArr: any[] = Array.isArray(next.AND) ? [...next.AND] : [];
-                  const walletGroup = {
-                    OR: [
-                      {
-                        OR: [{ toWallet: { id: row.fromId } }, { fromWallet: { id: row.fromId } }],
-                      },
-                    ],
-                  };
-                  const exists = andArr.some((c) =>
-                    c?.OR?.some((inner: any) =>
-                      inner?.OR?.some(
-                        (w: any) =>
-                          w?.toWallet?.id === row.fromId || w?.fromWallet?.id === row.fromId,
-                      ),
-                    ),
-                  );
-                  if (!exists) andArr.push(walletGroup);
+                  const group = buildEntityIdFilterGroup(row.fromId);
+                  if (group && !hasEntityIdFilter(andArr, row.fromId!)) {
+                    andArr.push(group);
+                  }
                   next.AND = andArr;
                   return next;
                 });
@@ -174,21 +195,14 @@ export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletT
                 row.to ? `underline cursor-pointer text-${colorClass}` : 'text-gray-600',
               )}
               onClick={() => {
-                if (row.to) return;
+                if (!row.toId) return;
                 handleApplyFilters((prev) => {
                   const next = { ...(prev || {}) };
                   const andArr: any[] = Array.isArray(next.AND) ? [...next.AND] : [];
-                  const walletGroup = {
-                    OR: [{ toWallet: { id: row.toId } }, { fromWallet: { id: row.toId } }],
-                  };
-                  const exists = andArr.some((c) =>
-                    c?.OR?.some((inner: any) =>
-                      inner?.OR?.some(
-                        (w: any) => w?.toWallet?.id === row.toId || w?.fromWallet?.id === row.toId,
-                      ),
-                    ),
-                  );
-                  if (!exists) andArr.push(walletGroup);
+                  const group = buildEntityIdFilterGroup(row.toId);
+                  if (group && !hasEntityIdFilter(andArr, row.toId!)) {
+                    andArr.push(group);
+                  }
                   next.AND = andArr;
                   return next;
                 });

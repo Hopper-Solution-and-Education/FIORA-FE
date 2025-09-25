@@ -59,7 +59,7 @@ const PaymentWalletTable = () => {
   // Let CommonTable render skeleton rows on initial load instead of a spinner
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-fit ">
       <CommonTable
         data={displayData}
         columns={columns}
@@ -70,7 +70,7 @@ const PaymentWalletTable = () => {
         hasMore={hasNextPage}
         isLoadingMore={transactionsLoading && displayData.length > 0}
         onLoadMore={loadMoreTransactions}
-        className="min-h-[400px]"
+        className="min-h-[400px] h-fit !max-h-none"
         emptyState={transactionsLoading && displayData.length === 0 ? undefined : <EmptyState />}
         leftHeaderNode={leftHeaderNode}
         rightHeaderNode={rightHeaderNode}

@@ -55,14 +55,13 @@ const PaymentWalletOverview = ({
           title="Total FX Moved In"
           value={metrics.totalFXMovedIn}
           type="income"
-          icon="banknoteArrowUp"
           currency={CURRENCY.FX}
         />
+
         <SmallMetricCard
           title="Total FX Moved Out"
           value={metrics.totalFXMovedOut}
           type="expense"
-          icon="banknoteArrowDown"
           currency={CURRENCY.FX}
         />
 

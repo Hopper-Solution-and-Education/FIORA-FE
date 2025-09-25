@@ -1,36 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import { cn } from '@/lib/utils';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { isImageUrl } from '@/shared/utils';
-import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
-import Image from 'next/image';
 
 interface SmallMetricCardProps {
   title: string;
   value: number;
   type: 'income' | 'expense' | 'total' | 'neutral';
-  description?: string;
-  icon?: string | React.ReactNode;
   className?: string;
   currency?: string;
-  trend?: {
-    value: string;
-    isPositive: boolean;
-  };
 }
 
-const SmallMetricCard = ({
-  title,
-  value,
-  type,
-  description,
-  icon,
-  className,
-  trend,
-  currency,
-}: SmallMetricCardProps) => {
+const SmallMetricCard = ({ title, value, type, className, currency }: SmallMetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
     switch (type) {
@@ -50,66 +31,15 @@ const SmallMetricCard = ({
         return 'text-gray-600 dark:text-gray-400';
     }
   };
-
-  const getTrendIcon = () => {
-    if (!trend) return null;
-    return trend.isPositive ? (
-      <ArrowUpIcon className="h-4 w-4 text-green-500" />
-    ) : (
-      <ArrowDownIcon className="h-4 w-4 text-red-500" />
-    );
-  };
-
-  const getTrendColor = () => {
-    if (!trend) return '';
-    return trend.isPositive ? 'text-green-500' : 'text-red-500';
-  };
-
-  const renderIconOrImage = (iconValue?: string | React.ReactNode) => {
-    if (!iconValue) {
-      return null;
-    }
-
-    if (typeof iconValue === 'string') {
-      if (isImageUrl(iconValue)) {
-        return (
-          <div className="w-5 h-5 rounded-full overflow-hidden">
-            <Image
-              src={iconValue}
-              alt="logo"
-              width={20}
-              height={20}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement?.classList.add(
-                  'flex',
-                  'items-center',
-                  'justify-center',
-                  'bg-gray-100',
-                );
-                const fallbackIcon = document.createElement('div');
-                fallbackIcon.innerHTML =
-                  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-400"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
-                e.currentTarget.parentElement?.appendChild(fallbackIcon.firstChild as Node);
-              }}
-            />
-          </div>
-        );
-      }
-      return <LucieIcon icon={iconValue} className={cn('w-4 h-4', getCardColor())} />;
-    }
-
-    return iconValue;
-  };
-
   return (
     <Card className={cn('flex justify-between items-center overflow-hidden', className)}>
       <CardHeader className="flex w-fit flex-row items-center justify-start space-y-0 py-2 pr-0">
-        <CardTitle className="w-fit text-nowrap text-sm sm:text-md font-medium">{title}</CardTitle>
+        <CardTitle className="w-fit text-ellipsis text-nowrap text-sm sm:text-md font-medium">
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="py-0 pl-0">
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
+        <div className={cn('text-xl sm:text-xl font-bold', getCardColor())}>
           {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
       </CardContent>
