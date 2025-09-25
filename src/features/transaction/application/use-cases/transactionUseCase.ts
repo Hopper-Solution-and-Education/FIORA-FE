@@ -16,6 +16,7 @@ import {
   CategoryType,
   Prisma,
   TransactionType,
+  WalletType,
   type Account,
   type Transaction,
 } from '@prisma/client';
@@ -145,17 +146,18 @@ class TransactionUseCase {
       // test with Regex-Type Transaction
       const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
       const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+      const typeWallet = Object.values(WalletType).find((type) => regex.test(type));
 
       let typeTransactionWhere = '';
+      let typeWalletWhere = '';
 
       if (typeTransaction) {
         typeTransactionWhere = typeTransaction;
       }
 
-      // test with Regex-Date format YYYY-MM-DD
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format
-      const date = new Date(typeSearchParams);
-      const isSearchDate = dateRegex.test(typeSearchParams) && !isNaN(date.getTime());
+      if (typeWallet) {
+        typeWalletWhere = typeWallet as WalletType;
+      }
 
       where = {
         AND: [
@@ -166,29 +168,24 @@ class TransactionUseCase {
               { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
               {
-                AND: [
-                  {
-                    baseAmount: {
-                      gte: Number(typeSearchParams),
-                      lte: Number(typeSearchParams),
-                    },
-                    baseCurrency: { equals: 'USD' },
-                  },
-                ],
+                fromWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
+              },
+              {
+                toWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
               },
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere
                 ? [{ type: typeTransactionWhere as unknown as TransactionType }]
-                : []),
-              ...(isSearchDate
-                ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
-                    },
-                  ]
                 : []),
             ],
           },

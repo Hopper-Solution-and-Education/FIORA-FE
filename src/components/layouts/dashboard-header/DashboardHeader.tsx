@@ -14,6 +14,7 @@ import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { Gift } from 'lucide-react';
+import Link from 'next/link';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Separator } from '../../ui/separator';
 import { UserNav } from '../user-nav/UserNav';
@@ -94,7 +95,9 @@ export default function Header() {
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Check your rewards</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/referral">Check your rewards</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <NewsCenter />
