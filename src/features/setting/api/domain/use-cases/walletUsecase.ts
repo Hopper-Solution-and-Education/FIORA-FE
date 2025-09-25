@@ -607,7 +607,7 @@ class WalletUseCase {
 
       return await prisma.$transaction(async (tx) => {
         if (amount < 100) {
-          throw new Error(`Minimum claims amount is 100 FX`);
+          throw new Error(`Claims Reward must be greater than 100 FX`);
         }
 
         if (Math.max(Number(fromWallet.availableReward), Number(fromWallet.accumReward)) < amount) {
@@ -697,10 +697,6 @@ class WalletUseCase {
       return await prisma.$transaction(async (tx) => {
         if (action === SavingWalletAction.TRANSFER && amount < 100) {
           throw new Error(`Transfer amount must be greater than 100 FX`);
-        }
-
-        if (action === SavingWalletAction.DEPOSIT && amount > 100) {
-          throw new Error(`Deposit amount must be less than 100 FX`);
         }
 
         if (Number(fromWallet.frBalanceActive) < amount) {
