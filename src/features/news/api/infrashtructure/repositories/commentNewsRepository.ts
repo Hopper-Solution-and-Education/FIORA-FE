@@ -10,8 +10,6 @@ import {
 
 class CommentNewsRepository implements ICommentNewsRepository {
   async getCommentNews(queryParam: GetCommentRequest): Promise<CommentResponseRepo[]> {
-    console.log(queryParam.newsId);
-
     const skip = (Number(queryParam.page) - 1) * Number(queryParam.limit);
 
     return prisma.comment.findMany({
@@ -45,7 +43,6 @@ class CommentNewsRepository implements ICommentNewsRepository {
     });
   }
   async createCommentNews(dto: CommentCreationNews): Promise<Comment> {
-    console.log('dto: ', dto);
     return prisma.comment.create({
       data: {
         content: dto.content,

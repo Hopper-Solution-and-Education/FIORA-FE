@@ -1,7 +1,5 @@
 import { Comment } from '@prisma/client';
-import { IAccountRepository } from '../../domain/repository/accountRepository';
 import { ICommentNewsRepository } from '../../domain/repository/commentNewsRepository';
-import { accountRepository } from '../../infrashtructure/repositories/accountReposotory';
 import { commentNewsRepository } from '../../infrashtructure/repositories/commentNewsRepository';
 import {
   CommentCreationNews,
@@ -10,10 +8,7 @@ import {
   GetCommentRequest,
 } from '../../types/commentDTO';
 class CommentUsecase {
-  constructor(
-    private commentNewsRepo: ICommentNewsRepository,
-    private accountRepo: IAccountRepository,
-  ) {}
+  constructor(private commentNewsRepo: ICommentNewsRepository) {}
   async getListByPostId(queryParam: GetCommentRequest): Promise<CommentResponse[]> {
     const response = await this.commentNewsRepo.getCommentNews(queryParam);
     return response.map((result) => {
@@ -41,4 +36,4 @@ class CommentUsecase {
     this.commentNewsRepo.deleteCommentNews(commentId);
   }
 }
-export const commentUsecase = new CommentUsecase(commentNewsRepository, accountRepository);
+export const commentUsecase = new CommentUsecase(commentNewsRepository);

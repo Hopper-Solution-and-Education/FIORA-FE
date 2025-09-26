@@ -26,7 +26,7 @@ export const store = configureStore({
       .concat(apiMiddleware)
       .concat(helpsCenterApi.middleware)
       .concat(profileApi.middleware)
-      .concat(newsApi.middleware),
+      .concat(newsApi.middleware)
       .concat(referralApi.middleware),
 });
 
@@ -39,7 +39,7 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
         .concat(apiMiddleware)
         .concat(helpsCenterApi.middleware)
         .concat(profileApi.middleware)
-        .concat(newsApi.middleware),
+        .concat(newsApi.middleware)
         .concat(referralApi.middleware),
   });
 };

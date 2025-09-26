@@ -152,7 +152,6 @@ export class NewsRepository implements INewsRepository {
       });
       return post;
     } catch (error: unknown) {
-      console.log('Lỗi khi tạo mới NEWS: ', error);
       throw new AppError(303, 'Create NEWS failfail');
     }
   }
@@ -231,7 +230,6 @@ export class NewsRepository implements INewsRepository {
       };
       return response;
     } catch (error: unknown) {
-      console.log('Lõi khi lấy tin tức', error);
       throw new AppError(400, 'Lỗi khi lấy tin tức');
     }
   }
