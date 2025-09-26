@@ -1,6 +1,6 @@
 # 📖 Guide to FIORA-FE
 
-Welcome to the **FIORA-FE**! 
+Welcome to the **FIORA-FE**!
 This is a powerful frontend project built with **Next.js**, designed with a feature-based architecture to optimize developer experience (DX) and performance for administrative, reporting, transactional, and settings modules.
 
 ---
@@ -132,6 +132,9 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
 # Other APIs
 EXCHANGE_RATE_API_KEY=
+
+# Analyze bundle size
+ANALYZE=false # Set to true to analyze bundle size
 ```
 
 ## 🛠 Troubleshooting
