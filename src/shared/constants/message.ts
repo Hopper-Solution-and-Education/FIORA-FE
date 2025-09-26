@@ -117,6 +117,7 @@ export enum Messages {
   // Transaction-related errors
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
   UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
 
@@ -205,6 +206,8 @@ export enum Messages {
   MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
+  MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
+  MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
@@ -234,6 +237,7 @@ export enum Messages {
   GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
+  USER_WALLET_NOT_FOUND = 'User wallet not found.',
 
   // WALLET FAID
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
@@ -371,6 +375,10 @@ export enum Messages {
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 
+  //Payment Wallet
+  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
+  GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
+  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
   //News
   GET_LISTNEW_SUCCESS = 'Get list news success',
   CREATE_NEWS_SUCCESS = 'Create news successfully',
