@@ -109,7 +109,7 @@ class PaymentWalletUseCase {
 
     // account,category, wallet, membership,
     return {
-      wallets: filterOptions.fromWallets ?? [],
+      wallets: filterOptions.wallets ?? [],
       accounts: filterOptions.accounts ?? [],
       categories: filterOptions.categories ?? [],
       memberships: filterOptions.memberships ?? [],

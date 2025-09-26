@@ -350,7 +350,7 @@ class WalletRepository implements IWalletRepository {
           id: m.slug,
         };
       }),
-      wallets: wallets.map((w) => w.name),
+      wallets: wallets.map((w) => (w.name ? w.name : w.type)),
     };
   }
 }
