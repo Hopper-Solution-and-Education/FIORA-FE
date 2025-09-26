@@ -108,7 +108,7 @@ class smartSavingRepository implements ISmartSavingRepository {
         smartSavingAmount: dv?.smartSavingAmount ?? null,
         updateBy: dv?.updateBy ?? 'System',
         status: log.status,
-        reason: dv?.reason ?? null,
+        reason: log?.reason ?? null,
         userId: dv?.userId ?? null,
       };
     });
