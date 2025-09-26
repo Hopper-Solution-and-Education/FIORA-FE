@@ -12,13 +12,6 @@ import { ISmartSavingRepository } from '../../domain/smartSavingRepository.inter
 
 class smartSavingRepository implements ISmartSavingRepository {
   constructor(private _prisma = prisma) {}
-  gétSmartSavingFilerOptions(): Promise<{
-    emailOptions: { id: string; email: string }[];
-    tierNameOptions: { id: string; tierName: string }[];
-    updateByOptions: { id: string; email: string }[];
-  }> {
-    throw new Error('Method not implemented.');
-  }
   async getSmartSavingPaginated(
     page: number,
     pageSize: number,
