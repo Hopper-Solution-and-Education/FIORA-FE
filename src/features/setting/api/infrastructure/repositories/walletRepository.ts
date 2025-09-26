@@ -310,7 +310,7 @@ class WalletRepository implements IWalletRepository {
   async increaseWalletBalance(walletId: string, amount: number): Promise<void> {
     await this._prisma.wallet.update({
       where: { id: walletId },
-      data: { frBalanceActive: { increment: amount } },
+      data: { frBalanceActive: { increment: amount }, frBalanceFrozen: { decrement: amount } },
     });
   }
 
@@ -319,6 +319,39 @@ class WalletRepository implements IWalletRepository {
       where: { id },
       data: { currency: currency as any } as Prisma.DepositRequestUpdateInput,
     });
+  }
+
+  async getFilterOptions(userId: string) {
+    const [accounts, categories, memberships, wallets] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.category.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.membershipBenefit.findMany({
+        where: { userId },
+        select: { name: true, slug: true },
+      }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true, name: true },
+      }),
+    ]);
+
+    return {
+      accounts: accounts.map((a) => a.name),
+      categories: categories.map((c) => c.name),
+      memberships: memberships.map((m) => {
+        return {
+          name: m.name,
+          id: m.slug,
+        };
+      }),
+      wallets: wallets.map((w) => (w.name ? w.name : w.type)),
+    };
   }
 }
 

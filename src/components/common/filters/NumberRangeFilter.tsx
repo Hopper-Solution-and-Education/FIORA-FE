@@ -19,8 +19,11 @@ interface NumberRangeFilterProps {
   minLabel?: string;
   maxLabel?: string;
   tooltipFormat?: (value: number, currency: string) => string;
-  step?: number;
   currency?: string;
+  applyExchangeRate?: boolean;
+  shouldShortened?: boolean;
+  targetCurrency?: string;
+  step?: number; // Optional step prop for slider increments
 }
 
 const NumberRangeFilter = (props: NumberRangeFilterProps) => {
@@ -37,12 +40,13 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
     minLabel = 'Min',
     maxLabel = 'Max',
     tooltipFormat = formatCurrency,
-    step = 1, // eslint-disable-line @typescript-eslint/no-unused-vars
     currency = CURRENCY.USD,
+    applyExchangeRate = true,
+    shouldShortened = false,
+    targetCurrency = settingCurrency,
   } = props;
 
-  // Convert values from baseCurrency to settingCurrency
-  const exchangeRate = getExchangeRate(currency, settingCurrency) || 1;
+  const exchangeRate = getExchangeRate(currency, targetCurrency) || 1;
 
   const minValue = baseCurrencyMinValue * exchangeRate;
   const maxValue = baseCurrencyMaxValue * exchangeRate;
@@ -83,9 +87,9 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
 
   const getTooltipContent = (value: number) => {
     if (tooltipFormat) {
-      return tooltipFormat(value, settingCurrency);
+      return tooltipFormat(value, targetCurrency);
     }
-    return formatCurrency(value, settingCurrency, { applyExchangeRate: false });
+    return formatCurrency(value, targetCurrency, { applyExchangeRate, shouldShortened });
   };
 
   return (
@@ -100,7 +104,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
                   value={minValue}
                   onChange={handleMinValueChange}
                   placeholder={minLabel}
-                  currency={settingCurrency}
+                  currency={targetCurrency}
                   showSuggestion={false}
                   mode="onChange"
                   classContainer="mb-0"
@@ -124,7 +128,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
                   value={maxValue}
                   onChange={handleMaxValueChange}
                   placeholder={maxLabel}
-                  currency={settingCurrency}
+                  currency={targetCurrency}
                   showSuggestion={false}
                   mode="onChange"
                   classContainer="mb-0"
@@ -151,7 +155,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
         },
         step: 1, // Always use step of 1 for converted currency values
         formatValue: (value: number) =>
-          formatCurrency(value, settingCurrency, { applyExchangeRate: false }),
+          formatCurrency(value, targetCurrency, { applyExchangeRate, shouldShortened }),
       })}
     </div>
   );

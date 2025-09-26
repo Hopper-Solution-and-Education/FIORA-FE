@@ -1,0 +1,1 @@
+export { usePaymentWalletTableData } from './usePaymentWalletTableData';

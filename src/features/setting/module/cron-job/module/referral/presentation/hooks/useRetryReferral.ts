@@ -43,7 +43,7 @@ export const useRetryReferral = () => {
       }
 
       const result = await response.json();
-      return result.data;
+      return result.status;
     } catch (err: any) {
       setError(err.message || 'An error occurred while retrying referral');
       return null;
