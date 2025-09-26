@@ -32,7 +32,7 @@ export const usePaymentWalletTransactions = () => {
     (params?: Partial<FetchPaymentWalletTransactionsRequest>) => {
       if (session?.user?.id) {
         const requestParams: FetchPaymentWalletTransactionsRequest = {
-          pageSize: pageSize,
+          pageSize: pageSize || 10,
           searchParams: searchTerm || '',
           filters: filterCriteria.filters || {},
           ...params,

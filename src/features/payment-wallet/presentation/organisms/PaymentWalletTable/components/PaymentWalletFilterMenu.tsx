@@ -95,16 +95,24 @@ const filterParamsInitState: FilterParams = {
 
 // Adjust response type to reflect actual API shape
 type WalletOption = { label: string; value: string };
+// Updated to match API response, but keep optional legacy fields for backward compatibility
 type PaymentWalletFilterOptionResponse = {
-  fromWallets: WalletOption[];
-  toWallets: WalletOption[];
+  // New API shape
+  wallets?: string[];
+  accounts?: string[];
+  categories?: string[];
+  memberships?: { name: string; id: string }[];
+  amountMin: number | string;
+  amountMax: number | string;
+
+  // Legacy fields (optional) - for compatibility if backend returns old shape
+  fromWallets?: WalletOption[];
+  toWallets?: WalletOption[];
   fromAccounts?: WalletOption[];
   toAccounts?: WalletOption[];
   fromCategories?: WalletOption[];
   toCategories?: WalletOption[];
   membershipBenefits?: WalletOption[];
-  amountMin: number | string;
-  amountMax: number | string;
 };
 
 type PaymentWalletFilterMenuProps<T> = {
@@ -140,16 +148,25 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
     ...filterParamsInitState,
   });
 
+  // Persist server-provided amount range (converted to FX) to avoid fallback during revalidation
+  const [amountRange, setAmountRange] = useState<{ min: number; max: number }>({
+    min: 0,
+    max: DEFAULT_MAX_AMOUNT,
+  });
+
   // Fetch filter options
   const { data, isLoading, mutate } = useDataFetch<PaymentWalletFilterOptionResponse>({
     endpoint: '/api/payment-wallet/options',
     method: 'GET',
-    refreshInterval: 1000 * 60 * 5,
   });
 
-  // Update filter params when server data is loaded
+  // Fetch once on mount if needed
   useEffect(() => {
-    mutate();
+    if (typeof mutate === 'function') mutate();
+  }, []);
+
+  // Update filter params and stable amount range when server data is loaded or currency changes
+  useEffect(() => {
     if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
       // Server returns amounts in base currency, convert to selected currency for display
       const convertedMin = getExchangeAmount({
@@ -164,13 +181,18 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
         toCurrency: CURRENCY.FX,
       });
 
+      setAmountRange({
+        min: convertedMin.convertedAmount,
+        max: convertedMax.convertedAmount,
+      });
+
       setFilterParams((prev) => ({
         ...prev,
         amountMin: convertedMin.convertedAmount,
         amountMax: convertedMax.convertedAmount,
       }));
     }
-  }, [data, baseCurrency, getExchangeAmount, mutate]);
+  }, [data, baseCurrency, getExchangeAmount]);
 
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
@@ -202,21 +224,47 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
       if (Array.isArray(filters?.AND)) {
         filters.AND.forEach((condition: FilterAndCondition) => {
           // Process direct conditions
-          if (condition.type && typeof condition.type === 'string') {
-            types.add(condition.type);
+          if (condition.type) {
+            if (typeof (condition as any).type === 'string') {
+              types.add((condition as any).type);
+            } else if (
+              typeof (condition as any).type === 'object' &&
+              Array.isArray((condition as any).type.in)
+            ) {
+              (condition as any).type.in.forEach((t: string) => types.add(t));
+            }
           }
 
           // Collect direct entity IDs
-          if (condition.toAccount?.id) accounts.add(condition.toAccount.id);
-          if (condition.fromAccount?.id) accounts.add(condition.fromAccount.id);
-          if (condition.toCategory?.id) categories.add(condition.toCategory.id);
-          if (condition.fromCategory?.id) categories.add(condition.fromCategory.id);
-          if (condition.membershipBenefit?.id) memberships.add(condition.membershipBenefit.id);
+          // Accounts by id or name (prefer name if present)
+          if ((condition as any).toAccount?.name) accounts.add((condition as any).toAccount.name);
+          else if (condition.toAccount?.id) accounts.add(condition.toAccount.id);
+          if ((condition as any).fromAccount?.name)
+            accounts.add((condition as any).fromAccount.name);
+          else if (condition.fromAccount?.id) accounts.add(condition.fromAccount.id);
 
-          // Handle baseAmount conditions (prioritize over amount)
-          if (condition.baseAmount) {
+          // Categories by id or name (prefer name if present)
+          if ((condition as any).toCategory?.name)
+            categories.add((condition as any).toCategory.name);
+          else if (condition.toCategory?.id) categories.add(condition.toCategory.id);
+          if ((condition as any).fromCategory?.name)
+            categories.add((condition as any).fromCategory.name);
+          else if (condition.fromCategory?.id) categories.add(condition.fromCategory.id);
+
+          // Membership by id or slug.in
+          if (condition.membershipBenefit?.id) memberships.add(condition.membershipBenefit.id);
+          const mbSlugIn: string[] | undefined = (condition as any)?.membershipBenefit?.slug?.in;
+          if (Array.isArray(mbSlugIn)) mbSlugIn.forEach((s) => memberships.add(s));
+
+          // Wallet type parsing removed
+
+          // Handle amount conditions (prioritize 'amount' over 'baseAmount' to match API contract)
+          if (condition.amount) {
+            if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
+            if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
+          } else if (condition.baseAmount) {
+            // Fallback: convert baseAmount from base currency to FX for display
             if (condition.baseAmount.gte !== undefined) {
-              // Convert from base currency (USD) to selected currency for display
               const convertedMin = getExchangeAmount({
                 amount: condition.baseAmount.gte,
                 fromCurrency: baseCurrency,
@@ -225,7 +273,6 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
               currentAmountMin = convertedMin.convertedAmount;
             }
             if (condition.baseAmount.lte !== undefined) {
-              // Convert from base currency (USD) to selected currency for display
               const convertedMax = getExchangeAmount({
                 amount: condition.baseAmount.lte,
                 fromCurrency: baseCurrency,
@@ -233,11 +280,6 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
               });
               currentAmountMax = convertedMax.convertedAmount;
             }
-          }
-          // Fallback to amount conditions if baseAmount is not present
-          else if (condition.amount) {
-            if (condition.amount.gte !== undefined) currentAmountMin = condition.amount.gte;
-            if (condition.amount.lte !== undefined) currentAmountMax = condition.amount.lte;
           }
 
           // Handle nested AND conditions for baseAmount and baseCurrency
@@ -280,18 +322,45 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
             }
           }
 
-          // Handle OR conditions for types
-          if (
-            Array.isArray(condition.OR) &&
-            condition.OR.some((c) => 'type' in c && c.type !== undefined)
-          ) {
-            condition.OR.forEach((orCondition) => {
-              if (
-                'type' in orCondition &&
-                orCondition.type &&
-                typeof orCondition.type === 'string'
-              ) {
-                types.add(orCondition.type);
+          // Handle OR conditions for types (legacy structure)
+          if (Array.isArray((condition as any).OR)) {
+            (condition as any).OR.forEach((orCondition: any) => {
+              if (orCondition && typeof orCondition === 'object' && 'type' in orCondition) {
+                if (typeof orCondition.type === 'string') types.add(orCondition.type);
+                else if (typeof orCondition.type === 'object' && Array.isArray(orCondition.type.in))
+                  orCondition.type.in.forEach((t: string) => types.add(t));
+              }
+            });
+          }
+
+          // Handle OR entries that carry account/category/membership fields directly
+          if (Array.isArray(condition.OR)) {
+            condition.OR.forEach((entry: any) => {
+              // Membership slug.in or id
+              const eMbSlugIn: string[] | undefined = entry?.membershipBenefit?.slug?.in;
+              if (Array.isArray(eMbSlugIn)) eMbSlugIn.forEach((s) => memberships.add(s));
+              if (typeof entry?.membershipBenefit?.id === 'string')
+                memberships.add(entry.membershipBenefit.id);
+
+              // Accounts by name or id
+              if (typeof entry?.toAccount?.name === 'string') accounts.add(entry.toAccount.name);
+              else if (typeof entry?.toAccount?.id === 'string') accounts.add(entry.toAccount.id);
+              if (typeof entry?.fromAccount?.name === 'string') {
+                accounts.add(entry.fromAccount.name);
+              } else if (typeof entry?.fromAccount?.id === 'string') {
+                accounts.add(entry.fromAccount.id);
+              }
+
+              // Categories by name or id
+              if (typeof entry?.toCategory?.name === 'string') {
+                categories.add(entry.toCategory.name);
+              } else if (typeof entry?.toCategory?.id === 'string') {
+                categories.add(entry.toCategory.id);
+              }
+              if (typeof entry?.fromCategory?.name === 'string') {
+                categories.add(entry.fromCategory.name);
+              } else if (typeof entry?.fromCategory?.id === 'string') {
+                categories.add(entry.fromCategory.id);
               }
             });
           }
@@ -307,10 +376,19 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
               if ('OR' in orCondition && Array.isArray((orCondition as NestedOrCondition).OR)) {
                 (orCondition as NestedOrCondition).OR!.forEach((nested) => {
                   const n = nested as EntityIdCondition;
-                  if (n.toAccount?.id) accounts.add(n.toAccount.id);
-                  if (n.fromAccount?.id) accounts.add(n.fromAccount.id);
-                  if (n.toCategory?.id) categories.add(n.toCategory.id);
-                  if (n.fromCategory?.id) categories.add(n.fromCategory.id);
+                  // Accounts by id or name
+                  if ((n as any).toAccount?.name) accounts.add((n as any).toAccount.name);
+                  else if (n.toAccount?.id) accounts.add(n.toAccount.id);
+                  if ((n as any).fromAccount?.name) accounts.add((n as any).fromAccount.name);
+                  else if (n.fromAccount?.id) accounts.add(n.fromAccount.id);
+
+                  // Categories by id or name
+                  if ((n as any).toCategory?.name) categories.add((n as any).toCategory.name);
+                  else if (n.toCategory?.id) categories.add(n.toCategory.id);
+                  if ((n as any).fromCategory?.name) categories.add((n as any).fromCategory.name);
+                  else if (n.fromCategory?.id) categories.add(n.fromCategory.id);
+
+                  // Membership id
                   if (n.membershipBenefit?.id) memberships.add(n.membershipBenefit.id);
                 });
               }
@@ -325,32 +403,31 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
       if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
         const flatFilters = filters;
 
-        // Process baseAmount range (prioritize over amount)
-        if (flatFilters.baseAmount) {
-          if (flatFilters.baseAmount.gte !== undefined) {
-            // Convert from base currency to selected currency for display
+        // Prefer 'amount' range; fallback to 'baseAmount' range
+        if ((flatFilters as any).amount) {
+          currentAmountMin =
+            (flatFilters as any).amount.gte !== undefined ? (flatFilters as any).amount.gte : 0;
+          currentAmountMax =
+            (flatFilters as any).amount.lte !== undefined
+              ? (flatFilters as any).amount.lte
+              : DEFAULT_MAX_AMOUNT;
+        } else if ((flatFilters as any).baseAmount) {
+          if ((flatFilters as any).baseAmount.gte !== undefined) {
             const convertedMin = getExchangeAmount({
-              amount: flatFilters.baseAmount.gte,
+              amount: (flatFilters as any).baseAmount.gte,
               fromCurrency: baseCurrency,
               toCurrency: CURRENCY.FX,
             });
             currentAmountMin = convertedMin.convertedAmount;
           }
-          if (flatFilters.baseAmount.lte !== undefined) {
-            // Convert from base currency to selected currency for display
+          if ((flatFilters as any).baseAmount.lte !== undefined) {
             const convertedMax = getExchangeAmount({
-              amount: flatFilters.baseAmount.lte,
+              amount: (flatFilters as any).baseAmount.lte,
               fromCurrency: baseCurrency,
               toCurrency: CURRENCY.FX,
             });
             currentAmountMax = convertedMax.convertedAmount;
           }
-        }
-        // Fallback to amount range
-        else if (flatFilters.amount) {
-          currentAmountMin = flatFilters.amount.gte !== undefined ? flatFilters.amount.gte : 0;
-          currentAmountMax =
-            flatFilters.amount.lte !== undefined ? flatFilters.amount.lte : DEFAULT_MAX_AMOUNT;
         }
       }
 
@@ -383,35 +460,69 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
   // Memoized options for Accounts/Categories/Memberships
   // Options for Accounts
   const accountOptions = useMemo(() => {
-    const from = data?.data?.fromAccounts || [];
-    const to = data?.data?.toAccounts || [];
-    const merged = [...from, ...to];
     const map = new Map<string, { label: string; value: string }>();
-    merged.forEach((a) => {
+
+    // New API: accounts is an array of strings
+    const accountNames = data?.data?.accounts || [];
+    accountNames.forEach((name) => {
+      if (typeof name === 'string' && name && !map.has(name)) {
+        map.set(name, { label: name, value: name });
+      }
+    });
+
+    // Legacy fallback: merge from/to account options if present
+    const fromLegacy = data?.data?.fromAccounts || [];
+    const toLegacy = data?.data?.toAccounts || [];
+    [...fromLegacy, ...toLegacy].forEach((a) => {
       if (a?.value && !map.has(a.value)) map.set(a.value, { label: a.label, value: a.value });
     });
+
     return Array.from(map.values());
   }, [data]);
 
   // Options for Categories
   const categoryOptions = useMemo(() => {
-    const from = data?.data?.fromCategories || [];
-    const to = data?.data?.toCategories || [];
-    const merged = [...from, ...to];
     const map = new Map<string, { label: string; value: string }>();
-    merged.forEach((c) => {
+
+    // New API: categories is an array of strings
+    const categoryNames = data?.data?.categories || [];
+    categoryNames.forEach((name) => {
+      if (typeof name === 'string' && name && !map.has(name)) {
+        map.set(name, { label: name, value: name });
+      }
+    });
+
+    // Legacy fallback: merge from/to category options if present
+    const fromLegacy = data?.data?.fromCategories || [];
+    const toLegacy = data?.data?.toCategories || [];
+    [...fromLegacy, ...toLegacy].forEach((c) => {
       if (c?.value && !map.has(c.value)) map.set(c.value, { label: c.label, value: c.value });
     });
+
     return Array.from(map.values());
   }, [data]);
 
   // Options for Membership Benefits
   const membershipOptions = useMemo(() => {
-    const merged = data?.data?.membershipBenefits || [];
     const map = new Map<string, { label: string; value: string }>();
-    merged.forEach((m) => {
+
+    // New API: memberships is an array of { name, id }
+    const memberships = data?.data?.memberships || [];
+    memberships.forEach((m) => {
+      const id = (m as any)?.id;
+      const name = (m as any)?.name;
+      if (typeof id === 'string' && id) {
+        const label = typeof name === 'string' && name ? name : id;
+        if (!map.has(id)) map.set(id, { label, value: id });
+      }
+    });
+
+    // Legacy fallback: membershipBenefits already in label/value shape
+    const legacy = data?.data?.membershipBenefits || [];
+    legacy.forEach((m) => {
       if (m?.value && !map.has(m.value)) map.set(m.value, { label: m.label, value: m.value });
     });
+
     return Array.from(map.values());
   }, [data]);
 
@@ -434,15 +545,7 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
         minValue={filterParams.amountMin}
         maxValue={filterParams.amountMax}
         minRange={0}
-        maxRange={
-          data?.data?.amountMax
-            ? getExchangeAmount({
-                amount: Number(data.data.amountMax),
-                fromCurrency: baseCurrency,
-                toCurrency: CURRENCY.FX,
-              }).convertedAmount
-            : DEFAULT_MAX_AMOUNT
-        }
+        maxRange={amountRange.max}
         currency={CURRENCY.FX}
         targetCurrency={CURRENCY.FX}
         onValueChange={(target, value) =>
@@ -558,63 +661,52 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
         };
       }
 
-      // Types OR group
+      // Types as an 'in' condition to match backend contract
       if (params.types?.length) {
         andConditions.push({
-          OR: params.types.map((type) => ({ type })),
+          type: { in: [...params.types] },
         });
       }
 
       // Partner/Category/Account filters removed
 
-      // Accounts OR group
+      // Wallets filter removed
+
+      // Accounts OR group - flatten to single OR with toAccount/fromAccount for each name
       if (params.accounts?.length) {
-        andConditions.push({
-          OR: params.accounts.map((id) => ({
-            OR: [{ toAccount: { id } }, { fromAccount: { id } }],
-          })),
-        });
+        const orAccounts = params.accounts.flatMap((name) => [
+          { toAccount: { name } },
+          { fromAccount: { name } },
+        ]);
+        andConditions.push({ OR: orAccounts });
       }
 
-      // Categories OR group
+      // Categories OR group - flatten to single OR with toCategory/fromCategory for each name
       if (params.categories?.length) {
-        andConditions.push({
-          OR: params.categories.map((id) => ({
-            OR: [{ toCategory: { id } }, { fromCategory: { id } }],
-          })),
-        });
+        const orCategories = params.categories.flatMap((name) => [
+          { toCategory: { name } },
+          { fromCategory: { name } },
+        ]);
+        andConditions.push({ OR: orCategories });
       }
 
-      // Memberships OR group
+      // Memberships as direct AND condition using slug.in (matches contract)
       if (params.memberships?.length) {
-        andConditions.push({ OR: params.memberships.map((id) => ({ membershipBenefit: { id } })) });
-      }
-
-      // Amount with base currency conversion - always include like Transaction FilterMenu
-      const minAmountInBaseCurrency = getExchangeAmount({
-        amount: params.amountMin,
-        fromCurrency: CURRENCY.FX,
-        toCurrency: baseCurrency,
-      });
-
-      const maxAmountInBaseCurrency = getExchangeAmount({
-        amount: params.amountMax,
-        fromCurrency: CURRENCY.FX,
-        toCurrency: baseCurrency,
-      });
-
-      andConditions.push({
-        AND: [
-          {
-            baseAmount: {
-              gte: minAmountInBaseCurrency.convertedAmount,
-              lte: maxAmountInBaseCurrency.convertedAmount,
+        andConditions.push({
+          membershipBenefit: {
+            slug: {
+              in: [...params.memberships],
             },
           },
-          {
-            baseCurrency: baseCurrency,
-          },
-        ],
+        });
+      }
+
+      // Amount range on 'amount' field (no base conversion) to match contract
+      andConditions.push({
+        amount: {
+          gte: params.amountMin,
+          lte: params.amountMax,
+        },
       });
 
       // Add AND conditions if there are any

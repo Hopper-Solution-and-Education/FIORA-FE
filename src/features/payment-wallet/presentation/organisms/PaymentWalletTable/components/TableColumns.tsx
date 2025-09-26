@@ -216,7 +216,7 @@ export const usePaymentWalletTableColumns = (): CommonTableColumn<PaymentWalletT
       {
         key: 'remark',
         title: 'Remark',
-        align: 'center',
+        align: 'left',
         width: 240,
         render: (row) => {
           const colorClass = TRANSACTION_TYPE_COLOR_MAP[row.type.toUpperCase()] || 'gray-600';

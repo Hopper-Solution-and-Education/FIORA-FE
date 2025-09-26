@@ -23,6 +23,7 @@ interface NumberRangeFilterProps {
   applyExchangeRate?: boolean;
   shouldShortened?: boolean;
   targetCurrency?: string;
+  step?: number; // Optional step prop for slider increments
 }
 
 const NumberRangeFilter = (props: NumberRangeFilterProps) => {

@@ -1,11 +1,11 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import type { Response } from '@/shared/types/Common.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { FetchPaymentWalletDashboardRequest, PaymentWalletDashboardMetrics } from '../types';
+import type { PaymentWalletDashboardMetrics } from '../types';
 
 export const fetchPaymentWalletDashboardAsyncThunk = createAsyncThunk<
   PaymentWalletDashboardMetrics,
-  FetchPaymentWalletDashboardRequest | void,
+  void,
   {
     rejectValue: string;
   }

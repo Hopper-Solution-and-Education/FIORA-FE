@@ -20,6 +20,7 @@ const SearchFilterHeader = ({
   onSearch,
   onFilterChange,
 }: SearchFilterHeaderProps) => {
+  // Note: total items now flows via paginationParams.totalItems, normalized from API response
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {

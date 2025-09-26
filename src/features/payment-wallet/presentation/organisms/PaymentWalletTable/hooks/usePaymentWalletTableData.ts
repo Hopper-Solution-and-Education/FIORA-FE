@@ -46,7 +46,7 @@ const resolveFromLabel = (item: RawTransaction): string | null => {
         ? withSuffix(item.fromWallet.type, 'Wallet')
         : null) ??
     item?.membershipBenefit?.name ??
-    (item?.fromAccount?.name ? withSuffix(item.fromAccount.name, 'Account') : null) ??
+    (item?.fromAccount?.name ? item.fromAccount.name : null) ??
     item?.fromCategory?.name ??
     null
   );
@@ -59,7 +59,7 @@ const resolveToLabel = (item: RawTransaction): string | null => {
       : item?.toWallet?.type
         ? withSuffix(item.toWallet.type, 'Wallet')
         : null) ??
-    (item?.toAccount?.name ? withSuffix(item.toAccount.name, 'Account') : null) ??
+    (item?.toAccount?.name ? item.toAccount.name : null) ??
     item?.toCategory?.name ??
     null
   );

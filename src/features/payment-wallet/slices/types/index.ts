@@ -101,11 +101,6 @@ export const initialPaymentWalletState: PaymentWalletState = {
   pageSize: 10,
 };
 
-// Request/Response types for async thunks
-export interface FetchPaymentWalletDashboardRequest {
-  // No additional parameters needed as userId comes from session
-}
-
 export interface FetchPaymentWalletTransactionsRequest {
   filters?: any;
   lastCursor?: string;

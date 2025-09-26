@@ -10,6 +10,7 @@ export type PaymentWalletTransaction = {
   remark: string;
   currency: string;
   rowNumber?: number;
+  totalItems?: number;
 };
 
 export type PaginationParams = {
