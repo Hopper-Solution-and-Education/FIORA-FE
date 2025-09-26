@@ -7,6 +7,7 @@ import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
 import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import { CronJobLog, CronJobStatus, MembershipTier, Prisma, TypeCronJob } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 type DynamicCronJobReferralTypes = {
   referrerUserId: string;
@@ -377,6 +378,67 @@ class DashboardRepository {
       }
       return filters;
     }
+  }
+
+  async getTierInterestAmount(typeCronJob: TypeCronJob) {
+    const cronJobLogs = await prisma.cronJobLog.findMany({
+      where: { typeCronJob, status: CronJobStatus.SUCCESSFUL },
+      select: {
+        createdBy: true,
+        dynamicValue: true,
+      },
+    });
+
+    if (!cronJobLogs.length) return { tierInterestAmount: [], totalInterestAmount: 0 };
+
+    const userIds = cronJobLogs
+      .map((log) => log.createdBy)
+      .filter((id): id is string => id !== null && typeof id === 'string' && id.length > 0);
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        MembershipProgress: {
+          select: {
+            tierId: true,
+          },
+        },
+      },
+    });
+
+    const tierUserMap = new Map(users.map((u) => [u.id, u.MembershipProgress[0]?.tierId]));
+
+    const tiers = await prisma.membershipTier.findMany({
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const balanceTier = cronJobLogs.reduce<Map<string, Decimal>>((acc, log) => {
+      const tierId = (log.dynamicValue as any)?.tierId ?? tierUserMap.get(log.createdBy ?? '');
+      const amount =
+        typeCronJob === TypeCronJob.FLEXI_INTEREST
+          ? new Decimal((log.dynamicValue as any)?.interestAmount ?? 0)
+          : new Decimal(0);
+      if (tierId) acc.set(tierId, (acc.get(tierId) ?? new Decimal(0)).add(amount));
+      return acc;
+    }, new Map());
+
+    const tierInterestAmount = tiers.map((t) => ({
+      tierId: t.id,
+      tierName: t.tierName,
+      interestAmount: balanceTier.get(t.id) ?? new Decimal(0),
+    }));
+
+    return {
+      tierInterestAmount,
+      totalInterestAmount: tierInterestAmount.reduce(
+        (s, d) => s.add(d.interestAmount),
+        new Decimal(0),
+      ),
+    };
   }
 
   async getReferralChart() {

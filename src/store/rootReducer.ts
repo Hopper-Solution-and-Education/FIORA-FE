@@ -16,6 +16,8 @@ import paymentWalletSlice from '@/features/payment-wallet/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import referralTransactionSlice from '@/features/referral/slices';
 import { referralApi } from '@/features/referral/slices/referralApi';
+import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/services/flexi-interest.service';
+import flexiInterestCronjobSlice from '@/features/setting/module/cron-job/module/flexi-interest/presentation/slices';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import referralCronjobSlice from '@/features/setting/module/cron-job/module/referral/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
@@ -60,6 +62,7 @@ const reducer = {
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
   membershipCronjob: membershipCronjobSlice,
+  flexiInterestCronjob: flexiInterestCronjobSlice,
   referralTransaction: referralTransactionSlice,
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
@@ -67,6 +70,7 @@ const reducer = {
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [flexiInterestApi.reducerPath]: flexiInterestApi.reducer,
   [newsApi.reducerPath]: newsApi.reducer,
   [referralApi.reducerPath]: referralApi.reducer,
 };
