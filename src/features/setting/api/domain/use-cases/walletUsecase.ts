@@ -203,6 +203,12 @@ class WalletUseCase {
     currency?: string,
     user?: SessionUser,
   ) {
+    // get user wallet
+    const userWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+    if (!userWallet) {
+      throw new BadRequestError(Messages.USER_WALLET_NOT_FOUND);
+    }
+
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
       throw new NotFoundError('PackageFX not found');
@@ -243,6 +249,18 @@ class WalletUseCase {
       createdBy: userId,
       currency: foundCurrency.name,
     });
+
+    // Update wallet fields
+    await this._walletRepository.updateWallet(
+      {
+        id: userWallet.id,
+      },
+      {
+        frBalanceActive: {
+          increment: packageFX.fxAmount,
+        },
+      },
+    );
 
     const depositBoxNotification = {
       title: 'New Deposit Request',

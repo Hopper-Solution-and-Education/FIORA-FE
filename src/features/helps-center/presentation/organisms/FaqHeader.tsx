@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash } from 'lucide-react';
 import React from 'react';
-import type { FaqDetail } from '../../domain/entities/models/faqs';
+import { FaqDetail } from '../../domain/entities/models/faqs';
 
 interface FaqHeaderProps {
   data: FaqDetail;

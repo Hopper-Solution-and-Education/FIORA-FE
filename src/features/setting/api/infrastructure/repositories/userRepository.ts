@@ -5,7 +5,7 @@ import { IUserRepository, OutputUserInfinity } from '../../repositories/userRepo
 
 class UserRepository implements IUserRepository {
   async findUserById(id: string): Promise<User | null> {
-    return prisma.user.findUnique({
+    return await prisma.user.findUnique({
       where: { id },
     });
   }
