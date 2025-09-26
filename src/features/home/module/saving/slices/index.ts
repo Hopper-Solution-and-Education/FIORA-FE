@@ -15,6 +15,7 @@ export type SavingWalletState = {
   history: SavingHistoryResponse | null;
   transaction: SavingTransactionResponse | null;
   loading: boolean;
+  isCreateTransactionLoading: boolean;
   error: string | null;
   page: number;
   pageSize: number;
@@ -30,6 +31,7 @@ const initialState: SavingWalletState = {
   history: null,
   transaction: null,
   loading: false,
+  isCreateTransactionLoading: false,
   error: null,
   page: 1,
   pageSize: 20,
@@ -96,16 +98,16 @@ const savingWalletSlice = createSlice({
 
       // Transaction
       .addCase(createSavingTransaction.pending, (state) => {
-        state.loading = true;
+        state.isCreateTransactionLoading = true;
         state.error = null;
       })
       .addCase(createSavingTransaction.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isCreateTransactionLoading = false;
         state.transaction = action.payload;
         state.refetchTrigger = !state.refetchTrigger;
       })
       .addCase(createSavingTransaction.rejected, (state, action) => {
-        state.loading = false;
+        state.isCreateTransactionLoading = false;
         state.error = action.payload?.message || 'Error creating transaction';
       });
   },

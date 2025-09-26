@@ -20,6 +20,7 @@ interface MetricCardProps {
     isPositive: boolean;
   };
   classNameCustomCardColor?: string;
+  currencyPosition?: 'left' | 'right';
 }
 
 const MetricCard = ({
@@ -32,6 +33,7 @@ const MetricCard = ({
   trend,
   currency,
   classNameCustomCardColor,
+  currencyPosition = 'left',
 }: MetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
@@ -108,6 +110,18 @@ const MetricCard = ({
     return iconValue;
   };
 
+  function formatCurrencyString(str: string): string {
+    // Tách đơn vị tiền tệ ở đầu và phần giá trị ở sau
+    const match = str.match(/^([^\d.,\s]+)([\d.,\s]+)$/);
+
+    if (!match) return str;
+
+    const currency = match[1].trim();
+    const amount = match[2].trim();
+
+    return currencyPosition === 'left' ? `${currency}${amount}` : `${amount}${currency}`;
+  }
+
   return (
     <Card className={cn('overflow-hidden', className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -118,7 +132,7 @@ const MetricCard = ({
         <div
           className={cn('text-xl sm:text-2xl font-bold', getCardColor(), classNameCustomCardColor)}
         >
-          {formatCurrency(value, currency || CURRENCY.FX)}
+          {formatCurrencyString(formatCurrency(value, currency || CURRENCY.FX))}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">

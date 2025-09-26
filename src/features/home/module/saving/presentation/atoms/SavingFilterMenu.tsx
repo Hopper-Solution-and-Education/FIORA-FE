@@ -490,17 +490,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       />
     );
 
-    const categoryFilterComponent = (
-      <MultiSelectFilter
-        options={categoryOptions}
-        selectedValues={filterParams.categories}
-        onChange={(values) => handleEditFilter('categories', values)}
-        label="Categories"
-        placeholder="Select categories"
-        disabled={isLoading}
-      />
-    );
-
     const amountFilterComponent = (
       <NumberRangeFilter
         minValue={filterParams.amountMin}
@@ -544,16 +533,10 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         order: 0,
       },
       {
-        key: 'categoryFilter',
-        component: categoryFilterComponent,
-        column: FilterColumn.RIGHT,
-        order: 1,
-      },
-      {
         key: 'amountFilter',
         component: amountFilterComponent,
         column: FilterColumn.LEFT,
-        order: 2,
+        order: 1,
       },
       {
         key: 'dateFilter',
@@ -564,7 +547,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       {
         key: 'walletFilter',
         component: walletFilterComponent,
-        column: FilterColumn.LEFT,
+        column: FilterColumn.RIGHT,
         order: 1,
       },
     ];

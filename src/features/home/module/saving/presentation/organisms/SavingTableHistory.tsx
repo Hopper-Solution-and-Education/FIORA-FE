@@ -19,7 +19,7 @@ import { resetSavingWallet, updateFilterCriteria, updatePage } from '../../slice
 import { fetchSavingTransactions } from '../../slices/actions';
 import { ISavingHistory, SavingColumn, SavingTableColumnKey } from '../../types';
 import { DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS } from '../../utils/constants';
-import { SavingTransactionTableToEntity } from '../../utils/enums';
+import { SavingTransactionTableToEntity, SavingWalletType } from '../../utils/enums';
 import { formatDate } from '../../utils/formatDate';
 import SavingFilterMenu from '../atoms/SavingFilterMenu';
 import SavingSearch from '../atoms/SavingSearch';
@@ -101,7 +101,22 @@ function SavingTableHistory() {
         search: filterCriteria.search ?? '',
       }),
     );
-  }, [dispatch, filterCriteria, page, pageSize, refetchTrigger]);
+  }, [dispatch, filterCriteria, page, pageSize]);
+
+  useEffect(() => {
+    dispatch(
+      fetchSavingTransactions({
+        page: 1,
+        pageSize,
+        filters: filterCriteria.filters ?? {},
+        sortBy: filterCriteria.sortBy ?? { date: 'desc' },
+        userId: filterCriteria.userId ?? '',
+        search: filterCriteria.search ?? '',
+      }),
+    );
+
+    dispatch(updatePage(1));
+  }, [refetchTrigger]);
 
   useEffect(() => {
     if (history && history.data && history.data.data.length) {
@@ -161,7 +176,6 @@ function SavingTableHistory() {
     };
   }, []);
 
-  if (!history) return <p>No data</p>;
   if (loading && !history && displayData.length === 0) {
     return <Loading />;
   }
@@ -175,7 +189,7 @@ function SavingTableHistory() {
           <SavingFilterMenu callBack={handleFilterChange} />
         </div>
         <Label className="text-gray-600 dark:text-gray-400">
-          Total <strong>{history.data.total}</strong> records
+          Total <strong>{displayData.length}</strong> records
         </Label>
       </div>
       <Table className="border-[1px]">
@@ -248,12 +262,24 @@ function SavingTableHistory() {
                   {formatCurrency(record.amount, CURRENCY.FX)}
                 </TableCell>
                 {record.fromWallet?.name || record.fromWallet?.type ? (
-                  <TableCell>{record.fromWallet?.name || record.fromWallet?.type}</TableCell>
+                  <TableCell>
+                    {record.fromWallet?.name === SavingWalletType.SAVING ||
+                    record.fromWallet?.type === SavingWalletType.SAVING
+                      ? `Smart ${record.fromWallet?.name || record.fromWallet?.type}`
+                      : record.fromWallet?.name || record.fromWallet?.type}{' '}
+                    Wallet
+                  </TableCell>
                 ) : (
                   <TableCell className="italic text-gray-500">Unknown</TableCell>
                 )}
                 {record.toWallet?.name || record.toWallet?.type ? (
-                  <TableCell>{record.toWallet?.name || record.toWallet?.type}</TableCell>
+                  <TableCell>
+                    {record.toWallet?.name === SavingWalletType.SAVING ||
+                    record.toWallet?.type === SavingWalletType.SAVING
+                      ? `Smart ${record.toWallet?.name || record.toWallet?.type}`
+                      : record.toWallet?.name || record.toWallet?.type}{' '}
+                    Wallet
+                  </TableCell>
                 ) : (
                   <TableCell className="italic text-gray-500">Unknown</TableCell>
                 )}

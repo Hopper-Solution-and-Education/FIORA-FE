@@ -21,7 +21,7 @@ type ChildProps = {
 const SavingOverview = ({ walletId }: ChildProps) => {
   const dispatch = useAppDispatch();
   const { wallets } = useAppSelector((state) => state.wallet);
-  const { overview, loading, error, refetchTrigger } = useAppSelector(
+  const { overview, loading, error, refetchTrigger, isCreateTransactionLoading } = useAppSelector(
     (state) => state.savingWallet,
   );
   const [showDepositPage, setShowDepositPage] = useState<ActionType | null>(null);
@@ -100,8 +100,8 @@ const SavingOverview = ({ walletId }: ChildProps) => {
     };
   }, []);
 
-  if (!overview) return <p>No data</p>;
-  if (loading) {
+  if (!overview) return <></>;
+  if ((loading && !overview) || isCreateTransactionLoading) {
     return <Loading />;
   }
   if (error) return <p>Error: {error}</p>;
@@ -126,13 +126,14 @@ const SavingOverview = ({ walletId }: ChildProps) => {
         />
 
         <MetricCard
-          title="Saving Interest"
+          title="Rate Of Benefit"
           value={overview.data.benefit.value}
           type="default"
           icon="percent"
           className="h-fit p-3 pb-2 *:px-3 *:py-0"
           classNameCustomCardColor="text-pink-600 dark:text-pink-400"
           currency="%"
+          currencyPosition="right"
         />
 
         <div className="flex items-end justify-end gap-2">
@@ -161,7 +162,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
         />
 
         <MetricCard
-          title="Current Reward Claimed"
+          title="Current Reward Claim"
           value={overview.data.wallet.claimsedReward}
           type="default"
           icon="handCoins"
