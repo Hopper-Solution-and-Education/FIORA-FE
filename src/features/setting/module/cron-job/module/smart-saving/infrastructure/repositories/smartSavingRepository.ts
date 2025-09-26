@@ -66,11 +66,11 @@ class smartSavingRepository implements ISmartSavingRepository {
       if (Array.isArray(filter.tierName)) {
         orFilter.push(
           ...filter.tierName.map((tierName: string) => ({
-            dynamicValue: { path: ['tierId'], equals: tierName },
+            dynamicValue: { path: ['tierName'], equals: tierName },
           })),
         );
       } else {
-        orFilter.push({ dynamicValue: { path: ['tierId'], equals: filter.tierName } });
+        orFilter.push({ dynamicValue: { path: ['tierName'], equals: filter.tierName } });
       }
     }
 
