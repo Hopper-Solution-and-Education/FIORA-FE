@@ -67,6 +67,11 @@ export const settingNavItems: NavItem[] = [
         icon: 'moon',
         isActive: false,
       },
+      {
+        title: 'Referral',
+        url: RouteEnum.CronjobReferral,
+        icon: 'userPlus',
+      },
     ],
   },
 ];

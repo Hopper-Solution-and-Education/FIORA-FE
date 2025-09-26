@@ -135,7 +135,16 @@ class TransactionUseCase {
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
-    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      searchParams = '',
+      filters,
+      sortBy = {},
+      userId,
+      lastCursor,
+      isInfinityScroll = false,
+    } = params;
     const take = pageSize;
     const skip = (page - 1) * pageSize;
 
@@ -204,6 +213,7 @@ class TransactionUseCase {
       {
         skip,
         take,
+        cursor: lastCursor ? { id: lastCursor } : undefined,
         orderBy,
         include: {
           fromAccount: true,
@@ -220,7 +230,8 @@ class TransactionUseCase {
 
     const totalTransactionAwaited = this.transactionRepository.count({
       ...where,
-      AND: [{ isDeleted: false }, { userId }],
+      isDeleted: false,
+      userId,
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
@@ -250,6 +261,7 @@ class TransactionUseCase {
       amountMax: Number(amountMax['_max']?.baseAmount) || 0,
       amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
+      ...(isInfinityScroll && { lastCursor: transactions[transactions.length - 1]?.id }),
     };
   }
 

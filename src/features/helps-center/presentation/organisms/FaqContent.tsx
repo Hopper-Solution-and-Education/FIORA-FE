@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import type { FaqDetail } from '../../domain/entities/models/faqs';
+import { FaqDetail } from '../../domain/entities/models/faqs';
 import { ParsedFaqContent } from '../atoms';
 
 interface FaqContentProps {

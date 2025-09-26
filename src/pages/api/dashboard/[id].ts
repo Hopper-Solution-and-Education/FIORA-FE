@@ -42,17 +42,26 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, user: Ses
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'You must input cronjob id!'));
   }
   const cronjob = await dashboardRepository.getCronjob(id as string);
+
+  if (!cronjob) {
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
+  }
+
+  if (!cronjob?.status) {
+    return res
+      .status(RESPONSE_CODE.CONFLICT)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cronjob has been processed!'));
+  }
+
   const tier = await dashboardRepository.getTier(tierId as string);
   if (!tier) {
     return res
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Membership tier not found!'));
   }
-  if (!cronjob) {
-    return res
-      .status(RESPONSE_CODE.NOT_FOUND)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
-  }
+
   const result = await dashboardRepository.changeCronjob(cronjob, user, tier, reason);
   if (result == 404) {
     return res

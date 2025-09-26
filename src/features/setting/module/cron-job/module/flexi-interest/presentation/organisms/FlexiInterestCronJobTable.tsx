@@ -144,7 +144,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
         acc[c.key as string] = {
           isVisible: true,
           index: idx,
-          align: c.align,
+          alignOverride: c.align,
         };
       }
       return acc;

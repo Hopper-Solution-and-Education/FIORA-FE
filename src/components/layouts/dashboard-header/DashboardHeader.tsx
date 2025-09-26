@@ -21,12 +21,12 @@ import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import MarqueeAnnouncement from './MarqueAnnouncement';
+import NewsCenter from './NewsCenter';
 import { NotificationContent } from './NotificationContent';
 import SettingCenter from './SettingCenter';
 
 export default function Header() {
   const isMobile = useIsMobile();
-
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
   const { data: notification, mutate: mutateNotification } = useDataFetch({
@@ -100,7 +100,7 @@ export default function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
+          <NewsCenter />
           <HelpCenter />
           <SettingCenter />
 

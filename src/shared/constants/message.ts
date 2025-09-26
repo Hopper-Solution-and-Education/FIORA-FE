@@ -117,6 +117,7 @@ export enum Messages {
   // Transaction-related errors
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
   UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
 
@@ -205,6 +206,8 @@ export enum Messages {
   MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
+  MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
+  MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
@@ -234,6 +237,7 @@ export enum Messages {
   GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
+  USER_WALLET_NOT_FOUND = 'User wallet not found.',
 
   // WALLET FAID
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
@@ -375,4 +379,39 @@ export enum Messages {
   GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
   GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
   GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
+
+  // Cronjob
+  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
+  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update since it has already been success',
+  //Payment Wallet
+  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
+  GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
+  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
+  //News
+  GET_LISTNEW_SUCCESS = 'Get list news success',
+  CREATE_NEWS_SUCCESS = 'Create news successfully',
+  NEWS_TITLE_ALREADY_EXISTS = 'NEWS title already exists',
+  DELETE_NEWS_SUCCESS = 'Delete News successfully',
+  DELETE_NEWS_ERROR = 'Delete News error',
+  POST_CATEGORY_NOT_FOUND = 'POST category not found',
+  GET_LIST_COMMENT_NEWS_SUCCESS = 'Get list comment news successfully',
+  COMMENT_NEWS_SUCCESS = 'Comment news successfully',
+  UPDATE_COMMENT_NEWS_SUCCESS = 'Update comment news successfully',
+  UPDATE_COMMENT_NEWS_ERROR = 'Update comment news error',
+  DELETE_COMMENT_NEWS_SUCCESS = 'Delete comment news successfully',
+  REACT_NEWS_SUCCESS = 'React news successfully',
+  UNREACT_NEWS_SUCCESS = 'Un react news successfully',
+  GET_NEWS_DETAIL_SECCESS = 'Get news detail successfully',
+  NEWS_NOT_FOUND = 'News not found',
+  CREATE_COMMENT_NEWS_SUCCESS = 'Create comment news successfully',
+  GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
+  DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
+
+  //User
+  USER_NOT_FOUND = 'User not found',
 }

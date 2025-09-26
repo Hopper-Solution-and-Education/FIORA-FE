@@ -12,6 +12,7 @@ export enum FeatureFlags {
   FAQ_FEATURE = 'FAQs',
   PACKAGE_FX_FEATURE = 'PACKAGE_FX',
   FLEXI_INTEREST = 'FLEXI_INTEREST',
+  REFERRAL_FEATURE = 'REFERRAL',
 }
 
 export const USER_ROLES = {
