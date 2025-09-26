@@ -1,9 +1,20 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
+import { Messages } from '@/shared/constants/message';
+import { BadRequestError } from '@/shared/lib/responseUtils/errors';
 import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
-import { CronJobLog, CronJobStatus, MembershipTier, TypeCronJob } from '@prisma/client';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
+import { CronJobLog, CronJobStatus, MembershipTier, Prisma, TypeCronJob } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+
+type DynamicCronJobReferralTypes = {
+  referrerUserId: string;
+  referredUserId: string;
+  bonusAmount: number;
+  typeBenefit: string;
+};
 
 class DashboardRepository {
   async getWithFilters(
@@ -367,6 +378,343 @@ class DashboardRepository {
       }
       return filters;
     }
+  }
+
+  async getTierInterestAmount(typeCronJob: TypeCronJob) {
+    const cronJobLogs = await prisma.cronJobLog.findMany({
+      where: { typeCronJob, status: CronJobStatus.SUCCESSFUL },
+      select: {
+        createdBy: true,
+        dynamicValue: true,
+      },
+    });
+
+    if (!cronJobLogs.length) return { tierInterestAmount: [], totalInterestAmount: 0 };
+
+    const userIds = cronJobLogs
+      .map((log) => log.createdBy)
+      .filter((id): id is string => id !== null && typeof id === 'string' && id.length > 0);
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        MembershipProgress: {
+          select: {
+            tierId: true,
+          },
+        },
+      },
+    });
+
+    const tierUserMap = new Map(users.map((u) => [u.id, u.MembershipProgress[0]?.tierId]));
+
+    const tiers = await prisma.membershipTier.findMany({
+      select: {
+        id: true,
+        tierName: true,
+      },
+    });
+
+    const balanceTier = cronJobLogs.reduce<Map<string, Decimal>>((acc, log) => {
+      const tierId = (log.dynamicValue as any)?.tierId ?? tierUserMap.get(log.createdBy ?? '');
+      const amount =
+        typeCronJob === TypeCronJob.FLEXI_INTEREST
+          ? new Decimal((log.dynamicValue as any)?.interestAmount ?? 0)
+          : new Decimal(0);
+      if (tierId) acc.set(tierId, (acc.get(tierId) ?? new Decimal(0)).add(amount));
+      return acc;
+    }, new Map());
+
+    const tierInterestAmount = tiers.map((t) => ({
+      tierId: t.id,
+      tierName: t.tierName,
+      interestAmount: balanceTier.get(t.id) ?? new Decimal(0),
+    }));
+
+    return {
+      tierInterestAmount,
+      totalInterestAmount: tierInterestAmount.reduce(
+        (s, d) => s.add(d.interestAmount),
+        new Decimal(0),
+      ),
+    };
+  }
+
+  async getReferralChart() {
+    const referralKickbackAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_KICKBACK },
+      select: {
+        dynamicValue: true,
+      },
+    });
+
+    const referralBonusAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_BONUS },
+      select: {
+        dynamicValue: true,
+      },
+    });
+
+    const referralCampaignAwait = prisma.cronJobLog.findMany({
+      where: { typeCronJob: TypeCronJob.REFERRAL_CAMPAIGN },
+      select: {
+        dynamicValue: true,
+      },
+    });
+
+    const [referralKickback, referralBonus, referralCampaign] = await Promise.all([
+      referralKickbackAwait,
+      referralBonusAwait,
+      referralCampaignAwait,
+    ]);
+
+    const referralKickbackValue = referralKickback.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
+
+    const referralBonusValue = referralBonus.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
+
+    const referralCampaignValue = referralCampaign.reduce(
+      (acc, curr) => acc + Number((curr.dynamicValue as any)?.bonusAmount),
+      0,
+    );
+
+    return { referralKickbackValue, referralBonusValue, referralCampaignValue };
+  }
+
+  async getReferralDashboard(
+    filters?: any,
+    skip?: number,
+    take?: number,
+    emailReferralFilters?: any,
+    search?: string | null,
+  ) {
+    let where: Prisma.CronJobLogWhereInput = {
+      typeCronJob: {
+        in: [
+          TypeCronJob.REFERRAL_CAMPAIGN,
+          TypeCronJob.REFERRAL_BONUS,
+          TypeCronJob.REFERRAL_KICKBACK,
+        ],
+      },
+      ...filters,
+    };
+
+    const copyWhere = { ...where };
+
+    const extraWhere: Prisma.CronJobLogWhereInput = {};
+
+    if (emailReferralFilters) {
+      if (emailReferralFilters.referrerEmail) {
+        extraWhere.OR = emailReferralFilters.referrerEmail.map((email: string) => ({
+          dynamicValue: {
+            path: ['referrerUserId'],
+            equals: email,
+          },
+        }));
+      }
+      if (emailReferralFilters.referredEmail) {
+        extraWhere.OR = emailReferralFilters.referredEmail.map((email: string) => ({
+          dynamicValue: {
+            path: ['referredUserId'],
+            equals: email,
+          },
+        }));
+      }
+    }
+
+    if (extraWhere.OR) {
+      // Merge extraWhere with where conditions
+      where = {
+        AND: [where, extraWhere],
+      };
+    }
+
+    const dataResult = prisma.cronJobLog.findMany({
+      where: where,
+      include: {
+        Transaction: true,
+      },
+      skip,
+      take,
+    });
+
+    const totalResult = prisma.cronJobLog.count({
+      where: where,
+    });
+
+    const totalSuccessResult = prisma.cronJobLog.count({
+      where: {
+        ...copyWhere,
+        status: CronJobStatus.SUCCESSFUL,
+      },
+    });
+
+    const totalFailResult = prisma.cronJobLog.count({
+      where: {
+        ...copyWhere,
+        status: CronJobStatus.FAIL,
+      },
+    });
+
+    const [data = [], total = 0, totalSuccess = 0, totalFail = 0] = await Promise.all([
+      dataResult,
+      totalResult,
+      totalSuccessResult,
+      totalFailResult,
+    ]);
+
+    const transferredData = await Promise.all(
+      data.map(async (item) => {
+        const dynamicValue = item.dynamicValue as DynamicCronJobReferralTypes;
+        const referrerId = dynamicValue.referrerUserId;
+        const referredId = dynamicValue.referredUserId;
+
+        const foundReferrerAwaited = prisma.user.findFirst({
+          where: { id: referrerId },
+        });
+        const foundReferredAwaited = prisma.user.findFirst({
+          where: { id: referredId },
+        });
+
+        const [foundReferrer = null, foundReferred = null] = await Promise.all([
+          foundReferrerAwaited,
+          foundReferredAwaited,
+        ]);
+
+        let updatedByEmail = null;
+
+        if (item.updatedBy) {
+          updatedByEmail = await prisma.user.findFirst({
+            where: { id: item.updatedBy },
+            select: { email: true },
+          });
+        }
+
+        const amount = Number(dynamicValue.bonusAmount) || 0;
+        const spent = Number(item.Transaction?.amount) || 0;
+
+        return {
+          id: item.id,
+          dateTime: item.executionTime,
+          type: item.typeCronJob,
+          status: item.status,
+          updatedBy: updatedByEmail?.email || null,
+          reason: item.reason || 'NaN',
+          referrerEmail: foundReferrer?.email || 'NaN',
+          referredEmail: foundReferred?.email || 'NaN',
+          amount,
+          spent,
+        };
+      }),
+    );
+
+    // find out emailReferrer and emailReferee & type of benefits
+    let searchResult = transferredData;
+    let totalCount = total;
+
+    if (search) {
+      searchResult = searchResult.filter((item) => {
+        return (
+          item.referrerEmail.includes(search) ||
+          item.referredEmail.includes(search) ||
+          item.type.includes(search)
+        );
+      });
+      totalCount = searchResult.length;
+    }
+
+    return { data: searchResult, total: totalCount, totalSuccess, totalFail };
+  }
+
+  // return all necessarily filters metadata for referral dashboard
+  async getReferralDashboardPayloadFilters() {
+    const emailReferrer = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+    const emailReferee = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+    const updatedBy = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    const typeOfBenefits = [
+      TypeCronJob.REFERRAL_CAMPAIGN,
+      TypeCronJob.REFERRAL_BONUS,
+      TypeCronJob.REFERRAL_KICKBACK,
+    ].map((type) => ({
+      label: formatUnderlineString(type),
+      value: type,
+    }));
+
+    return {
+      updatedBy: [...Array.from(updatedBy)],
+      emailReferrer: Array.from(emailReferrer),
+      emailReferee: Array.from(emailReferee),
+      typeOfBenefits,
+    };
+  }
+
+  async updateCronjobReferral(id: string, amount: number, reason: string, userId: string) {
+    const cronJobFound = await prisma.cronJobLog.findFirst({
+      where: { id },
+      select: {
+        dynamicValue: true,
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!cronJobFound) {
+      throw new BadRequestError(Messages.REFERRAL_CRONJOB_NOT_FOUND);
+    }
+
+    const updatedBy = userId;
+
+    const updatedDynamicJobValue = {
+      ...(cronJobFound.dynamicValue as DynamicCronJobReferralTypes),
+      bonusAmount: amount,
+    };
+
+    if (cronJobFound.status === CronJobStatus.SUCCESSFUL) {
+      throw new BadRequestError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE);
+    }
+
+    const result = await prisma.$transaction(
+      async (tx) => {
+        await tx.cronJobLog.update({
+          where: { id },
+          data: {
+            dynamicValue: updatedDynamicJobValue,
+            updatedBy: updatedBy,
+            reason: reason,
+            updatedAt: new Date(),
+            status: CronJobStatus.SUCCESSFUL,
+          },
+        });
+      },
+      {
+        timeout: 30000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
+
+    return result;
   }
 }
 

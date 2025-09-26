@@ -375,6 +375,27 @@ export enum Messages {
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 
+  // Smart Saving
+  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
+  GET_SMART_SAVING_SUCCESS_OPTIONS = 'Get smart saving filter options list successfully',
+  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
+  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
+  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
+  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
+  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
+  // Flexi Interest
+  GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
+  GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
+  GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
+
+  // Cronjob
+  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
+  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update since it has already been success',
   //Payment Wallet
   GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
   GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
