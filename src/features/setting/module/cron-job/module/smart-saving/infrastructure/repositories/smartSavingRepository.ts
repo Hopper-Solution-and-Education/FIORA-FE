@@ -197,9 +197,9 @@ class smartSavingRepository implements ISmartSavingRepository {
 
     if (!smartSavingdata || !smartSavingdata.walletId) return null;
 
-    const userId = await this._prisma.wallet.findFirst({
-      where: { id: smartSavingdata?.walletId },
-      select: { userId: true },
+    const userId = await this._prisma.user.findFirst({
+      where: { id: smartSavingdata?.userId },
+      select: { id: true },
     });
     const smartSavingBenefit = await this._prisma.membershipBenefit.findFirst({
       where: { slug: 'saving-interest' },
@@ -211,7 +211,7 @@ class smartSavingRepository implements ISmartSavingRepository {
     });
     const createdTxn = await this._prisma.transaction.create({
       data: {
-        userId: userId?.userId,
+        userId: userId?.id,
         type: TransactionType.Income,
         amount: data.amount,
         toWalletId: smartSavingdata?.walletId,
@@ -246,9 +246,9 @@ class smartSavingRepository implements ISmartSavingRepository {
           smartSavingAmount: data.amount.toString(),
           smartSavingRateUnit: smartSavingBenefit?.suffix,
           smartSavingAmountUnit: Currency.FX,
-          reason: data.reason,
           updateBy: adminEmail?.email,
         },
+        reason: data.reason,
       },
     });
     try {
