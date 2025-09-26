@@ -17,6 +17,7 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
+  const [amountError, setAmountError] = useState('');
   const { retryReferral, isRetrying, error, clearError } = useRetryReferral();
 
   const handleRetry = () => {
@@ -24,8 +25,30 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
     setIsModalOpen(true);
   };
 
+  const validateAmount = (value: string): boolean => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue) || numValue <= 0) {
+      setAmountError('Amount must be a number greater than 0');
+      return false;
+    }
+    setAmountError('');
+    return true;
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAmount(value);
+
+    // Clear error when user starts typing
+    if (amountError) {
+      setAmountError('');
+    }
+  };
+
   const handleConfirm = async () => {
-    if (!amount.trim() || !reason.trim()) {
+    const isAmountValid = validateAmount(amount);
+
+    if (!isAmountValid || !amount.trim() || !reason.trim()) {
       return;
     }
 
@@ -45,6 +68,7 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
         setIsModalOpen(false);
         setAmount('');
         setReason('');
+        setAmountError('');
       }
     } catch (err) {
       // Error is handled by the hook
@@ -57,6 +81,7 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
     setIsModalOpen(false);
     setAmount('');
     setReason('');
+    setAmountError('');
   };
 
   const isFail = status.toLowerCase() === 'fail';
@@ -101,12 +126,19 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
               </label>
 
               <Input
+                type="number"
+                min="0"
+                step="0.01"
                 placeholder="Type amount here"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full"
+                onChange={handleAmountChange}
+                className={`w-full ${amountError ? 'border-red-500 focus:border-red-500' : ''}`}
                 disabled={isRetrying}
               />
+
+              {amountError && (
+                <p className="text-sm text-red-500 dark:text-red-400 mt-1">{amountError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -152,7 +184,7 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
               type="button"
               onClick={handleConfirm}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg px-4 py-2 w-full"
-              disabled={isRetrying || !amount.trim() || !reason.trim()}
+              disabled={isRetrying || !amount.trim() || !reason.trim() || !!amountError}
             >
               {isRetrying ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
