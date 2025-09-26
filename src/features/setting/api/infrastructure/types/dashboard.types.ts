@@ -15,3 +15,10 @@ export interface DashboardFilterParams extends TablePaginationProps {
   sortOrder?: 'asc' | 'desc';
   userIds?: string | string[];
 }
+
+export interface ReferralDashboardFilterParams extends DashboardFilterParams {
+  typeBenefits?: string | string[];
+  emailReferee?: string | string[];
+  emailReferrer?: string | string[];
+  searchParam?: string;
+}

@@ -215,6 +215,10 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Cron Job', link: '/setting/cron-job' },
     { title: 'Membership', link: '/setting/cron-job/membership' },
   ],
+  '/setting/cron-job/referral': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Referral', link: '/setting/cron-job/referral' },
+  ],
 };
 
 /**

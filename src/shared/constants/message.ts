@@ -375,6 +375,15 @@ export enum Messages {
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
+
+  // Cronjob
+  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
+  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update since it has already been success',
   //Payment Wallet
   GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
   GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
