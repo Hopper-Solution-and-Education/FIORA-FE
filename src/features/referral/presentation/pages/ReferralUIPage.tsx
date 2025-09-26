@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useAppDispatch, useAppSelector } from '@/store';
 import { DollarSign, Home, TrendingUp } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { setFilter } from '../../slices';
+import { setFilter, triggerRefresh } from '../../slices';
 import {
   useGetReferralEarningsQuery,
   useInviteByEmailsMutation,
@@ -139,6 +139,7 @@ const ReferralUIPage = () => {
       try {
         await withdrawReferral({ amount }).unwrap();
         toast.success(`Withdrawal of ${amount.toLocaleString()} FX requested successfully.`);
+        dispatch(triggerRefresh());
       } catch (error: any) {
         const message =
           error?.data?.message || error?.message || 'Unable to process withdrawal right now.';
@@ -146,7 +147,7 @@ const ReferralUIPage = () => {
         throw error;
       }
     },
-    [withdrawReferral],
+    [withdrawReferral, dispatch],
   );
 
   const handleViewReferees = useCallback(() => {
