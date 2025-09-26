@@ -1,4 +1,5 @@
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
+import { newsApi } from '@/features/news/store/api/newsApi';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import { referralApi } from '@/features/referral/slices/referralApi';
 import { configureStore } from '@reduxjs/toolkit';
@@ -25,6 +26,7 @@ export const store = configureStore({
       .concat(apiMiddleware)
       .concat(helpsCenterApi.middleware)
       .concat(profileApi.middleware)
+      .concat(newsApi.middleware)
       .concat(referralApi.middleware),
 });
 
@@ -37,6 +39,7 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
         .concat(apiMiddleware)
         .concat(helpsCenterApi.middleware)
         .concat(profileApi.middleware)
+        .concat(newsApi.middleware)
         .concat(referralApi.middleware),
   });
 };
