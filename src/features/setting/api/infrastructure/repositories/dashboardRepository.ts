@@ -614,6 +614,7 @@ class DashboardRepository {
       select: {
         dynamicValue: true,
         id: true,
+        status: true,
       },
     });
 
@@ -628,16 +629,28 @@ class DashboardRepository {
       bonusAmount: amount,
     };
 
-    const result = await prisma.cronJobLog.update({
-      where: { id },
-      data: {
-        dynamicValue: updatedDynamicJobValue,
-        updatedBy: updatedBy,
-        reason: reason,
-        updatedAt: new Date(),
-        status: CronJobStatus.SUCCESSFUL,
+    if (cronJobFound.status === CronJobStatus.SUCCESSFUL) {
+      throw new BadRequestError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE);
+    }
+
+    const result = await prisma.$transaction(
+      async (tx) => {
+        await tx.cronJobLog.update({
+          where: { id },
+          data: {
+            dynamicValue: updatedDynamicJobValue,
+            updatedBy: updatedBy,
+            reason: reason,
+            updatedAt: new Date(),
+            status: CronJobStatus.SUCCESSFUL,
+          },
+        });
       },
-    });
+      {
+        timeout: 30000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
 
     return result;
   }

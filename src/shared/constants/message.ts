@@ -379,4 +379,5 @@ export enum Messages {
   // Cronjob
   REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
   UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update since it has already been success',
 }
