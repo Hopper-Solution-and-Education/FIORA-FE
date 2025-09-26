@@ -14,6 +14,7 @@ export enum RouteEnum {
 
   // Cronjob dashboard
   CronjobMembership = '/setting/cron-job/membership',
+  CronjobSavingInterest = '/setting/cron-job/saving-interest',
   CronjobReferral = '/setting/cron-job/referral',
   UserNotificationDetail = '/notification/details/{id}',
   FlexiInterest = '/setting/cron-job/flexi-interest',

@@ -24,6 +24,10 @@ export enum ApiEndpointEnum {
   MembershipTiers = '/api/memberships/benefit-tier',
   Users = '/api/users',
 
+  // Cronjob Dashboard Saving Interest
+  CronjobDashboardSavingInterest = '/api/dashboard/saving-interest',
+  CronjobChartSavingInterest = '/api/dashboard/saving-interest-chart',
+
   // Cronjob Dashboard Referral
   CronjobDashboardReferral = '/api/dashboard/referral',
   CronjobChartReferral = '/api/dashboard/referral/referral-chart',

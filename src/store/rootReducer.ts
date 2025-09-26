@@ -20,6 +20,7 @@ import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flex
 import flexiInterestCronjobSlice from '@/features/setting/module/cron-job/module/flexi-interest/presentation/slices';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
 import referralCronjobSlice from '@/features/setting/module/cron-job/module/referral/slices';
+import savingInterestSlice from '@/features/setting/module/cron-job/module/saving-interest/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -64,6 +65,7 @@ const reducer = {
   membershipCronjob: membershipCronjobSlice,
   flexiInterestCronjob: flexiInterestCronjobSlice,
   referralTransaction: referralTransactionSlice,
+  savingInterest: savingInterestSlice,
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
 

@@ -375,6 +375,14 @@ export enum Messages {
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 
+  // Smart Saving
+  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
+  GET_SMART_SAVING_SUCCESS_OPTIONS = 'Get smart saving filter options list successfully',
+  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
+  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
+  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
+  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
+  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
   // Flexi Interest
   GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
   GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
