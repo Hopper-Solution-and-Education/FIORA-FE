@@ -14,28 +14,13 @@ class GetUsersUseCase {
     const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     // Build filters
-    let filters = await this.userRepository.buildFilters({
+    const filters = await this.userRepository.buildFilters({
       search,
       role,
       status,
       fromDate,
       toDate,
     });
-
-    // Add search filter
-    const searchFilter = await this.userRepository.searchFilter(search as string);
-    if (searchFilter) {
-      // If there are existing filters, we need to combine them properly
-      if (Object.keys(filters).length > 0) {
-        // Create a combined filter that ensures both conditions are met
-        filters = {
-          AND: [filters, searchFilter],
-        };
-      } else {
-        // If no other filters, just use search filter
-        filters = searchFilter;
-      }
-    }
 
     const skip = (pageNum - 1) * limitNum;
 

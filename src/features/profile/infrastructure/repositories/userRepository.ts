@@ -1,12 +1,12 @@
 import prisma from '@/config/prisma/prisma';
 import { normalizeToArray } from '@/shared/utils/filterUtils';
-import { KYCStatus } from '@prisma/client';
+import { KYCStatus, Prisma } from '@prisma/client';
 import { UserFilterParams, UserSearchResult } from '../../domain/entities/models/user.types';
 import { UserRepositoryInterface } from '../../domain/repositories/userRepository.interface';
 
 export class UserRepository implements UserRepositoryInterface {
   async getWithFilters(filters: any, skip: number, limit: number): Promise<UserSearchResult[]> {
-    const whereClause: any = {
+    const whereClause: Prisma.UserWhereInput = {
       isDeleted: false,
       ...filters,
     };
@@ -77,6 +77,23 @@ export class UserRepository implements UserRepositoryInterface {
   async buildFilters(params: UserFilterParams): Promise<any> {
     const filters: any = {};
 
+    if (params.search) {
+      filters.OR = [
+        {
+          name: {
+            contains: params.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          email: {
+            contains: params.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
     // Filter by role
     if (params.role) {
       const roleArray = normalizeToArray(params.role as any);
@@ -119,6 +136,13 @@ export class UserRepository implements UserRepositoryInterface {
       }
     }
 
+    if (params.status && !params.status.includes('all')) {
+      if (params.status && params.status.includes('blocked')) {
+        filters.isBlocked = { equals: true };
+      } else if (params.status && params.status.includes('active')) {
+        filters.isBlocked = { equals: false };
+      }
+    }
     return filters;
   }
 }
