@@ -3,12 +3,7 @@
 import { CommonTable } from '@/components/common/organisms';
 import { ColumnConfigMap } from '@/components/common/organisms/CommonTable/types';
 import { useRef, useState } from 'react';
-import {
-  EmptyState,
-  ErrorDisplay,
-  SearchFilterHeader,
-  usePaymentWalletTableColumns,
-} from './components';
+import { EmptyState, SearchFilterHeader, usePaymentWalletTableColumns } from './components';
 import { useLazyLoading, usePaymentWalletTableData } from './hooks';
 
 const PaymentWalletTable = () => {
@@ -83,8 +78,6 @@ const PaymentWalletTable = () => {
       >
         {/* Sentinel for intersection observer (no spinner; skeleton rows handled in table) */}
       </div>
-
-      <ErrorDisplay error={transactionsError} />
     </div>
   );
 };

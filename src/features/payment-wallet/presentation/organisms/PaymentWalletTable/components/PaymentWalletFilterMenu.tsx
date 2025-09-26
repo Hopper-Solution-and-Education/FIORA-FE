@@ -444,13 +444,14 @@ const PaymentWalletFilterMenu = <T extends Record<string, unknown>>(
             : DEFAULT_MAX_AMOUNT
         }
         currency={CURRENCY.FX}
+        targetCurrency={CURRENCY.FX}
         onValueChange={(target, value) =>
           handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
         }
         label={`Amount (${CURRENCY.FX})`}
         minLabel="Min Amount"
         maxLabel="Max Amount"
-        step={1000}
+        applyExchangeRate={false}
       />
     );
 

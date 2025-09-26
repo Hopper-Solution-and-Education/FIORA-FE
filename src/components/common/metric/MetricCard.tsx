@@ -19,6 +19,8 @@ interface MetricCardProps {
     value: string;
     isPositive: boolean;
   };
+  applyExchangeRate?: boolean;
+  shouldShortened?: boolean;
 }
 
 const MetricCard = ({
@@ -30,6 +32,8 @@ const MetricCard = ({
   className,
   trend,
   currency,
+  applyExchangeRate = true,
+  shouldShortened = false,
 }: MetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
@@ -111,7 +115,10 @@ const MetricCard = ({
       </CardHeader>
       <CardContent>
         <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatCurrency(value, currency || CURRENCY.FX)}
+          {formatCurrency(value, currency || CURRENCY.FX, {
+            applyExchangeRate,
+            shouldShortened,
+          })}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">
