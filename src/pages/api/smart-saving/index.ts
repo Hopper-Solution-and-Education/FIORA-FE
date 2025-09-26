@@ -16,7 +16,7 @@ export default withAuthorization({
     case 'GET':
       return GET(request, response);
     case 'POST':
-      return POSt(request, response);
+      return POST(request, response);
     case 'PUT':
       return PUT(request, response, userId);
     default:
@@ -34,7 +34,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     );
 }
 
-export async function POSt(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const {
     page = 1,
     pageSize = 20,
