@@ -225,12 +225,12 @@ model Transaction {
   fromAccount         Account?             @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
   fromCategory        Category?            @relation("FromCategory", fields: [fromCategoryId], references: [id])
   fromWallet          Wallet?              @relation("FromWallet", fields: [fromWalletId], references: [id])
-  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
   partner             Partner?             @relation("PartnerTransactions", fields: [partnerId], references: [id])
   toAccount           Account?             @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
   toCategory          Category?            @relation("ToCategory", fields: [toCategoryId], references: [id])
   toWallet            Wallet?              @relation("ToWallet", fields: [toWalletId], references: [id])
   user                User?                @relation("UserTransactions", fields: [userId], references: [id])
+  membershipBenefit   MembershipBenefit?   @relation(fields: [membershipBenefitId], references: [id])
 
   @@index([date])
   @@index([type])
@@ -627,6 +627,7 @@ model MembershipBenefit {
   createdBy   String?       @db.Uuid
   updatedBy   String?       @db.Uuid
   userId      String        @db.Uuid
+  symbol      String?       @db.VarChar(30)
   TierBenefit TierBenefit[]
   Transaction Transaction[]
 
@@ -953,6 +954,7 @@ model CommonSetting {
   createdBy    String?       @db.Uuid
   updatedAt    DateTime      @db.Timestamptz(0)
   updatedBy    String?       @db.Uuid
+  symbol       String?       @db.VarChar(30)
   Transaction  Transaction[]
 }
 

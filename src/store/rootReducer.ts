@@ -11,6 +11,8 @@ import createTransactionSlice from '@/features/home/module/transaction/slices/cr
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
+import { newsApi } from '@/features/news/store/api/newsApi';
+import paymentWalletSlice from '@/features/payment-wallet/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import referralTransactionSlice from '@/features/referral/slices';
 import { referralApi } from '@/features/referral/slices/referralApi';
@@ -52,6 +54,7 @@ const reducer = {
   membership: membershipSlice,
   wallet: walletSlice,
   walletSetting: walletSettingSlice,
+  paymentWallet: paymentWalletSlice,
   faqsImport: faqsImportSlice,
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
@@ -62,6 +65,7 @@ const reducer = {
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [newsApi.reducerPath]: newsApi.reducer,
   [referralApi.reducerPath]: referralApi.reducer,
 };
 
