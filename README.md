@@ -1,6 +1,6 @@
 # 📖 Guide to FIORA-FE
 
-Welcome to the **FIORA-FE**!  
+Welcome to the **FIORA-FE**! 
 This is a powerful frontend project built with **Next.js**, designed with a feature-based architecture to optimize developer experience (DX) and performance for administrative, reporting, transactional, and settings modules.
 
 ---
