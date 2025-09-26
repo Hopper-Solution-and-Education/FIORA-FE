@@ -28,7 +28,6 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   const { data: existingData, isLoading: isLoadingData } = useGetBankAccountQuery(undefined, {
     skip: !eKYCData,
   });
-  console.log('🚀 ~ BankAccountForm ~ eKYCData:', eKYCData);
 
   const [submitBankAccount] = useSubmitBankAccountMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();

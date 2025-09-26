@@ -1,7 +1,9 @@
 import { prisma } from '@/config';
 import { sendBulkEmailUtility } from '@/config/send-grid/sendGrid';
 import { Prisma, Referral, Transaction, TransactionType, Wallet, WalletType } from '@prisma/client';
+import { readFileSync } from 'fs';
 import { randomUUID } from 'node:crypto';
+import { join } from 'path';
 import {
   IReferralRepository,
   ListInvitesParams,
@@ -142,66 +144,66 @@ class ReferralRepository implements IReferralRepository {
   }
 
   private createReferralEmailTemplate(referralCode: string): string {
-    return `
+    try {
+      // Get NEXTAUTH_URL for environment awareness
+      const nextAuthUrl = process.env.NEXTAUTH_URL;
+
+      // Determine the correct project root based on environment
+      let projectRoot: string;
+      if (nextAuthUrl) {
+        const isDistBuild = process.cwd().includes('dist') || process.cwd().includes('build');
+        projectRoot = isDistBuild ? join(process.cwd(), '..', '..', '..') : process.cwd();
+      } else {
+        projectRoot = process.cwd();
+      }
+
+      // Construct file path using environment-aware project root
+      const templatePath = join(
+        projectRoot,
+        'src',
+        'features',
+        'referral',
+        'infrastructure',
+        'emailTemplates',
+        'referralInvitation.html',
+      );
+
+      let templateContent = readFileSync(templatePath, 'utf8');
+
+      const baseUrl = process.env.NEXTAUTH_URL
+        ? process.env.NEXTAUTH_URL.replace(/\/$/, '')
+        : 'http://localhost:3000';
+
+      templateContent = templateContent.replace(/\[BASE_URL\]/g, baseUrl);
+      templateContent = templateContent.replace(/\[REFERRAL_CODE\]/g, referralCode);
+
+      return templateContent;
+    } catch (error) {
+      console.error('Error reading referral email template:', error);
+
+      const fallbackBaseUrl = process.env.NEXTAUTH_URL
+        ? process.env.NEXTAUTH_URL.replace(/\/$/, '') // Remove trailing slash if present
+        : 'http://localhost:3000';
+
+      // Fallback to a simple template if file reading fails
+      return `
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You've been invited to join FIORA!</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f4f8; color: #2d3748;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background: linear-gradient(135deg, #e6eef5 0%, #f0f4f8 100%); padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 50, 100, 0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="background: linear-gradient(90deg, #007bff, #00c4ff); padding: 30px; text-align: center; position: relative; overflow: hidden;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">FIORA</h1>
-              <p style="color: #e6f0ff; margin: 8px 0 0; font-size: 14px; font-style: italic;">Join the Community</p>
-              <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255, 255, 255, 0.1); border-radius: 50%;"></div>
-            </td>
-          </tr>
-          <!-- Content -->
-          <tr>
-            <td style="padding: 40px; text-align: center;">
-              <h2 style="font-size: 22px; font-weight: 600; margin: 0 0 25px; color: #1a202c;">You're Invited to Join FIORA!</h2>
-              <p style="font-size: 16px; line-height: 1.6; margin: 0 0 25px; color: #4a5568;">
-                Great news! You've been invited to join FIORA, an exciting platform where you can earn rewards through our referral program.
-              </p>
-              <p style="font-size: 16px; line-height: 1.6; margin: 0 0 25px; color: #4a5568;">
-                Your friend has shared their referral code with you. Use this code when you sign up to get started:
-              </p>
-              <div style="background: linear-gradient(45deg, #e9f1ff, #f8fafc); padding: 20px; border-radius: 8px; display: inline-block; margin: 25px 0; box-shadow: 0 2px 10px rgba(0, 123, 255, 0.1);">
-                <span style="font-size: 28px; font-weight: 700; letter-spacing: 3px; color: #007bff; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);">${referralCode}</span>
-              </div>
-              <p style="font-size: 16px; line-height: 1.6; margin: 0 0 25px; color: #4a5568;">
-                Join thousands of users who are already earning rewards through our platform. It's free to sign up and easy to get started!
-              </p>
-              <a href="https://fiora.com/signup?ref=${referralCode}" style="display: inline-block; padding: 14px 30px; background: linear-gradient(90deg, #007bff, #00c4ff); color: #ffffff; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: 600; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);">
-                Join FIORA Now
-              </a>
-              <p style="font-size: 12px; color: #a0aec0; margin: 25px 0 0; font-style: italic;">
-                Questions? Visit our help center or contact our support team.
-              </p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background: #f7fafc; padding: 25px; text-align: center; font-size: 12px; color: #718096; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0;">© 2025 FIORA. All rights reserved.</p>
-              <p style="margin: 8px 0 0;">
-                Need help? Reach us at <a href="mailto:support@fiora.com" style="color: #007bff; text-decoration: none; font-weight: 500;">support@fiora.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You've been invited to join FIORA!</title>
+  </head>
+  <body>
+    <h1>You've been invited to join FIORA!</h1>
+    <p>Hello,</p>
+    <p>Great news! You've been invited to join FIORA platform.</p>
+    <p>Your referral code: ${referralCode}</p>
+    <p>Join now: ${fallbackBaseUrl}</p>
+    <p>Sincerely, FIORA Team</p>
+  </body>
 </html>`;
+    }
   }
 
   async getWalletTransactions(

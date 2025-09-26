@@ -32,7 +32,6 @@ export const useContactInfoForm = () => {
         handleCloseOtpModal();
         toast.success('OTP verified successfully');
       } catch (error) {
-        console.log('🚀 ~ ContactInformationForm ~ error:', error);
         toast.error('OTP is incorrect');
       }
     },
@@ -61,7 +60,6 @@ export const useContactInfoForm = () => {
         phone: profile?.phone || '',
       });
     } catch (error) {
-      console.log('🚀 ~ ContactInformationForm ~ error:', error);
       toast.error('Something went wrong');
     }
   };

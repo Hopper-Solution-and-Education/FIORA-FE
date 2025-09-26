@@ -82,7 +82,6 @@ const ReferralUIPage = () => {
     async (emails: string[]) => {
       try {
         const response = await inviteByEmails({ emails }).unwrap();
-        console.log('dYs? ~ ReferralUIPage ~ response:', response);
         const created = Array.isArray(response?.created) ? response.created : [];
         const duplicates = Array.isArray(response?.duplicates) ? response.duplicates : [];
 
