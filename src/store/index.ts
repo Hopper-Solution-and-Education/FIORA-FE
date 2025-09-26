@@ -1,5 +1,6 @@
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import { referralApi } from '@/features/referral/slices/referralApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { PersistConfig, persistReducer, persistStore } from 'redux-persist';
@@ -23,7 +24,8 @@ export const store = configureStore({
     getDefaultMiddleware({ serializableCheck: false })
       .concat(apiMiddleware)
       .concat(helpsCenterApi.middleware)
-      .concat(profileApi.middleware),
+      .concat(profileApi.middleware)
+      .concat(referralApi.middleware),
 });
 
 export const setupStore = (preloadedState?: Partial<RootState>) => {
@@ -34,7 +36,8 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
       getDefaultMiddleware({ serializableCheck: false })
         .concat(apiMiddleware)
         .concat(helpsCenterApi.middleware)
-        .concat(profileApi.middleware),
+        .concat(profileApi.middleware)
+        .concat(referralApi.middleware),
   });
 };
 

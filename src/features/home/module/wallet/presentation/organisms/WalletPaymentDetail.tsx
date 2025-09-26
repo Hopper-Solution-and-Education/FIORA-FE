@@ -1,11 +1,13 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
-import { useQRCode } from 'next-qrcode';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data';
 import { PackageFX } from '../../domain';
 import { WalletUploadProof } from '../molecules';
@@ -14,13 +16,37 @@ interface WalletPaymentDetailProps {
   className?: string;
 }
 
+interface Attachment {
+  id: string;
+  url: string;
+}
+
+type PkgFXExtend = PackageFX & {
+  attachments: Array<Attachment>;
+};
+
 const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
-  const { SVG } = useQRCode();
   const selectedPackageId = useAppSelector((state) => state.wallet.selectedPackageId);
   const packageFX = useAppSelector((state) => state.wallet.packageFX);
   const selectedPackage = packageFX?.find((pkg: PackageFX) => pkg.id === selectedPackageId);
   const currency = useAppSelector((state) => state.settings.currency);
   const { formatCurrency, getExchangeAmount } = useCurrencyFormatter();
+  const [loadingImage, setLoadingImage] = useState(false);
+  const [imageSrc, setImageSrc] = useState('');
+
+  useEffect(() => {
+    setLoadingImage(true);
+    if (
+      typeof selectedPackage !== 'undefined' &&
+      (selectedPackage as PkgFXExtend).attachments &&
+      (selectedPackage as PkgFXExtend).attachments.length > 0
+    ) {
+      const randomIndex = Math.floor(
+        Math.random() * (selectedPackage as PkgFXExtend).attachments.length,
+      );
+      setImageSrc((selectedPackage as PkgFXExtend).attachments[randomIndex].url);
+    }
+  }, [selectedPackageId]);
 
   if (!selectedPackage) {
     return (
@@ -47,8 +73,6 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
     fromCurrency: CURRENCY.FX,
     toCurrency: currency,
   });
-
-  const qrValue = JSON.stringify({ fxAmount, usdAmount: actualAmount, rate, id });
 
   return (
     <Card className={cn('w-full', className)}>
@@ -79,7 +103,15 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
         </div>
         <div className="flex flex-col items-center gap-2">
           <div className="bg-white rounded-xl p-4 shadow">
-            <SVG text={qrValue} options={{ width: 160, margin: 2 }} />
+            <Image
+              hidden={loadingImage}
+              src={imageSrc}
+              alt={'QR Code for ' + formatCurrency(actualAmount, currency)}
+              onLoadingComplete={() => setLoadingImage(false)}
+              width={320}
+              height={320}
+            />
+            {loadingImage ? <Skeleton className="w-[320px] h-[320px]" /> : null}
           </div>
           <div className="text-xs text-muted-foreground">
             QR Code for {formatCurrency(actualAmount, currency)}

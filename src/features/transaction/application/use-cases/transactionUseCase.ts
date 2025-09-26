@@ -16,6 +16,7 @@ import {
   CategoryType,
   Prisma,
   TransactionType,
+  WalletType,
   type Account,
   type Transaction,
 } from '@prisma/client';
@@ -27,7 +28,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) { }
+  ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -71,13 +72,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                  {
-                    date: {
-                      gte: new Date(typeSearchParams),
-                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
                     },
-                  },
-                ]
+                  ]
                 : []),
             ],
           },
@@ -131,56 +132,64 @@ class TransactionUseCase {
     };
   }
 
-  searchTransactionBuildWhereClause(searchParams: string) {
-    let where = {};
-    const typeSearchParams = searchParams.toLowerCase();
-    // test with Regex-Type Transaction
-    const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
-    const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
-
-    let typeTransactionWhere = {};
-
-    if (typeTransaction) {
-      typeTransactionWhere = {
-        type: { equals: typeTransaction },
-      };
-    }
-
-    where = {
-      OR: [
-        { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-        { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-        { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
-        // adding typeTransactionWhere to where clause if exists
-        typeTransactionWhere,
-      ],
-    };
-
-    return where;
-  }
-
   async getTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
-    const {
-      page = 1,
-      pageSize = 20,
-      searchParams,
-      filters,
-      sortBy = {},
-      userId,
-      isInfinityScroll,
-      lastCursor,
-    } = params;
-
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
     const take = pageSize;
-    const skip = lastCursor ? 1 : (page - 1) * pageSize;
+    const skip = (page - 1) * pageSize;
 
     let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
 
     if (searchParams) {
+      const typeSearchParams = searchParams.toLowerCase();
+      // test with Regex-Type Transaction
+      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+      const typeWallet = Object.values(WalletType).find((type) => regex.test(type));
+
+      let typeTransactionWhere = '';
+      let typeWalletWhere = '';
+
+      if (typeTransaction) {
+        typeTransactionWhere = typeTransaction;
+      }
+
+      if (typeWallet) {
+        typeWalletWhere = typeWallet as WalletType;
+      }
+
       where = {
-        AND: [where, this.searchTransactionBuildWhereClause(searchParams)],
+        AND: [
+          where,
+          {
+            OR: [
+              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              {
+                fromWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
+              },
+              {
+                toWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
+              },
+              // adding typeTransactionWhere to where clause if exists
+              ...(typeTransactionWhere
+                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+                : []),
+            ],
+          },
+        ],
       };
     }
 

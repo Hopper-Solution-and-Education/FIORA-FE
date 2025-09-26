@@ -145,7 +145,7 @@ class HttpClient implements IHttpClient {
 
       if (!response.ok) {
         // If response status is 403, log out
-        if (response.status === 403 || response.status === 500) {
+        if (response.status === 403) {
           await signOut();
         }
         // get response error from server
