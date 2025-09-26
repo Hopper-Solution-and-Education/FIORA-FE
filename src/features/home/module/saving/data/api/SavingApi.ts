@@ -1,9 +1,12 @@
 import { httpClient } from '@/config';
 import { routeConfig } from '@/shared/utils/route';
 import { ApiEndpointEnum } from '../ApiEndpointEnum';
+import { CreateSavingClaimRequest } from '../tdo/request/CreateSavingClaimRequest';
 import { CreateSavingHistoryRequest } from '../tdo/request/CreateSavingHistoryRequest';
+import { CreateSavingTransferRequest } from '../tdo/request/CreateSavingTransferRequest';
 import { SavingHistoryResponse } from '../tdo/response/SavingHistoryResponse';
 import { SavingOverviewResponse } from '../tdo/response/SavingOverviewResponse';
+import { SavingTransactionResponse } from '../tdo/response/SavingTransactionResponse';
 import { ISavingApi } from './ISavingApi';
 
 export class SavingApi implements ISavingApi {
@@ -20,5 +23,18 @@ export class SavingApi implements ISavingApi {
       ApiEndpointEnum.SavingTransactionHistory,
       filter,
     );
+  }
+
+  async createSavingTransfer(
+    request: CreateSavingTransferRequest,
+  ): Promise<SavingTransactionResponse> {
+    return await httpClient.post<SavingTransactionResponse>(
+      ApiEndpointEnum.SavingTransfer,
+      request,
+    );
+  }
+
+  async createSavingClaim(request: CreateSavingClaimRequest): Promise<SavingTransactionResponse> {
+    return await httpClient.post<SavingTransactionResponse>(ApiEndpointEnum.SavingClaim, request);
   }
 }

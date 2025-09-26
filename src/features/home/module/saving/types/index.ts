@@ -1,4 +1,4 @@
-import { FilterCriteria } from '@/shared/types';
+import { FilterCriteria, OrderType } from '@/shared/types';
 
 export type SavingType = 'Income' | 'Expense' | 'Transfer';
 
@@ -82,8 +82,9 @@ export type SavingColumn =
   | 'Actions';
 
 export type SavingTableColumn = {
-  col: SavingColumn;
+  index: number;
   sortable: boolean;
+  sortedBy?: OrderType;
 };
 
 export type SavingTableColumnKey = { [key in SavingColumn]: SavingTableColumn };
@@ -116,3 +117,14 @@ export interface ISavingTransactionFilter extends FilterCriteria {
   page?: number;
   pageSize?: number;
 }
+
+export type ActionType = 'Deposit' | 'Transfer' | 'Claim';
+type WalletType = 'Payment' | 'Saving';
+
+export type SavingTransaction = {
+  packageFXId: string;
+  fxAmount: number;
+  action?: ActionType;
+  walletId?: string;
+  walletType?: WalletType;
+};

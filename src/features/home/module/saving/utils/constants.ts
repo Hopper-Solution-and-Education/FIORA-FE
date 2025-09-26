@@ -1,18 +1,23 @@
 import { FilterCriteria } from '@/shared/types';
-import { SavingTableColumn } from '../types';
+import { SavingTableColumnKey } from '../types';
 
 export const DEFAULT_SAVING_FILTER_CRITERIA: FilterCriteria = {
   userId: '',
   filters: {},
+  search: '',
+  sortBy: {
+    date: 'desc',
+  },
 };
 
-export const SAVING_COLUMNS: SavingTableColumn[] = [
-  { col: 'No.', sortable: false },
-  { col: 'Date', sortable: true },
-  { col: 'Type', sortable: true },
-  { col: 'Amount', sortable: true },
-  { col: 'From', sortable: true },
-  { col: 'To', sortable: true },
-  { col: 'Remark', sortable: true },
-  { col: 'Actions', sortable: false },
-];
+export const DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS: SavingTableColumnKey = {
+  //True = sortable, False = not sortable
+  'No.': { sortable: false, index: 1, sortedBy: 'none' },
+  Date: { sortable: true, index: 2, sortedBy: 'none' },
+  Type: { sortable: true, index: 3, sortedBy: 'none' },
+  Amount: { sortable: true, index: 4, sortedBy: 'none' },
+  From: { sortable: true, index: 5, sortedBy: 'none' },
+  To: { sortable: true, index: 6, sortedBy: 'none' },
+  Remark: { sortable: true, index: 7, sortedBy: 'none' },
+  Actions: { sortable: false, index: 8, sortedBy: 'none' },
+};

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { SavingFilterOptionResponse } from '../../types';
 import { DEFAULT_SAVING_FILTER_CRITERIA } from '../../utils/constants';
+import { SavingWalletType } from '../../utils/enums';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_AMOUNT = 10000;
@@ -464,10 +465,15 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       return [{ label: 'No option available', value: 'none', disabled: true }];
     }
 
-    return data.data.wallets.map((option: string) => ({
-      value: option,
-      label: option,
-    }));
+    return data.data.wallets
+      .filter(
+        (option: string) =>
+          option === SavingWalletType.PAYMENT || option === SavingWalletType.SAVING,
+      )
+      .map((option: string) => ({
+        value: option,
+        label: option,
+      }));
   }, [data]);
 
   // Create filter components configuration - each component is memoized

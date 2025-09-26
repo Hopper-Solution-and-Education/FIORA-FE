@@ -8,8 +8,8 @@ import { useAppSelector } from '@/store';
 import { Check, MoveLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { CreateDepositRequest } from '../../data/tdo/request/CreateDepositRequest';
-import { ISavingWallet, PackageFX } from '../../types';
+import { ActionType, ISavingWallet, PackageFX, SavingTransaction } from '../../types';
+import { SavingWalletType } from '../../utils/enums';
 import SavingPackageCurrency from '../atoms/SavingPackageCurrency';
 import { SavingRadioGroup, SavingRadioItem } from '../components/SavingRadioGroup';
 
@@ -17,12 +17,21 @@ type ChildProps = {
   title: string;
   subTitle?: string;
   wallets: ISavingWallet[];
-  submit: (request: CreateDepositRequest) => void;
+  state: ActionType | null;
+  submit: (request: SavingTransaction) => void;
   isOpen: boolean;
   handleClose: () => void;
 };
 
-function SavingDepositPage({ title, subTitle, wallets, submit, isOpen, handleClose }: ChildProps) {
+function SavingDepositPage({
+  title,
+  subTitle,
+  wallets,
+  state,
+  submit,
+  isOpen,
+  handleClose,
+}: ChildProps) {
   const [packageSelected, setPackageSelected] = useState<PackageFX | null>(null);
   const [walletSelected, setWalletSelected] = useState<ISavingWallet | null>(null);
 
@@ -47,7 +56,18 @@ function SavingDepositPage({ title, subTitle, wallets, submit, isOpen, handleClo
       return;
     }
 
-    submit({ packageFXId: packageSelected?.id ?? '', walletId: walletSelected?.id ?? '' });
+    if (walletSelected === null) {
+      toast.error('Please select a wallet');
+      return;
+    }
+
+    submit({
+      packageFXId: packageSelected?.id ?? '',
+      fxAmount: packageSelected?.fxAmount ?? 0,
+      action: state as ActionType,
+      walletId: walletSelected?.id ?? '',
+      walletType: (walletSelected?.type as SavingWalletType) ?? SavingWalletType.PAYMENT,
+    });
   };
 
   return (

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 export function useElementScrollToBottom(
-  ref: React.RefObject<HTMLElement>,
+  ref: React.RefObject<HTMLElement | null>,
   onBottom: () => void,
   offset = 0, // pixels before bottom
 ) {

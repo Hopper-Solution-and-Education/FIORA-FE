@@ -9,13 +9,17 @@ import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { OrderType } from '@/shared/types';
 import { FilterCriteria } from '@/shared/types/filter.types';
-import { FileText } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { CreateSavingHistoryRequest } from '../../data/tdo/request/CreateSavingHistoryRequest';
-import useFetchDataTransactionHistory from '../../hooks/useFetchDataTransactionHistory';
-import { useWindowScrollToBottom, useWindowScrollToTop } from '../../hooks/useWindowScroll';
-import { ISavingHistory, SavingColumn } from '../../types';
-import { SAVING_COLUMNS } from '../../utils/constants';
+import { cn } from '@/shared/utils';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { debounce } from 'lodash';
+import { FileText, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useWindowScrollToBottom } from '../../hooks/useWindowScroll';
+import { resetSavingWallet, updateFilterCriteria, updatePage } from '../../slices';
+import { fetchSavingTransactions } from '../../slices/actions';
+import { ISavingHistory, SavingColumn, SavingTableColumnKey } from '../../types';
+import { DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS } from '../../utils/constants';
+import { SavingTransactionTableToEntity } from '../../utils/enums';
 import { formatDate } from '../../utils/formatDate';
 import SavingFilterMenu from '../atoms/SavingFilterMenu';
 import SavingSearch from '../atoms/SavingSearch';
@@ -46,114 +50,177 @@ const SortArrowBtn = ({
 
 function SavingTableHistory() {
   const { formatCurrency } = useCurrencyFormatter();
-  const [request, setRequest] = useState<CreateSavingHistoryRequest>({
-    filters: {},
-    page: 1,
-    pageSize: 20,
-    sortBy: {
-      date: 'desc',
-    },
-    searchParams: '',
-    userId: '',
-  });
-  const { data, loading, error } = useFetchDataTransactionHistory(request);
-  const [windowScrollToBottom, setWindowScrollToBottom] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
   const [showHistoryDetail, setShowHistoryDetail] = useState<ISavingHistory | null>(null);
+  const {
+    visibleColumns,
+    filterCriteria,
+    history,
+    loading,
+    error,
+    page,
+    pageSize,
+    refetchTrigger,
+  } = useAppSelector((state) => state.savingWallet);
+  const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
+  const [sortTarget, setSortTarget] = useState<string>('date');
+  const [sortOrder, setSortOrder] = useState<OrderType>('desc');
+  const [displayData, setDisplayData] = useState<ISavingHistory[]>([]);
+  const [isBottom, setIsBottom] = useState<boolean>(false);
 
-  const checkColIntoSorted = (col: SavingColumn) => {
-    const lowerCol = col.toLowerCase();
-    return request.sortBy?.[lowerCol] ? true : false;
-  };
+  const handleSort = (header: string) => {
+    let newSortOrder: OrderType = 'desc';
 
-  const handleSort = (col: SavingColumn) => {
-    const lowerCol = col.toLowerCase();
-    const currentOrder = request.sortBy?.[lowerCol];
-
-    if (currentOrder) {
-      setRequest({
-        ...request,
-        sortBy: {
-          [lowerCol]: currentOrder === 'desc' ? 'asc' : 'desc',
-        },
-      });
-    } else {
-      setRequest({
-        ...request,
-        sortBy: {
-          [lowerCol]: 'desc',
-        },
-      });
+    if (sortTarget === header) {
+      newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
     }
+
+    setSortTarget(header);
+    setSortOrder(newSortOrder);
+
+    handleFilterChange({ ...filterCriteria, sortBy: { [header]: newSortOrder } });
   };
+
+  const debouncedFilterHandler = useMemo(
+    () =>
+      debounce((value: string) => {
+        handleFilterChange({ ...filterCriteria, search: String(value).trim() });
+      }, 1000),
+
+    [filterCriteria],
+  );
+
+  useEffect(() => {
+    dispatch(
+      fetchSavingTransactions({
+        page,
+        pageSize,
+        filters: filterCriteria.filters ?? {},
+        sortBy: filterCriteria.sortBy ?? { date: 'desc' },
+        userId: filterCriteria.userId ?? '',
+        search: filterCriteria.search ?? '',
+      }),
+    );
+  }, [dispatch, filterCriteria, page, pageSize, refetchTrigger]);
+
+  useEffect(() => {
+    if (history && history.data && history.data.data.length) {
+      if (page === 1) {
+        setDisplayData([...history.data.data]);
+      } else {
+        setDisplayData((prev) => [...prev, ...history.data.data]);
+      }
+    }
+  }, [history]);
+
+  useEffect(() => {
+    if (displayData.length > 0 && isBottom) {
+      setIsBottom(false);
+    }
+  }, [displayData]);
 
   // UX Table Scroll
   useWindowScrollToBottom(() => {
-    if (!windowScrollToBottom) {
-      setWindowScrollToBottom(true);
+    if (!isBottom) {
+      if (history && history.data) {
+        if (history.data.totalPage !== undefined && page < history.data.totalPage) {
+          setIsBottom(true);
+          dispatch(updatePage(page + 1));
+        }
+      }
     }
-  });
-
-  useWindowScrollToTop(() => {
-    if (windowScrollToBottom) {
-      setWindowScrollToBottom(false);
-    }
-  }, document.body.offsetHeight);
+  }, 300);
   // UX Table Scroll end
 
-  const handleFilterChange = (newFilter: FilterCriteria) => {};
+  const tableVisibleColumns: SavingTableColumnKey = useMemo((): SavingTableColumnKey => {
+    const columns =
+      Object.keys(visibleColumns).length > 0
+        ? Object.keys(visibleColumns)?.reduce((acc, key) => {
+            if (visibleColumns[key as SavingColumn].index >= 0) {
+              acc[key as SavingColumn] = visibleColumns[key as SavingColumn];
+            }
+            return acc;
+          }, {} as SavingTableColumnKey)
+        : DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS;
+
+    return Object.fromEntries(
+      Object.entries(columns)
+        .sort((a, b) => a[1].index - b[1].index)
+        .map(([key, value]) => [key, value]),
+    ) as SavingTableColumnKey;
+  }, [visibleColumns]);
+
+  const handleFilterChange = (newFilter: FilterCriteria) => {
+    dispatch(updateFilterCriteria(newFilter));
+  };
 
   useEffect(() => {
     return () => {
-      setWindowScrollToBottom(false);
+      dispatch(resetSavingWallet());
+      setDisplayData([]);
     };
   }, []);
 
-  if (!data) return <p>No data</p>;
-  if (loading && !data) {
+  if (!history) return <p>No data</p>;
+  if (loading && !history && displayData.length === 0) {
     return <Loading />;
   }
-  if (error) return <p>Error: {error.message}</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <div
-      className={`max-h-screen mt-4 overflow-y-${windowScrollToBottom ? 'scroll' : 'hidden'} scroll-smooth md:scroll-auto relative`}
-    >
+    <div className={`mt-4 overflow-y-scroll scroll-smooth relative`}>
       <div className="h-20 flex items-center justify-between p-4 border border-b-0">
         <div className="flex items-center gap-2">
-          <SavingSearch />
+          <SavingSearch callback={debouncedFilterHandler} />
           <SavingFilterMenu callBack={handleFilterChange} />
         </div>
         <Label className="text-gray-600 dark:text-gray-400">
-          Total <strong>{data.data.total}</strong> records
+          Total <strong>{history.data.total}</strong> records
         </Label>
       </div>
       <Table className="border-[1px]">
         <TableHeader>
           <TableRow className="font-bold text-center">
-            {SAVING_COLUMNS.length > 0 &&
-              SAVING_COLUMNS.map((item, index) => (
+            {Object.entries(tableVisibleColumns).map(([key, value], idx) => {
+              const entityKey =
+                SavingTransactionTableToEntity[key as keyof typeof SavingTransactionTableToEntity];
+              return (
                 <TableCell
-                  key={index}
-                  className={`cursor-${item.sortable ? 'pointer' : 'default'}`}
-                  onClick={() => item.sortable && handleSort(item.col as SavingColumn)}
+                  className={`cursor-${value.sortable ? 'pointer' : 'default'}`}
+                  key={idx}
+                  onMouseEnter={() => setHoveringIdx(idx)}
+                  onMouseLeave={() => setHoveringIdx(-1)}
+                  onClick={() => {
+                    if (value.sortable) handleSort(entityKey);
+                  }}
                 >
                   <div
-                    className={`flex items-center justify-center ${item.sortable && checkColIntoSorted(item.col) && 'text-blue-600 dark:text-blue-400'}`}
+                    className={cn(
+                      'w-full h-full flex justify-center items-center gap-2',
+                      sortTarget === entityKey && 'text-blue-500',
+                    )}
                   >
-                    <span>{item.col}</span>
-                    {request?.sortBy && item.sortable && checkColIntoSorted(item.col) && (
-                      <SortArrowBtn
-                        sortOrder={request.sortBy[item.col.toLowerCase()] ?? 'none'}
-                        isActivated={item.sortable}
-                      />
+                    {key}
+                    {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
+                      <>
+                        {loading && !history ? (
+                          <Loader2 color={'blue'} className="h-4 w-4 text-primary animate-spin" />
+                        ) : (
+                          <SortArrowBtn
+                            sortOrder={sortOrder ?? 'none'}
+                            isActivated={sortTarget === entityKey}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 </TableCell>
-              ))}
+              );
+            })}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.data.data.map((record: ISavingHistory, index: number) => {
+          {displayData.map((record: ISavingHistory, index: number) => {
             return (
               <TableRow key={record.id} className="text-center">
                 <TableCell>{index + 1}</TableCell>
