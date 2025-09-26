@@ -469,12 +469,6 @@ model Wallet {
   closingDate      DateTime?     @db.Timestamptz(0)
   lockedTime       Int           @default(0)
   openDate         DateTime?     @db.Timestamptz(0)
-  accumReward      Decimal       @default(0) @db.Decimal(13, 2)
-  availableReward  Decimal       @default(0) @db.Decimal(13, 2)
-  claimsedReward   Decimal       @default(0) @db.Decimal(13, 2)
-  closingDate      DateTime?     @db.Timestamptz(0)
-  lockedTime       Int           @default(0)
-  openDate         DateTime?     @db.Timestamptz(0)
   fromTransactions Transaction[] @relation("FromWallet")
   toTransactions   Transaction[] @relation("ToWallet")
   user             User          @relation("UserWallet", fields: [userId], references: [id])
@@ -633,6 +627,7 @@ model MembershipBenefit {
   createdBy   String?       @db.Uuid
   updatedBy   String?       @db.Uuid
   userId      String        @db.Uuid
+  symbol      String?       @db.VarChar(30)
   TierBenefit TierBenefit[]
   Transaction Transaction[]
 
@@ -906,6 +901,7 @@ model CronJobLog {
   updatedAt     DateTime      @db.Timestamptz(0)
   status        CronJobStatus
   dynamicValue  Json?
+  reason        String?       @db.VarChar(100)
   Transaction   Transaction?  @relation("CronJobLogTransactions", fields: [transactionId], references: [id])
 }
 
@@ -951,13 +947,15 @@ model Referral {
 }
 
 model CommonSetting {
-  id           String   @id @db.Uuid
-  name         String   @db.VarChar(30)
+  id           String        @id @db.Uuid
+  name         String        @db.VarChar(30)
   dynamicValue Json
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdBy    String?  @db.Uuid
-  updatedAt    DateTime @db.Timestamptz(0)
-  updatedBy    String?  @db.Uuid
+  createdAt    DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy    String?       @db.Uuid
+  updatedAt    DateTime      @db.Timestamptz(0)
+  updatedBy    String?       @db.Uuid
+  symbol       String?       @db.VarChar(30)
+  transactions Transaction[]
 }
 
 model ReferralSetting {
@@ -1130,7 +1128,6 @@ enum TypeCronJob {
   REFERRAL_KICKBACK
   CASHBACK
   FLEXI_INTEREST
-  SMART_SAVING_INTEREST
   SMART_SAVING_INTEREST
 }
 

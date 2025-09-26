@@ -3,7 +3,7 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
 import { useAppDispatch } from '@/store';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { FilterOptions } from '../../data/api/ISavingInterestDashboardApi';
 import { savingInterestContainer } from '../../di/savingInterestDashboardDI';
@@ -37,6 +37,11 @@ const SavingInterestFilterMenu = ({
   });
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
+  // Sync localFilter with value prop changes (e.g., from Redux store updates)
+  useEffect(() => {
+    setLocalFilter(value);
+  }, [value]);
+
   // Fetch filter options only when needed (lazy loading)
   const fetchFilterOptions = useCallback(async () => {
     if (isLoadingOptions || filterOptions.emailOptions.length > 0) {
@@ -67,7 +72,7 @@ const SavingInterestFilterMenu = ({
   const emailOptions = useMemo(() => {
     return filterOptions.emailOptions.map((option) => ({
       label: option.email,
-      value: option.email,
+      value: option.id, // Changed from option.email to option.id
     }));
   }, [filterOptions.emailOptions]);
 
@@ -81,7 +86,7 @@ const SavingInterestFilterMenu = ({
   const updatedByOptions = useMemo(() => {
     return filterOptions.updateByOptions.map((option) => ({
       label: option.email,
-      value: option.email,
+      value: option.id, // Changed from option.email to option.id
     }));
   }, [filterOptions.updateByOptions]);
 
