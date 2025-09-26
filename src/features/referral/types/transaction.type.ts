@@ -1,4 +1,4 @@
-﻿import type { ReferralTransactionType } from '.';
+import type { ReferralTransactionType } from '.';
 
 export interface ReferralTransactionFilterState {
   type?: ReferralTransactionType[] | null;
@@ -11,6 +11,7 @@ export interface ReferralTransactionState {
   loading: boolean;
   error: string | null;
   filter: ReferralTransactionFilterState;
+  refreshKey: number;
 }
 
 export const initialState: ReferralTransactionState = {
@@ -22,4 +23,5 @@ export const initialState: ReferralTransactionState = {
     fromDate: null,
     toDate: null,
   },
+  refreshKey: 0,
 };
