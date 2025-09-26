@@ -42,7 +42,7 @@ function SavingHistoryDetailPage({ field, handleClose }: ChildProps) {
             <p className="text-lg font-medium mb-6">Basic Information</p>
             <div className="w-full flex items-center justify-between">
               <p className="text-base text-muted-foreground">Date</p>
-              <p>{formatDateTime(field.date)}</p>
+              <p>{formatDateTime(new Date(field.date))}</p>
             </div>
             <div className="w-full flex items-center justify-between">
               <p className="text-base text-muted-foreground">Type</p>
@@ -66,12 +66,8 @@ function SavingHistoryDetailPage({ field, handleClose }: ChildProps) {
               </div>
             </div>
             <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Description</p>
-              {field?.description ? (
-                <p>{field.description}</p>
-              ) : (
-                <p className="italic text-gray-500">-</p>
-              )}
+              <p className="text-base text-muted-foreground">Remark</p>
+              {field?.remark ? <p>{field.remark}</p> : <p className="italic text-gray-500">-</p>}
             </div>
           </CardContent>
         </Card>
@@ -81,7 +77,11 @@ function SavingHistoryDetailPage({ field, handleClose }: ChildProps) {
             <p className="text-lg font-medium mb-6">From</p>
             <div className="w-full flex items-center justify-between">
               <p className="text-base text-muted-foreground">Source</p>
-              <p>{field.from}</p>
+              {field.fromWallet?.name || field.fromWallet?.type ? (
+                <p>{field.fromWallet?.name || field.fromWallet?.type}</p>
+              ) : (
+                <p className="italic text-gray-500">Unknown</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -91,7 +91,11 @@ function SavingHistoryDetailPage({ field, handleClose }: ChildProps) {
             <p className="text-lg font-medium mb-6">To</p>
             <div className="w-full flex items-center justify-between">
               <p className="text-base text-muted-foreground">Wallet</p>
-              <p>{field.to}</p>
+              {field.toWallet?.name || field.toWallet?.type ? (
+                <p>{field.toWallet?.name || field.toWallet?.type}</p>
+              ) : (
+                <p className="italic text-gray-500">Unknown</p>
+              )}
             </div>
           </CardContent>
         </Card>

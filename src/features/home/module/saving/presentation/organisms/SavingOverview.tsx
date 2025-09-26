@@ -5,6 +5,7 @@ import MetricCard from '@/components/common/metric/MetricCard';
 import { useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { CreateDepositRequest } from '../../data/tdo/request/CreateDepositRequest';
+import useFetchDataOverview from '../../hooks/useFetchDataOverview';
 import { ISavingWallet } from '../../types';
 import { SavingClaimButton, SavingDepositButton, SavingTransferButton } from '../atoms';
 import { SavingDepositPage } from '../pages';
@@ -14,9 +15,13 @@ type TitleDeposit = {
   title: string;
   subtitle?: string;
 };
+type ChildProps = {
+  walletId: string;
+};
 
-const SavingOverview = () => {
-  const { wallets, loading } = useAppSelector((state) => state.wallet);
+const SavingOverview = ({ walletId }: ChildProps) => {
+  const { wallets } = useAppSelector((state) => state.wallet);
+  const { data, loading, error } = useFetchDataOverview(walletId);
   const [showDepositPage, setShowDepositPage] = useState<DepositPageStatus | null>(null);
   const [transferRequest, setTransferRequest] = useState<CreateDepositRequest | null>(null);
   const [savingWallets, setSavingWallets] = useState<ISavingWallet[]>([]);
@@ -70,16 +75,18 @@ const SavingOverview = () => {
     }
   }, [transferRequest]);
 
+  if (!data) return <p>No data</p>;
   if (loading) {
     return <Loading />;
   }
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-6 pb-4">
         <MetricCard
           title="Total FX Moved In"
-          value={300000}
+          value={+data.data.wallet.balance + +data.data.moveInBalance}
           type="income"
           icon="banknoteArrowUp"
           className="h-fit p-3 pb-2 *:px-3 *:py-0"
@@ -87,7 +94,7 @@ const SavingOverview = () => {
 
         <MetricCard
           title="Total FX Moved Out"
-          value={200000}
+          value={data.data.moveOutBalance}
           type="expense"
           icon="banknoteArrowDown"
           className="h-fit p-3 pb-2 *:px-3 *:py-0"
@@ -95,7 +102,7 @@ const SavingOverview = () => {
 
         <MetricCard
           title="Saving Interest"
-          value={15}
+          value={data.data.benefit.value}
           type="default"
           icon="percent"
           className="h-fit p-3 pb-2 *:px-3 *:py-0"
@@ -113,7 +120,7 @@ const SavingOverview = () => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pb-6">
         <MetricCard
           title="Current Balance"
-          value={200000}
+          value={data.data.wallet.balance}
           type="total"
           icon="landmark"
           description="Total FX Balance"
@@ -121,7 +128,7 @@ const SavingOverview = () => {
 
         <MetricCard
           title="Current Reward"
-          value={100000}
+          value={data.data.wallet.availableReward}
           type="expense"
           icon="handCoins"
           classNameCustomCardColor="text-yellow-600 dark:text-yellow-400"
@@ -130,7 +137,7 @@ const SavingOverview = () => {
 
         <MetricCard
           title="Current Reward Claimed"
-          value={100000}
+          value={data.data.wallet.claimsedReward}
           type="default"
           icon="handCoins"
           description="Total FX Being Processed"
@@ -138,7 +145,7 @@ const SavingOverview = () => {
 
         <MetricCard
           title="Total Reward"
-          value={200000}
+          value={data.data.wallet.accumReward}
           type="income"
           icon="handCoins"
           description="Total FX Being Processed"

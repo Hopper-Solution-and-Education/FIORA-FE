@@ -1,15 +1,74 @@
-import { OrderType } from '@/shared/types';
+import { FilterCriteria } from '@/shared/types';
+
+export type SavingType = 'Income' | 'Expense' | 'Transfer';
+
+export type SavingWallet = {
+  id: string;
+  type: SavingType;
+  balance: number;
+  availableReward: number;
+  claimsedReward: number;
+  accumReward: number;
+};
+
+export type SavingBenefit = {
+  slug: string;
+  name: string;
+  suffix: string;
+  description: string;
+  value: number;
+};
+
+export type SavingWalletOverview = {
+  wallet: SavingWallet;
+  moveInBalance: number;
+  moveOutBalance: number;
+  benefit: SavingBenefit;
+};
+
+export interface IWallet {
+  id: string;
+  icon: string | null;
+  type: string;
+  frBalanceActive: number;
+  frBalanceFrozen: number;
+  creditLimit: null;
+  createdAt: Date;
+  name: string | null;
+  accumulatedEarn: number;
+  accumReward: number;
+  availableReward: number;
+  claimsedReward: number;
+}
 
 export interface ISavingHistory {
   id: string | number;
   date: Date;
-  type: 'Income' | 'Expense' | 'Transfer' | string;
+  type: SavingType | string;
   amount: number;
-  from: string;
-  to: string;
+  fromWalletId: string;
+  toWalletId: string;
   remark: string;
-  currency?: string;
-  description?: string;
+  isDeleted: false;
+  createdAt: Date;
+  currencyId: string;
+  currency: string;
+  baseCurrency: string;
+  baseAmount: number;
+  membershipBenefitId: string;
+  fromWallet: IWallet | null;
+  toWallet: IWallet | null;
+  membershipBenefit: SavingBenefit;
+}
+
+export interface ISavingTransactionHistory {
+  data: ISavingHistory[];
+  totalPage?: number;
+  page?: number;
+  pageSize?: number;
+  amountMax?: number;
+  amountMin?: number;
+  total?: number;
 }
 
 export type SavingColumn =
@@ -25,7 +84,6 @@ export type SavingColumn =
 export type SavingTableColumn = {
   col: SavingColumn;
   sortable: boolean;
-  sortedBy?: OrderType;
 };
 
 export type SavingTableColumnKey = { [key in SavingColumn]: SavingTableColumn };
@@ -53,3 +111,8 @@ export type SavingFilterOptionResponse = {
   amountMin: number;
   amountMax: number;
 };
+
+export interface ISavingTransactionFilter extends FilterCriteria {
+  page?: number;
+  pageSize?: number;
+}

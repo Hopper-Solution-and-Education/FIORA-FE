@@ -1,13 +1,13 @@
 import { uuid4 } from '@sentry/core';
 import React, { ReactElement, useState } from 'react';
-import { IWallet } from '../../types';
+import { ISavingWallet } from '../../types';
 
 type SavingRadioProps = {
-  value: IWallet;
+  value: ISavingWallet;
   label: string;
   name?: string;
   checked?: boolean;
-  onChange?: (value: IWallet) => void;
+  onChange?: (value: ISavingWallet) => void;
   classNames?: string;
 };
 
@@ -36,8 +36,8 @@ export function SavingRadioItem({
 
 type ChildProps = {
   children: ReactElement<SavingRadioProps> | ReactElement<SavingRadioProps>[];
-  defaultValue: IWallet | null;
-  getResultValue: (value: IWallet) => void;
+  defaultValue: ISavingWallet | null;
+  getResultValue: (value: ISavingWallet) => void;
   classNames?: string;
 };
 
@@ -48,9 +48,9 @@ export function SavingRadioGroup({
   classNames,
 }: ChildProps) {
   const name = uuid4(); //unique for this group
-  const [selected, setSelected] = useState<IWallet | null>(defaultValue);
+  const [selected, setSelected] = useState<ISavingWallet | null>(defaultValue);
 
-  const handleChange = (value: IWallet) => {
+  const handleChange = (value: ISavingWallet) => {
     setSelected(value);
     getResultValue(value);
   };
