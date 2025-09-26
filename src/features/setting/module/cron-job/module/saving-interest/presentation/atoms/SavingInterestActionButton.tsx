@@ -21,6 +21,7 @@ const SavingInterestActionButton = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [savingInterestAmount, setSavingInterestAmount] = useState('');
   const [reason, setReason] = useState('');
+  const [amountError, setAmountError] = useState('');
   const { retrySavingInterest, isRetrying, error, clearError } = useRetrySavingInterest();
 
   const handleRetry = () => {
@@ -28,8 +29,30 @@ const SavingInterestActionButton = ({
     setIsModalOpen(true);
   };
 
+  const validateAmount = (value: string): boolean => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue) || numValue <= 0) {
+      setAmountError('Amount must be a number greater than 0');
+      return false;
+    }
+    setAmountError('');
+    return true;
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSavingInterestAmount(value);
+
+    // Clear error when user starts typing
+    if (amountError) {
+      setAmountError('');
+    }
+  };
+
   const handleConfirm = async () => {
-    if (!savingInterestAmount.trim() || !reason.trim()) {
+    const isAmountValid = validateAmount(savingInterestAmount);
+
+    if (!isAmountValid || !savingInterestAmount.trim() || !reason.trim()) {
       return;
     }
 
@@ -49,6 +72,7 @@ const SavingInterestActionButton = ({
         setIsModalOpen(false);
         setSavingInterestAmount('');
         setReason('');
+        setAmountError('');
       }
     } catch (err) {
       // Error is handled by the hook
@@ -61,6 +85,7 @@ const SavingInterestActionButton = ({
     setIsModalOpen(false);
     setSavingInterestAmount('');
     setReason('');
+    setAmountError('');
   };
 
   const isFail = status.toLowerCase() === 'fail';
@@ -104,12 +129,19 @@ const SavingInterestActionButton = ({
               </label>
 
               <Input
+                type="number"
+                min="0"
+                step="0.01"
                 placeholder="Type amount here"
                 value={savingInterestAmount}
-                onChange={(e) => setSavingInterestAmount(e.target.value)}
-                className="w-full"
+                onChange={handleAmountChange}
+                className={`w-full ${amountError ? 'border-red-500 focus:border-red-500' : ''}`}
                 disabled={isRetrying}
               />
+
+              {amountError && (
+                <p className="text-sm text-red-500 dark:text-red-400 mt-1">{amountError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -155,7 +187,9 @@ const SavingInterestActionButton = ({
               type="button"
               onClick={handleConfirm}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg px-4 py-2 w-full"
-              disabled={isRetrying || !savingInterestAmount.trim() || !reason.trim()}
+              disabled={
+                isRetrying || !savingInterestAmount.trim() || !reason.trim() || !!amountError
+              }
             >
               {isRetrying ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
