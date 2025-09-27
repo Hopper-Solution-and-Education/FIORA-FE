@@ -458,7 +458,7 @@ class MembershipBenefitService {
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
     const { mode } = payload;
-    const slug = payload.membershipBenefit.slug;
+    const slug = payload.slug || payload.membershipBenefit.slug;
 
     if (mode === 'create' || mode === 'create-all') {
       const foundMembershipBenefit =
