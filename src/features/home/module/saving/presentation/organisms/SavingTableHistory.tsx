@@ -270,7 +270,7 @@ function SavingTableHistory() {
                     Wallet
                   </TableCell>
                 ) : (
-                  <TableCell className="italic text-gray-500">Unknown</TableCell>
+                  <TableCell>Smart Saving Bonus</TableCell>
                 )}
                 {record.toWallet?.name || record.toWallet?.type ? (
                   <TableCell>
