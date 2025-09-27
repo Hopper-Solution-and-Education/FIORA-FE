@@ -16,7 +16,7 @@ export type SavingWalletState = {
   transaction: SavingTransactionResponse | null;
   loading: boolean;
   isCreateTransactionLoading: boolean;
-  error: string | null;
+  error: any;
   page: number;
   pageSize: number;
   visibleColumns: SavingTableColumnKey;
@@ -92,8 +92,8 @@ const savingWalletSlice = createSlice({
         state.history = action.payload;
       })
       .addCase(fetchSavingTransactions.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload?.message || 'Error fetching transactions';
+        state.loading = false;
       })
 
       // Transaction
@@ -102,12 +102,13 @@ const savingWalletSlice = createSlice({
         state.error = null;
       })
       .addCase(createSavingTransaction.fulfilled, (state, action) => {
-        state.isCreateTransactionLoading = false;
         state.transaction = action.payload;
         state.refetchTrigger = !state.refetchTrigger;
+        state.isCreateTransactionLoading = false;
       })
       .addCase(createSavingTransaction.rejected, (state, action) => {
         state.isCreateTransactionLoading = false;
+        state.loading = false;
         state.error = action.payload?.message || 'Error creating transaction';
       });
   },

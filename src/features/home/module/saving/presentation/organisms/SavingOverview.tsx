@@ -35,7 +35,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
   }, [dispatch, walletId, refetchTrigger]);
 
   useEffect(() => {
-    if (transactionRequest) {
+    if (transactionRequest !== null) {
       dispatch(createSavingTransaction(transactionRequest));
     }
   }, [transactionRequest]);
@@ -83,17 +83,21 @@ const SavingOverview = ({ walletId }: ChildProps) => {
   }, [showDepositPage]);
 
   useEffect(() => {
-    if (!showDepositPage) {
+    if (showDepositPage === null) {
       setTransactionRequest(null);
     }
   }, [showDepositPage]);
 
   useEffect(() => {
-    if (!error && showDepositPage !== null && transactionRequest !== null) {
-      toast.success(`${showDepositPage} is successfully`);
-      setShowDepositPage(null);
+    if (!isCreateTransactionLoading) {
+      if (!error && transactionRequest !== null) {
+        toast.success(`${showDepositPage} is successfully`);
+        setShowDepositPage(null);
+      } else if (error) {
+        toast.error(error?.message);
+      }
     }
-  }, [error, showDepositPage, transactionRequest]);
+  }, [isCreateTransactionLoading, error]);
 
   useEffect(() => {
     return () => {
@@ -106,7 +110,6 @@ const SavingOverview = ({ walletId }: ChildProps) => {
   if ((loading && !overview) || isCreateTransactionLoading) {
     return <Loading />;
   }
-  if (error) return <p>Error: {error}</p>;
 
   return (
     <>

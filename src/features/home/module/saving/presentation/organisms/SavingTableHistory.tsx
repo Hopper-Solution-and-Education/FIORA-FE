@@ -179,7 +179,6 @@ function SavingTableHistory() {
   if (loading && !history && displayData.length === 0) {
     return <Loading />;
   }
-  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className={`mt-4 overflow-y-scroll scroll-smooth relative`}>
@@ -189,7 +188,11 @@ function SavingTableHistory() {
           <SavingFilterMenu callBack={handleFilterChange} />
         </div>
         <Label className="text-gray-600 dark:text-gray-400">
-          Total <strong>{history?.data.total}</strong> records
+          Displaying{' '}
+          <strong>
+            {displayData?.length}/{history?.data.total}
+          </strong>{' '}
+          transaction records
         </Label>
       </div>
       <Table className="border-[1px]">
