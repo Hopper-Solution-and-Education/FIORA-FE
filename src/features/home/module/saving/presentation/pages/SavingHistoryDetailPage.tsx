@@ -1,10 +1,10 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CURRENCY } from '@/shared/constants';
 import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
+import LucieIcon from '../../../category/components/LucieIcon';
 import { ISavingHistory } from '../../types';
 import { formatDateTime } from '../../utils/formatDate';
 
@@ -33,89 +33,116 @@ function SavingHistoryDetailPage({ field, handleClose }: ChildProps) {
   return (
     <Dialog open={field !== null} onOpenChange={handleClose}>
       <DialogContent className="min-w-fit mx-auto">
-        <DialogTitle className="text-3xl text-center font-extrabold text-gray-900 dark:text-gray-100">
+        <DialogTitle className="text-3xl text-center font-extrabold text-gray-900 dark:text-gray-100 mb-4">
           SAVING TRANSACTION DETAIL
         </DialogTitle>
 
-        <Card className="w-[500px] mt-8">
-          <CardContent className="w-full p-4 space-y-2">
-            <p className="text-lg font-medium mb-6">Basic Information</p>
-            <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Date</p>
-              <p>{formatDateTime(new Date(field.date))}</p>
+        <div className="space-y-2 pb-2 border-b">
+          <p className="text-lg font-medium">Basic Information</p>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-base text-muted-foreground">Date</p>
+            <p>{formatDateTime(new Date(field.date))}</p>
+          </div>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-base text-muted-foreground">Type</p>
+            <p className={`font-medium ${getTypeColor(field.type)}`}>{field.type}</p>
+          </div>
+          <div className="w-full flex items-start justify-between">
+            <p className="text-base text-muted-foreground">Amount</p>
+            <div className="flex flex-col items-end">
+              <p className="font-bold">
+                {formatCurrency(field.amount, field?.currency ?? CURRENCY.FX, {
+                  applyExchangeRate: true,
+                })}
+              </p>
+              <p className="text-xs text-gray-500">
+                (
+                {formatCurrency(field.amount, field?.currency ?? CURRENCY.USD, {
+                  applyExchangeRate: false,
+                })}
+                )
+              </p>
             </div>
-            <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Type</p>
-              <p className={`font-medium ${getTypeColor(field.type)}`}>{field.type}</p>
-            </div>
-            <div className="w-full flex items-start justify-between">
-              <p className="text-base text-muted-foreground">Amount</p>
-              <div className="flex flex-col items-end">
-                <p>
-                  {formatCurrency(field.amount, field?.currency ?? CURRENCY.FX, {
-                    applyExchangeRate: true,
-                  })}
-                </p>
-                <p className="text-xs text-gray-500">
-                  (
-                  {formatCurrency(field.amount, field?.currency ?? CURRENCY.USD, {
-                    applyExchangeRate: false,
-                  })}
-                  )
-                </p>
-              </div>
-            </div>
-            <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Remark</p>
-              {field?.remark ? <p>{field.remark}</p> : <p className="italic text-gray-500">-</p>}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-base text-muted-foreground">Remark</p>
+            {field?.remark ? <p>{field.remark}</p> : <p className="italic text-gray-500">-</p>}
+          </div>
+        </div>
 
-        <Card className="w-[500px]">
-          <CardContent className="w-full p-4 space-y-2">
-            <p className="text-lg font-medium mb-6">From</p>
-            <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Source</p>
+        <div className="space-y-2 pb-2 border-b">
+          <p className="text-lg font-medium">From</p>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-base text-muted-foreground">Source</p>
+            <p className="flex items-center gap-2">
+              <span>
+                {field.fromWallet?.icon && (
+                  <LucieIcon
+                    icon={field.fromWallet?.icon}
+                    className="w-5 h-5 border-1 border-gray-500"
+                  />
+                )}
+              </span>
               {field.fromWallet?.name || field.fromWallet?.type ? (
-                <p>{field.fromWallet?.name || field.fromWallet?.type}</p>
+                <span>{field.fromWallet?.name || field.fromWallet?.type}</span>
               ) : (
-                <p className="italic text-gray-500">Unknown</p>
+                <span className="italic text-gray-500">Unknown</span>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <Card className="w-[500px]">
-          <CardContent className="w-full p-4 space-y-2">
-            <p className="text-lg font-medium mb-6">To</p>
-            <div className="w-full flex items-center justify-between">
-              <p className="text-base text-muted-foreground">Wallet</p>
+        <div className="space-y-2 pb-2 border-b">
+          <p className="text-lg font-medium">To</p>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-base text-muted-foreground">Wallet</p>
+            <p className="flex items-center gap-2">
+              <span>
+                {field.toWallet?.icon && (
+                  <LucieIcon
+                    icon={field.toWallet?.icon}
+                    className="w-5 h-5 border-1 border-gray-500"
+                  />
+                )}
+              </span>
               {field.toWallet?.name || field.toWallet?.type ? (
-                <p>{field.toWallet?.name || field.toWallet?.type}</p>
+                <span>{field.toWallet?.name || field.toWallet?.type}</span>
               ) : (
-                <p className="italic text-gray-500">Unknown</p>
+                <span className="italic text-gray-500">Unknown</span>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+        </div>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                onClick={handleClose}
-                className="w-60 h-12 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200 mx-auto mt-6"
-              >
-                <Icons.check className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Done reading</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="w-full flex items-center justify-between mt-10">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  className="w-40 h-14 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+                >
+                  <Icons.circleArrowLeft className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  onClick={handleClose}
+                  className="w-40 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  <Icons.check className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </DialogContent>
     </Dialog>
   );

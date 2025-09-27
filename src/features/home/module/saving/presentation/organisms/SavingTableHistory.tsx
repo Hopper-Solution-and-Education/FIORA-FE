@@ -189,7 +189,7 @@ function SavingTableHistory() {
           <SavingFilterMenu callBack={handleFilterChange} />
         </div>
         <Label className="text-gray-600 dark:text-gray-400">
-          Total <strong>{displayData.length}</strong> records
+          Total <strong>{history?.data.total}</strong> records
         </Label>
       </div>
       <Table className="border-[1px]">
