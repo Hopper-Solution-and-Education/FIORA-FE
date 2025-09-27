@@ -250,18 +250,6 @@ class WalletUseCase {
       currency: foundCurrency.name,
     });
 
-    // Update wallet fields
-    await this._walletRepository.updateWallet(
-      {
-        id: userWallet.id,
-      },
-      {
-        frBalanceActive: {
-          increment: packageFX.fxAmount,
-        },
-      },
-    );
-
     const depositBoxNotification = {
       title: 'New Deposit Request',
       type: 'DEPOSIT_REQUEST',

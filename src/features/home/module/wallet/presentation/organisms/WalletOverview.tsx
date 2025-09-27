@@ -4,9 +4,8 @@ import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
 import { useAppSelector } from '@/store';
 import { useMemo } from 'react';
+import { Wallet } from '../../domain';
 import { WalletType } from '../../domain/enum';
-
-const DEFAULT_FROZEN_AMOUNT = 0;
 
 const WalletOverview = () => {
   const wallets = useAppSelector((state) => state.wallet.wallets);
@@ -14,7 +13,7 @@ const WalletOverview = () => {
   const frozenAmount = useAppSelector((state) => state.wallet.frozenAmount);
 
   const totalActive = useMemo(
-    () => wallets?.reduce((sum, w) => sum + w.frBalanceActive, 0) || 0,
+    () => wallets?.reduce((sum: number, w: Wallet) => sum + w.frBalanceActive, 0) || 0,
     [wallets],
   );
 
@@ -22,11 +21,11 @@ const WalletOverview = () => {
     () =>
       wallets
         ?.filter((w) => w.type === WalletType.Debt)
-        .reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0,
+        .reduce((sum: number, w: Wallet) => sum + (w.frBalanceActive || 0), 0) || 0,
     [wallets],
   );
 
-  const totalFrozen = frozenAmount ?? DEFAULT_FROZEN_AMOUNT;
+  const totalFrozen = frozenAmount || 0;
 
   if (loading) {
     return <Loading />;
