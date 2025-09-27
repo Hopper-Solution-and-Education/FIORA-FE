@@ -637,7 +637,10 @@ class WalletUseCase {
           );
         } else {
           await Promise.all([
-            this._walletRepository.increaseWalletBalance(toWallet.id, amount),
+            this._walletRepository.updateWallet(
+              { id: toWallet.id },
+              { frBalanceActive: { increment: amount }, updatedBy: userId },
+            ),
             this._walletRepository.updateWallet({ id: fromWallet.id }, { ...commonWalletUpdates }),
           ]);
         }
@@ -713,7 +716,10 @@ class WalletUseCase {
         });
 
         await Promise.all([
-          this._walletRepository.increaseWalletBalance(toWallet.id, amount),
+          this._walletRepository.updateWallet(
+            { id: toWallet.id },
+            { frBalanceActive: { increment: amount }, updatedBy: userId },
+          ),
           this._walletRepository.updateWallet(
             { id: fromWallet.id },
             { frBalanceActive: { decrement: amount }, updatedBy: userId },
