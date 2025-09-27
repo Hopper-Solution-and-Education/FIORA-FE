@@ -144,7 +144,7 @@ function SavingTableHistory() {
         }
       }
     }
-  }, 300);
+  }, 500);
   // UX Table Scroll end
 
   const tableVisibleColumns: SavingTableColumnKey = useMemo((): SavingTableColumnKey => {
@@ -217,7 +217,7 @@ function SavingTableHistory() {
                     {key}
                     {value.sortable && (hoveringIdx === idx || sortTarget === entityKey) && (
                       <>
-                        {loading && !history ? (
+                        {loading ? (
                           <Loader2 color={'blue'} className="h-4 w-4 text-primary animate-spin" />
                         ) : (
                           <SortArrowBtn
