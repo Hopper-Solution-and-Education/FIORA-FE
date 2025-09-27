@@ -137,6 +137,7 @@ class WalletRepository implements IWalletRepository {
   ): Promise<PackageFX | null> {
     return this._prisma.packageFX.update({ where: { id }, data });
   }
+
   async deletePackageFX(id: string): Promise<PackageFX> {
     return this._prisma.$transaction(async (tx) => {
       await tx.depositRequest.deleteMany({
