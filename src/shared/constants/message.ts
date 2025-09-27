@@ -395,7 +395,8 @@ export enum Messages {
   // Cronjob
   REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
   UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
-  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update since it has already been success',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE_ALREADY_UPDATED = 'Referral cronjob failed to update since it has already been success',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update',
   //Payment Wallet
   GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
   GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',

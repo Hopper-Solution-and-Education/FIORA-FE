@@ -2,11 +2,19 @@ import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
 import { Messages } from '@/shared/constants/message';
-import { BadRequestError } from '@/shared/lib/responseUtils/errors';
+import { BadRequestError, ConflictError } from '@/shared/lib/responseUtils/errors';
 import { SessionUser } from '@/shared/types/session';
 import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
 import { formatUnderlineString } from '@/shared/utils/stringHelper';
-import { CronJobLog, CronJobStatus, MembershipTier, Prisma, TypeCronJob } from '@prisma/client';
+import {
+  CronJobLog,
+  CronJobStatus,
+  MembershipTier,
+  Prisma,
+  TransactionType,
+  TypeCronJob,
+  WalletType,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 type DynamicCronJobReferralTypes = {
@@ -677,6 +685,7 @@ class DashboardRepository {
         dynamicValue: true,
         id: true,
         status: true,
+        createdBy: true,
       },
     });
 
@@ -684,20 +693,35 @@ class DashboardRepository {
       throw new BadRequestError(Messages.REFERRAL_CRONJOB_NOT_FOUND);
     }
 
-    const updatedBy = userId;
-
-    const updatedDynamicJobValue = {
-      ...(cronJobFound.dynamicValue as DynamicCronJobReferralTypes),
-      bonusAmount: amount,
-    };
-
     if (cronJobFound.status === CronJobStatus.SUCCESSFUL) {
       throw new BadRequestError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE);
     }
 
+    const updatedBy = userId;
+    // update referral bonus amount & update wallet of referrer
+    const updatedDynamicJobValue = {
+      ...(cronJobFound.dynamicValue as DynamicCronJobReferralTypes),
+      bonusAmount: amount,
+    };
+    // find out referrer user id
+    const referrerId = cronJobFound.createdBy || '';
+
+    const commonSetting = await prisma.commonSetting.findFirst({
+      where: { symbol: TypeCronJob.REFERRAL_CAMPAIGN },
+    });
+
+    const rawBonusAmount =
+      (commonSetting?.dynamicValue as Prisma.JsonObject)?.['bonus_1st_amount'] || 5;
+    const bonusAmount = new Prisma.Decimal(Number(rawBonusAmount) || 5).toDecimalPlaces(
+      2,
+      Prisma.Decimal.ROUND_DOWN,
+    );
+
+    const emailReferrer = (cronJobFound.dynamicValue as Prisma.JsonObject)?.referrerEmail || null;
+
     const result = await prisma.$transaction(
       async (tx) => {
-        await tx.cronJobLog.update({
+        const cronJobUpdate = await tx.cronJobLog.update({
           where: { id },
           data: {
             dynamicValue: updatedDynamicJobValue,
@@ -707,6 +731,59 @@ class DashboardRepository {
             status: CronJobStatus.SUCCESSFUL,
           },
         });
+
+        if (!cronJobUpdate)
+          throw new ConflictError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE + ' - cronjob');
+
+        const wallet = await tx.wallet.findFirst({
+          where: { userId: referrerId, type: WalletType.Referral },
+        });
+
+        if (!wallet)
+          throw new BadRequestError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE + ' - wallet');
+
+        const updateWallet = await tx.wallet.update({
+          where: { id: wallet?.id },
+          data: {
+            frBalanceActive: { increment: bonusAmount },
+            updatedAt: new Date(),
+          },
+        });
+
+        if (!updateWallet)
+          throw new ConflictError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE + ' - wallet');
+
+        const newTransaction = await tx.transaction.create({
+          data: {
+            userId: referrerId,
+            date: new Date(),
+            type: TransactionType.Income,
+            amount: bonusAmount,
+            currency: 'FX',
+            toCategoryId: null,
+            createdBy: userId,
+            updatedBy: userId,
+            baseAmount: bonusAmount,
+            baseCurrency: 'USD',
+            remark: `Referral bonus for ${emailReferrer}`,
+            toWalletId: wallet?.id,
+            isMarked: true,
+            commonId: commonSetting?.id || null,
+          },
+        });
+
+        if (!newTransaction)
+          throw new ConflictError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE + ' - transaction');
+
+        const userUpdate = await tx.user.update({
+          where: { id: referrerId },
+          data: {
+            is_referral_campaign_paid: true,
+            updatedAt: new Date(),
+          },
+        });
+        if (!userUpdate)
+          throw new ConflictError(Messages.REFERRAL_CRONJOB_FAILED_TO_UPDATE + ' - user');
       },
       {
         timeout: 30000,
