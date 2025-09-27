@@ -74,12 +74,10 @@ const WalletBarChart = () => {
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
-        const rawAmount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
-        const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
+        const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
+        // const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
 
-        // If main bar already excludes frozen, add it back for display to avoid double-subtract perception
-        const amount = rawAmount + frozenForItem;
-        const isPositive = amount > 0;
+        const isPositive = amount >= 0;
         const showFrozen = item.type === WalletType.Payment || item.type === 'total';
 
         return (
