@@ -457,12 +457,12 @@ class MembershipBenefitService {
   }
 
   async processMembershipBenefit(payload: MembershipBenefitCreatePayload, userId: string) {
-    const { mode, slug } = payload;
+    const { mode } = payload;
+    const slug = payload.slug || payload.membershipBenefit.slug;
 
     if (mode === 'create' || mode === 'create-all') {
-      const foundMembershipBenefit = await membershipBenefitRepository.findMembershipBenefitBySlug(
-        slug!,
-      );
+      const foundMembershipBenefit =
+        await membershipBenefitRepository.findMembershipBenefitBySlug(slug);
 
       if (foundMembershipBenefit) {
         throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS);

@@ -88,7 +88,6 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
           initialFacePhoto: identificationDocument?.filePhoto?.url || '',
         };
 
-        console.log('🚀 ~ formData being reset:', formData);
         reset(formData);
         return;
       }

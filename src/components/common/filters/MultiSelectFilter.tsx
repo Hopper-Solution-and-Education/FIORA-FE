@@ -43,7 +43,7 @@ const MultiSelectFilter = ({
           options.length > 0 ? options : isLoadingMore ? [] : [...options, DEFAULT_OPTION];
         return (
           <MultiSelect
-            className="w-full px-4 py-[7px]"
+            className="w-full px-4 py-[7px] min-w-full"
             options={resolvedOptions}
             selected={selectedValues}
             onChange={onChange}

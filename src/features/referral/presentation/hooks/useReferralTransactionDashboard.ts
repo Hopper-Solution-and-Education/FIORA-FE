@@ -9,7 +9,7 @@ import {
 
 export const useReferralTransactionDashboard = () => {
   const dispatch = useAppDispatch();
-  const { filter } = useAppSelector((s) => s.referralTransaction);
+  const { filter, refreshKey } = useAppSelector((s) => s.referralTransaction);
 
   const [state, dispatchTable] = useReducer(
     referralTransactionTableReducer,
@@ -35,7 +35,6 @@ export const useReferralTransactionDashboard = () => {
           dispatchTable({ type: 'SET_IS_LOADING_MORE', payload: true });
         }
 
-        // Use RTK Query to fetch data
         const result = await fetchTransactions({
           page,
           pageSize,
@@ -67,21 +66,32 @@ export const useReferralTransactionDashboard = () => {
     [dispatch, filter, fetchTransactions],
   );
 
+  const resetAndFetchFirstPage = useCallback(() => {
+    const pageSize = state.pagination.pageSize;
+    dispatchTable({ type: 'SET_PAGE', payload: 1 });
+    dispatchTable({ type: 'SET_DATA', payload: [] });
+    dispatchTable({ type: 'SET_HAS_MORE', payload: true });
+    fetchData(1, pageSize, false);
+  }, [fetchData, state.pagination.pageSize]);
+
   useEffect(() => {
     if (isInitialLoad.current) {
       fetchData(1, state.pagination.pageSize, false);
       isInitialLoad.current = false;
     }
-  }, [fetchData]);
+  }, [fetchData, state.pagination.pageSize]);
 
   useEffect(() => {
     if (!isInitialLoad.current) {
-      dispatchTable({ type: 'SET_PAGE', payload: 1 });
-      dispatchTable({ type: 'SET_DATA', payload: [] });
-      dispatchTable({ type: 'SET_HAS_MORE', payload: true });
-      fetchData(1, state.pagination.pageSize, false);
+      resetAndFetchFirstPage();
     }
-  }, [filter, fetchData]);
+  }, [filter, resetAndFetchFirstPage]);
+
+  useEffect(() => {
+    if (!isInitialLoad.current && refreshKey > 0) {
+      resetAndFetchFirstPage();
+    }
+  }, [refreshKey, resetAndFetchFirstPage]);
 
   const loadMore = useCallback(async () => {
     if (!state.hasMore || state.isLoadingMore || isFetching.current) return;

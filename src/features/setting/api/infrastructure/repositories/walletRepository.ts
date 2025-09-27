@@ -15,7 +15,7 @@ import { IWalletRepository } from '../../repositories/walletRepository.interface
 import { PackageFXWithAttachments } from '../../types/attachmentTypes';
 
 class WalletRepository implements IWalletRepository {
-  constructor(private _prisma = prisma) { }
+  constructor(private _prisma = prisma) {}
 
   async createWallet(data: Prisma.WalletUncheckedCreateInput): Promise<Wallet> {
     return this._prisma.wallet.create({ data });
@@ -85,9 +85,9 @@ class WalletRepository implements IWalletRepository {
         const attachments: { id: string; url: string }[] =
           pkg.attachment_id && pkg.attachment_id.length > 0
             ? await this._prisma.attachment.findMany({
-              where: { id: { in: pkg.attachment_id } },
-              select: { id: true, url: true },
-            })
+                where: { id: { in: pkg.attachment_id } },
+                select: { id: true, url: true },
+              })
             : [];
         return {
           ...pkg,
@@ -137,6 +137,7 @@ class WalletRepository implements IWalletRepository {
   ): Promise<PackageFX | null> {
     return this._prisma.packageFX.update({ where: { id }, data });
   }
+
   async deletePackageFX(id: string): Promise<PackageFX> {
     return this._prisma.$transaction(async (tx) => {
       await tx.depositRequest.deleteMany({

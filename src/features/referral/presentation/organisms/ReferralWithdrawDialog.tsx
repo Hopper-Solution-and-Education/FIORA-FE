@@ -135,7 +135,6 @@ const ReferralWithdrawDialog = ({
     try {
       await onWithdraw(value);
       setSelectedPackageId(null);
-      toast.success('Withdrawal requested successfully');
       handleOpenChange(false);
     } catch (err: any) {
       const message =

@@ -110,28 +110,7 @@ const ReferralInviteDialog = ({
       }
     }
 
-    try {
-      const response = await onInvite(emails);
-
-      // Only close dialog if invitations were actually sent (no duplicates in DB)
-      if (response.createdEmails.length > 0) {
-        toast.success(
-          `Successfully sent ${response.createdEmails.length} invitation${response.createdEmails.length === 1 ? '' : 's'}!`,
-        );
-        setValue('');
-        handleClose();
-      } else if (response.duplicateEmails.length > 0) {
-        toast.error(`These emails are already invited: ${response.duplicateEmails.join(', ')}.`);
-      } else {
-        toast.error('No valid emails to send invitations to.');
-      }
-    } catch (err: any) {
-      // Only show error if it's a validation error from the dialog
-      // API errors will be handled by ReferralUIPage
-      const message =
-        err?.data?.message || err?.message || 'Failed to send invites. Please try again.';
-      toast.error(message);
-    }
+    await onInvite(emails);
   };
 
   return (
