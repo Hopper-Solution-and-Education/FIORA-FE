@@ -306,6 +306,24 @@ function SavingTableHistory() {
               </TableRow>
             );
           })}
+          {displayData.length === 0 && !loading && (
+            <TableRow>
+              <TableCell colSpan={Object.entries(tableVisibleColumns).length}>
+                <div className="w-full h-full flex justify-center items-center">
+                  <Label className="italic">No data available</Label>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+          {loading && (
+            <TableRow>
+              <TableCell colSpan={Object.entries(tableVisibleColumns).length}>
+                <div className="w-full min-h-5 h-full flex items-center justify-center">
+                  <Label>Loading more data...</Label>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
 
