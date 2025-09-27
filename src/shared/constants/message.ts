@@ -360,8 +360,11 @@ export enum Messages {
   KYC_NOT_MATCH = 'Kyc not match',
   BLOCK_USER_SUCCESS = 'Block user successfully',
   BLOCK_USER_FAILED = 'Block user failed',
+  ASSIGN_USER_SUCCESS = 'Assign user successfully',
+  ASSIGN_USER_FAILED = 'Assign user failed',
   USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked. Please contact support.',
   USER_NOT_FOUND = 'User not found',
+  GET_LIST_USER_ERROR = 'Failed to fetch users data',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',

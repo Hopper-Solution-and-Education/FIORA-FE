@@ -1,11 +1,11 @@
-import { blockUserUseCase } from '@/features/profile/application/use-cases/blockUserUsecase';
+import { userUseCase } from '@/features/profile/application/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { validateBlockUserId } from '@/shared/validators/accountValidator';
+import { validateAssignUserId } from '@/shared/validators/accountValidator';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -19,18 +19,17 @@ export default withAuthorization({
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const { assignUserId } = req.body;
-  const assignUser: string = assignUserId as string;
 
   //validationvalidation
-  const error = validateBody(validateBlockUserId, { blockUserId: assignUser });
+  const error = validateBody(validateAssignUserId, { assignUserId: assignUserId });
   if (error.error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error.error));
   }
-
+  const assignUser: string = assignUserId as string;
   //check user exist
-  const userexist = await blockUserUseCase.getUserIdById(assignUser);
+  const userexist = await userUseCase.getUserIdById(assignUser);
 
   if (!userexist || userexist == null) {
     return res
@@ -39,15 +38,15 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   //block user
-  const blockededUser = await blockUserUseCase.blockUser(blockUser, userId);
+  const blockededUser = await userUseCase.blockUser(assignUser, userId);
 
-  if (!blockededUser || blockededUser == null) {
+  if (!assignUser || assignUser == null) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.BLOCK_USER_FAILED, {}));
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ASSIGN_USER_FAILED, {}));
   }
 
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.BLOCK_USER_SUCCESS, blockededUser));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.ASSIGN_USER_SUCCESS, assignUser));
 }

@@ -20,7 +20,5 @@ export interface UserSearchResult {
 }
 
 export interface UsersResponse {
-  status: number;
-  message: string;
-  data: UserSearchResult[];
+  users: UserSearchResult[];
 }
