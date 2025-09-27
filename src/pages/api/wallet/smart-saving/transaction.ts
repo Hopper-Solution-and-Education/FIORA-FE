@@ -37,7 +37,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       ],
     });
 
-    const transactions = await transactionUseCase.getTransactionsPagination({
+    const transactions = await transactionUseCase.getSavingTransactionsPagination({
       page,
       pageSize,
       filters,
@@ -45,7 +45,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
       userId,
       searchParams: search,
     });
-    transactions.total = transactions?.data?.length || 0;
+
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.GET_TRANSACTION_SUCCESS, transactions));
