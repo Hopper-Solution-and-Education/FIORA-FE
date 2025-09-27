@@ -4,6 +4,7 @@ import { Loading } from '@/components/common/atoms';
 import MetricCard from '@/components/common/metric/MetricCard';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { createSavingTransaction, getSavingWalletById } from '../../slices/actions';
 import { ActionType, ISavingWallet, SavingTransaction } from '../../types';
 import { SavingTransactionStatus } from '../../utils/enums';
@@ -89,6 +90,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
 
   useEffect(() => {
     if (!error && showDepositPage !== null && transactionRequest !== null) {
+      toast.success(`${showDepositPage} is successfully`);
       setShowDepositPage(null);
     }
   }, [error, showDepositPage, transactionRequest]);
