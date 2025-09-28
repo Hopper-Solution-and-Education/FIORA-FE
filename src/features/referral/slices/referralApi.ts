@@ -8,8 +8,8 @@ import type {
   ReferralUser,
   ReferralUsersResponse,
 } from '../types';
+import type { ReferralTransactionFilterState } from '../types/transaction.type';
 import { mapEarnings, mapReferralItem, mapTransactions, toQueryString } from '../utils';
-import type { ReferralTransactionFilterState } from './types';
 
 // Re-export types for convenience
 export type { GetReferralUsersParams, ReferralStats, ReferralUser, ReferralUsersResponse };
@@ -95,34 +95,6 @@ export const referralApi = createApi({
       providesTags: ['ReferralEarnings'],
     }),
 
-    // Wallet transactions (recent)
-    getReferralTransactions: builder.query<
-      ReferralTransaction[],
-      ReferralTransactionFilterState | void
-    >({
-      query: (filters) => {
-        const params: Record<string, any> = {};
-
-        if (filters?.type && filters.type.length > 0) {
-          params.type = filters.type;
-        }
-        if (filters?.search) {
-          params.search = filters.search;
-        }
-        if (filters?.fromDate) {
-          params.fromDate = filters.fromDate.toISOString();
-        }
-        if (filters?.toDate) {
-          params.toDate = filters.toDate.toISOString();
-        }
-
-        const qs = toQueryString(params);
-        return { url: `/api/referral/transactions${qs}`, method: 'GET' };
-      },
-      transformResponse: (resp: any) => mapTransactions((resp?.data || []) as any[]),
-      providesTags: ['ReferralTransactions'],
-    }),
-
     // Wallet transactions (paginated for infinity scroll)
     getReferralTransactionsPaginated: builder.query<
       { transactions: ReferralTransaction[]; total: number; hasMore: boolean },
@@ -193,7 +165,6 @@ export const {
   useLazyGetReferralUsersQuery,
   useLazyGetReferralUsersInfiniteQuery,
   useGetReferralEarningsQuery,
-  useGetReferralTransactionsQuery,
   useGetReferralTransactionsPaginatedQuery,
   useLazyGetReferralTransactionsPaginatedQuery,
   useInviteByEmailsMutation,

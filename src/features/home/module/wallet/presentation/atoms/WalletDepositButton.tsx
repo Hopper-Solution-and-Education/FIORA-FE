@@ -14,8 +14,14 @@ const WalletDepositButton = () => {
   }, [router]);
 
   return (
-    <Button variant="outline" size="icon" aria-label="Deposit" onClick={handleDeposit}>
-      <Icons.banknoteArrowUp className="h-4 w-4" />
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label="Deposit"
+      onClick={handleDeposit}
+      className="h-fit w-fit !px-4 !py-2"
+    >
+      <Icons.banknoteArrowUp className="!h-6 !w-6 text-green-600" />
     </Button>
   );
 };

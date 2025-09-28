@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -19,12 +19,13 @@ interface ReferralStatsCardProps {
     isPositive: boolean;
   };
   className?: string;
+  onClick?: () => void;
+  isActive?: boolean;
 }
 
-const toneStyles: Record<
-  NonNullable<ReferralStatsCardProps['tone']>,
-  { value: string; icon: string }
-> = {
+type ToneKey = NonNullable<ReferralStatsCardProps['tone']>;
+
+const toneStyles: Record<ToneKey, { value: string; icon: string }> = {
   green: {
     value: 'text-green-600 dark:text-green-400',
     icon: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
@@ -49,6 +50,8 @@ const ReferralStatsCard = ({
   tone = 'gray',
   trend,
   className,
+  onClick,
+  isActive = false,
 }: ReferralStatsCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
 
@@ -89,17 +92,13 @@ const ReferralStatsCard = ({
     }
 
     if (typeof iconValue === 'string') {
-      // For string icons, we'll use a simple approach - assuming they're Lucide icon names
-      // You can extend this to support image URLs like MetricCard if needed
       return (
         <div className={cn('w-4 h-4', toneClass.value)}>
-          {/* For now, we'll render a placeholder - you can extend this for specific icon libraries */}
           <div className="w-4 h-4" />
         </div>
       );
     }
 
-    // For React icons, wrap them with proper styling based on tone
     if (React.isValidElement(iconValue)) {
       return React.cloneElement(
         iconValue as React.ReactElement,
@@ -115,8 +114,30 @@ const ReferralStatsCard = ({
   const displayValue =
     typeof value === 'number' ? `${formatCurrency(value, currency || 'USD')} FX` : `${value} FX`;
 
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if (!onClick) return;
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <Card className={cn('overflow-hidden', className)}>
+    <Card
+      className={cn(
+        'overflow-hidden transition-colors',
+        onClick &&
+          'cursor-pointer hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        isActive && 'border-primary bg-primary/5 shadow-sm',
+        className,
+      )}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-pressed={onClick ? isActive : undefined}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
         {renderIconOrImage(icon)}

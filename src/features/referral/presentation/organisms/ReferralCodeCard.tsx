@@ -22,7 +22,6 @@ type ActionConfig = {
   icon: typeof UserPlus;
   label: string;
   color: string;
-  hover: string;
 };
 
 const ReferralCodeCard = ({
@@ -40,7 +39,6 @@ const ReferralCodeCard = ({
         icon: UserPlus,
         label: 'Invite friends',
         color: '!text-blue-500',
-        hover: 'hover:bg-blue-200',
       },
 
       {
@@ -48,7 +46,6 @@ const ReferralCodeCard = ({
         icon: BriefcaseBusiness,
         label: 'List of referees',
         color: '!text-yellow-500',
-        hover: 'hover:bg-yellow-200',
       },
     ];
 
@@ -58,7 +55,6 @@ const ReferralCodeCard = ({
         icon: Wallet,
         label: 'Claim',
         color: '!text-red-500',
-        hover: 'hover:bg-red-200',
       });
     }
 
@@ -130,14 +126,14 @@ const ReferralCodeCard = ({
           </div>
 
           <div className="grid grid-cols-3 gap-3 md:grid-cols-3">
-            {actions.map(({ key, icon: Icon, label, color, hover }) => (
+            {actions.map(({ key, icon: Icon, label, color }) => (
               <Tooltip key={key} delayDuration={150}>
                 <TooltipTrigger asChild>
                   <Button
                     type="button"
                     size="icon"
                     variant="outline"
-                    className={`h-12 w-12 rounded-2xl border ${color} ${hover}`}
+                    className={`h-12 w-12 rounded-2xl border ${color} hover:bg-gray-100`}
                     onClick={() => handleAction(key)}
                     aria-label={label}
                   >
