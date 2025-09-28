@@ -28,7 +28,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { section } = useGetSection(SectionTypeEnum.HEADER);
+  const { section } = useGetSection(SectionTypeEnum.HEADER, {
+    refreshInterval: 300000, // Refetch every 5 minutes
+    revalidateOnFocus: false, // Disable refetch on window focus
+  });
 
   return (
     <html lang="en" suppressHydrationWarning>
