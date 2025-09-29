@@ -58,9 +58,20 @@ export class UserRepository implements IUserRepository {
         email: true,
         role: true,
         isBlocked: true,
+        kyc_levels: true,
         createdAt: true,
         updatedAt: true,
         avatarId: true,
+        eKYC: {
+          select: {
+            id: true,
+            status: true,
+            method: true,
+            type: true,
+            fieldName: true,
+            createdAt: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
