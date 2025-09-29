@@ -161,13 +161,13 @@ const SavingOverview = ({ walletId }: ChildProps) => {
           title="Current Reward"
           value={overview.data.wallet.availableReward}
           type="expense"
-          icon="handCoins"
+          icon="arrowLeftRight"
           classNameCustomCardColor="text-yellow-600 dark:text-yellow-400"
           description="Total Available FX For Trading"
         />
 
         <MetricCard
-          title="Current Reward Claim"
+          title="Total Reward Claimed"
           value={overview.data.wallet.claimsedReward}
           type="default"
           icon="handCoins"

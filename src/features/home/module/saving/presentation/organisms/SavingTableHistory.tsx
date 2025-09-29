@@ -84,6 +84,7 @@ function SavingTableHistory() {
   const debouncedFilterHandler = useMemo(
     () =>
       debounce((value: string) => {
+        dispatch(updatePage(1));
         handleFilterChange({ ...filterCriteria, search: String(value).trim() });
       }, 1000),
 
@@ -119,7 +120,7 @@ function SavingTableHistory() {
   }, [refetchTrigger]);
 
   useEffect(() => {
-    if (history && history.data && history.data.data.length) {
+    if (history && history.data && history.data.data) {
       if (page === 1) {
         setDisplayData([...history.data.data]);
       } else {

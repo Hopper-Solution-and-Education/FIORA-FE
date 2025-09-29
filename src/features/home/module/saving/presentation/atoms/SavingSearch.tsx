@@ -13,7 +13,7 @@ function SavingSearch({ callback }: ChildProps) {
     <div className="relative w-[30vw]">
       <Input
         title="Search"
-        placeholder="Search by From, To and/or Remark"
+        placeholder="Search"
         className="w-full"
         onChange={(e) => callback(e.target.value)}
         onBlur={() => callback.flush()}
