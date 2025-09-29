@@ -1331,15 +1331,10 @@ class TransactionUseCase {
     );
 
     const totalTransactionAwaited = this.transactionRepository.count({
+      ...where,
       isDeleted: false,
       userId,
       currency: CURRENCY.FX,
-      AND: {
-        OR: [
-          { toWallet: { type: WalletType.Saving } },
-          { fromWallet: { type: WalletType.Saving } },
-        ],
-      },
     });
     // getting amountMax from transactions
     const amountMaxAwaited = this.transactionRepository.aggregate({
