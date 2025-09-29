@@ -1,6 +1,8 @@
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
+import { newsApi } from '@/features/news/store/api/newsApi';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import { referralApi } from '@/features/referral/slices/referralApi';
+import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/services/flexi-interest.service';
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { PersistConfig, persistReducer, persistStore } from 'redux-persist';
@@ -25,6 +27,8 @@ export const store = configureStore({
       .concat(apiMiddleware)
       .concat(helpsCenterApi.middleware)
       .concat(profileApi.middleware)
+      .concat(flexiInterestApi.middleware)
+      .concat(newsApi.middleware)
       .concat(referralApi.middleware),
 });
 
@@ -37,6 +41,8 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
         .concat(apiMiddleware)
         .concat(helpsCenterApi.middleware)
         .concat(profileApi.middleware)
+        .concat(flexiInterestApi.middleware)
+        .concat(newsApi.middleware)
         .concat(referralApi.middleware),
   });
 };

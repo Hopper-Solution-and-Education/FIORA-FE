@@ -3,14 +3,11 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
 import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { SavingFilterOptionResponse } from '../../types';
 import { DEFAULT_SAVING_FILTER_CRITERIA } from '../../utils/constants';
-import { SavingWalletType } from '../../utils/enums';
 
 // Define constants for magic numbers
 const DEFAULT_MAX_AMOUNT = 10000;
@@ -31,72 +28,17 @@ interface BaseAmountCondition {
   lte?: number;
 }
 
-interface PartnerCondition {
-  partner?: {
-    name?: string;
-  };
-}
-
-interface AccountCondition {
-  toAccount?: {
-    name?: string;
-  };
-  fromAccount?: {
-    name?: string;
-  };
-}
-
-interface WalletCondition {
-  toWallet?: {
-    type?: string;
-  };
-  fromWallet?: {
-    type?: string;
-  };
-}
-
-interface CategoryCondition {
-  toCategory?: {
-    name?: string;
-  };
-  fromCategory?: {
-    name?: string;
-  };
-}
-
 interface TypeCondition {
   type?: string;
 }
 
-interface NestedOrCondition {
-  OR?: (AccountCondition | CategoryCondition | WalletCondition)[];
-}
-
 interface FilterAndCondition {
   type?: string;
-  fromCategory?: {
-    name?: string;
-  };
-  toCategory?: {
-    name?: string;
-  };
-  fromAccount?: {
-    name?: string;
-  };
-  toAccount?: {
-    name?: string;
-  };
-  toWallet?: {
-    type?: string;
-  };
-  fromWallet?: {
-    type?: string;
-  };
   amount?: AmountCondition;
   baseAmount?: BaseAmountCondition;
   baseCurrency?: string;
   date?: string | DateCondition;
-  OR?: (TypeCondition | PartnerCondition | NestedOrCondition)[];
+  OR?: TypeCondition[];
   AND?: FilterAndCondition[];
 }
 
@@ -111,9 +53,6 @@ interface FilterStructure {
 type FilterParams = {
   dateRange?: DateRange;
   types: string[];
-  categories: string[];
-  accounts: string[];
-  wallets: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -121,11 +60,8 @@ type FilterParams = {
 const filterParamsInitState: FilterParams = {
   dateRange: undefined,
   types: [],
-  categories: [],
-  accounts: [],
   amountMin: 0,
   amountMax: DEFAULT_MAX_AMOUNT,
-  wallets: [],
 };
 
 type FilterMenuProps<T> = {
@@ -142,8 +78,8 @@ const options = [
 
 const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>) => {
   const { callBack, components } = props;
-  const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.transaction);
-  const { currency: selectedCurrency, baseCurrency } = useAppSelector((state) => state.settings);
+  const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.savingWallet);
+  const { currency: selectedCurrency, currency } = useAppSelector((state) => state.settings);
   const { getExchangeAmount } = useCurrencyFormatter();
 
   // State for managing filter parameters
@@ -153,45 +89,10 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
     amountMax: amountMax || DEFAULT_MAX_AMOUNT,
   });
 
-  // Fetch filter options
-  const { data, isLoading, mutate } = useDataFetch<SavingFilterOptionResponse>({
-    endpoint: '/api/transactions/options',
-    method: 'GET',
-    refreshInterval: 1000 * 60 * 5,
-  });
-
-  // Update filter params when server data is loaded
-  useEffect(() => {
-    mutate();
-    if (data?.data?.amountMin !== undefined && data?.data?.amountMax !== undefined) {
-      // Server returns amounts in base currency, convert to selected currency for display
-      const convertedMin = getExchangeAmount({
-        amount: data.data.amountMin,
-        fromCurrency: baseCurrency,
-        toCurrency: selectedCurrency,
-      });
-
-      const convertedMax = getExchangeAmount({
-        amount: data.data.amountMax,
-        fromCurrency: baseCurrency,
-        toCurrency: selectedCurrency,
-      });
-
-      setFilterParams((prev) => ({
-        ...prev,
-        amountMin: convertedMin.convertedAmount,
-        amountMax: convertedMax.convertedAmount,
-      }));
-    }
-  }, [data, baseCurrency, selectedCurrency, getExchangeAmount, mutate]);
-
   // Extract filter data from complex filter structure
   const extractFilterData = useCallback(
     (filters: FilterStructure) => {
       const types: Set<string> = new Set();
-      const categories: Set<string> = new Set();
-      const accounts: Set<string> = new Set();
-      const wallets: Set<string> = new Set();
       let currentAmountMin = amountMin;
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
@@ -219,20 +120,13 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
             types.add(condition.type);
           }
 
-          if (condition.fromCategory?.name) categories.add(condition.fromCategory.name);
-          if (condition.toCategory?.name) categories.add(condition.toCategory.name);
-          if (condition.fromAccount?.name) accounts.add(condition.fromAccount.name);
-          if (condition.toAccount?.name) accounts.add(condition.toAccount.name);
-          if (condition.toWallet?.type) wallets.add(condition.toWallet.type);
-          if (condition.fromWallet?.type) wallets.add(condition.fromWallet.type);
-
           // Handle baseAmount conditions (prioritize over amount)
           if (condition.baseAmount) {
             if (condition.baseAmount.gte !== undefined) {
               // Convert from base currency (USD) to selected currency for display
               const convertedMin = getExchangeAmount({
                 amount: condition.baseAmount.gte,
-                fromCurrency: baseCurrency,
+                fromCurrency: currency,
                 toCurrency: selectedCurrency,
               });
               currentAmountMin = convertedMin.convertedAmount;
@@ -241,7 +135,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
               // Convert from base currency (USD) to selected currency for display
               const convertedMax = getExchangeAmount({
                 amount: condition.baseAmount.lte,
-                fromCurrency: baseCurrency,
+                fromCurrency: currency,
                 toCurrency: selectedCurrency,
               });
               currentAmountMax = convertedMax.convertedAmount;
@@ -261,7 +155,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
                   // Convert from base currency (USD) to selected currency for display
                   const convertedMin = getExchangeAmount({
                     amount: nestedCondition.baseAmount.gte,
-                    fromCurrency: baseCurrency,
+                    fromCurrency: currency,
                     toCurrency: selectedCurrency,
                   });
                   currentAmountMin = convertedMin.convertedAmount;
@@ -270,7 +164,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
                   // Convert from base currency (USD) to selected currency for display
                   const convertedMax = getExchangeAmount({
                     amount: nestedCondition.baseAmount.lte,
-                    fromCurrency: baseCurrency,
+                    fromCurrency: currency,
                     toCurrency: selectedCurrency,
                   });
                   currentAmountMax = convertedMax.convertedAmount;
@@ -308,84 +202,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
               }
             });
           }
-
-          // Handle OR conditions for accounts with special nested structure
-          if (
-            Array.isArray(condition.OR) &&
-            condition.OR.some(
-              (c) =>
-                'OR' in c &&
-                Array.isArray(c.OR) &&
-                c.OR.some(
-                  (n) =>
-                    ('toAccount' in n && n.toAccount?.name !== undefined) ||
-                    ('fromAccount' in n && n.fromAccount?.name !== undefined),
-                ),
-            )
-          ) {
-            condition.OR.forEach((orGroup) => {
-              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
-                orGroup.OR.forEach((nestedOrCondition) => {
-                  if ('toAccount' in nestedOrCondition && nestedOrCondition.toAccount?.name)
-                    accounts.add(nestedOrCondition.toAccount.name);
-                  if ('fromAccount' in nestedOrCondition && nestedOrCondition.fromAccount?.name)
-                    accounts.add(nestedOrCondition.fromAccount.name);
-                });
-              }
-            });
-          }
-
-          // Handle OR conditions for wallets with special nested structure
-          if (
-            Array.isArray(condition.OR) &&
-            condition.OR.some(
-              (c) =>
-                'OR' in c &&
-                Array.isArray(c.OR) &&
-                c.OR.some(
-                  (n) =>
-                    ('toWallet' in n && n.toWallet?.type !== undefined) ||
-                    ('fromWallet' in n && n.fromWallet?.type !== undefined),
-                ),
-            )
-          ) {
-            condition.OR.forEach((orGroup) => {
-              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
-                orGroup.OR.forEach((nestedOrCondition) => {
-                  if ('toWallet' in nestedOrCondition && nestedOrCondition.toWallet?.type)
-                    wallets.add(nestedOrCondition.toWallet.type);
-                  if ('fromWallet' in nestedOrCondition && nestedOrCondition.fromWallet?.type)
-                    wallets.add(nestedOrCondition.fromWallet.type);
-                });
-              }
-            });
-          }
-
-          // Handle OR conditions for categories with special nested structure
-          if (
-            Array.isArray(condition.OR) &&
-            condition.OR.some(
-              (c) =>
-                'OR' in c &&
-                Array.isArray(c.OR) &&
-                c.OR.some(
-                  (n) =>
-                    ('toCategory' in n && n.toCategory?.name !== undefined) ||
-                    ('fromCategory' in n && n.fromCategory?.name !== undefined),
-                ),
-            )
-          ) {
-            condition.OR.forEach((orGroup) => {
-              if ('OR' in orGroup && Array.isArray(orGroup.OR)) {
-                orGroup.OR.forEach((nestedOrCondition) => {
-                  if ('toCategory' in nestedOrCondition && nestedOrCondition.toCategory?.name)
-                    categories.add(nestedOrCondition.toCategory.name);
-                  if ('fromCategory' in nestedOrCondition && nestedOrCondition.fromCategory?.name)
-                    categories.add(nestedOrCondition.fromCategory.name);
-                });
-              }
-            });
-          }
         });
       }
 
@@ -399,7 +215,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
             // Convert from base currency to selected currency for display
             const convertedMin = getExchangeAmount({
               amount: flatFilters.baseAmount.gte,
-              fromCurrency: baseCurrency,
+              fromCurrency: currency,
               toCurrency: selectedCurrency,
             });
             currentAmountMin = convertedMin.convertedAmount;
@@ -408,7 +224,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
             // Convert from base currency to selected currency for display
             const convertedMax = getExchangeAmount({
               amount: flatFilters.baseAmount.lte,
-              fromCurrency: baseCurrency,
+              fromCurrency: currency,
               toCurrency: selectedCurrency,
             });
             currentAmountMax = convertedMax.convertedAmount;
@@ -425,15 +241,12 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
 
       return {
         types: Array.from(types),
-        categories: Array.from(categories),
-        accounts: Array.from(accounts),
-        wallets: Array.from(wallets),
         amountMin: currentAmountMin,
         amountMax: currentAmountMax,
         dateRange: dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined,
       };
     },
-    [amountMin, amountMax, baseCurrency, selectedCurrency, getExchangeAmount],
+    [amountMin, amountMax, currency, selectedCurrency, getExchangeAmount],
   );
 
   // Sync filter params when filter criteria changes
@@ -449,33 +262,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
     }));
   }, []);
 
-  const categoryOptions = useMemo(() => {
-    if (!data?.data?.categories) {
-      return [{ label: 'No option available', value: 'none', disabled: true }];
-    }
-
-    return data.data.categories.map((option: string) => ({
-      value: option,
-      label: option,
-    }));
-  }, [data]);
-
-  const walletOptions = useMemo(() => {
-    if (!data?.data?.wallets) {
-      return [{ label: 'No option available', value: 'none', disabled: true }];
-    }
-
-    return data.data.wallets
-      .filter(
-        (option: string) =>
-          option === SavingWalletType.PAYMENT || option === SavingWalletType.SAVING,
-      )
-      .map((option: string) => ({
-        value: option,
-        label: option,
-      }));
-  }, [data]);
-
   // Create filter components configuration - each component is memoized
   const filterComponents = useMemo(() => {
     // Create memoized filter components
@@ -486,7 +272,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         onChange={(values) => handleEditFilter('types', values)}
         label="Saving Transaction Types"
         placeholder="Select types"
-        disabled={isLoading}
       />
     );
 
@@ -514,17 +299,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       />
     );
 
-    const walletFilterComponent = (
-      <MultiSelectFilter
-        options={walletOptions || []}
-        selectedValues={filterParams.wallets}
-        onChange={(values) => handleEditFilter('wallets', values)}
-        label="Wallets"
-        placeholder="Select wallets"
-        disabled={isLoading}
-      />
-    );
-
     return [
       {
         key: 'typeFilter',
@@ -544,14 +318,8 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         column: FilterColumn.RIGHT,
         order: 0,
       },
-      {
-        key: 'walletFilter',
-        component: walletFilterComponent,
-        column: FilterColumn.RIGHT,
-        order: 1,
-      },
     ];
-  }, [filterParams, categoryOptions, isLoading, handleEditFilter, selectedCurrency]);
+  }, [filterParams, handleEditFilter, selectedCurrency]);
 
   const createFilterStructure = useCallback(
     (params: FilterParams): Record<string, any> => {
@@ -574,56 +342,29 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         });
       }
 
-      // Categories OR group
-      if (params.categories?.length) {
-        andConditions.push({
-          OR: params.categories.map((category) => ({
-            OR: [{ toCategory: { name: category } }, { fromCategory: { name: category } }],
-          })),
-        });
-      }
-
-      // Accounts OR group
-      if (params.accounts?.length) {
-        andConditions.push({
-          OR: params.accounts.map((account) => ({
-            OR: [{ toAccount: { name: account } }, { fromAccount: { name: account } }],
-          })),
-        });
-      }
-
-      // Wallets OR group
-      if (params.wallets?.length) {
-        andConditions.push({
-          OR: params.wallets.map((wallet) => ({
-            OR: [{ toWallet: { type: wallet } }, { fromWallet: { type: wallet } }],
-          })),
-        });
-      }
-
       // Amount with base currency conversion
       const minAmountInBaseCurrency = getExchangeAmount({
         amount: params.amountMin,
         fromCurrency: selectedCurrency,
-        toCurrency: baseCurrency,
+        toCurrency: currency,
       });
 
       const maxAmountInBaseCurrency = getExchangeAmount({
         amount: params.amountMax,
         fromCurrency: selectedCurrency,
-        toCurrency: baseCurrency,
+        toCurrency: currency,
       });
 
       andConditions.push({
         AND: [
           {
-            baseAmount: {
+            amount: {
               gte: minAmountInBaseCurrency.convertedAmount,
               lte: maxAmountInBaseCurrency.convertedAmount,
             },
           },
           {
-            baseCurrency: baseCurrency,
+            currency: currency,
           },
         ],
       });
@@ -635,7 +376,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
 
       return updatedFilters;
     },
-    [baseCurrency, selectedCurrency, getExchangeAmount],
+    [currency, selectedCurrency, getExchangeAmount],
   );
 
   return (

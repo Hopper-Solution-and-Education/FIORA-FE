@@ -1,7 +1,7 @@
 'use client';
 
 import { Loading } from '@/components/common/atoms';
-import MetricCard from '@/components/common/metric/MetricCard';
+import { WalletType } from '@/features/home/module/wallet/domain/enum';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -9,17 +9,15 @@ import { createSavingTransaction, getSavingWalletById } from '../../slices/actio
 import { ActionType, ISavingWallet, SavingTransaction } from '../../types';
 import { SavingTransactionStatus } from '../../utils/enums';
 import { SavingClaimButton, SavingDepositButton, SavingTransferButton } from '../atoms';
+import SavingMetricCard from '../components/SavingMetricCard';
 import { SavingDepositPage } from '../pages';
 
 type TitleDeposit = {
   title: string;
   subtitle?: string;
 };
-type ChildProps = {
-  walletId: string;
-};
 
-const SavingOverview = ({ walletId }: ChildProps) => {
+const SavingOverview = () => {
   const dispatch = useAppDispatch();
   const { wallets } = useAppSelector((state) => state.wallet);
   const { overview, loading, error, refetchTrigger, isCreateTransactionLoading } = useAppSelector(
@@ -29,10 +27,22 @@ const SavingOverview = ({ walletId }: ChildProps) => {
   const [transactionRequest, setTransactionRequest] = useState<SavingTransaction | null>(null);
   const [savingWallets, setSavingWallets] = useState<ISavingWallet[]>([]);
   const [titleDepositPage, setTitleDepositPage] = useState<TitleDeposit | null>(null);
+  const [walletId, setWalletId] = useState<string>('');
 
   useEffect(() => {
-    dispatch(getSavingWalletById(walletId));
+    if (walletId) {
+      dispatch(getSavingWalletById(walletId));
+    }
   }, [dispatch, walletId, refetchTrigger]);
+
+  useEffect(() => {
+    if (wallets) {
+      const wallet = wallets.find((wallet) => wallet.type === WalletType.Saving);
+      if (wallet) {
+        setWalletId(wallet.id);
+      }
+    }
+  }, [wallets]);
 
   useEffect(() => {
     if (transactionRequest !== null) {
@@ -114,34 +124,37 @@ const SavingOverview = ({ walletId }: ChildProps) => {
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-6 pb-4">
-        <MetricCard
+        <SavingMetricCard
           title="Total FX Moved In"
-          value={+overview.data.wallet.balance + +overview.data.moveInBalance}
+          value={overview.data.moveInBalance}
           type="income"
           icon="banknoteArrowUp"
-          className="h-fit p-3 pb-2 *:px-3 *:py-0"
+          className="h-full *:p-0 *:px-6"
+          isInline={true}
         />
 
-        <MetricCard
+        <SavingMetricCard
           title="Total FX Moved Out"
           value={overview.data.moveOutBalance}
           type="expense"
           icon="banknoteArrowDown"
-          className="h-fit p-3 pb-2 *:px-3 *:py-0"
+          className="h-full *:p-0 *:px-6"
+          isInline={true}
         />
 
-        <MetricCard
+        <SavingMetricCard
           title="Rate Of Benefit"
           value={overview.data.benefit.value}
           type="default"
           icon="percent"
-          className="h-fit p-3 pb-2 *:px-3 *:py-0"
+          className="h-full *:p-0 *:px-6"
           classNameCustomCardColor="text-pink-600 dark:text-pink-400"
           currency="%"
           currencyPosition="right"
+          isInline={true}
         />
 
-        <div className="flex items-end justify-end gap-2">
+        <div className="flex items-end justify-end gap-3">
           <SavingDepositButton click={() => setShowDepositPage('Deposit')} />
           <SavingTransferButton click={() => setShowDepositPage('Transfer')} />
           <SavingClaimButton click={() => setShowDepositPage('Claim')} />
@@ -149,7 +162,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pb-6">
-        <MetricCard
+        <SavingMetricCard
           title="Current Balance"
           value={overview.data.wallet.balance}
           type="total"
@@ -157,7 +170,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
           description="Total FX Balance"
         />
 
-        <MetricCard
+        <SavingMetricCard
           title="Current Reward"
           value={overview.data.wallet.availableReward}
           type="expense"
@@ -166,7 +179,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
           description="Total Available FX For Trading"
         />
 
-        <MetricCard
+        <SavingMetricCard
           title="Total Reward Claimed"
           value={overview.data.wallet.claimsedReward}
           type="default"
@@ -174,7 +187,7 @@ const SavingOverview = ({ walletId }: ChildProps) => {
           description="Total FX Being Processed"
         />
 
-        <MetricCard
+        <SavingMetricCard
           title="Total Reward"
           value={overview.data.wallet.accumReward}
           type="income"

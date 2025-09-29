@@ -1,6 +1,7 @@
 'use client';
 
 import { Loading } from '@/components/common/atoms';
+import { editFilter } from '@/components/common/filters';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,6 +14,7 @@ import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { debounce } from 'lodash';
 import { FileText, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useWindowScrollToBottom } from '../../hooks/useWindowScroll';
 import { resetSavingWallet, updateFilterCriteria, updatePage } from '../../slices';
@@ -23,7 +25,6 @@ import { SavingTransactionTableToEntity, SavingWalletType } from '../../utils/en
 import { formatDate } from '../../utils/formatDate';
 import SavingFilterMenu from '../atoms/SavingFilterMenu';
 import SavingSearch from '../atoms/SavingSearch';
-import { SavingHistoryDetailPage } from '../pages';
 
 const SortArrowBtn = ({
   sortOrder,
@@ -49,9 +50,9 @@ const SortArrowBtn = ({
 );
 
 function SavingTableHistory() {
+  const router = useRouter();
   const { formatCurrency } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
-  const [showHistoryDetail, setShowHistoryDetail] = useState<ISavingHistory | null>(null);
   const {
     visibleColumns,
     filterCriteria,
@@ -170,6 +171,12 @@ function SavingTableHistory() {
     dispatch(updateFilterCriteria(newFilter));
   };
 
+  const gotoDetailPage = (transactionId: string) => {
+    if (transactionId) {
+      router.push(`/transaction/details/${transactionId}`);
+    }
+  };
+
   useEffect(() => {
     return () => {
       dispatch(resetSavingWallet());
@@ -183,12 +190,12 @@ function SavingTableHistory() {
 
   return (
     <div className={`mt-4 overflow-y-scroll scroll-smooth relative`}>
-      <div className="h-20 flex items-center justify-between p-4 border border-b-0">
+      <div className="flex flex-col items-start justify-between p-4 border border-b-0 gap-2">
         <div className="flex items-center gap-2">
           <SavingSearch callback={debouncedFilterHandler} />
           <SavingFilterMenu callBack={handleFilterChange} />
         </div>
-        <Label className="text-gray-600 dark:text-gray-400">
+        <Label className="text-gray-600 dark:text-gray-400 text-xs">
           Displaying{' '}
           <strong>
             {displayData?.length}/{history?.data.total}
@@ -242,15 +249,37 @@ function SavingTableHistory() {
             return (
               <TableRow key={record.id} className="text-center">
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{formatDate(new Date(record.date))}</TableCell>
                 <TableCell
-                  className={`font-bold ${
+                  className="cursor-pointer hover:text-blue-600 hover:dark:text-blue-400 hover:underline"
+                  onClick={() =>
+                    editFilter({
+                      currentFilter: filterCriteria,
+                      callBack: handleFilterChange,
+                      target: 'date',
+                      comparator: 'AND',
+                      value: record.date.toString(),
+                    })
+                  }
+                >
+                  {formatDate(new Date(record.date))}
+                </TableCell>
+                <TableCell
+                  className={`font-bold cursor-pointer hover:text-blue-600 hover:dark:text-blue-400 hover:underline ${
                     record.type.toLowerCase() === 'income'
                       ? 'text-green-600 dark:text-green-400'
                       : record.type.toLowerCase() === 'expense'
                         ? 'text-red-600 dark:text-red-400'
-                        : 'text-black dark:text-white'
+                        : 'text-gray-600 dark:text-gray-400'
                   }`}
+                  onClick={() =>
+                    editFilter({
+                      currentFilter: filterCriteria,
+                      callBack: handleFilterChange,
+                      target: 'type',
+                      comparator: 'AND',
+                      value: record.type,
+                    })
+                  }
                 >
                   {record.type}
                 </TableCell>
@@ -299,7 +328,7 @@ function SavingTableHistory() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setShowHistoryDetail(record)}
+                          onClick={() => gotoDetailPage(record.id)}
                         >
                           <FileText size={18} color="#595959" />
                         </Button>
@@ -330,13 +359,6 @@ function SavingTableHistory() {
           )}
         </TableBody>
       </Table>
-
-      {!!showHistoryDetail && (
-        <SavingHistoryDetailPage
-          field={showHistoryDetail}
-          handleClose={() => setShowHistoryDetail(null)}
-        />
-      )}
     </div>
   );
 }

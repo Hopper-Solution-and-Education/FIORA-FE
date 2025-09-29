@@ -17,6 +17,8 @@ export type BreadcrumbItem = {
  */
 export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/': [{ title: 'Home', link: '/' }],
+
+  // ACCOUNT
   '/account': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Account', link: '/account' },
@@ -31,6 +33,8 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Account', link: '/account' },
     { title: 'Create', link: '/account/create' },
   ],
+
+  // TRANSACTION
   '/transaction': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
@@ -57,8 +61,10 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/transaction/edit/[id]': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
-    { title: 'Edit', link: '/transaction/details/edit/[id]' },
+    { title: 'Edit', link: '/transaction/edit/[id]' },
   ],
+
+  // CATEGORY
   '/category': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Category', link: '/category' },
@@ -74,11 +80,14 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Update', link: '/category/update/[id]' },
   ],
 
+  // FINANCE REPORT
+  '/finance/report': [{ title: 'Finance', link: '/finance/report' }],
+
+  // BUDGET
   '/budgets': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
   ],
-  '/finance/report': [{ title: 'Finance', link: '/finance/report' }],
   '/budgets/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Budgets', link: '/budgets' },
@@ -100,6 +109,8 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Summary', link: '/budgets/summary/[year]' },
     { title: 'Detail', link: '/budgets/summary/detail/[year]' },
   ],
+
+  // WALLET
   '/wallet': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Wallet', link: '/wallet' },
@@ -109,38 +120,18 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Wallet', link: '/wallet' },
     { title: 'Deposit', link: '/wallet/deposit' },
   ],
-  // Setting
-  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
-  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
-  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
-  '/setting/product': [{ title: 'Product', link: '/setting/product' }],
-  '/setting/product/update/[id]': [
-    { title: 'Product', link: '/setting/product' },
-    { title: 'Update', link: '/setting/product/update/[id]' },
-  ],
-  '/setting/product/create': [
-    { title: 'Product', link: '/setting/product' },
-    { title: 'Create', link: '/setting/product/create' },
-  ],
-  '/setting/partner': [{ title: 'Partner', link: '/setting/partner' }],
-  '/setting/partner/update/[id]': [
-    { title: 'Partner', link: '/setting/partner' },
-    { title: 'Update', link: '/setting/partner/update/[id]' },
-  ],
-  '/setting/partner/create': [
-    { title: 'Partner', link: '/setting/partner' },
-    { title: 'Create', link: '/setting/partner/create' },
-  ],
+
+  // MEMBERSHIP
   '/membership': [{ title: 'Membership', link: '/membership' }],
-  '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
-  '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
+
+  // HELPS CENTER
   '/helps-center/about-us': [{ title: 'About Us', link: '/helps-center/about-us' }],
   '/helps-center/about-us/edit/[id]': [
     { title: 'About Us', link: '/helps-center/about-us' },
     { title: 'Edit', link: '/helps-center/about-us/edit/[id]' },
   ],
   '/helps-center/faqs': [{ title: 'FAQs', link: '/helps-center/faqs' }],
-  '/helps-center/faqs/details/[id]/': [
+  '/helps-center/faqs/details/[id]': [
     { title: 'FAQs', link: '/helps-center/faqs' },
     { title: 'Details', link: '/helps-center/faqs/details/[id]' },
   ],
@@ -170,6 +161,47 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Terms and Conditions', link: '/helps-center/terms-and-conditions' },
     { title: 'Edit', link: '/helps-center/terms-and-conditions/edit/[id]' },
   ],
+
+  // NEWS
+  '/news': [{ title: 'News', link: '/news' }],
+  '/news/details/[id]/edit': [
+    { title: 'News', link: '/news' },
+    { title: 'Details', link: '/news/details/[id]' },
+    { title: 'Edit', link: '/news/details/[id]/edit' },
+  ],
+  '/news/details/[id]': [
+    { title: 'News', link: '/news' },
+    { title: 'Details', link: '/news/details/[id]' },
+  ],
+  '/news/create': [
+    { title: 'News', link: '/news' },
+    { title: 'Create', link: '/news/create' },
+  ],
+
+  // SETTING
+  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
+  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
+  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
+  '/setting/product': [{ title: 'Product', link: '/setting/product' }],
+  '/setting/product/update/[id]': [
+    { title: 'Product', link: '/setting/product' },
+    { title: 'Update', link: '/setting/product/update/[id]' },
+  ],
+  '/setting/product/create': [
+    { title: 'Product', link: '/setting/product' },
+    { title: 'Create', link: '/setting/product/create' },
+  ],
+  '/setting/partner': [{ title: 'Partner', link: '/setting/partner' }],
+  '/setting/partner/update/[id]': [
+    { title: 'Partner', link: '/setting/partner' },
+    { title: 'Update', link: '/setting/partner/update/[id]' },
+  ],
+  '/setting/partner/create': [
+    { title: 'Partner', link: '/setting/partner' },
+    { title: 'Create', link: '/setting/partner/create' },
+  ],
+  '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
+  '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
   '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
   '/setting/packagefx/create': [
     { title: 'Package FX', link: '/setting/packagefx' },
@@ -183,12 +215,37 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Cron Job', link: '/setting/cron-job' },
     { title: 'Membership', link: '/setting/cron-job/membership' },
   ],
+  '/setting/cron-job/flexi-interest': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Flexi Interest', link: '/setting/cron-job/flexi-interest' },
+  ],
+
+  '/setting/cron-job/referral': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Referral', link: '/setting/cron-job/referral' },
+  ],
 };
 
 /**
  * Regular expression to match UUID format for skipping segments.
  */
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+// Giữ regex uuidRegex hiện có
+const numberRegex = /^\d+$/;
+
+const getIdFromSegments = (segments: string[]) => {
+  // Ưu tiên UUID, nếu không có thì lấy số
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const s = segments[i];
+    if (uuidRegex.test(s)) return s;
+  }
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const s = segments[i];
+    if (numberRegex.test(s)) return s;
+  }
+  return ''; // không tìm thấy
+};
 
 /**
  * Normalizes a segment into a display title using custom titles or capitalization.
@@ -280,11 +337,19 @@ const replacePlaceholdersInLink = (
   for (const match of link.matchAll(placeholderRegex)) {
     const placeholder = match[0];
     const key = match[1];
-    const mapping = config.placeholderMappings?.[key];
 
-    if (mapping) {
-      const value = mapping(segments, searchParams);
-      if (value) updatedLink = updatedLink.replace(placeholder, value);
+    // 1) Ưu tiên dùng mapping từ config (nếu có)
+    const mapping = config.placeholderMappings?.[key];
+    let value = mapping ? (mapping(segments, searchParams) ?? '') : '';
+
+    // 2) Fallback: nếu chưa có value và key là "id", tự bắt từ segments
+    if (!value && key === 'id') {
+      value = getIdFromSegments(segments);
+    }
+
+    // 3) Có thể thêm các fallback khác (vd year) nếu muốn:
+    if (value) {
+      updatedLink = updatedLink.replace(placeholder, value);
     }
   }
 
@@ -297,25 +362,25 @@ const replacePlaceholdersInLink = (
  * @returns Array of breadcrumb items for the current path.
  */
 export function useBreadcrumbs(customConfig: Partial<BreadcrumbConfig> = {}): BreadcrumbItem[] {
-  const pathname = usePathname() || '';
-  const searchParams = useSearchParams(); // Returns ReadonlyURLSearchParams | null
+  const pathname = (usePathname() || '').replace(/\/+$/, ''); // bỏ trailing slash
+  const searchParams = useSearchParams(); // trong Client luôn có, không cần new ReadonlyURLSearchParams
   const segments = pathname.split('/').filter(Boolean);
 
   const config: BreadcrumbConfig = { ...breadcrumbConfig, ...customConfig };
-  const effectiveSearchParams = searchParams || new ReadonlyURLSearchParams(); // Default to empty if null
 
   return useMemo(() => {
+    // 1) Khớp tĩnh
     if (routeMapping[pathname]) {
       return routeMapping[pathname].map((item) => ({
         ...item,
-        link: replacePlaceholdersInLink(item.link, segments, effectiveSearchParams, config),
+        link: replacePlaceholdersInLink(item.link, segments, searchParams, config),
       }));
     }
 
+    // 2) Khớp động
     const dynamicRoute = Object.keys(routeMapping).find((route) => {
-      const routeSegments = route.split('/').filter(Boolean);
+      const routeSegments = route.replace(/\/+$/, '').split('/').filter(Boolean);
       if (routeSegments.length !== segments.length) return false;
-
       return routeSegments.every((routeSeg, i) =>
         routeSeg.startsWith('[') && routeSeg.endsWith(']') ? true : routeSeg === segments[i],
       );
@@ -324,15 +389,15 @@ export function useBreadcrumbs(customConfig: Partial<BreadcrumbConfig> = {}): Br
     if (dynamicRoute) {
       return routeMapping[dynamicRoute].map((item) => ({
         ...item,
-        link: replacePlaceholdersInLink(item.link, segments, effectiveSearchParams, config),
+        link: replacePlaceholdersInLink(item.link, segments, searchParams, config),
       }));
     }
 
+    // 3) Build động
     const items = buildBreadcrumbItems(segments, config);
     if (items.length > 0 && items[0].title !== 'Home') {
       items.unshift({ title: 'Home', link: '/' });
     }
-
     return items;
-  }, [pathname, effectiveSearchParams, config]);
+  }, [pathname, searchParams, config]);
 }

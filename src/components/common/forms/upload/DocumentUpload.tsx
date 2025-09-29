@@ -490,7 +490,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   existingFileType,
   existingFileSize,
 }) => {
-  console.log('🚀 ~ DocumentUpload ~ existingFileName:', existingFileName);
   const [internalError, setInternalError] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);

@@ -205,6 +205,12 @@ class WalletUseCase {
     currency?: string,
     user?: SessionUser,
   ) {
+    // get user wallet
+    const userWallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
+    if (!userWallet) {
+      throw new BadRequestError(Messages.USER_WALLET_NOT_FOUND);
+    }
+
     const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
     if (!packageFX) {
       throw new NotFoundError('PackageFX not found');
@@ -245,6 +251,18 @@ class WalletUseCase {
       createdBy: userId,
       currency: foundCurrency.name,
     });
+
+    // Update wallet fields
+    await this._walletRepository.updateWallet(
+      {
+        id: userWallet.id,
+      },
+      {
+        frBalanceFrozen: {
+          increment: packageFX.fxAmount,
+        },
+      },
+    );
 
     const depositBoxNotification = {
       title: 'New Deposit Request',
@@ -290,36 +308,9 @@ class WalletUseCase {
   }
 
   async getTotalRequestedDepositAmount(userId: string) {
-    const requests = await this._walletRepository.findDepositRequestsByType(
-      userId,
-      DepositRequestStatus.Requested,
-    );
+    const wallet = await this._walletRepository.findWalletByType(WalletType.Payment, userId);
 
-    const packageFXIds = requests.map((r) => r.packageFXId);
-
-    const uniquePackageFXIds = [...new Set(packageFXIds)];
-
-    if (uniquePackageFXIds.length === 0) return 0;
-
-    const packageFXs = await this._walletRepository.findManyPackageFXByIds(uniquePackageFXIds);
-
-    // Count occurrences of each packageFXId
-    const packageFXCounts = packageFXIds.reduce(
-      (acc, id) => {
-        acc[id] = (acc[id] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    // Calculate total with counts
-    const total = packageFXs.reduce((sum, fx) => {
-      const count = packageFXCounts[fx.id] || 0;
-      const amount = Number(fx.fxAmount || 0) * count;
-      return sum + amount;
-    }, 0);
-
-    return total;
+    return wallet?.frBalanceFrozen || 0;
   }
 
   async getDepositRequestsPaginated(page: number, pageSize: number, filter?: FilterObject) {
@@ -646,7 +637,10 @@ class WalletUseCase {
           );
         } else {
           await Promise.all([
-            this._walletRepository.increaseWalletBalance(toWallet.id, amount),
+            this._walletRepository.updateWallet(
+              { id: toWallet.id },
+              { frBalanceActive: { increment: amount }, updatedBy: userId },
+            ),
             this._walletRepository.updateWallet({ id: fromWallet.id }, { ...commonWalletUpdates }),
           ]);
         }
@@ -722,7 +716,10 @@ class WalletUseCase {
         });
 
         await Promise.all([
-          this._walletRepository.increaseWalletBalance(toWallet.id, amount),
+          this._walletRepository.updateWallet(
+            { id: toWallet.id },
+            { frBalanceActive: { increment: amount }, updatedBy: userId },
+          ),
           this._walletRepository.updateWallet(
             { id: fromWallet.id },
             { frBalanceActive: { decrement: amount }, updatedBy: userId },

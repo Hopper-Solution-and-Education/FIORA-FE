@@ -10,7 +10,7 @@ import Image from 'next/image';
 interface MetricCardProps {
   title: string;
   value: number;
-  type: 'income' | 'expense' | 'total' | 'default';
+  type: 'income' | 'expense' | 'total' | 'neutral';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
@@ -19,8 +19,6 @@ interface MetricCardProps {
     value: string;
     isPositive: boolean;
   };
-  classNameCustomCardColor?: string;
-  currencyPosition?: 'left' | 'right';
 }
 
 const MetricCard = ({
@@ -32,8 +30,6 @@ const MetricCard = ({
   className,
   trend,
   currency,
-  classNameCustomCardColor,
-  currencyPosition = 'left',
 }: MetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
@@ -48,6 +44,8 @@ const MetricCard = ({
         } else {
           return 'text-yellow-600 dark:text-yellow-400';
         }
+      case 'neutral':
+        return 'text-gray-600 dark:text-gray-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
     }
@@ -99,28 +97,11 @@ const MetricCard = ({
           </div>
         );
       }
-      return (
-        <LucieIcon
-          icon={iconValue}
-          className={cn('w-4 h-4', getCardColor(), classNameCustomCardColor)}
-        />
-      );
+      return <LucieIcon icon={iconValue} className={cn('w-4 h-4', getCardColor())} />;
     }
 
     return iconValue;
   };
-
-  function formatCurrencyString(str: string): string {
-    // Tách đơn vị tiền tệ ở đầu và phần giá trị ở sau
-    const match = str.match(/^([^\d.,\s]+)([\d.,\s]+)$/);
-
-    if (!match) return str;
-
-    const currency = match[1].trim();
-    const amount = match[2].trim();
-
-    return currencyPosition === 'left' ? `${currency}${amount}` : `${amount}${currency}`;
-  }
 
   return (
     <Card className={cn('overflow-hidden', className)}>
@@ -129,10 +110,8 @@ const MetricCard = ({
         {renderIconOrImage(icon)}
       </CardHeader>
       <CardContent>
-        <div
-          className={cn('text-xl sm:text-2xl font-bold', getCardColor(), classNameCustomCardColor)}
-        >
-          {formatCurrencyString(formatCurrency(value, currency || CURRENCY.FX))}
+        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
+          {formatCurrency(value, currency || CURRENCY.FX)}
         </div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">

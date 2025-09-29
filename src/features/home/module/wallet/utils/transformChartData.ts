@@ -41,7 +41,9 @@ export function transformWalletsToChartData(
   });
 
   // Calculate total balance across all wallets
-  const total = wallets.reduce((sum, w) => sum + w.frBalanceActive, 0) - frozenAmount;
+  const total = wallets.reduce((sum, w) => sum + w.frBalanceActive, 0);
+
+  console.log('total', total);
 
   // Create total item with inner bar showing frozen amount
   const totalItem: TwoSideBarItem = {

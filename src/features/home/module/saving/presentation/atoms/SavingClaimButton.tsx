@@ -18,7 +18,7 @@ const SavingClaimButton = ({ click }: ChildProps) => {
             size="icon"
             aria-label="Claim"
             onClick={click}
-            className="w-10 h-10 [&_svg]:size-6 hover:bg-red-100 dark:hover:bg-red-900 hover:border-red-100 dark:hover:border-red-900"
+            className="w-11 h-11 [&_svg]:size-6 hover:bg-red-100 dark:hover:bg-red-900 hover:border-red-100 dark:hover:border-red-900"
           >
             <Icons.banknoteArrowDown className="text-red-600 dark:text-red-400" />
           </Button>

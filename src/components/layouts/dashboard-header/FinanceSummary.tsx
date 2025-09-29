@@ -86,10 +86,11 @@ export default function FinanceSummary() {
   }, [wallets, frozenAmount, formatCurrency]);
 
   const isLoading = loading || !wallets || frozenAmount === null;
-  const total = totalBalance + totalDebt;
 
-  const balancePercent = total > 0 ? (totalBalance / total) * 100 : 0;
-  const debtPercent = total > 0 ? (totalDebt / total) * 100 : 0;
+  // Calculate percentages based on the larger value to ensure proper visualization
+  const maxValue = Math.max(Math.abs(totalBalance), Math.abs(totalDebt));
+  const balancePercent = maxValue > 0 ? (Math.abs(totalBalance) / maxValue) * 100 : 0;
+  const debtPercent = maxValue > 0 ? (Math.abs(totalDebt) / maxValue) * 100 : 0;
 
   return (
     <div

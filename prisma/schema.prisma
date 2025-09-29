@@ -950,10 +950,12 @@ model CommonSetting {
   id           String        @id @db.Uuid
   name         String        @db.VarChar(30)
   dynamicValue Json
-  createdAt    DateTime @default(now()) @db.Timestamptz(0)
-  createdBy    String?  @db.Uuid
-  updatedAt    DateTime @db.Timestamptz(0)
-  updatedBy    String?  @db.Uuid
+  createdAt    DateTime      @default(now()) @db.Timestamptz(0)
+  createdBy    String?       @db.Uuid
+  updatedAt    DateTime      @db.Timestamptz(0)
+  updatedBy    String?       @db.Uuid
+  symbol       String?       @db.VarChar(30)
+  Transaction  Transaction[]
 }
 
 model ReferralSetting {

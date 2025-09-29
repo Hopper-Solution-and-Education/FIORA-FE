@@ -32,15 +32,17 @@ const WalletBarChart = () => {
     [filteredWallets, frozenAmount],
   );
 
-  const handleDisplayWalletDetail = (item: any) => {
-    if (item?.id) {
-      router.push(`/wallet/${item.id}`);
-    }
-  };
-
   if (loading) {
     return <ChartSkeleton />;
   }
+
+  const handlePaymentWalletClick = (item: TwoSideBarItem) => {
+    if (item.type === WalletType.Payment) {
+      router.push('/wallet/payment');
+    } else if (item.type === WalletType.Saving) {
+      router.push('/wallet/saving');
+    }
+  };
 
   if (!loading && (!wallets || wallets.length === 0)) {
     return (
@@ -66,20 +68,18 @@ const WalletBarChart = () => {
       showTotal={false}
       currency={CURRENCY.FX}
       labelFormatter={(value) => formatCurrency(value, CURRENCY.FX)}
-      callback={handleDisplayWalletDetail}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
       ]}
+      callback={handlePaymentWalletClick}
       tooltipContent={({ payload }) => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
-        const rawAmount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
-        const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
+        const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
+        // const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
 
-        // If main bar already excludes frozen, add it back for display to avoid double-subtract perception
-        const amount = rawAmount + frozenForItem;
-        const isPositive = amount > 0;
+        const isPositive = amount >= 0;
         const showFrozen = item.type === WalletType.Payment || item.type === 'total';
 
         return (

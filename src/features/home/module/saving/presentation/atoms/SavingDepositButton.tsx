@@ -18,7 +18,7 @@ const SavingDepositButton = ({ click }: ChildProps) => {
             size="icon"
             aria-label="Deposit"
             onClick={click}
-            className="w-10 h-10 [&_svg]:size-6 hover:bg-green-100 dark:hover:bg-green-900 hover:border-green-100 dark:hover:border-green-900"
+            className="w-11 h-11 [&_svg]:size-6 hover:bg-green-100 dark:hover:bg-green-900 hover:border-green-100 dark:hover:border-green-900"
           >
             <Icons.banknoteArrowUp className="h-4 w-4 text-green-600 dark:text-green-400" />
           </Button>

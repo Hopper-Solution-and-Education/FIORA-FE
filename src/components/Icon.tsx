@@ -75,6 +75,7 @@ import {
   Monitor,
   MonitorSmartphone,
   Moon,
+  MoonStar,
   MoreVertical,
   MoveLeft,
   Package,
@@ -151,6 +152,7 @@ export const Icons = {
   pizza: Pizza,
   sun: SunMedium,
   moon: Moon,
+  moonStar: MoonStar,
   laptop: Laptop,
   gitHub: ({ ...props }: LucideProps) => (
     <svg

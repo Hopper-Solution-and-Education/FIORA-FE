@@ -42,7 +42,7 @@ export interface IWallet {
 }
 
 export interface ISavingHistory {
-  id: string | number;
+  id: string;
   date: Date;
   type: SavingType | string;
   amount: number;
