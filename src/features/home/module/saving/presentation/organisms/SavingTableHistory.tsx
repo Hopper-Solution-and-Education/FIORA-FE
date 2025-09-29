@@ -53,16 +53,8 @@ function SavingTableHistory() {
   const router = useRouter();
   const { formatCurrency } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
-  const {
-    visibleColumns,
-    filterCriteria,
-    history,
-    loading,
-    error,
-    page,
-    pageSize,
-    refetchTrigger,
-  } = useAppSelector((state) => state.savingWallet);
+  const { visibleColumns, filterCriteria, history, loading, page, pageSize, refetchTrigger } =
+    useAppSelector((state) => state.savingWallet);
   const [hoveringIdx, setHoveringIdx] = useState<number>(-1);
   const [sortTarget, setSortTarget] = useState<string>('date');
   const [sortOrder, setSortOrder] = useState<OrderType>('desc');
@@ -269,7 +261,7 @@ function SavingTableHistory() {
                       ? 'text-green-600 dark:text-green-400'
                       : record.type.toLowerCase() === 'expense'
                         ? 'text-red-600 dark:text-red-400'
-                        : 'text-gray-600 dark:text-gray-400'
+                        : 'text-blue-600 dark:text-blue-400'
                   }`}
                   onClick={() =>
                     editFilter({
@@ -289,7 +281,7 @@ function SavingTableHistory() {
                       ? 'text-green-600 dark:text-green-400'
                       : record.type.toLowerCase() === 'expense'
                         ? 'text-red-600 dark:text-red-400'
-                        : 'text-black dark:text-white'
+                        : 'text-blue-600 dark:text-blue-400'
                   }`}
                 >
                   {formatCurrency(record.amount, CURRENCY.FX)}

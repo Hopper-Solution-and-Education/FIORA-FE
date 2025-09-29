@@ -364,7 +364,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
             },
           },
           {
-            currency: currency,
+            currency: 'FX',
           },
         ],
       });
