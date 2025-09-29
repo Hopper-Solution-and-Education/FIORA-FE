@@ -17,7 +17,12 @@ import { FileText, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useWindowScrollToBottom } from '../../hooks/useWindowScroll';
-import { resetSavingWallet, updateFilterCriteria, updatePage } from '../../slices';
+import {
+  resetSavingWallet,
+  updateAmountRange,
+  updateFilterCriteria,
+  updatePage,
+} from '../../slices';
 import { fetchSavingTransactions } from '../../slices/actions';
 import { ISavingHistory, SavingColumn, SavingTableColumnKey } from '../../types';
 import { DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS } from '../../utils/constants';
@@ -119,6 +124,13 @@ function SavingTableHistory() {
       } else {
         setDisplayData((prev) => [...prev, ...history.data.data]);
       }
+
+      dispatch(
+        updateAmountRange({
+          min: history.data.amountMin as number,
+          max: history.data.amountMax as number,
+        }),
+      );
     }
   }, [history]);
 
