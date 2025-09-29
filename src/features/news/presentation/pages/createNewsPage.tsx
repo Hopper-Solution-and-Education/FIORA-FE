@@ -34,6 +34,11 @@ const CreateNewsPage = () => {
   // Handlers
   const handleDirtyChange = (dirty: boolean) => setHasChanges(dirty);
 
+  // Open dialog handler
+  const handleOpenCreateCategoryDialog = () => {
+    setIsCategoryDialogOpen(true);
+  };
+
   const handleSubmit = async (values: NewsFormValues) => {
     if (typeof session?.user === 'undefined') return;
     values.userId = session?.user.id;
@@ -128,6 +133,8 @@ const CreateNewsPage = () => {
             }
           }}
           isSubmitting={isSubmitting}
+          onOpenCreateCategoryDialog={handleOpenCreateCategoryDialog}
+          onDirtyChange={handleDirtyChange}
         />
       </div>
 
