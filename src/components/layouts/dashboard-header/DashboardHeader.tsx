@@ -14,18 +14,19 @@ import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { Gift } from 'lucide-react';
+import Link from 'next/link';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Separator } from '../../ui/separator';
 import { UserNav } from '../user-nav/UserNav';
 import FinanceSummary from './FinanceSummary';
 import HelpCenter from './HelpCenter';
 import MarqueeAnnouncement from './MarqueAnnouncement';
+import NewsCenter from './NewsCenter';
 import { NotificationContent } from './NotificationContent';
 import SettingCenter from './SettingCenter';
 
 export default function Header() {
   const isMobile = useIsMobile();
-
   const { announcement, isLoading, show: showAnnouncement, handleClose } = useAnnouncementManager();
 
   const { data: notification, mutate: mutateNotification } = useDataFetch({
@@ -94,10 +95,12 @@ export default function Header() {
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Check your rewards</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/referral">Check your rewards</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
+          <NewsCenter />
           <HelpCenter />
           <SettingCenter />
 

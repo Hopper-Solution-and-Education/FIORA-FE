@@ -109,12 +109,20 @@ export const authOptions: NextAuthOptions = {
               },
             });
 
+            const defaultMembership = await prisma.membershipTier.findFirst({
+              where: {
+                balanceMinThreshold: 0,
+                spentMinThreshold: 0,
+              },
+            });
+
             await prisma.membershipProgress.create({
               data: {
                 userId: dbUser.id,
                 currentSpent: new Prisma.Decimal(0),
                 currentBalance: new Prisma.Decimal(0),
                 createdBy: dbUser.id,
+                tierId: defaultMembership?.id || '',
               },
             });
 

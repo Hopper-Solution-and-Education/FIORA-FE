@@ -39,6 +39,7 @@ export interface PaginationResponse<T> {
   pageSize: number;
   totalPage: number;
   total?: number;
+  lastCursor?: string;
 }
 
 export interface Pagination {

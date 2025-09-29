@@ -1,6 +1,6 @@
 import prisma from '@/config/prisma/prisma';
 import { TierBenefit as TierBenefitScheme } from '@/shared/types/membership-benefit';
-import { TierBenefit } from '@prisma/client';
+import { Prisma, TierBenefit } from '@prisma/client';
 import { ITierBenefitRepository } from '../../repositories/tierBenefitRepository.interface';
 
 class TierBenefitRepository implements ITierBenefitRepository {
@@ -26,6 +26,13 @@ class TierBenefitRepository implements ITierBenefitRepository {
         updatedAt: new Date(),
       },
     });
+  }
+
+  async findTierBenefit(
+    where: Prisma.TierBenefitWhereInput,
+    options?: Prisma.TierBenefitFindFirstArgs,
+  ): Promise<TierBenefit | null> {
+    return prisma.tierBenefit.findFirst({ where, ...options });
   }
 }
 

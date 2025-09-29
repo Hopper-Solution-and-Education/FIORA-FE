@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import type { FaqDetail } from '../../domain/entities/models/faqs';
+import { FaqDetail } from '../../domain/entities/models/faqs';
 import { ParsedFaqContent } from '../atoms';
 
 interface FaqContentProps {
@@ -9,7 +9,6 @@ interface FaqContentProps {
 }
 
 const DEFAULT_MAX_HEIGHT = 500; // pixels
-const BUTTON_ANIMATION_DURATION = 200; // ms
 
 const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_HEIGHT }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -18,14 +17,18 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
 
   useEffect(() => {
     const checkContentHeight = () => {
-      if (!contentRef.current) return;
+      if (!contentRef.current) {
+        return;
+      }
 
       const contentHeight = contentRef.current.scrollHeight;
-      setShowToggle(contentHeight > maxHeight);
+      const shouldShowToggle = contentHeight > maxHeight;
+
+      setShowToggle(shouldShowToggle);
     };
 
     // Check height after content renders
-    const timer = setTimeout(checkContentHeight, 100);
+    const timer = setTimeout(checkContentHeight, 200);
 
     return () => clearTimeout(timer);
   }, [data.content, maxHeight]);
@@ -37,9 +40,20 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
   const getContentClasses = () => {
     const baseClasses = ['transition-all duration-300 ease-in-out', 'overflow-hidden'];
 
-    const heightClasses = [!isExpanded && showToggle ? `max-h-[${maxHeight}px]` : 'max-h-none'];
+    return baseClasses.join(' ');
+  };
 
-    return [...baseClasses, ...heightClasses].filter(Boolean).join(' ');
+  const getContentStyle = () => {
+    if (!isExpanded && showToggle) {
+      return {
+        maxHeight: `${maxHeight}px`,
+        transition: 'max-height 0.3s ease-in-out',
+      };
+    }
+    return {
+      maxHeight: 'none',
+      transition: 'max-height 0.3s ease-in-out',
+    };
   };
 
   const getToggleButtonClasses = () => {
@@ -77,7 +91,7 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
           <Icon
             size={18}
             strokeWidth={2}
-            className={`transition-transform duration-${BUTTON_ANIMATION_DURATION} ${
+            className={`transition-transform duration-200 ${
               isExpanded ? 'rotate-180' : 'rotate-0'
             }`}
           />
@@ -93,7 +107,7 @@ const FaqContent: React.FC<FaqContentProps> = ({ data, maxHeight = DEFAULT_MAX_H
 
   return (
     <div className="relative">
-      <div ref={contentRef} className={getContentClasses()}>
+      <div ref={contentRef} className={getContentClasses()} style={getContentStyle()}>
         <ParsedFaqContent htmlContent={data.content} />
 
         {/* Gradient overlay when content is truncated */}
