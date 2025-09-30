@@ -1,7 +1,8 @@
-import { getUsersUseCase } from '@/features/profile/application/use-cases/getUsersUseCase';
+import { userUseCase } from '@/features/profile/application/use-cases/userUsecase';
 import { UserFilterParams } from '@/features/profile/domain/entities/models/user.types';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -37,7 +38,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     // Initialize use case with repository
 
     // Execute use case
-    const result = await getUsersUseCase.execute({
+    const result = await userUseCase.getAllUserEkycPending({
       search,
       role,
       status,
@@ -47,11 +48,13 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       pageSize: Number(pageSize),
     });
 
-    return res.status(result.status).json(result);
-  } catch (error) {
-    console.error('User API Error:', error);
     return res
-      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
-      .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Failed to fetch users data'));
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.GET_SUCCESS, result));
+  } catch (error) {
+    console.error('Get list user error:', error);
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.GET_LIST_USER_ERROR));
   }
 }

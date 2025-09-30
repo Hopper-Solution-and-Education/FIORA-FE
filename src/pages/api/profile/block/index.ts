@@ -1,4 +1,4 @@
-import { blockUserUseCase } from '@/features/profile/application/use-cases/blockUserUsecase';
+import { blockUserUseCase } from '@/features/profile/application/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';

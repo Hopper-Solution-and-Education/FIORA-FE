@@ -1,23 +1,55 @@
 import prisma from '@/config/prisma/prisma';
-import { normalizeToArray } from '@/shared/utils/filterUtils';
-import { KYCStatus, Prisma } from '@prisma/client';
-import { UserFilterParams, UserSearchResult } from '../../domain/entities/models/user.types';
-import { UserRepositoryInterface } from '../../domain/repositories/userRepository.interface';
+import { Prisma } from '@prisma/client';
+import { UserBlocked } from '../../domain/entities/models/profile';
+import { UserSearchResult } from '../../domain/entities/models/user.types';
+import { IUserRepository } from '../../domain/repositories/userRepository';
 
-export class UserRepository implements UserRepositoryInterface {
-  async getWithFilters(filters: any, skip: number, limit: number): Promise<UserSearchResult[]> {
-    const whereClause: Prisma.UserWhereInput = {
-      isDeleted: false,
-      ...filters,
-    };
-
-    // Add eKYC pending filter if requested
-    whereClause.eKYC = {
-      some: {
-        status: KYCStatus.PENDING,
+export class UserRepository implements IUserRepository {
+  async getUserIdById(id: string): Promise<string | null> {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
       },
-    };
+    });
+    return user ? user.id : null;
+  }
+  async blockUser(blockUserId: string, userId: string): Promise<UserBlocked | null> {
+    const userBlocked = await prisma.user.update({
+      where: { id: blockUserId },
+      data: {
+        isBlocked: true,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        isBlocked: true,
+      },
+    });
 
+    return userBlocked ? userBlocked : null;
+  }
+
+  async isUserBlocked(userId: string): Promise<boolean> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        isBlocked: true,
+      },
+    });
+
+    return user?.isBlocked === true;
+  }
+  async getWithFilters(
+    whereClause: Prisma.UserWhereInput,
+    skip: number,
+    limit: number,
+  ): Promise<UserSearchResult[]> {
     const users = await prisma.user.findMany({
       where: whereClause,
       select: {
@@ -26,9 +58,20 @@ export class UserRepository implements UserRepositoryInterface {
         email: true,
         role: true,
         isBlocked: true,
+        kyc_levels: true,
         createdAt: true,
         updatedAt: true,
         avatarId: true,
+        eKYC: {
+          select: {
+            id: true,
+            status: true,
+            method: true,
+            type: true,
+            fieldName: true,
+            createdAt: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -41,109 +84,6 @@ export class UserRepository implements UserRepositoryInterface {
       ...user,
       role: user.role.toString(),
     }));
-  }
-
-  async searchFilter(search: string): Promise<any> {
-    if (!search || search.trim() === '') {
-      return null;
-    }
-
-    const searchTerm = search.trim();
-
-    return {
-      OR: [
-        {
-          name: {
-            contains: searchTerm,
-            mode: 'insensitive',
-          },
-        },
-        {
-          email: {
-            contains: searchTerm,
-            mode: 'insensitive',
-          },
-        },
-        {
-          role: {
-            contains: searchTerm,
-            mode: 'insensitive',
-          },
-        },
-      ],
-    };
-  }
-
-  async buildFilters(params: UserFilterParams): Promise<any> {
-    const filters: any = {};
-
-    if (params.search) {
-      filters.OR = [
-        {
-          name: {
-            contains: params.search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          email: {
-            contains: params.search,
-            mode: 'insensitive',
-          },
-        },
-      ];
-    }
-
-    // Filter by role
-    if (params.role) {
-      const roleArray = normalizeToArray(params.role as any);
-      if (roleArray.length > 0) {
-        filters.role = { in: roleArray };
-      }
-    }
-
-    // Filter by status (isBlocked)
-    if (params.status) {
-      const statusArray = normalizeToArray(params.status as any);
-      const validStatuses = ['active', 'blocked'];
-      const filteredStatuses = statusArray.filter((s) => validStatuses.includes(s));
-
-      if (filteredStatuses.length > 0) {
-        if (filteredStatuses.includes('active') && filteredStatuses.includes('blocked')) {
-          // Include both active and blocked users
-        } else if (filteredStatuses.includes('active')) {
-          filters.isBlocked = { in: [false, null] };
-        } else if (filteredStatuses.includes('blocked')) {
-          filters.isBlocked = true;
-        }
-      }
-    }
-
-    // Filter by date range
-    if (params.fromDate || params.toDate) {
-      filters.createdAt = {};
-      if (params.fromDate) {
-        const fromDateObj = new Date(params.fromDate);
-        if (!isNaN(fromDateObj.getTime())) {
-          filters.createdAt.gte = fromDateObj;
-        }
-      }
-      if (params.toDate) {
-        const toDateObj = new Date(params.toDate);
-        if (!isNaN(toDateObj.getTime())) {
-          filters.createdAt.lte = toDateObj;
-        }
-      }
-    }
-
-    if (params.status && !params.status.includes('all')) {
-      if (params.status && params.status.includes('blocked')) {
-        filters.isBlocked = { equals: true };
-      } else if (params.status && params.status.includes('active')) {
-        filters.isBlocked = { equals: false };
-      }
-    }
-    return filters;
   }
 }
 
