@@ -29,7 +29,3 @@ export interface UserSearchResult {
     createdAt: Date;
   }[];
 }
-
-export interface UsersResponse {
-  users: UserSearchResult[];
-}

@@ -427,7 +427,4 @@ export enum Messages {
   CREATE_COMMENT_NEWS_SUCCESS = 'Create comment news successfully',
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
-
-  //User
-  USER_NOT_FOUND = 'User not found',
 }

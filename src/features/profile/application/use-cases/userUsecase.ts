@@ -1,7 +1,7 @@
 import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { KYCStatus, Prisma } from '@prisma/client';
 import { UserBlocked } from '../../domain/entities/models/profile';
-import { UserFilterParams, UsersResponse } from '../../domain/entities/models/user.types';
+import { UserFilterParams, UserSearchResult } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
 
@@ -18,7 +18,7 @@ class UserUseCase {
   async isUserBlocked(userId: string): Promise<boolean> {
     return this.userRepository.isUserBlocked(userId);
   }
-  async getAllUserEkycPending(params: UserFilterParams): Promise<UsersResponse> {
+  async getAllUserEkycPending(params: UserFilterParams): Promise<UserSearchResult[]> {
     const { search, role, status, fromDate, toDate, page = 1, pageSize = 10 } = params;
 
     const pageNum = Math.max(1, Number(page));
@@ -37,11 +37,13 @@ class UserUseCase {
 
     // Get data
     try {
-      const result = await this.userRepository.getWithFilters(filters, skip, limitNum);
+      const result: UserSearchResult[] = await this.userRepository.getWithFilters(
+        filters,
+        skip,
+        limitNum,
+      );
 
-      return {
-        users: result,
-      };
+      return result;
     } catch (error) {
       console.error('Error in getUsersUseCase:', error);
       console.error('Filters:', JSON.stringify(filters, null, 2));
