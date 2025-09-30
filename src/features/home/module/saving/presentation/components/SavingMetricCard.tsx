@@ -7,10 +7,10 @@ import { isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
 
-interface MetricCardProps {
+interface SavingMetricCardProps {
   title: string;
   value: number;
-  type: 'income' | 'expense' | 'total' | 'neutral';
+  type: 'income' | 'expense' | 'total' | 'neutral' | 'default';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
@@ -19,9 +19,12 @@ interface MetricCardProps {
     value: string;
     isPositive: boolean;
   };
+  classNameCustomCardColor?: string;
+  currencyPosition?: 'left' | 'right';
+  isInline?: boolean;
 }
 
-const MetricCard = ({
+const SavingMetricCard = ({
   title,
   value,
   type,
@@ -30,7 +33,10 @@ const MetricCard = ({
   className,
   trend,
   currency,
-}: MetricCardProps) => {
+  classNameCustomCardColor,
+  currencyPosition = 'left',
+  isInline = false,
+}: SavingMetricCardProps) => {
   const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
     switch (type) {
@@ -97,36 +103,88 @@ const MetricCard = ({
           </div>
         );
       }
-      return <LucieIcon icon={iconValue} className={cn('w-4 h-4', getCardColor())} />;
+      return (
+        <LucieIcon
+          icon={iconValue}
+          className={cn('w-4 h-4', getCardColor(), classNameCustomCardColor)}
+        />
+      );
     }
 
     return iconValue;
   };
 
+  function formatCurrencyString(str: string): string {
+    // Tách đơn vị tiền tệ ở đầu và phần giá trị ở sau
+    const match = str.match(/^([^\d.,\s]+)([\d.,\s]+)$/);
+
+    if (!match) return str;
+
+    const currency = match[1].trim();
+    const amount = match[2].trim();
+
+    return currencyPosition === 'left' ? `${currency}${amount}` : `${amount}${currency}`;
+  }
+
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
-        {renderIconOrImage(icon)}
-      </CardHeader>
-      <CardContent>
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatCurrency(value, currency || CURRENCY.FX)}
-        </div>
-        {(description || trend) && (
-          <div className="mt-1 flex items-center text-[10px] sm:text-xs">
-            {description && <p className="text-muted-foreground">{description}</p>}
-            {trend && (
-              <div className={cn('ml-2 flex items-center', getTrendColor())}>
-                {getTrendIcon()}
-                <span className="ml-1">{Math.abs(Number(trend.value))}%</span>
+    <>
+      {!isInline ? (
+        <Card className={cn('overflow-hidden', className)}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
+            {renderIconOrImage(icon)}
+          </CardHeader>
+          <CardContent>
+            <div
+              className={cn(
+                'text-xl sm:text-2xl font-bold',
+                getCardColor(),
+                classNameCustomCardColor,
+              )}
+            >
+              {formatCurrencyString(formatCurrency(value, currency || CURRENCY.FX))}
+            </div>
+            {(description || trend) && (
+              <div className="mt-1 flex items-center text-[10px] sm:text-xs">
+                {description && <p className="text-muted-foreground">{description}</p>}
+                {trend && (
+                  <div className={cn('ml-2 flex items-center', getTrendColor())}>
+                    {getTrendIcon()}
+                    <span className="ml-1">{Math.abs(Number(trend.value))}%</span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className={cn('overflow-hidden', className)}>
+          <CardHeader className="h-full flex flex-row items-center justify-between">
+            <CardTitle
+              className="text-sm sm:text-md font-medium truncate whitespace-nowrap overflow-hidden"
+              title={title}
+            >
+              {title}
+            </CardTitle>
+            <div
+              className={cn(
+                'w-fit min-w-fit max-w-fit text-xl sm:text-xl font-bold !mt-0',
+                getCardColor(),
+                classNameCustomCardColor,
+              )}
+            >
+              {formatCurrencyString(
+                formatCurrency(value, currency || CURRENCY.FX, {
+                  applyExchangeRate: true,
+                  shouldShortened: true,
+                }),
+              )}
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+    </>
   );
 };
 
-export default MetricCard;
+export default SavingMetricCard;
