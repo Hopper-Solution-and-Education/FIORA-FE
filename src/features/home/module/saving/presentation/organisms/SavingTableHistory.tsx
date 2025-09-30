@@ -25,7 +25,10 @@ import {
 } from '../../slices';
 import { fetchSavingTransactions } from '../../slices/actions';
 import { ISavingHistory, SavingColumn, SavingTableColumnKey } from '../../types';
-import { DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS } from '../../utils/constants';
+import {
+  DEFAULT_SAVING_AMOUNT_RANGE,
+  DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS,
+} from '../../utils/constants';
 import { SavingTransactionTableToEntity, SavingWalletType } from '../../utils/enums';
 import { formatDate } from '../../utils/formatDate';
 import SavingFilterMenu from '../atoms/SavingFilterMenu';
@@ -124,13 +127,6 @@ function SavingTableHistory() {
       } else {
         setDisplayData((prev) => [...prev, ...history.data.data]);
       }
-
-      dispatch(
-        updateAmountRange({
-          min: history.data.amountMin as number,
-          max: history.data.amountMax as number,
-        }),
-      );
     }
   }, [history]);
 
@@ -172,6 +168,17 @@ function SavingTableHistory() {
   }, [visibleColumns]);
 
   const handleFilterChange = (newFilter: FilterCriteria) => {
+    try {
+      const amount = newFilter?.filters?.AND[0]?.AND[0]?.amount;
+      dispatch(updateAmountRange({ min: amount.gte, max: amount.lte }));
+    } catch {
+      dispatch(
+        updateAmountRange({
+          min: DEFAULT_SAVING_AMOUNT_RANGE.min,
+          max: DEFAULT_SAVING_AMOUNT_RANGE.max,
+        }),
+      );
+    }
     dispatch(updateFilterCriteria(newFilter));
   };
 

@@ -10,6 +10,11 @@ export const DEFAULT_SAVING_FILTER_CRITERIA: FilterCriteria = {
   },
 };
 
+export const DEFAULT_SAVING_AMOUNT_RANGE = {
+  min: 0,
+  max: 15000,
+};
+
 export const DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS: SavingTableColumnKey = {
   //True = sortable, False = not sortable
   'No.': { sortable: false, index: 1, sortedBy: 'none' },

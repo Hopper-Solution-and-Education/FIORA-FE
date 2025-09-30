@@ -5,6 +5,7 @@ import { SavingOverviewResponse } from '../data/tdo/response/SavingOverviewRespo
 import { SavingTransactionResponse } from '../data/tdo/response/SavingTransactionResponse';
 import { SavingTableColumnKey } from '../types';
 import {
+  DEFAULT_SAVING_AMOUNT_RANGE,
   DEFAULT_SAVING_FILTER_CRITERIA,
   DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS,
 } from '../utils/constants';
@@ -38,8 +39,8 @@ const initialState: SavingWalletState = {
   visibleColumns: DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS,
   filterCriteria: DEFAULT_SAVING_FILTER_CRITERIA,
   refetchTrigger: false,
-  amountMin: 0,
-  amountMax: 10000,
+  amountMin: DEFAULT_SAVING_AMOUNT_RANGE.min,
+  amountMax: DEFAULT_SAVING_AMOUNT_RANGE.max,
 };
 
 const savingWalletSlice = createSlice({

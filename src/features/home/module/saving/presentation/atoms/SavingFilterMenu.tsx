@@ -4,7 +4,7 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
-import { useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { DEFAULT_SAVING_FILTER_CRITERIA } from '../../utils/constants';
@@ -81,6 +81,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
   const { amountMin, amountMax, filterCriteria } = useAppSelector((state) => state.savingWallet);
   const { currency: selectedCurrency, currency } = useAppSelector((state) => state.settings);
   const { getExchangeAmount } = useCurrencyFormatter();
+  const dispatch = useAppDispatch();
 
   // State for managing filter parameters
   const [filterParams, setFilterParams] = useState<FilterParams>({
@@ -97,6 +98,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
       let dateTo: Date | undefined;
+      console.log('=====> Check min max: ', amountMin, amountMax);
 
       // Handle date range at the top level regardless of structure
       if (filters?.date) {
@@ -252,6 +254,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
   // Sync filter params when filter criteria changes
   useEffect(() => {
     const extractedData = extractFilterData(filterCriteria.filters as FilterStructure);
+    console.log(filterCriteria);
     setFilterParams(extractedData);
   }, [filterCriteria, extractFilterData]);
 
@@ -281,9 +284,9 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         maxValue={filterParams.amountMax}
         minRange={0}
         maxRange={amountMax}
-        onValueChange={(target, value) =>
-          handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value)
-        }
+        onValueChange={(target, value) => {
+          handleEditFilter(target === 'minValue' ? 'amountMin' : 'amountMax', value);
+        }}
         label={`Amount (${selectedCurrency})`}
         minLabel="Min Amount"
         maxLabel="Max Amount"
