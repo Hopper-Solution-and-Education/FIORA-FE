@@ -27,6 +27,7 @@ import notificationDashboardSlice from '@/features/setting/module/notification-d
 import packageFxSlice from '@/features/setting/module/packagefx/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
+import { usersApi } from '@/features/setting/module/user-management/store/api/userApi';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
 import faqsImportSlice from '../features/helps-center/store/slices/faqsImportSlice';
@@ -75,6 +76,7 @@ const reducer = {
   [flexiInterestApi.reducerPath]: flexiInterestApi.reducer,
   [newsApi.reducerPath]: newsApi.reducer,
   [referralApi.reducerPath]: referralApi.reducer,
+  [usersApi.reducerPath]: usersApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

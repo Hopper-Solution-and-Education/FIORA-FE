@@ -36,6 +36,12 @@ export const menuSettingItems: MenuSettingItem[] = [
   { label: 'Users', icon: Icons.users, url: '#' },
   { label: 'Role & Permission', icon: Icons.clipboardList, url: '#' },
   { label: 'Global Setting', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
+  {
+    label: 'User Management',
+    icon: Icons.shieldCheck,
+    url: '/setting/user-management',
+    role: 'Admin',
+  },
 ];
 
 export const helpItems = [
