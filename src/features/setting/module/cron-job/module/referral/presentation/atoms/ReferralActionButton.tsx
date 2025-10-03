@@ -9,11 +9,17 @@ import { useRetryReferral } from '../hooks/useRetryReferral';
 interface ReferralActionButtonProps {
   status: string;
   referralId: string;
+  initialAmount?: string;
   onRetry?: (id: string, amount: string, reason: string) => void;
   className?: string;
 }
 
-const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionButtonProps) => {
+const ReferralActionButton = ({
+  status,
+  referralId,
+  initialAmount,
+  onRetry,
+}: ReferralActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
@@ -23,6 +29,9 @@ const ReferralActionButton = ({ status, referralId, onRetry }: ReferralActionBut
   const handleRetry = () => {
     clearError();
     setIsModalOpen(true);
+    if (initialAmount) {
+      setAmount(initialAmount);
+    }
   };
 
   const validateAmount = (value: string): boolean => {

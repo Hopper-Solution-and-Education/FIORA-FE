@@ -105,6 +105,7 @@ const ReferralCronjobCommonTable = ({
             <ReferralActionButton
               status={r.status}
               referralId={r.id}
+              initialAmount={r.amount?.toString()}
               onRetry={(id, amount, reason) => {
                 console.log('Retry referral:', { id, amount, reason });
                 // Refresh data after successful retry
