@@ -1,4 +1,4 @@
-import { Prisma, UserRole } from '@prisma/client';
+import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserAssignedRole, UserBlocked } from '../entities/models/profile';
 import { UserSearchResult } from '../entities/models/user.types';
 
@@ -16,4 +16,5 @@ export interface IUserRepository {
     role: UserRole,
     userId: string,
   ): Promise<UserAssignedRole | null>;
+  getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number>;
 }

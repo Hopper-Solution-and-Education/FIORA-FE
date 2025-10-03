@@ -369,6 +369,8 @@ export enum Messages {
   USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked',
   USER_NOT_FOUND = 'User not found',
   GET_LIST_USER_ERROR = 'Failed to fetch users data',
+  GET_COUNT_USER_ERROR = 'Failed to fetch count users data',
+  GET_COUNT_USER_SUCCESS = 'Get count users successfully',
   USER_SELF_ASSIGN_ROLE = 'User cannot assign role to self',
 
   //Common

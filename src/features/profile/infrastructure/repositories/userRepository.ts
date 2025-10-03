@@ -1,10 +1,20 @@
 import prisma from '@/config/prisma/prisma';
-import { Prisma, UserRole } from '@prisma/client';
+import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserAssignedRole, UserBlocked } from '../../domain/entities/models/profile';
 import { UserSearchResult } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
+  getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
+    console.log('eKycStatus', eKycStatus);
+    return prisma.user.count({
+      where: {
+        eKYC: {
+          some: { status: eKycStatus },
+        },
+      },
+    });
+  }
   async assignRole(
     assignUserId: string,
     role: UserRole,

@@ -25,6 +25,9 @@ class UserUseCase {
   async isUserBlocked(userId: string): Promise<boolean> {
     return this.userRepository.isUserBlocked(userId);
   }
+  async getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
+    return this.userRepository.getCountUserEkycByStatus(eKycStatus);
+  }
   async getAllUserEkycPending(params: UserFilterParams): Promise<UserSearchResult[]> {
     const { search, role, status, fromDate, toDate, page = 1, pageSize = 10 } = params;
 
