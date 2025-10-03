@@ -23,7 +23,7 @@ class PaymentWalletUseCase {
     private walletRepository: IWalletRepository,
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
-  ) {}
+  ) { }
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;
@@ -169,7 +169,7 @@ class PaymentWalletUseCase {
 
     const totalMovedInAggregateAwaited = this.transactionRepository.aggregate({
       _sum: {
-        amount: true,
+        baseAmount: true,
       },
       where: {
         OR: [
@@ -187,7 +187,7 @@ class PaymentWalletUseCase {
 
     const totalMovedOutAggregateAwaited = this.transactionRepository.aggregate({
       _sum: {
-        amount: true,
+        baseAmount: true,
       },
       where: {
         OR: [
@@ -208,8 +208,8 @@ class PaymentWalletUseCase {
       totalMovedOutAggregateAwaited,
     ]);
 
-    const totalMovedIn = Number(totalMovedInResult['_sum']['amount']) || 0;
-    const totalMovedOut = Number(totalMovedOutResult['_sum']['amount']) || 0;
+    const totalMovedIn = Number(totalMovedInResult['_sum']['baseAmount']) || 0;
+    const totalMovedOut = Number(totalMovedOutResult['_sum']['baseAmount']) || 0;
     const annualFlexInterest = Number(flexInterestTierBenefitAwaited.value) || 0;
 
     // TODO: get total withdrawal amount
