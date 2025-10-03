@@ -114,6 +114,7 @@ import {
   Users,
   UserX2Icon,
   UtensilsCrossed,
+  Vault,
   Wallet,
   X,
 } from 'lucide-react';
@@ -360,4 +361,5 @@ export const Icons = {
   mailCheck: MailCheck,
   mailPlus: MailPlus,
   send: Send,
+  vault: Vault,
 };
