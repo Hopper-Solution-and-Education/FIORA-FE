@@ -1,4 +1,4 @@
-import { UserRole } from '@/shared/constants/userRole';
+import { UserRole } from '@prisma/client';
 
 export type UserProfile = {
   id: string;
@@ -97,11 +97,12 @@ export interface UserBlocked {
   updatedAt: Date;
 }
 
-export interface UserRole {
+export interface UserAssignedRole {
   id: string;
   email: string;
   name: string | null;
-  UserRole: UserRole;
+  role: UserRole;
+  isBlocked: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }

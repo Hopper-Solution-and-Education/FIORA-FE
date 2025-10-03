@@ -1,10 +1,34 @@
 import prisma from '@/config/prisma/prisma';
-import { Prisma } from '@prisma/client';
-import { UserBlocked } from '../../domain/entities/models/profile';
+import { Prisma, UserRole } from '@prisma/client';
+import { UserAssignedRole, UserBlocked } from '../../domain/entities/models/profile';
 import { UserSearchResult } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
+  async assignRole(
+    assignUserId: string,
+    role: UserRole,
+    userId: string,
+  ): Promise<UserAssignedRole | null> {
+    const userBlocked = await prisma.user.update({
+      where: { id: assignUserId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        isBlocked: true,
+      },
+      data: {
+        updatedBy: userId,
+        updatedAt: new Date(),
+        role: role,
+      },
+    });
+    return userBlocked ? userBlocked : null;
+  }
   async getUserIdById(id: string): Promise<string | null> {
     const user = await prisma.user.findUnique({
       where: { id },

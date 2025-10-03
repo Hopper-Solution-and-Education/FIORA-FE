@@ -1,4 +1,4 @@
-import { AccountType } from '@prisma/client';
+import { AccountType, UserRole } from '@prisma/client';
 import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
@@ -68,10 +68,15 @@ export const validateBlockUserId = Joi.object({
   }),
 });
 
-export const validateAssignUserId = Joi.object({
+export const validateAssignRequest = Joi.object({
   assignUserId: Joi.string().uuid().required().messages({
     'string.empty': 'AssignUserId id is required',
     'string.uuid': 'AssignUserId id must be a valid UUID',
     'any.required': 'AssignUserId id is required',
+  }),
+  role: Joi.string().valid(UserRole.Admin, UserRole.User, UserRole.CS).required().messages({
+    'any.only': 'Role is invalid',
+    'string.empty': 'Role is required',
+    'any.required': 'Role is required',
   }),
 });

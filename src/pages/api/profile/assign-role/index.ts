@@ -5,7 +5,8 @@ import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { validateAssignUserId } from '@/shared/validators/accountValidator';
+import { validateAssignRequest } from '@/shared/validators/accountValidator';
+import { UserRole } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
@@ -18,18 +19,27 @@ export default withAuthorization({
 });
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { assignUserId } = req.body;
+  const { assignUserId, role } = req.body;
 
   //validationvalidation
-  const error = validateBody(validateAssignUserId, { assignUserId: assignUserId });
+  const error = validateBody(validateAssignRequest, { assignUserId: assignUserId, role: role });
   if (error.error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error.error));
   }
-  const assignUser: string = assignUserId as string;
+
+  //check user self assign role
+  if (userId === assignUserId) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.USER_SELF_ASSIGN_ROLE));
+  }
+
+  const user: string = assignUserId as string;
+  const roleAssign: UserRole = role as UserRole;
   //check user exist
-  const userexist = await userUseCase.getUserIdById(assignUser);
+  const userexist = await userUseCase.getUserIdById(user);
 
   if (!userexist || userexist == null) {
     return res
@@ -38,15 +48,15 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   //block user
-  const blockededUser = await userUseCase.blockUser(assignUser, userId);
+  const assignUserResult = await userUseCase.assignRole(user, roleAssign, userId);
 
-  if (!assignUser || assignUser == null) {
+  if (!assignUserResult || assignUserResult == null) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ASSIGN_USER_FAILED, {}));
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ASSIGN_ROLE_FAILED, {}));
   }
 
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.ASSIGN_USER_SUCCESS, assignUser));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.ASSIGN_ROLE_SUCCESS, assignUserResult));
 }

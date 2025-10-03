@@ -364,11 +364,12 @@ export enum Messages {
   KYC_NOT_MATCH = 'Kyc not match',
   BLOCK_USER_SUCCESS = 'Block user successfully',
   BLOCK_USER_FAILED = 'Block user failed',
-  ASSIGN_USER_SUCCESS = 'Assign user successfully',
-  ASSIGN_USER_FAILED = 'Assign user failed',
-  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked. Please contact support.',
+  ASSIGN_ROLE_SUCCESS = 'Assign role successfully',
+  ASSIGN_ROLE_FAILED = 'Assign role failed',
+  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked',
   USER_NOT_FOUND = 'User not found',
   GET_LIST_USER_ERROR = 'Failed to fetch users data',
+  USER_SELF_ASSIGN_ROLE = 'User cannot assign role to self',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',

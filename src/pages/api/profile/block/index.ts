@@ -1,4 +1,4 @@
-import { blockUserUseCase } from '@/features/profile/application/use-cases/userUsecase';
+import { userUseCase } from '@/features/profile/application/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
@@ -14,6 +14,12 @@ export default withAuthorization({
   switch (req.method) {
     case 'PUT':
       return PUT(req, res, userId);
+    default:
+      return res
+        .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+        .json(
+          createErrorResponse(RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED, {}),
+        );
   }
 });
 
@@ -30,7 +36,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   //check user exist
-  const userexist = await blockUserUseCase.getUserIdById(blockUser);
+  const userexist = await userUseCase.getUserIdById(blockUser);
 
   if (!userexist || userexist == null) {
     return res
@@ -39,7 +45,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   //block user
-  const blockededUser = await blockUserUseCase.blockUser(blockUser, userId);
+  const blockededUser = await userUseCase.blockUser(blockUser, userId);
 
   if (!blockededUser || blockededUser == null) {
     return res
