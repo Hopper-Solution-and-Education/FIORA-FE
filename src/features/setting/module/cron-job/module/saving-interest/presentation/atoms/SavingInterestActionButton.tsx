@@ -9,6 +9,7 @@ import { useRetrySavingInterest } from '../hooks/useRetrySavingInterest';
 interface SavingInterestActionButtonProps {
   status: string;
   savingInterestId: string;
+  amount?: string;
   onRetry?: (id: string, savingInterestAmount: string, reason: string) => void;
   className?: string;
 }
@@ -16,6 +17,7 @@ interface SavingInterestActionButtonProps {
 const SavingInterestActionButton = ({
   status,
   savingInterestId,
+  amount,
   onRetry,
 }: SavingInterestActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +29,9 @@ const SavingInterestActionButton = ({
   const handleRetry = () => {
     clearError();
     setIsModalOpen(true);
+    if (amount) {
+      setSavingInterestAmount(amount);
+    }
   };
 
   const validateAmount = (value: string): boolean => {
