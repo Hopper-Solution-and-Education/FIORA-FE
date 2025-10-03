@@ -27,6 +27,7 @@ import notificationDashboardSlice from '@/features/setting/module/notification-d
 import packageFxSlice from '@/features/setting/module/packagefx/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
+import userManagementSlice from '@/features/setting/module/user-management/slices'
 import { usersApi } from '@/features/setting/module/user-management/store/api/userApi';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
@@ -69,6 +70,7 @@ const reducer = {
   savingInterest: savingInterestSlice,
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
+  userManagement: userManagementSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,

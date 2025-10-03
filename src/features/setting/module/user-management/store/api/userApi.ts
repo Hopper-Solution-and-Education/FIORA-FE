@@ -1,15 +1,24 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export interface UserApiResponse {
-  avatarId: any;
-  isBlocked: boolean;
+  avatarUrl: any;
   id: string;
   name: string;
   email: string;
   role: string;
-  status: string;
+  isBlocked: boolean;
+  kyc_levels: string[];
   createdAt: string;
-  avatarUrl?: string;
+  updateAt: string;
+  avatarId?: string | null;
+  eKYC?: {
+    id: string;
+    status: string;
+    method: string;
+    type: string;
+    fieldName: string;
+    createdAt: string;
+  }[];
 }
 
 export interface GetUsersParams {
@@ -17,7 +26,7 @@ export interface GetUsersParams {
   pageSize?: number;
   fromDate?: string;
   toDate?: string;
-  role?: string;
+  roles?: string[];
   status?: string[];
   search?: string;
 }
@@ -43,10 +52,15 @@ export const usersApi = createApi({
         if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
         if (params.fromDate) searchParams.append('fromDate', params.fromDate);
         if (params.toDate) searchParams.append('toDate', params.toDate);
-        if (params.role && params.role !== 'all') searchParams.append('role', params.role);
+  
+        if (params.roles && params.roles.length > 0) {
+          params.roles.forEach((role) => searchParams.append('role', role));
+        }
+
         if (params.status && params.status.length > 0) {
           params.status.forEach((status) => searchParams.append('status', status));
         }
+
         if (params.search) searchParams.append('search', params.search);
 
         return {
@@ -56,7 +70,18 @@ export const usersApi = createApi({
       },
       providesTags: ['Users'],
     }),
+    getCountUsers: builder.query<number, { eKycStatus?: string } | void>({
+      query: (params) => {
+        const qs = new URLSearchParams();
+        if (params?.eKycStatus) qs.append('eKycStatus', params.eKycStatus);
+        return { url: `/count-users${qs.toString() ? `?${qs.toString()}` : ''}`, method: 'GET' };
+      },
+      transformResponse: (resp: any) => {
+        return resp?.data ?? 0;
+      },
+      providesTags: ['Users'],
+    }),
   }),
 });
 
-export const { useGetUsersQuery } = usersApi;
+export const { useGetUsersQuery, useGetCountUsersQuery } = usersApi;

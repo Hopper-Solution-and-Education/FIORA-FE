@@ -1,36 +1,26 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Filter, Loader2, Search } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useUserManagement } from '../hooks/useUserManagement';
-import { UserTable } from '../molecules/UserTable';
-import { UserFilterDialog } from '../organisms/UserFilterDialog';
+import { UserTable } from '../organisms/UserCommonTable';
 
 export default function UserManagementPage() {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
   const {
+    filteredUsers,
     searchQuery,
     setSearchQuery,
-    tempFilters,
-    selectedDateRange,
-    filteredUsers,
+    appliedFilters,
     isLoading,
     error,
-    total,
-    handleRoleToggle,
-    handleStatusToggle,
-    handleDateRangeSelect,
-    clearFilters,
-    applyFilters,
+    setFilters,
+    stats,
+    pendingTotal,
   } = useUserManagement();
 
   const handleUserAction = (userId: string) => {
-    // Handle user action - could open edit dialog, navigate to user profile, etc.
     router.push(`/profile/users/${encodeURIComponent(userId)}`);
     console.log('User action for ID:', userId);
   };
@@ -45,36 +35,7 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      {/* Search and Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-baseline gap-2">
-              <span>Users</span>
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-80"
-                  disabled={isLoading}
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsFilterOpen(true)}
-                disabled={isLoading}
-              >
-                <Filter className="h-6 w-5 mr-2" />
-                Filter
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
         <CardContent>
           {/* Error State */}
           {error && (
@@ -90,29 +51,25 @@ export default function UserManagementPage() {
               <span>Loading users...</span>
             </div>
           ) : (
-            <UserTable
-              users={filteredUsers.map((user: any) => ({
-                ...user,
-                id: String(user.id),
-              }))}
-              onUserAction={handleUserAction}
-            />
+            <div className="p-4">
+              <UserTable
+                users={filteredUsers.map((user: any) => ({
+                  ...user,
+                  id: String(user.id),
+                }))}
+                onUserAction={handleUserAction}
+                searchQuery={searchQuery}
+                filters={appliedFilters}
+                onSearchChange={setSearchQuery}
+                onFilterChange={setFilters}
+                totalActive={stats.totalActive}
+                totalBlocked={stats.totalBlocked}
+                totalPending={pendingTotal}
+              />
+            </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Filter Dialog */}
-      <UserFilterDialog
-        open={isFilterOpen}
-        onOpenChange={setIsFilterOpen}
-        tempFilters={tempFilters}
-        selectedDateRange={selectedDateRange}
-        onRoleToggle={handleRoleToggle}
-        onStatusToggle={handleStatusToggle}
-        onDateRangeSelect={handleDateRangeSelect}
-        onClearFilters={clearFilters}
-        onApplyFilters={applyFilters}
-      />
     </div>
   );
 }

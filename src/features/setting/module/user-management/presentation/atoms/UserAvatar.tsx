@@ -1,7 +1,11 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { Icons } from '@/components/Icon';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface UserAvatarProps {
   src?: string | null;
@@ -9,21 +13,28 @@ interface UserAvatarProps {
   email?: string | null;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  userId?: string;
+  showTooltip?: boolean;
 }
 
-export function UserAvatar({ src, name, email, size = 'md', className }: UserAvatarProps) {
-  const getInitials = () => {
-    if (name && name.length > 0) {
-      return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
+export function UserAvatar({
+  src,
+  name,
+  email,
+  size = 'md',
+  className,
+  userId,
+  showTooltip = false,
+}: UserAvatarProps) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const displayName = name || 'No name';
 
-    if (email && email.length > 0) {
-      return email.slice(0, 2).toUpperCase();
+  const getInitials = () => {
+    if (name && name.trim().length > 0) {
+      return name.replace(/\s+/g, '').substring(0, 2).toUpperCase();
+    }
+    if (email && email.trim().length > 0) {
+      return email.replace(/\s+/g, '').substring(0, 2).toUpperCase();
     }
     return 'U';
   };
@@ -34,13 +45,166 @@ export function UserAvatar({ src, name, email, size = 'md', className }: UserAva
     lg: 'h-12 w-12',
   };
 
-  return (
-    <Avatar className={cn(sizeClasses[size], className)}>
-        <AvatarImage src={src || undefined} alt={name || email || 'User'} />
-        <AvatarFallback className="bg-primary/10 text-primary font-medium">
-            {getInitials()}
-        </AvatarFallback>
+  const fallbackSizeClasses = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-lg',
+  };
+
+  const handleCopy = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(type);
+      setTimeout(() => setCopied(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const avatarComponent = (
+    <Avatar
+      className={cn(
+        sizeClasses[size],
+        className,
+        showTooltip && 'ring-2 ring-gray-100 group-hover:ring-blue-200 transition-all duration-200',
+      )}
+    >
+      <AvatarImage src={src || undefined} alt={name || email || 'User'} />
+      <AvatarFallback
+        className={cn(
+          showTooltip
+            ? 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-600 font-semibold'
+            : 'bg-primary/10 text-primary font-medium',
+          fallbackSizeClasses[size],
+        )}
+      >
+        {getInitials()}
+      </AvatarFallback>
     </Avatar>
+  );
+
+  if (!showTooltip) {
+    return avatarComponent;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={cn(
+              'flex items-center gap-2 cursor-pointer transition-all duration-200 hover:opacity-80 group',
+            )}
+          >
+            {avatarComponent}
+            <span className="truncate text-sm font-medium group-hover:text-blue-600 group-hover:dark:text-blue-400 transition-colors duration-200">
+              {displayName}
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          align="center"
+          className="w-96 p-0 shadow-2xl bg-white dark:bg-neutral-900/95 backdrop-blur-sm border border-gray-100 dark:border-neutral-800"
+        >
+          <div className="p-6 rounded-xl">
+            <div className="flex items-start gap-4 mb-5">
+              <Avatar className="w-16 h-16 ring-4 ring-white dark:ring-neutral-800 shadow-lg">
+                <AvatarImage src={src || undefined} alt={name || email || 'User'} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold dark:from-blue-800 dark:to-indigo-900">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  {name || 'No name provided'}
+                </h3>
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                    <Icons.user className="w-3 h-3 mr-1.5" />
+                    User
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-4 border-t border-gray-100 dark:border-neutral-800">
+              {/* User ID */}
+              {userId && (
+                <div className="flex flex-row items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">
+                    User ID
+                  </span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[180px]">
+                    {userId}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 opacity-100 transition-opacity flex-shrink-0"
+                    onClick={() => handleCopy(userId, 'userId')}
+                  >
+                    {copied === 'userId' ? (
+                      <Icons.check className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <Icons.clipboardList className="w-3 h-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" />
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Email */}
+              {email && (
+                <div className="flex flex-row items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">
+                    Email
+                  </span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[180px]">
+                    {email}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 opacity-100 transition-opacity flex-shrink-0"
+                    onClick={() => handleCopy(email, 'email')}
+                  >
+                    {copied === 'email' ? (
+                      <Icons.check className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <Icons.clipboardList className="w-3 h-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" />
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Name */}
+              {name && (
+                <div className="flex flex-row items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">
+                    Full Name
+                  </span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[180px]">
+                    {name}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 opacity-100 transition-opacity flex-shrink-0"
+                    onClick={() => handleCopy(name, 'name')}
+                  >
+                    {copied === 'name' ? (
+                      <Icons.check className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <Icons.clipboardList className="w-3 h-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" />
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
