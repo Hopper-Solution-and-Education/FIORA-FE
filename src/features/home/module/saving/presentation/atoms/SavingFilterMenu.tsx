@@ -98,7 +98,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
       let dateTo: Date | undefined;
-      console.log('=====> Check min max: ', amountMin, amountMax);
 
       // Handle date range at the top level regardless of structure
       if (filters?.date) {
@@ -254,7 +253,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
   // Sync filter params when filter criteria changes
   useEffect(() => {
     const extractedData = extractFilterData(filterCriteria.filters as FilterStructure);
-    console.log(filterCriteria);
     setFilterParams(extractedData);
   }, [filterCriteria, extractFilterData]);
 

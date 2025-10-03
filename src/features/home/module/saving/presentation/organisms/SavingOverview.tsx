@@ -103,8 +103,8 @@ const SavingOverview = () => {
       if (!error && transactionRequest !== null) {
         toast.success(`${showDepositPage} is successfully`);
         setShowDepositPage(null);
-      } else if (error) {
-        toast.error(error?.message);
+      } else if (error && showDepositPage === null) {
+        toast.error(JSON.parse(error)?.message);
       }
     }
   }, [isCreateTransactionLoading, error]);
