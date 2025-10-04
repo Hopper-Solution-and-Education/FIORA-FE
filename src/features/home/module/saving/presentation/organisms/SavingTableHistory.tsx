@@ -5,7 +5,7 @@ import { editFilter } from '@/components/common/filters';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { OrderType } from '@/shared/types';
@@ -347,6 +347,9 @@ function SavingTableHistory() {
                           <FileText size={18} color="#595959" />
                         </Button>
                       </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Details</p>
+                      </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </TableCell>
