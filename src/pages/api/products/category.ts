@@ -2,7 +2,7 @@ import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 

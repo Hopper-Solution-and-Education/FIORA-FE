@@ -6,6 +6,7 @@ import { default as budgetControlSlice } from '@/features/home/module/budgets/cr
 import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
+import savingWalletSlice from '@/features/home/module/saving/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import createTransactionSlice from '@/features/home/module/transaction/slices/createTransactionSlice';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
@@ -27,7 +28,7 @@ import notificationDashboardSlice from '@/features/setting/module/notification-d
 import packageFxSlice from '@/features/setting/module/packagefx/slices';
 import partnerManagementSlice from '@/features/setting/module/partner/slices';
 import productManagementSlice from '@/features/setting/module/product/slices';
-import userManagementSlice from '@/features/setting/module/user-management/slices'
+import userManagementSlice from '@/features/setting/module/user-management/slices';
 import { usersApi } from '@/features/setting/module/user-management/store/api/userApi';
 import walletSettingSlice from '@/features/setting/module/wallet/slices';
 import { combineReducers } from '@reduxjs/toolkit';
@@ -71,6 +72,7 @@ const reducer = {
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
   userManagement: userManagementSlice,
+  savingWallet: savingWalletSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,

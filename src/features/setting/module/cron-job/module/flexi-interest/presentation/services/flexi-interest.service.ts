@@ -1,4 +1,4 @@
-import type { Response } from '@/shared/types/Common.types';
+import type { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const flexiInterestApi = createApi({

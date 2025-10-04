@@ -1,5 +1,5 @@
-import { LucideProps } from 'lucide-react';
 import { Icons } from '@/components/Icon';
+import { LucideProps } from 'lucide-react';
 
 export interface GlobalNavItem {
   title: string;

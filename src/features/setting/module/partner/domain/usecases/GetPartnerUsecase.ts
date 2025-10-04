@@ -1,6 +1,6 @@
-import { IPartnerRepository } from '../../data/repositories/PartnerRepository';
+import { Response } from '@/shared/types';
 import { GetPartnerAPIRequestDTO } from '../../data/dto/request/GetPartnerAPIRequestDTO';
-import { Response } from '@/shared/types/Common.types';
+import { IPartnerRepository } from '../../data/repositories/PartnerRepository';
 import { PartnerResponse } from '../../slices/types';
 
 export interface IGetPartnerUseCase {

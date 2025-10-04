@@ -89,7 +89,6 @@ const PaymentWalletOverview = ({
           icon="wallet"
           description="Total FX Balance"
           currency={CURRENCY.FX}
-          applyExchangeRate={false}
         />
 
         <MetricCard
@@ -99,7 +98,6 @@ const PaymentWalletOverview = ({
           icon="banknote"
           description="Total available FX for trading"
           currency={CURRENCY.FX}
-          applyExchangeRate={false}
         />
 
         <MetricCard
@@ -110,7 +108,6 @@ const PaymentWalletOverview = ({
           className="opacity-80"
           description="Total FX being processed"
           currency={CURRENCY.FX}
-          applyExchangeRate={false}
         />
 
         <MetricCard
@@ -120,7 +117,6 @@ const PaymentWalletOverview = ({
           icon="trendingUp"
           description="Accumulated Reward Earned"
           currency={CURRENCY.FX}
-          applyExchangeRate={false}
         />
       </div>
     </div>

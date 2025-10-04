@@ -430,4 +430,9 @@ export enum Messages {
   CREATE_COMMENT_NEWS_SUCCESS = 'Create comment news successfully',
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
+
+  //Saving Wallet
+  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
+  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
+  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
 }
