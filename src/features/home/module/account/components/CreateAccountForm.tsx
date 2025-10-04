@@ -18,7 +18,7 @@ import {
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';

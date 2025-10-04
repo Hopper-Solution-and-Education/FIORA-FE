@@ -7,7 +7,7 @@ import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';

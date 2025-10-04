@@ -1,5 +1,4 @@
-import { FilterCriteria } from '@/shared/types';
-import { Pagination } from '@/shared/types/Common.types';
+import { FilterCriteria, Pagination } from '@/shared/types';
 
 export type ProductGetTransactionRequestDTO = Pagination &
   FilterCriteria & {

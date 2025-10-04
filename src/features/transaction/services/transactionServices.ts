@@ -1,6 +1,6 @@
 import { httpClient } from '@/config/http-client/HttpClient';
 import { Category } from '@/features/home/module/category/slices/types';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 
 const expenseIncomeServices = {
   getCategories: async (): Promise<Response<Category[]>> => {

@@ -1,4 +1,4 @@
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { Product } from '../../../domain/entities/Product';
 import { HttpResponse } from '../../../model';
 

@@ -1,4 +1,4 @@
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 
 import { Messages } from '@/shared/constants/message';
 import { CategoryProducts, Prisma } from '@prisma/client';

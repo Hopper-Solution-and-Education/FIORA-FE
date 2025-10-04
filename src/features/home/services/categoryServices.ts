@@ -4,8 +4,7 @@ import {
   NewCategoryDefaultValues,
   UpdateCategoryDefaultValues,
 } from '@/features/home/module/category/slices/utils/formSchema';
-import { FilterCriteria, GlobalFilters } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, GlobalFilters, Response } from '@/shared/types';
 
 const categoryServices = {
   getCategories: async (data: FilterCriteria): Promise<Response<CategoryFilterResponse>> => {

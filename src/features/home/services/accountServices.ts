@@ -4,8 +4,7 @@ import {
   NewAccountDefaultValues,
   UpdateAccountDefaultValues,
 } from '@/features/home/module/account/slices/types/formSchema';
-import { FilterCriteria } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, Response } from '@/shared/types';
 
 const accountServices = {
   fetchAccounts: async (data: FilterCriteria): Promise<Response<AccountFilterResponse>> => {

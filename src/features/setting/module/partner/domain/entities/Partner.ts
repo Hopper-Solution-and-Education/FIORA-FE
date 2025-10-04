@@ -1,6 +1,6 @@
 // src/features/setting/module/partner/domain/entities/Partner.ts
 
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { Transaction, User } from '@prisma/client';
 
 export class Partner {
