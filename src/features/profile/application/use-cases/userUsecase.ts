@@ -63,9 +63,8 @@ class UserUseCase {
   buildFilters(params: UserFilterParams): Prisma.UserWhereInput {
     const filters: any = {
       eKYC: {
-        some: {
-          status: KYCStatus.PENDING,
-        },
+        some: { status: KYCStatus.PENDING },
+        none: { status: { not: KYCStatus.PENDING } },
       },
     };
 
