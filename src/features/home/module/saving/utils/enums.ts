@@ -19,3 +19,8 @@ export enum SavingTransactionTableToEntity {
   Remark = 'remark',
   Actions = 'actions',
 }
+
+export enum SavingMatchWalletName {
+  Payment = 'Payment',
+  Saving = 'Saving Principal',
+}

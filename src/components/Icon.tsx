@@ -370,8 +370,8 @@ export const Icons = {
       fill="none"
       viewBox="0 0 48 48"
       id="Money-Atm--Streamline-Kameleon"
-      height={48}
-      width={48}
+      height="48"
+      width="48"
       {...props}
     >
       <desc>{'\n    Money Atm Streamline Icon: https://streamlinehq.com\n  '}</desc>

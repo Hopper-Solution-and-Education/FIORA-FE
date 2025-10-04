@@ -80,7 +80,7 @@ function SavingDepositPage({
         <Card className="w-max">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
-              <Icons.moneyAtm className="w-12 h-12" />
+              <Icons.moneyAtm height={48} width={48} />
               <span>CHOOSE AMOUNT</span>
             </CardTitle>
           </CardHeader>
@@ -124,7 +124,7 @@ function SavingDepositPage({
           </Button>
           <Button
             variant="default"
-            className="w-32 h-14 bg-yellow-600 dark:bg-yellow-400"
+            className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
             onClick={onSubmit}
           >
             <Check className="!w-6 !h-6" />

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createSavingTransaction, getSavingWalletById } from '../../slices/actions';
 import { ActionType, ISavingWallet, SavingTransaction } from '../../types';
-import { SavingTransactionStatus } from '../../utils/enums';
+import { SavingMatchWalletName, SavingTransactionStatus } from '../../utils/enums';
 import { SavingClaimButton, SavingDepositButton, SavingTransferButton } from '../atoms';
 import SavingMetricCard from '../components/SavingMetricCard';
 import { SavingDepositPage } from '../pages';
@@ -54,14 +54,14 @@ const SavingOverview = () => {
     if (wallets && wallets.length > 0) {
       const filteredWallet = wallets.reduce<ISavingWallet[]>((acc, wallet) => {
         if (showDepositPage === SavingTransactionStatus.CLAIM) {
-          if (wallet.type.toLowerCase().includes('payment')) {
-            acc.push({ id: wallet.id, name: 'Payment', type: wallet.type });
+          if (wallet.type === WalletType.Payment) {
+            acc.push({ id: wallet.id, name: SavingMatchWalletName.Payment, type: wallet.type });
           } else if (wallet.type.toLowerCase().includes('saving')) {
-            acc.push({ id: wallet.id, name: 'Saving Principal', type: wallet.type });
+            acc.push({ id: wallet.id, name: SavingMatchWalletName.Saving, type: wallet.type });
           }
         } else {
-          if (wallet.type.toLowerCase().includes('payment')) {
-            acc.push({ id: wallet.id, name: 'Payment', type: wallet.type });
+          if (wallet.type === WalletType.Payment) {
+            acc.push({ id: wallet.id, name: SavingMatchWalletName.Payment, type: wallet.type });
           }
         }
         return acc;
@@ -103,8 +103,8 @@ const SavingOverview = () => {
       if (!error && transactionRequest !== null) {
         toast.success(`${showDepositPage} is successfully`);
         setShowDepositPage(null);
-      } else if (error) {
-        toast.error(error?.message);
+      } else if (error && showDepositPage === null) {
+        toast.error(JSON.parse(error)?.message);
       }
     }
   }, [isCreateTransactionLoading, error]);
@@ -155,9 +155,11 @@ const SavingOverview = () => {
         />
 
         <div className="flex items-end justify-end gap-3">
-          <SavingDepositButton click={() => setShowDepositPage('Deposit')} />
-          <SavingTransferButton click={() => setShowDepositPage('Transfer')} />
-          <SavingClaimButton click={() => setShowDepositPage('Claim')} />
+          <SavingDepositButton click={() => setShowDepositPage(SavingTransactionStatus.DEPOSIT)} />
+          <SavingTransferButton
+            click={() => setShowDepositPage(SavingTransactionStatus.TRANSFER)}
+          />
+          <SavingClaimButton click={() => setShowDepositPage(SavingTransactionStatus.CLAIM)} />
         </div>
       </div>
 

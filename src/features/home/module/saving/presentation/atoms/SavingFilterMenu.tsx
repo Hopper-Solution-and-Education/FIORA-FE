@@ -7,6 +7,7 @@ import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/ty
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import { updateAmountRange } from '../../slices';
 import { DEFAULT_SAVING_FILTER_CRITERIA } from '../../utils/constants';
 
 // Define constants for magic numbers
@@ -98,7 +99,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
       let dateTo: Date | undefined;
-      console.log('=====> Check min max: ', amountMin, amountMax);
 
       // Handle date range at the top level regardless of structure
       if (filters?.date) {
@@ -254,7 +254,6 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
   // Sync filter params when filter criteria changes
   useEffect(() => {
     const extractedData = extractFilterData(filterCriteria.filters as FilterStructure);
-    console.log(filterCriteria);
     setFilterParams(extractedData);
   }, [filterCriteria, extractFilterData]);
 
@@ -377,10 +376,37 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         updatedFilters.AND = andConditions;
       }
 
+      dispatch(
+        updateAmountRange({
+          min: minAmountInBaseCurrency.convertedAmount,
+          max: maxAmountInBaseCurrency.convertedAmount,
+        }),
+      );
+
       return updatedFilters;
     },
     [currency, selectedCurrency, getExchangeAmount],
   );
+
+  const resetFilter = () => {
+    dispatch(
+      updateAmountRange({
+        min: 0,
+        max: DEFAULT_MAX_AMOUNT,
+      }),
+    );
+
+    setFilterParams({
+      ...filterParamsInitState,
+      amountMin: amountMin || 0,
+      amountMax: amountMax || DEFAULT_MAX_AMOUNT,
+    });
+
+    callBack({
+      ...filterCriteria,
+      filters: {},
+    });
+  };
 
   return (
     <GlobalFilter
@@ -395,6 +421,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       defaultFilterCriteria={DEFAULT_SAVING_FILTER_CRITERIA}
       structureCreator={createFilterStructure}
       currentFilter={filterCriteria.filters}
+      onResetFilter={resetFilter}
     />
   );
 };
