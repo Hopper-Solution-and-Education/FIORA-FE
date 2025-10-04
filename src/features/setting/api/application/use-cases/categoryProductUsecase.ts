@@ -1,15 +1,15 @@
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 
-import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
-import { CategoryProducts, Prisma } from '@prisma/client';
 import { Messages } from '@/shared/constants/message';
+import { BadRequestError } from '@/shared/lib';
+import { CategoryProducts, Prisma } from '@prisma/client';
+import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import {
   CategoryProductCreation,
   ICategoryProductRepository,
 } from '../../repositories/categoryProductRepository.interface';
 import { IProductRepository } from '../../repositories/productRepository.interface';
-import { BadRequestError } from '@/shared/lib';
 
 class CategoryProductsUseCase {
   private categoryProductRepository: ICategoryProductRepository;

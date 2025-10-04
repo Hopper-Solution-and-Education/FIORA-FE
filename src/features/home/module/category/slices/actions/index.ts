@@ -1,6 +1,5 @@
 import categoryServices from '@/features/home/services/categoryServices';
-import { FilterCriteria, GlobalFilters } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, GlobalFilters, Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { CategoryFilterResponse } from '../types';
 import { transformCategories } from '../utils';

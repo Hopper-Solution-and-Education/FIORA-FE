@@ -23,7 +23,7 @@ class PaymentWalletUseCase {
     private walletRepository: IWalletRepository,
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
-  ) { }
+  ) {}
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;

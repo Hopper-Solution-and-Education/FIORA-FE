@@ -1,4 +1,4 @@
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { toast } from 'sonner';
 import { Partner } from '../../domain/entities/Partner';
 import { PartnerResponse } from '../../slices/types';

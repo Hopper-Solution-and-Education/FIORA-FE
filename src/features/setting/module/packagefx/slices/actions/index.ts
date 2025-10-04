@@ -1,5 +1,5 @@
 import { httpClient } from '@/config/http-client/HttpClient';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import {
   CreatePackageFxPayload,

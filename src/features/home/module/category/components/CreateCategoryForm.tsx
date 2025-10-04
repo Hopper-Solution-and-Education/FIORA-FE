@@ -1,9 +1,9 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
-import InputField from '@/components/common/forms/input/InputField';
-import TextareaField from '@/components/common/forms/text-area/TextareaField';
 import GlobalForm from '@/components/common/forms/GlobalForm';
+import InputField from '@/components/common/forms/input/InputField';
+import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
+import TextareaField from '@/components/common/forms/text-area/TextareaField';
 import ParentCategorySelectUpdate from '@/features/home/module/category/components/ParentCategorySelectUpdate';
 import TypeSelect from '@/features/home/module/category/components/TypeSelect';
 import { createCategory } from '@/features/home/module/category/slices/actions';
@@ -13,7 +13,7 @@ import {
   NewCategoryDefaultValues,
   validateNewCategorySchema,
 } from '@/features/home/module/category/slices/utils/formSchema';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';

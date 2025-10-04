@@ -1,5 +1,4 @@
-import { HttpResponse } from '@/shared/types';
-import { Pagination, PaginationResponse } from '@/shared/types/Common.types';
+import { HttpResponse, Pagination, PaginationResponse } from '@/shared/types';
 import { Product } from '../../domain/entities';
 
 export type GetListProductsRequestDTO = Pagination;

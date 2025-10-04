@@ -1,4 +1,4 @@
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductItem } from '../../../domain/entities';
 import { HttpResponse } from '../../../model';

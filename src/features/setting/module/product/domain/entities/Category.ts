@@ -1,4 +1,4 @@
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 
 export class CategoryProduct {
   id: string;

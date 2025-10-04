@@ -1,15 +1,14 @@
 // src/features/home/module/category/slices/index.ts
+import { FilterCriteria, Response } from '@/shared/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Response } from '@/shared/types/Common.types';
 import {
-  fetchCategories,
-  searchCategories,
   createCategory,
   deleteCategory,
+  fetchCategories,
+  searchCategories,
   updateCategory,
 } from './actions';
 import { Category, initialCategoryState } from './types';
-import { FilterCriteria } from '@/shared/types';
 
 const categorySlice = createSlice({
   name: 'category',
