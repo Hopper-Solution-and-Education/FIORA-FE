@@ -4,8 +4,9 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppSelector } from '@/store';
-import { Check, MoveLeft } from 'lucide-react';
+import { Check, CircleArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ActionType, ISavingWallet, PackageFX, SavingTransaction } from '../../types';
@@ -118,17 +119,36 @@ function SavingDepositPage({
             </SavingRadioGroup>
           </CardContent>
         </Card>
-        <div className="flex items-center justify-end gap-4 mt-4">
-          <Button variant="outline" className="w-32 h-14" onClick={handleClose}>
-            <MoveLeft className="!w-6 !h-6" />
-          </Button>
-          <Button
-            variant="default"
-            className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
-            onClick={onSubmit}
-          >
-            <Check className="!w-6 !h-6" />
-          </Button>
+        <div className="flex items-center justify-between gap-4 mt-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button variant="outline" className="w-32 h-14" onClick={handleClose}>
+                  <CircleArrowLeft />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Cancel and go back</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="default"
+                  className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
+                  onClick={onSubmit}
+                  disabled={packageSelected === null}
+                >
+                  <Check />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Submit</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </DialogContent>
     </Dialog>

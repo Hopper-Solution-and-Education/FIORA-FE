@@ -126,7 +126,7 @@ const SavingOverview = () => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-6 pb-4">
         <SavingMetricCard
           title="Total FX Moved In"
-          value={overview.data.moveInBalance}
+          value={overview?.data?.moveInBalance}
           type="income"
           icon="banknoteArrowUp"
           className="h-full *:p-0 *:px-6"
@@ -135,7 +135,7 @@ const SavingOverview = () => {
 
         <SavingMetricCard
           title="Total FX Moved Out"
-          value={overview.data.moveOutBalance}
+          value={overview?.data?.moveOutBalance}
           type="expense"
           icon="banknoteArrowDown"
           className="h-full *:p-0 *:px-6"
@@ -144,7 +144,7 @@ const SavingOverview = () => {
 
         <SavingMetricCard
           title="Rate Of Benefit"
-          value={overview.data.benefit.value}
+          value={overview?.data?.benefit?.value}
           type="default"
           icon="percent"
           className="h-full *:p-0 *:px-6"
@@ -166,7 +166,7 @@ const SavingOverview = () => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pb-6">
         <SavingMetricCard
           title="Current Balance"
-          value={overview.data.wallet.balance}
+          value={overview?.data?.wallet?.balance}
           type="total"
           icon="landmark"
           description="Total FX Balance"
@@ -174,7 +174,7 @@ const SavingOverview = () => {
 
         <SavingMetricCard
           title="Current Reward"
-          value={overview.data.wallet.availableReward}
+          value={overview?.data?.wallet?.availableReward}
           type="expense"
           icon="arrowLeftRight"
           classNameCustomCardColor="text-yellow-600 dark:text-yellow-400"
@@ -183,7 +183,7 @@ const SavingOverview = () => {
 
         <SavingMetricCard
           title="Total Reward Claimed"
-          value={overview.data.wallet.claimsedReward}
+          value={overview?.data?.wallet?.claimsedReward}
           type="default"
           icon="handCoins"
           description="Total FX Being Processed"
@@ -191,7 +191,7 @@ const SavingOverview = () => {
 
         <SavingMetricCard
           title="Total Reward"
-          value={overview.data.wallet.accumReward}
+          value={overview?.data?.wallet?.accumReward}
           type="income"
           icon="handCoins"
           description="Total FX Being Processed"
