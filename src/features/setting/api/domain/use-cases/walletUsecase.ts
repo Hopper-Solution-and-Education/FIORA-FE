@@ -647,7 +647,7 @@ class WalletUseCase {
         return transaction;
       });
     } catch (error: any) {
-      throw new Error(error.message || 'Error withdrawing from saving wallet');
+      throw new Error(error.message || Messages.WITHDRAW_AMOUNT_ERROR);
     }
   }
 
@@ -690,7 +690,7 @@ class WalletUseCase {
 
       return await prisma.$transaction(async (tx) => {
         if (action === SavingWalletAction.TRANSFER && amount < 100) {
-          throw new Error(`Transfer amount must be greater than 100 FX`);
+          throw new Error(Messages.MIN_TRANSFER_AMOUNT_ERROR);
         }
 
         if (Number(fromWallet.frBalanceActive) < amount) {
@@ -732,8 +732,8 @@ class WalletUseCase {
       throw new Error(
         error.message ||
           (action === SavingWalletAction.DEPOSIT
-            ? 'Error depositing to saving wallet'
-            : 'Error withdrawing from saving wallet'),
+            ? Messages.DEPOSIT_AMOUNT_ERROR
+            : Messages.WITHDRAW_AMOUNT_ERROR),
       );
     }
   }
