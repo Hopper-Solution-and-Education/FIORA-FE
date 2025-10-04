@@ -7,6 +7,7 @@ import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/ty
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
+import { updateAmountRange } from '../../slices';
 import { DEFAULT_SAVING_FILTER_CRITERIA } from '../../utils/constants';
 
 // Define constants for magic numbers
@@ -375,10 +376,37 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
         updatedFilters.AND = andConditions;
       }
 
+      dispatch(
+        updateAmountRange({
+          min: minAmountInBaseCurrency.convertedAmount,
+          max: maxAmountInBaseCurrency.convertedAmount,
+        }),
+      );
+
       return updatedFilters;
     },
     [currency, selectedCurrency, getExchangeAmount],
   );
+
+  const resetFilter = () => {
+    dispatch(
+      updateAmountRange({
+        min: 0,
+        max: DEFAULT_MAX_AMOUNT,
+      }),
+    );
+
+    setFilterParams({
+      ...filterParamsInitState,
+      amountMin: amountMin || 0,
+      amountMax: amountMax || DEFAULT_MAX_AMOUNT,
+    });
+
+    callBack({
+      ...filterCriteria,
+      filters: {},
+    });
+  };
 
   return (
     <GlobalFilter
@@ -393,6 +421,7 @@ const SavingFilterMenu = <T extends Record<string, unknown>>(props: FilterMenuPr
       defaultFilterCriteria={DEFAULT_SAVING_FILTER_CRITERIA}
       structureCreator={createFilterStructure}
       currentFilter={filterCriteria.filters}
+      onResetFilter={resetFilter}
     />
   );
 };

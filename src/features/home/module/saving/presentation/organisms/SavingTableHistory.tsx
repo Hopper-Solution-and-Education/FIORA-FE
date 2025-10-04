@@ -17,45 +17,15 @@ import { FileText, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { useWindowScrollToBottom } from '../../hooks/useWindowScroll';
-import {
-  resetSavingWallet,
-  updateAmountRange,
-  updateFilterCriteria,
-  updatePage,
-} from '../../slices';
+import { resetSavingWallet, updateFilterCriteria, updatePage } from '../../slices';
 import { fetchSavingTransactions } from '../../slices/actions';
-import { ISavingHistory, SavingColumn, SavingTableColumnKey } from '../../types';
-import {
-  DEFAULT_SAVING_AMOUNT_RANGE,
-  DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS,
-} from '../../utils/constants';
+import { ISavingHistory, SavingColumn, SavingTableColumnKey, TransactionType } from '../../types';
+import { DEFAULT_SAVING_TRANSACTION_TABLE_COLUMNS } from '../../utils/constants';
 import { SavingTransactionTableToEntity, SavingWalletType } from '../../utils/enums';
 import { formatDate } from '../../utils/formatDate';
 import SavingFilterMenu from '../atoms/SavingFilterMenu';
 import SavingSearch from '../atoms/SavingSearch';
-
-const SortArrowBtn = ({
-  sortOrder,
-  isActivated,
-}: {
-  sortOrder: OrderType;
-  isActivated: boolean;
-}) => (
-  <div
-    className={` h-fit transition-transform duration-300 overflow-visible ${
-      isActivated && !(sortOrder === 'asc' || sortOrder === 'none') ? 'rotate-0' : 'rotate-180'
-    }`}
-  >
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M7.5 2C7.77614 2 8 2.22386 8 2.5L8 11.2929L11.1464 8.14645C11.3417 7.95118 11.6583 7.95118 11.8536 8.14645C12.0488 8.34171 12.0488 8.65829 11.8536 8.85355L7.85355 12.8536C7.75979 12.9473 7.63261 13 7.5 13C7.36739 13 7.24021 12.9473 7.14645 12.8536L3.14645 8.85355C2.95118 8.65829 2.95118 8.34171 3.14645 8.14645C3.34171 7.95118 3.65829 7.95118 3.85355 8.14645L7 11.2929L7 2.5C7 2.22386 7.22386 2 7.5 2Z"
-        fill="currentColor"
-        fillRule="evenodd"
-        clipRule="evenodd"
-      />
-    </svg>
-  </div>
-);
+import SavingSortArrowBtn from '../atoms/SavingSortArrowBtn';
 
 function SavingTableHistory() {
   const router = useRouter();
@@ -168,17 +138,6 @@ function SavingTableHistory() {
   }, [visibleColumns]);
 
   const handleFilterChange = (newFilter: FilterCriteria) => {
-    try {
-      const amount = newFilter?.filters?.AND[0]?.AND[0]?.amount;
-      dispatch(updateAmountRange({ min: amount.gte, max: amount.lte }));
-    } catch {
-      dispatch(
-        updateAmountRange({
-          min: DEFAULT_SAVING_AMOUNT_RANGE.min,
-          max: DEFAULT_SAVING_AMOUNT_RANGE.max,
-        }),
-      );
-    }
     dispatch(updateFilterCriteria(newFilter));
   };
 
@@ -242,7 +201,7 @@ function SavingTableHistory() {
                         {loading ? (
                           <Loader2 color={'blue'} className="h-4 w-4 text-primary animate-spin" />
                         ) : (
-                          <SortArrowBtn
+                          <SavingSortArrowBtn
                             sortOrder={sortOrder ?? 'none'}
                             isActivated={sortTarget === entityKey}
                           />
@@ -259,9 +218,25 @@ function SavingTableHistory() {
           {displayData.map((record: ISavingHistory, index: number) => {
             return (
               <TableRow key={record.id} className="text-center">
-                <TableCell>{index + 1}</TableCell>
                 <TableCell
-                  className="cursor-pointer hover:text-blue-600 hover:dark:text-blue-400 hover:underline"
+                  className={`${
+                    record.type === TransactionType.Income
+                      ? 'text-green-600 dark:text-green-400'
+                      : record.type === TransactionType.Expense
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-blue-600 dark:text-blue-400'
+                  }`}
+                >
+                  {index + 1}
+                </TableCell>
+                <TableCell
+                  className={`cursor-pointer underline ${
+                    record.type === TransactionType.Income
+                      ? 'text-green-600 dark:text-green-400'
+                      : record.type === TransactionType.Expense
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-blue-600 dark:text-blue-400'
+                  }`}
                   onClick={() =>
                     editFilter({
                       currentFilter: filterCriteria,
@@ -275,10 +250,10 @@ function SavingTableHistory() {
                   {formatDate(new Date(record.date))}
                 </TableCell>
                 <TableCell
-                  className={`font-bold cursor-pointer hover:text-blue-600 hover:dark:text-blue-400 hover:underline ${
-                    record.type.toLowerCase() === 'income'
+                  className={`font-bold cursor-pointer underline ${
+                    record.type === TransactionType.Income
                       ? 'text-green-600 dark:text-green-400'
-                      : record.type.toLowerCase() === 'expense'
+                      : record.type === TransactionType.Expense
                         ? 'text-red-600 dark:text-red-400'
                         : 'text-blue-600 dark:text-blue-400'
                   }`}
@@ -296,9 +271,9 @@ function SavingTableHistory() {
                 </TableCell>
                 <TableCell
                   className={`font-bold ${
-                    record.type.toLowerCase() === 'income'
+                    record.type === TransactionType.Income
                       ? 'text-green-600 dark:text-green-400'
-                      : record.type.toLowerCase() === 'expense'
+                      : record.type === TransactionType.Expense
                         ? 'text-red-600 dark:text-red-400'
                         : 'text-blue-600 dark:text-blue-400'
                   }`}
@@ -306,7 +281,15 @@ function SavingTableHistory() {
                   {formatCurrency(record.amount, CURRENCY.FX)}
                 </TableCell>
                 {record.fromWallet?.name || record.fromWallet?.type ? (
-                  <TableCell>
+                  <TableCell
+                    className={`${
+                      record.type === TransactionType.Income
+                        ? 'text-green-600 dark:text-green-400'
+                        : record.type === TransactionType.Expense
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                    }`}
+                  >
                     {record.fromWallet?.name === SavingWalletType.SAVING ||
                     record.fromWallet?.type === SavingWalletType.SAVING
                       ? `Smart ${record.fromWallet?.name || record.fromWallet?.type}`
@@ -314,10 +297,20 @@ function SavingTableHistory() {
                     Wallet
                   </TableCell>
                 ) : (
-                  <TableCell>Smart Saving Bonus</TableCell>
+                  <TableCell className="text-green-600 dark:text-green-400">
+                    Smart Saving Bonus
+                  </TableCell>
                 )}
                 {record.toWallet?.name || record.toWallet?.type ? (
-                  <TableCell>
+                  <TableCell
+                    className={`${
+                      record.type === TransactionType.Income
+                        ? 'text-green-600 dark:text-green-400'
+                        : record.type === TransactionType.Expense
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                    }`}
+                  >
                     {record.toWallet?.name === SavingWalletType.SAVING ||
                     record.toWallet?.type === SavingWalletType.SAVING
                       ? `Smart ${record.toWallet?.name || record.toWallet?.type}`
@@ -328,7 +321,17 @@ function SavingTableHistory() {
                   <TableCell className="italic text-gray-500">Unknown</TableCell>
                 )}
                 {record.remark ? (
-                  <TableCell>{record.remark}</TableCell>
+                  <TableCell
+                    className={`${
+                      record.type === TransactionType.Income
+                        ? 'text-green-600 dark:text-green-400'
+                        : record.type === TransactionType.Expense
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                    }`}
+                  >
+                    {record.remark}
+                  </TableCell>
                 ) : (
                   <TableCell className="italic text-gray-500">Unknown</TableCell>
                 )}
