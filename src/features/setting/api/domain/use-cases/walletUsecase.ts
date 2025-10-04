@@ -1,3 +1,4 @@
+import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
@@ -6,6 +7,7 @@ import { transactionRepository } from '@/features/transaction/infrastructure/rep
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { SavingWalletAction } from '@/shared/constants/savingWallet';
 import { BadRequestError, NotFoundError } from '@/shared/lib';
 import { FilterObject } from '@/shared/types/filter.types';
 import { SessionUser } from '@/shared/types/session';
@@ -561,6 +563,177 @@ class WalletUseCase {
         NotificationType.PERSONAL,
         'DEPOSIT_REJECTED',
         'Deposit Request Rejected',
+      );
+    }
+  }
+  async claimsFromSavingWallet(userId: string, packageFXId: string, toWalletType: WalletType) {
+    try {
+      const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
+      const amount = Number(packageFX?.fxAmount ?? 0);
+
+      if (!packageFX || amount <= 0) {
+        throw new Error(
+          !packageFX ? Messages.PACKAGE_FX_NOT_FOUND : Messages.PACKAGE_FX_FX_AMOUNT_INVALID,
+        );
+      }
+
+      const [fromWallet, toWallet] = await Promise.all([
+        this._walletRepository.findWalletByType(WalletType.Saving, userId),
+        this._walletRepository.findWalletByType(toWalletType, userId),
+      ]);
+
+      if (!fromWallet || !toWallet) {
+        throw new NotFoundError(Messages.PAYMENT_WALLET_NOT_FOUND);
+      }
+      const [fromCurrency, toCurrency] = await Promise.all([
+        this._currencyRepository.findFirstCurrency({ name: CURRENCY.FX }),
+        this._currencyRepository.findFirstCurrency({ name: DEFAULT_BASE_CURRENCY }),
+      ]);
+
+      if (!fromCurrency || !toCurrency) {
+        throw new NotFoundError(Messages.CURRENCY_NOT_FOUND);
+      }
+
+      const baseAmount = await convertCurrency(amount, fromCurrency.name, toCurrency.name);
+
+      return await prisma.$transaction(async (tx) => {
+        if (amount < 100) {
+          throw new Error(`Claims Reward must be greater than 100 FX`);
+        }
+
+        if (Math.max(Number(fromWallet.availableReward), Number(fromWallet.accumReward)) < amount) {
+          throw new Error(Messages.INSUFFICIENT_BALANCE);
+        }
+
+        const transaction = await this._transactionRepository.createTransaction({
+          userId,
+          fromWalletId: fromWallet.id,
+          toWalletId: toWallet.id,
+          amount: amount,
+          currencyId: fromCurrency.id,
+          currency: CURRENCY.FX,
+          type: TransactionType.Transfer,
+          createdBy: userId,
+          baseAmount: baseAmount,
+          baseCurrency: DEFAULT_BASE_CURRENCY,
+          remark:
+            fromWallet.type === toWallet.type ? `Claims Reward on principal` : `Claims Reward`,
+          isMarked: true,
+        });
+
+        const commonWalletUpdates = {
+          availableReward: { decrement: amount },
+          claimsedReward: { increment: amount },
+          updatedBy: userId,
+        };
+
+        if (fromWallet.type === toWallet.type) {
+          await this._walletRepository.updateWallet(
+            { id: fromWallet.id },
+            {
+              ...commonWalletUpdates,
+              frBalanceActive: { increment: amount },
+            },
+          );
+        } else {
+          await Promise.all([
+            this._walletRepository.updateWallet(
+              { id: toWallet.id },
+              { frBalanceActive: { increment: amount }, updatedBy: userId },
+            ),
+            this._walletRepository.updateWallet({ id: fromWallet.id }, { ...commonWalletUpdates }),
+          ]);
+        }
+        return transaction;
+      });
+    } catch (error: any) {
+      throw new Error(error.message || Messages.WITHDRAW_AMOUNT_ERROR);
+    }
+  }
+
+  async transferSavingWallet(userId: string, packageFXId: string, action: SavingWalletAction) {
+    try {
+      const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
+      const amount = Number(packageFX?.fxAmount ?? 0);
+
+      if (!packageFX || amount <= 0) {
+        throw new Error(
+          !packageFX ? Messages.PACKAGE_FX_NOT_FOUND : Messages.PACKAGE_FX_FX_AMOUNT_INVALID,
+        );
+      }
+
+      const [fromWallet, toWallet] = await Promise.all([
+        this._walletRepository.findWalletByType(
+          action === SavingWalletAction.DEPOSIT ? WalletType.Payment : WalletType.Saving,
+          userId,
+        ),
+        this._walletRepository.findWalletByType(
+          action === SavingWalletAction.DEPOSIT ? WalletType.Saving : WalletType.Payment,
+          userId,
+        ),
+      ]);
+
+      if (!fromWallet || !toWallet) {
+        throw new NotFoundError(Messages.PAYMENT_WALLET_NOT_FOUND);
+      }
+
+      const [fromCurrency, toCurrency] = await Promise.all([
+        this._currencyRepository.findFirstCurrency({ name: CURRENCY.FX }),
+        this._currencyRepository.findFirstCurrency({ name: DEFAULT_BASE_CURRENCY }),
+      ]);
+
+      if (!fromCurrency || !toCurrency) {
+        throw new NotFoundError(Messages.CURRENCY_NOT_FOUND);
+      }
+
+      const baseAmount = await convertCurrency(amount, fromCurrency.name, toCurrency.name);
+
+      return await prisma.$transaction(async (tx) => {
+        if (action === SavingWalletAction.TRANSFER && amount < 100) {
+          throw new Error(Messages.MIN_TRANSFER_AMOUNT_ERROR);
+        }
+
+        if (Number(fromWallet.frBalanceActive) < amount) {
+          throw new Error(Messages.INSUFFICIENT_BALANCE);
+        }
+
+        const transaction = await this._transactionRepository.createTransaction({
+          userId,
+          fromWalletId: fromWallet.id,
+          toWalletId: toWallet.id,
+          amount,
+          currency: CURRENCY.FX,
+          currencyId: fromCurrency.id,
+          type: TransactionType.Transfer,
+          createdBy: userId,
+          baseAmount,
+          baseCurrency: DEFAULT_BASE_CURRENCY,
+          remark:
+            action === SavingWalletAction.DEPOSIT
+              ? SavingWalletAction.DEPOSIT
+              : SavingWalletAction.TRANSFER,
+          isMarked: true,
+        });
+
+        await Promise.all([
+          this._walletRepository.updateWallet(
+            { id: toWallet.id },
+            { frBalanceActive: { increment: amount }, updatedBy: userId },
+          ),
+          this._walletRepository.updateWallet(
+            { id: fromWallet.id },
+            { frBalanceActive: { decrement: amount }, updatedBy: userId },
+          ),
+        ]);
+
+        return transaction;
+      });
+    } catch (error: any) {
+      throw new Error(
+        error.message ||
+          (action === SavingWalletAction.DEPOSIT
+            ? Messages.DEPOSIT_AMOUNT_ERROR
+            : Messages.WITHDRAW_AMOUNT_ERROR),
       );
     }
   }

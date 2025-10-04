@@ -6,6 +6,7 @@ import { default as budgetControlSlice } from '@/features/home/module/budgets/cr
 import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
+import savingWalletSlice from '@/features/home/module/saving/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import createTransactionSlice from '@/features/home/module/transaction/slices/createTransactionSlice';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
@@ -68,6 +69,7 @@ const reducer = {
   savingInterest: savingInterestSlice,
   referralCronjob: referralCronjobSlice,
   email: emailSlice,
+  savingWallet: savingWalletSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
