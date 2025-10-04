@@ -110,19 +110,21 @@ class UserUseCase {
       }
     }
 
-    // Filter by date range
+    // Filter by date range on eKYC createdAt
     if (params.fromDate || params.toDate) {
-      filters.createdAt = {};
+      if (!filters.eKYC.some.createdAt) {
+        filters.eKYC.some.createdAt = {};
+      }
       if (params.fromDate) {
         const fromDateObj = new Date(params.fromDate);
         if (!isNaN(fromDateObj.getTime())) {
-          filters.createdAt.gte = fromDateObj;
+          filters.eKYC.some.createdAt.gte = fromDateObj;
         }
       }
       if (params.toDate) {
         const toDateObj = new Date(params.toDate);
         if (!isNaN(toDateObj.getTime())) {
-          filters.createdAt.lte = toDateObj;
+          filters.eKYC.some.createdAt.lte = toDateObj;
         }
       }
     }

@@ -6,11 +6,11 @@ import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
   getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
-    console.log('eKycStatus', eKycStatus);
     return prisma.user.count({
       where: {
         eKYC: {
           some: { status: eKycStatus },
+          none: { status: { not: KYCStatus.PENDING } },
         },
       },
     });
