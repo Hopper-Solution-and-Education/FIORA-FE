@@ -1,4 +1,4 @@
-import emailSlice from '@/features/email-template/store/slices/emailSlice';
+import emailSlice from '@/features/email-template/slices';
 import financeControlSlice from '@/features/finance/report/slices';
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
 import accountSlice from '@/features/home/module/account/slices';

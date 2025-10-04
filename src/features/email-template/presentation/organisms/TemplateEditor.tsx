@@ -1,6 +1,9 @@
 'use client';
 
-import CommonEditor from '@/components/common/atoms/CommonEditor';
+import {
+  createDesignFromHtml,
+  EmailTemplateEditor,
+} from '@/components/common/atoms/EmailTemplateEditor';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -10,17 +13,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TEMPLATE_TYPES } from '@/features/email-template/constants';
-import {
-  setTemplateName,
-  setTemplateType,
-} from '@/features/email-template/store/slices/emailSlice';
-import { useAppDispatch, useAppSelector, type RootState } from '@/store';
-import { useState } from 'react';
+import { useAppSelector } from '@/store';
 
 export default function TemplateEditor() {
-  const dispatch = useAppDispatch();
-  const { templateName, templateType } = useAppSelector((state: RootState) => state.email);
-  const [content, setContent] = useState('');
+  const { selectedTemplate } = useAppSelector((state) => state.email);
+
+  if (!selectedTemplate) {
+    return <div>Select a template</div>;
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full p-4">
@@ -31,8 +31,8 @@ export default function TemplateEditor() {
             Name
           </label>
           <Input
-            value={templateName}
-            onChange={(e) => dispatch(setTemplateName(e.target.value))}
+            value={selectedTemplate?.name || ''}
+            onChange={() => {}}
             className="border-gray-200"
           />
         </div>
@@ -40,7 +40,7 @@ export default function TemplateEditor() {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Template Type
           </label>
-          <Select value={templateType} onValueChange={(value) => dispatch(setTemplateType(value))}>
+          <Select value={selectedTemplate?.EmailTemplateType?.type || ''} onValueChange={() => {}}>
             <SelectTrigger className="border-gray-200">
               <SelectValue />
             </SelectTrigger>
@@ -56,7 +56,7 @@ export default function TemplateEditor() {
       </div>
 
       {/* Content Area */}
-      <CommonEditor content={content} output="html" onChangeContent={setContent} />
+      <EmailTemplateEditor initialDesign={createDesignFromHtml(selectedTemplate?.content || '')} />
     </div>
   );
 }

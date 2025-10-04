@@ -4,7 +4,7 @@ import {
   setRecipients,
   setSendTo,
   setSubject,
-} from '@/features/email-template/store/slices/emailSlice';
+} from '@/features/email-template/slices';
 import { useAppDispatch, useAppSelector, type RootState } from '@/store';
 
 export const useEmailModal = () => {

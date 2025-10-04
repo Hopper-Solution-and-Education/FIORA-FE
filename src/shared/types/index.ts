@@ -5,6 +5,7 @@ export * from './filter.types';
 export * from './formsheet.type';
 export * from './globalNav.types';
 export * from './httpResponse.types';
+export * from './notification.types';
 export * from './product.types';
 export * from './transaction.types';
 
