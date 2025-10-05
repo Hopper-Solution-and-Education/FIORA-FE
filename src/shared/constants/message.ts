@@ -1,4 +1,7 @@
 export enum Messages {
+  // System
+  INTERNAL_SERVER_ERROR = 'Internal server error',
+
   // Transaction
   GET_TRANSACTION_SUCCESS = 'Get transaction list successfully',
   GET_TRANSACTION_BY_ID_SUCCESS = 'Get transaction by id successfully',
@@ -428,4 +431,7 @@ export enum Messages {
   DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
   WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
   MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
+
+  //Attachment
+  ATTACHMENT_NOT_FOUND = 'Attachment not found',
 }

@@ -1,10 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { uploadToFirebaseWithProgress } from '@/shared/lib';
 import { cn } from '@/shared/utils';
 import { Download, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
+import { EmailEditorProps } from 'react-email-editor';
 import { EmailDesign, EmailTemplateEditorProps, ExportHtmlData } from './types';
 import { getDefaultDesign } from './utils';
 
@@ -25,21 +27,78 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
   onLoad,
   initialDesign,
   showHeader = true,
-  headerTitle = 'Email Template Editor',
-  headerDescription = 'Create and customize email templates with a professional drag-and-drop editor',
   minHeight = 'calc(100vh - 80px)',
   className,
+  uploadBasePath = 'attachments/email-templates',
 }) => {
   const emailEditorRef = useRef<any>(null);
   const [isReady, setIsReady] = useState<boolean>(false);
 
-  const onReady = (): void => {
+  const onReady: EmailEditorProps['onReady'] = (unlayer) => {
+    console.log('✅ Email editor is ready', unlayer);
     setIsReady(true);
+
+    // Store unlayer instance in ref for later use
+    if (emailEditorRef.current) {
+      emailEditorRef.current.editor = unlayer;
+    }
+
     const design = initialDesign || getDefaultDesign();
 
-    if (emailEditorRef.current?.editor) {
-      emailEditorRef.current.editor.loadDesign(design);
-      onLoad?.(design);
+    // Load initial design
+    unlayer.loadDesign(design as any);
+    onLoad?.(design);
+
+    unlayer.addEventListener('imageUpload', (event: any) => {
+      console.log('Image upload event:', event);
+    });
+
+    console.log('✅ Upload method set to custom');
+
+    // Register image upload callback
+    // The callback signature expects: (file, done)
+    unlayer.registerCallback('image', (file: any, done: any) => {
+      console.log('🖼️ Image callback triggered!', file);
+
+      // Handle the file upload
+      handleImageUpload(file, done);
+    });
+
+    console.log('✅ Image callback registered');
+  };
+
+  const handleImageUpload = async (file: any, done: any) => {
+    try {
+      console.log('📤 Starting upload...', file);
+
+      // The file object structure from Unlayer
+      const actualFile = file.attachments?.[0] || file;
+
+      if (!actualFile) {
+        console.error('❌ No file found in callback data');
+        done({ progress: 0 });
+        return;
+      }
+
+      console.log('📁 File to upload:', actualFile.name || actualFile);
+
+      // Upload with progress
+      const url = await uploadToFirebaseWithProgress({
+        file: actualFile,
+        path: uploadBasePath,
+        onProgress: (progress) => {
+          console.log(`📊 Upload progress: ${progress}%`);
+          done({ progress });
+        },
+      });
+
+      console.log('✅ Upload complete:', url);
+
+      // Return the URL to Unlayer
+      done({ progress: 100, url });
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      done({ progress: 0 });
     }
   };
 
@@ -125,12 +184,8 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
   return (
     <div className={cn('flex flex-col h-screen bg-background', className)}>
       {showHeader && (
-        <header className="border-b bg-card px-6 py-4 shadow-sm">
+        <header className="pb-4 shadow-sm">
           <div className="flex items-center justify-between max-w-full mx-auto">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">{headerTitle}</h1>
-              <p className="text-sm text-muted-foreground mt-1">{headerDescription}</p>
-            </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleImportHTML} disabled={!isReady}>
                 <Upload className="w-4 h-4 mr-2" />
@@ -146,7 +201,22 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
       )}
 
       <div className="flex-1 overflow-hidden">
-        <EmailEditor ref={emailEditorRef} onReady={onReady} minHeight={minHeight} />
+        <EmailEditor
+          ref={emailEditorRef}
+          onReady={onReady}
+          minHeight={minHeight}
+          options={{
+            version: '1.157.0',
+            appearance: {
+              theme: 'modern_light',
+            },
+            features: {
+              imageEditor: true,
+            },
+            customCSS: [],
+            customJS: [],
+          }}
+        />
       </div>
     </div>
   );

@@ -18,10 +18,6 @@ import { useAppSelector } from '@/store';
 export default function TemplateEditor() {
   const { selectedTemplate } = useAppSelector((state) => state.email);
 
-  if (!selectedTemplate) {
-    return <div>Select a template</div>;
-  }
-
   return (
     <div className="flex flex-col gap-4 h-full p-4">
       {/* Header */}

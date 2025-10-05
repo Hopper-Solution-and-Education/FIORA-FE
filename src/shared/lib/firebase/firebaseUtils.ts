@@ -1,4 +1,10 @@
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from 'firebase/storage';
 import { toast } from 'sonner';
 import { storage } from './firebase.config';
 
@@ -7,6 +13,7 @@ interface UploadOptions {
   file: File | Blob; // File hoặc Blob để upload
   path: string; // Đường dẫn trong Firebase Storage (ví dụ: 'images/media/banner_123')
   fileName?: string; // Tên file tùy chỉnh (nếu không cung cấp, dùng timestamp)
+  onProgress?: (progress: number) => void; // Callback để update progress cho Unlayer
 }
 
 export const uploadToFirebase = async ({
@@ -27,6 +34,52 @@ export const uploadToFirebase = async ({
     // Lấy URL tải xuống
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
+  } catch (error) {
+    console.error('Error uploading to Firebase:', error);
+    throw error;
+  }
+};
+
+export const uploadToFirebaseWithProgress = async ({
+  file,
+  path,
+  fileName,
+  onProgress,
+}: UploadOptions): Promise<string> => {
+  try {
+    const storageRef = ref(storage, `${path}/${fileName || `${Date.now()}`}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          if (onProgress) onProgress(progress); // Gọi callback để update progress bar
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused');
+              break;
+            case 'running':
+              console.log('Upload is running');
+              break;
+          }
+        },
+        (error) => {
+          console.error('Upload error:', error);
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref)
+            .then((downloadURL) => {
+              resolve(downloadURL);
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        },
+      );
+    });
   } catch (error) {
     console.error('Error uploading to Firebase:', error);
     throw error;

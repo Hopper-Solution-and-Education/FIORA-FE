@@ -42,4 +42,5 @@ export interface EmailTemplateEditorProps {
   headerDescription?: string;
   minHeight?: string;
   className?: string;
+  uploadBasePath?: string;
 }
