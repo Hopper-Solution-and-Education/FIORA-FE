@@ -1,4 +1,5 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
+import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -67,7 +68,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { id, status, remark } = req.body;
+    const { id, status, remark, attachmentData } = req.body;
 
     if (!id || !status) {
       return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT);
@@ -85,8 +86,8 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
       id,
       status,
       remark,
+      attachmentData as AttachmentData,
       undefined,
-      // user,
     );
 
     if (!updated) {
