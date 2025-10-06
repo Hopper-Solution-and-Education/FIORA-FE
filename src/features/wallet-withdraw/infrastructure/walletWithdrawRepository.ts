@@ -1,5 +1,6 @@
 import { prisma, sendOtpVerifyWithDraw } from '@/config';
 
+import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { BadRequestError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
 import { generateRefCode } from '@/shared/utils/stringHelper';
@@ -234,17 +235,36 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           frBalanceFrozen: { increment: amount },
         },
       });
-      await this._prisma.depositRequest.create({
+      const createDepositRequest = await this._prisma.depositRequest.create({
         data: {
           userId: userId,
-          packageFXId: '',
           refCode: generateRefCode(6),
           status: DepositRequestStatus.Requested,
           type: FxRequestType.WITHDRAW,
           amount: amount,
+          currency: 'USD',
         },
       });
-      return { data: result };
+      const emailUser = await this._prisma.user.findFirst({
+        where: { id: userId },
+        select: {
+          email: true,
+        },
+      });
+      if (createDepositRequest) {
+        await notificationRepository.createBoxNotification({
+          title: 'WITHDRAW_REQUEST',
+          type: 'WITHDRAW_REQUEST',
+          notifyTo: 'PERSONAL',
+          attachmentId: '',
+          deepLink: '',
+          emails: [emailUser?.email ?? ''],
+          message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
+        });
+      }
+      return {
+        data: result,
+      };
     } catch (error) {
       console.log(error);
       throw error;
