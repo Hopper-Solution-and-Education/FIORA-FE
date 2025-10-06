@@ -1,4 +1,4 @@
-import { DepositRequestStatus } from '@/features/setting/module/wallet/domain';
+import { DepositRequestStatus, FXRequestType } from '@/features/setting/module/wallet/domain';
 
 // Pagination and UI behavior constants for wallet settings
 export const WALLET_SETTING_CONSTANTS = {
@@ -31,6 +31,12 @@ export const WALLET_SETTING_FILTER_OPTIONS = [
   { value: DepositRequestStatus.Requested, label: 'Requested' },
   { value: DepositRequestStatus.Approved, label: 'Approved' },
   { value: DepositRequestStatus.Rejected, label: 'Rejected' },
+] as const;
+
+// Filter options for type-based filtering
+export const WALLET_SETTING_TYPE_FILTER_OPTIONS = [
+  { value: FXRequestType.Deposit, label: 'Deposit' },
+  { value: FXRequestType.Withdraw, label: 'Withdraw' },
 ] as const;
 
 export const DEFAULT_MIN_AMOUNT = 0;

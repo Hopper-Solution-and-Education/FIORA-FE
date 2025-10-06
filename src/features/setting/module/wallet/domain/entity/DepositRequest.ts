@@ -1,4 +1,4 @@
-import { DepositRequestStatus } from '../enum';
+import { DepositRequestStatus, FXRequestType } from '../enum';
 
 export type DepositRequest = {
   id: string;
@@ -7,6 +7,7 @@ export type DepositRequest = {
   packageFXId: string;
   attachmentId?: string;
   status: DepositRequestStatus;
+  type: FXRequestType;
   remark?: string | null;
   createdAt: string;
   updatedAt: string;

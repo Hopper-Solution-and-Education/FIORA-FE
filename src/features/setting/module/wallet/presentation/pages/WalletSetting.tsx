@@ -2,7 +2,7 @@
 
 import { useAppDispatch } from '@/store';
 import { useEffect } from 'react';
-import { setColumnConfig } from '../../slices';
+import { resetColumns, setColumnConfig } from '../../slices';
 import { loadColumnConfigFromStorage } from '../../slices/persist';
 import { DispatchTableProvider, TableProvider } from '../context';
 import { useWalletSetting } from '../hooks';
@@ -20,8 +20,12 @@ const WalletSetting = () => {
   useEffect(() => {
     // Load saved column configuration from localStorage
     const config = loadColumnConfigFromStorage();
-    if (config) {
+    if (config && config.Type) {
+      // Only use saved config if it has the Type column
       dispatch(setColumnConfig(config));
+    } else {
+      // Force reset to default config with Type column
+      dispatch(resetColumns());
     }
   }, [dispatch]);
 
