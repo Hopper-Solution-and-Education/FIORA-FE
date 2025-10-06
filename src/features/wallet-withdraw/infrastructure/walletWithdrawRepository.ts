@@ -21,13 +21,12 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       where: { slug: 'moving-daily-limit' },
       select: { id: true },
     });
-    console.log('membershipBenerfitDaily', membershipBenerfitDaily);
 
     const membershipBenerfitOnetime = await this._prisma.membershipBenefit.findFirst({
       where: { slug: 'moving-1-time-limit' },
       select: { id: true },
     });
-    console.log('membershipBenerfitOnetime', membershipBenerfitOnetime);
+
     const membershipProgess = await this._prisma.membershipProgress.findFirst({
       where: {
         userId: userId,
@@ -36,14 +35,14 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         tierId: true,
       },
     });
-    console.log('membershipProgess', membershipProgess);
+
     const walletPayemt = await this._prisma.wallet.findFirst({
       where: { userId: userId, type: WalletType.Payment },
       select: {
         id: true,
       },
     });
-    console.log('walletPayemt', walletPayemt);
+
     const bankAccount = await this._prisma.bankAccount.findFirst({
       where: { userId: userId },
       select: {
@@ -52,20 +51,20 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         accountName: true,
       },
     });
+
     const account = await this._prisma.account.findFirst({
       where: { userId: userId, type: AccountType.Payment },
       select: {
         id: true,
       },
     });
-    console.log('account', account);
-    console.log('bankAccount', bankAccount);
+
     const now = new Date();
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
-
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
+
     const countDepositRequsest = await this._prisma.depositRequest.aggregate({
       _sum: {
         amount: true,
@@ -80,7 +79,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         },
       },
     });
-    console.log('countDepositRequsest', countDepositRequsest);
+
     const countTracsaction = await this._prisma.transaction.aggregate({
       _sum: {
         amount: true,
@@ -102,12 +101,14 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         benefitId: membershipBenerfitDaily?.id,
       },
     });
+
     const onetime_moving_limit = await this._prisma.tierBenefit.findFirst({
       where: {
         tierId: membershipProgess?.tierId ?? undefined,
         benefitId: membershipBenerfitOnetime?.id,
       },
     });
+
     const available_limit =
       Number(daily_moving_limit?.value ?? 0) -
       (Number(countTracsaction._sum.amount ?? 0) + Number(countDepositRequsest._sum.amount ?? 0));
@@ -128,14 +129,11 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
   }
   async createWithdraw(userId: string, amount: number, otp: string): Promise<{ data: any }> {
     try {
-      console.log('OTP!', otp);
-
       const verify_otp = await this._prisma.otp.findFirst({
         where: {
           AND: [{ userId: userId }, { otp: otp }],
         },
       });
-      console.log('OTP', verify_otp);
 
       if (!verify_otp) {
         throw new BadRequestError('OTP Incorrect');
@@ -152,7 +150,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           tierId: true,
         },
       });
-      console.log('membershipProgess', membershipProgess);
+
       const walletPayemtdata = await this._prisma.wallet.findFirst({
         where: { userId: userId, type: WalletType.Payment },
         select: {
@@ -168,7 +166,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       const now = new Date();
       const startOfDay = new Date(now);
       startOfDay.setHours(0, 0, 0, 0);
-
       const endOfDay = new Date(now);
       endOfDay.setHours(23, 59, 59, 999);
       const countDepositRequsest = await this._prisma.depositRequest.aggregate({
@@ -185,7 +182,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           },
         },
       });
-      console.log('countDepositRequsest', countDepositRequsest);
+
       const countTracsaction = await this._prisma.transaction.aggregate({
         _sum: {
           amount: true,
