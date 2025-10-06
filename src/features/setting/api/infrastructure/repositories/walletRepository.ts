@@ -217,6 +217,13 @@ class WalletRepository implements IWalletRepository {
               where.status = rule.value;
             }
             break;
+          case 'type':
+            if (rule.operator === 'in') {
+              where.type = { in: rule.value };
+            } else {
+              where.type = rule.value;
+            }
+            break;
           case 'amount':
             // amount is from package.fxAmount
             if (rule.operator === 'between') {

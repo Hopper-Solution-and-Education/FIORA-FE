@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
+import { FXRequestType } from '../../domain';
 import {
   UserProfileCard,
   WalletSettingActionButton,
@@ -46,6 +47,20 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
                 {data.refCode}
               </TableCell>
             );
+          case 'Type':
+            return (
+              <TableCell key={col} className={alignClass}>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    data.type === FXRequestType.Deposit
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                  }`}
+                >
+                  {data.type}
+                </span>
+              </TableCell>
+            );
           case 'Requester':
             return (
               <TableCell key={col} className={`max-w-[180px] ${alignClass}`}>
@@ -76,10 +91,18 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
                 <WalletSettingStatusBadge status={data.status} />
               </TableCell>
             );
+          case 'Reason':
+            return (
+              <TableCell key={col} className={`max-w-[200px] ${alignClass}`}>
+                <div className="truncate" title={data.remark || ''}>
+                  {data.remark || '-'}
+                </div>
+              </TableCell>
+            );
           case 'Action':
             return (
               <TableCell key={col} className={alignClass}>
-                <WalletSettingActionButton status={data.status} id={data.id} />
+                <WalletSettingActionButton status={data.status} type={data.type} id={data.id} />
               </TableCell>
             );
           default:

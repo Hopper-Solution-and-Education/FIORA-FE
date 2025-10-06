@@ -1,4 +1,4 @@
-import { DepositRequestStatus } from '../../../domain';
+import { DepositRequestStatus, FXRequestType } from '../../../domain';
 
 export interface GetDepositRequestResponse {
   id: string;
@@ -7,6 +7,7 @@ export interface GetDepositRequestResponse {
   packageFXId: string;
   attachmentId?: string;
   status: DepositRequestStatus;
+  type: FXRequestType;
   remark?: string | null;
   createdAt: string;
   updatedAt: string;

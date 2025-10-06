@@ -200,7 +200,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Partner', link: '/setting/partner' },
     { title: 'Create', link: '/setting/partner/create' },
   ],
-  '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
+  '/setting/wallet': [{ title: 'FX Request', link: '/setting/wallet' }],
   '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
   '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
   '/setting/packagefx/create': [

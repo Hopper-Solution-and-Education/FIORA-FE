@@ -3,18 +3,25 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toast } from 'sonner';
-import { DepositRequestStatus } from '../../domain';
+import { DepositRequestStatus, FXRequestType } from '../../domain';
 import { updateDepositRequestStatusAsyncThunk } from '../../slices/actions/updateDepositRequestStatusAsynThunk';
 import { useDispatchTableContext, useTableContext } from '../hooks';
+import ApproveConfirmationDialog from './ApproveConfirmationDialog';
 import RejectDepositRequestDialog from './RejectDepositRequestDialog';
 
 interface WalletSettingActionButtonProps {
   status: DepositRequestStatus;
+  type: FXRequestType;
   id: string;
   className?: string;
 }
 
-const WalletSettingActionButton = ({ status, id, className }: WalletSettingActionButtonProps) => {
+const WalletSettingActionButton = ({
+  status,
+  type,
+  id,
+  className,
+}: WalletSettingActionButtonProps) => {
   const isRequested = status === DepositRequestStatus.Requested;
   const isUpdating = useAppSelector((state) => state.walletSetting.updatingItems.includes(id));
   const isDisabled = !isRequested || isUpdating;
@@ -26,8 +33,13 @@ const WalletSettingActionButton = ({ status, id, className }: WalletSettingActio
   const handleToggleRejectModal = () =>
     dispatchTable({ type: 'TOGGLE_REJECT_MODAL', payload: { open: !table.showRejectModal, id } });
 
-  const handleApprove = async () => {
+  const handleToggleApproveModal = () =>
+    dispatchTable({ type: 'TOGGLE_APPROVE_MODAL', payload: { open: !table.showApproveModal, id } });
+
+  const handleApprove = async (attachments?: File[]) => {
     try {
+      // TODO: Handle file upload for withdraw requests
+      // For now, just approve without attachments
       await dispatch(
         updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Approved }),
       ).unwrap();
@@ -36,6 +48,8 @@ const WalletSettingActionButton = ({ status, id, className }: WalletSettingActio
         type: 'UPDATE_ITEM_STATUS',
         payload: { id, status: DepositRequestStatus.Approved },
       });
+
+      handleToggleApproveModal();
 
       toast.success('Request Approved Success', {
         description: 'Request approved, wallet updated',
@@ -97,7 +111,7 @@ const WalletSettingActionButton = ({ status, id, className }: WalletSettingActio
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleApprove}
+        onClick={handleToggleApproveModal}
         className={cn('h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50')}
         disabled={isDisabled}
       >
@@ -108,11 +122,20 @@ const WalletSettingActionButton = ({ status, id, className }: WalletSettingActio
         )}
       </Button>
 
+      <ApproveConfirmationDialog
+        open={table.approvingId === id && !!table.showApproveModal}
+        onClose={handleToggleApproveModal}
+        onConfirm={handleApprove}
+        isUpdating={isUpdating}
+        requestType={type}
+      />
+
       <RejectDepositRequestDialog
         open={table.rejectingId === id && !!table.showRejectModal}
         onClose={handleToggleRejectModal}
         onConfirm={handleRejectConfirm}
         isUpdating={isUpdating}
+        requestType={type}
       />
     </div>
   );
