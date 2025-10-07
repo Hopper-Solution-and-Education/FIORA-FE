@@ -44,8 +44,10 @@ class SendingWalletUseCase {
     amount: number;
     emailReceiver: string;
     otp?: string;
+    productIds?: string[];
+    categoryId?: string;
   }) {
-    const { userId, amount, emailReceiver, otp } = params;
+    const { userId, amount, emailReceiver, otp, productIds, categoryId } = params;
     if (!amount) throw new BadRequestError('Amount FX cannot be not empty');
 
     const amountDecimal = new Decimal(amount);
@@ -53,11 +55,6 @@ class SendingWalletUseCase {
     // 1. Input check
     if (!emailReceiver) throw new BadRequestError('Receiver email cannot be empty');
     if (amountDecimal.lte(0)) throw new BadRequestError('Amount must be greater than 0');
-
-    // 2. Verify OTP (nếu có)
-    if (otp) {
-      await this._sendingRepo.verifyOTP({ userId, otp });
-    }
 
     // 3. Verify sender
     const sender = await this._prisma.user.findFirst({
@@ -99,6 +96,40 @@ class SendingWalletUseCase {
     const movedAmountDecimal = new Decimal(await this._sendingRepo.getMovedAmount(userId));
     if (movedAmountDecimal.add(amountDecimal).gt(dailyLimitDecimal)) {
       throw new BadRequestError(`Exceeds daily limit: ${dailyLimitDecimal.toString()}`);
+    }
+
+    if (productIds && productIds?.length > 0) {
+      const products = await this._prisma.product.findMany({
+        where: {
+          id: {
+            in: productIds,
+          },
+          userId,
+        },
+      });
+
+      if (!products || products?.length == 0) {
+        throw new NotFoundError('Products not found');
+      }
+    }
+
+    if (categoryId) {
+      const category = await this._prisma.category.findFirst({
+        where: {
+          id: categoryId,
+          userId,
+          type: 'Expense',
+        },
+      });
+
+      if (!category) {
+        throw new NotFoundError('Category not found');
+      }
+    }
+
+    // Verify OTP (nếu có)
+    if (otp) {
+      await this._sendingRepo.verifyOTP({ userId, otp });
     }
 
     return {
@@ -170,8 +201,10 @@ class SendingWalletUseCase {
     amount: number;
     otp: string;
     emailReciever: string;
+    categoryId?: string;
+    productIds?: string[];
   }) {
-    const { userId, amount, otp, emailReciever } = data;
+    const { userId, amount, otp, emailReciever, categoryId, productIds } = data;
 
     if (!otp) throw new BadRequestError('OTP must not be empty');
 
@@ -180,12 +213,16 @@ class SendingWalletUseCase {
       amount,
       emailReceiver: emailReciever,
       otp,
+      categoryId,
+      productIds,
     });
 
     const { expense, income } = await this._sendingRepo.createTransactionSending({
       amount,
       recieverEmail: emailReciever,
       userId,
+      categoryId,
+      productIds,
     });
 
     const formattedAmount = new Intl.NumberFormat('en-US', {

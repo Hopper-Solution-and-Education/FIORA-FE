@@ -216,11 +216,37 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   async createTransactionSending(data: ArgCreateTransactionSendingType): Promise<any> {
-    const { amount, recieverEmail, userId } = data;
+    const { amount, recieverEmail, userId, categoryId, productIds } = data;
 
     const amountDecimal = new Decimal(amount);
 
     return this._prisma.$transaction(async (tx) => {
+      let category, products;
+
+      if (categoryId) {
+        category = await tx.category.findFirst({
+          where: {
+            id: categoryId,
+            userId,
+          },
+        });
+
+        if (!category) throw new NotFoundError('Category not found');
+      }
+
+      if (productIds) {
+        products = await tx.product.findMany({
+          where: {
+            id: {
+              in: productIds,
+            },
+            userId,
+          },
+        });
+
+        if (!products || products?.length == 0) throw new NotFoundError('Products not found');
+      }
+
       const sender = await tx.user.findFirst({
         where: {
           id: userId,
@@ -326,6 +352,13 @@ class SendingWalletRepository implements ISendingWalletRepository {
           userId: sender.id,
           fromWalletId: senderWallet.id,
           currency: Currency.FX,
+          toCategoryId: category?.id,
+          productsRelation: {
+            create: products?.map((p) => ({
+              product: { connect: { id: p.id } },
+              createdBy: sender.id,
+            })),
+          },
         },
       });
 

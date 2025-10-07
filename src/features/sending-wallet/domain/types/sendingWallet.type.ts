@@ -16,6 +16,8 @@ export type ArgCreateTransactionSendingType = {
   recieverEmail: string;
   userId: string;
   amount: number;
+  categoryId?: string;
+  productIds?: string[];
 };
 
 export type ArgGetPackageType = {
