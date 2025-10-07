@@ -1,7 +1,7 @@
-import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { createError } from '@/shared/lib/responseUtils/createResponse';
-import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { createError } from '@/shared/lib/responseUtils/createResponse';
+import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 
 export function withAuthorization(rolePermissions: any) {
   return function (handler: any) {

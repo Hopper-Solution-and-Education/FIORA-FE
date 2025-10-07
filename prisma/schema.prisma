@@ -493,7 +493,7 @@ model DepositRequest {
   id           String               @id @default(uuid()) @db.Uuid
   userId       String               @db.Uuid
   refCode      String               @unique
-  packageFXId  String               @db.Uuid
+  packageFXId  String?              @db.Uuid
   attachmentId String?              @unique @db.Uuid
   status       DepositRequestStatus
   remark       String?
@@ -503,8 +503,10 @@ model DepositRequest {
   updatedBy    String?              @db.Uuid
   currencyId   String?              @db.Uuid
   currency     String?
+  type         FxRequestType        @default(DEPOSIT)
+  amount       Decimal              @default(0) @db.Decimal(13, 2)
   attachment   Attachment?          @relation(fields: [attachmentId], references: [id])
-  package      PackageFX            @relation(fields: [packageFXId], references: [id])
+  package      PackageFX?           @relation(fields: [packageFXId], references: [id])
   user         User                 @relation("UserDepositRequest", fields: [userId], references: [id])
 
   @@index([userId])
@@ -1114,6 +1116,10 @@ enum emailType {
   OTP
   DEPOPSIT_APPROVE
   DEPOPSIT_REJECT
+  WITHDRAW_APPROVE
+  WITHDRAW_REJECT
+  SENDING_OTP
+  SENDING_SUCCESSFUL
 }
 
 enum CronJobStatus {
@@ -1140,10 +1146,17 @@ enum KYCType {
 
 enum OtpType {
   CONTACT
+  SENDING_FX
+  WITHDRAW
 }
 
 enum ReferralStatus {
   INVITED
   REGISTERED
   eKYC_COMPLETED
+}
+
+enum FxRequestType {
+  DEPOSIT
+  WITHDRAW
 }
