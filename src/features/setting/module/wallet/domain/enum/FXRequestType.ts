@@ -1,4 +1,4 @@
 export enum FXRequestType {
-  Deposit = 'Deposit',
-  Withdraw = 'Withdraw',
+  Deposit = 'DEPOSIT',
+  Withdraw = 'WITHDRAW',
 }

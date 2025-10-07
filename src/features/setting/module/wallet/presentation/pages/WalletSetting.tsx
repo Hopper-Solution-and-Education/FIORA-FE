@@ -13,7 +13,7 @@ import { WalletSettingTable, WalletSettingTopBarAction } from '../organisms';
  * Manages the overall layout and provides context for child components
  */
 const WalletSetting = () => {
-  const { tableData, loading, loadMore, dispatchTable } = useWalletSetting();
+  const { tableData, loading, loadMore, dispatchTable, reloadData } = useWalletSetting();
   const dispatch = useAppDispatch();
 
   // Initialize wallet setting on component mount
@@ -34,7 +34,7 @@ const WalletSetting = () => {
     // Separation of concerns: Dispatch actions and table data are managed independently
     // Performance: Only re-render components that need updates when data or actions change
     // Reusability: Each context can be used independently in different components
-    <DispatchTableProvider value={{ dispatchTable }}>
+    <DispatchTableProvider value={{ dispatchTable, reloadData }}>
       {/* TableProvider: Provides table data state to child components */}
       <TableProvider value={{ table: tableData }}>
         <div className="space-y-6 border p-4 rounded-2xl mb-12">
