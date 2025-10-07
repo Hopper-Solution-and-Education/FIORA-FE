@@ -22,6 +22,7 @@ import {
   TransactionType,
   WalletType,
 } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
@@ -583,7 +584,7 @@ class WalletUseCase {
 
   // Notify user via in-app + email template (reuses precomputed FX amount when available)
   private async notifyDepositStatus(
-    depositRequest: { userId: string; packageFXId: string; type: FxRequestType },
+    depositRequest: { userId: string; packageFXId: string; type: FxRequestType; amount: Decimal },
     newStatus: DepositRequestStatus,
     remark?: string,
     precomputedFxAmount?: number,
@@ -599,7 +600,10 @@ class WalletUseCase {
     const fxAmount =
       precomputedFxAmount ??
       Number(
-        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+        depositRequest.packageFXId
+          ? (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount ||
+              0
+          : depositRequest.amount,
       );
 
     if (newStatus === DepositRequestStatus.Approved) {
