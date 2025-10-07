@@ -9,6 +9,7 @@ import { UserTable } from '../organisms/UserCommonTable';
 export default function UserManagementPage() {
   const router = useRouter();
   const {
+    tableData,
     filteredUsers,
     searchQuery,
     setSearchQuery,
@@ -18,6 +19,9 @@ export default function UserManagementPage() {
     setFilters,
     stats,
     pendingTotal,
+    hasMore,
+    loadMore,
+    isLoadingMore,
   } = useUserManagement();
 
   const handleUserAction = (userId: string) => {
@@ -53,10 +57,7 @@ export default function UserManagementPage() {
           ) : (
             <div className="p-4">
               <UserTable
-                users={filteredUsers.map((user: any) => ({
-                  ...user,
-                  id: String(user.id),
-                }))}
+                users={tableData.data}
                 onUserAction={handleUserAction}
                 searchQuery={searchQuery}
                 filters={appliedFilters}
@@ -65,6 +66,9 @@ export default function UserManagementPage() {
                 totalActive={stats.totalActive}
                 totalBlocked={stats.totalBlocked}
                 totalPending={pendingTotal}
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                isLoadingMore={isLoadingMore}
               />
             </div>
           )}
