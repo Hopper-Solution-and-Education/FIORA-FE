@@ -1,7 +1,7 @@
-import type { WalletType } from '../../domain/enum';
-import type { Wallet } from '../../domain/entity/Wallet';
 import type { FilterCriteria } from '@/shared/types/filter.types';
 import type { PackageFX } from '../../domain/entity/PackageFX';
+import type { Wallet } from '../../domain/entity/Wallet';
+import type { WalletType } from '../../domain/enum';
 import type { AttachmentData } from '../../presentation/types/attachment.type';
 
 export interface WalletState {
@@ -17,6 +17,7 @@ export interface WalletState {
   attachmentData: AttachmentData | null;
   depositSearch: string | null;
   frozenAmount: number | null;
+  isShowSendingFXForm: boolean;
 }
 
 export const initialWalletState: WalletState = {
@@ -32,6 +33,7 @@ export const initialWalletState: WalletState = {
   attachmentData: null,
   depositSearch: null,
   frozenAmount: null,
+  isShowSendingFXForm: false,
 };
 
 export interface GetWalletRequest {
