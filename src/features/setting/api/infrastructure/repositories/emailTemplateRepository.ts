@@ -12,14 +12,31 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     });
   }
   async getEmailTemplate(): Promise<any[]> {
-    return await prisma.emailTemplate.findMany({
+    const emailTemplates = await prisma.emailTemplate.findMany({
       include: {
-        EmailTemplateType: true,
+        EmailTemplateType: {
+          select: { id: true, type: true },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+    const emailTemplateFields = await prisma.emailTemplateField.findMany({
+      orderBy: { type: 'asc' },
+      select: { type: true, id: true, name: true },
+    });
+    const result = emailTemplates.map((template) => {
+      const matchedFields = emailTemplateFields.filter(
+        (field) => field.type === template.EmailTemplateType.type,
+      );
+
+      return {
+        ...template,
+        fieldRequire: matchedFields,
+      };
+    });
+    return result;
   }
 
   async updateEmailTemplate(
