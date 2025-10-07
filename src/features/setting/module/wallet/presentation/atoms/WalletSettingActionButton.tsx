@@ -1,6 +1,8 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import { ATTACHMENT_CONSTANTS } from '@/features/setting/data/module/attachment/constants/attachmentConstants';
 import { cn } from '@/lib/utils';
+import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toast } from 'sonner';
 import { DepositRequestStatus, FXRequestType } from '../../domain';
@@ -26,7 +28,7 @@ const WalletSettingActionButton = ({
   const isUpdating = useAppSelector((state) => state.walletSetting.updatingItems.includes(id));
   const isDisabled = !isRequested || isUpdating;
 
-  const { dispatchTable } = useDispatchTableContext();
+  const { dispatchTable, reloadData } = useDispatchTableContext();
   const { table } = useTableContext();
   const dispatch = useAppDispatch();
 
@@ -38,16 +40,46 @@ const WalletSettingActionButton = ({
 
   const handleApprove = async (attachments?: File[]) => {
     try {
-      // TODO: Handle file upload for withdraw requests
-      // For now, just approve without attachments
-      await dispatch(
-        updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Approved }),
-      ).unwrap();
+      if (type === FXRequestType.Withdraw && attachments && attachments.length > 0) {
+        const file = attachments[0];
 
-      dispatchTable({
-        type: 'UPDATE_ITEM_STATUS',
-        payload: { id, status: DepositRequestStatus.Approved },
-      });
+        // Upload file to Firebase Storage first
+        const fileName = `withdraw-attachment-${Date.now()}-${file.name}`;
+        const firebaseUrl = await uploadToFirebase({
+          file,
+          path: 'wallet-attachments',
+          fileName,
+        });
+
+        // Extract file path from Firebase URL for path field
+        const urlParts = firebaseUrl.split('/');
+        const fileNameFromUrl = urlParts[urlParts.length - 1].split('?')[0];
+        const filePath = `wallet-attachments/${fileNameFromUrl}`;
+
+        const attachmentData = {
+          type: file.type.startsWith('image/')
+            ? ATTACHMENT_CONSTANTS.TYPES.IMAGE
+            : ATTACHMENT_CONSTANTS.TYPES.DOCUMENT,
+          size: file.size,
+          url: firebaseUrl,
+          path: filePath,
+        };
+
+        await dispatch(
+          updateDepositRequestStatusAsyncThunk({
+            id,
+            status: DepositRequestStatus.Approved,
+            attachmentData,
+          }),
+        ).unwrap();
+      } else {
+        await dispatch(
+          updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Approved }),
+        ).unwrap();
+      }
+
+      // Reload table data to reflect the updated status
+      await reloadData();
 
       handleToggleApproveModal();
 
@@ -57,7 +89,7 @@ const WalletSettingActionButton = ({
     } catch (e: any) {
       console.error(e?.message);
       toast.error('Request Approved Failed', {
-        description: 'Failed. Try again or contact support.',
+        description: e?.message || 'Failed. Try again or contact support.',
       });
     }
   };
@@ -68,10 +100,8 @@ const WalletSettingActionButton = ({
         updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Rejected, remark }),
       ).unwrap();
 
-      dispatchTable({
-        type: 'UPDATE_ITEM_STATUS',
-        payload: { id, status: DepositRequestStatus.Rejected, remark },
-      });
+      // Reload table data to reflect the updated status
+      await reloadData();
 
       handleToggleRejectModal();
 
@@ -127,7 +157,7 @@ const WalletSettingActionButton = ({
         onClose={handleToggleApproveModal}
         onConfirm={handleApprove}
         isUpdating={isUpdating}
-        requestType={type}
+        requestType={type === FXRequestType.Withdraw ? 'Withdraw' : 'Deposit'}
       />
 
       <RejectDepositRequestDialog
@@ -135,7 +165,7 @@ const WalletSettingActionButton = ({
         onClose={handleToggleRejectModal}
         onConfirm={handleRejectConfirm}
         isUpdating={isUpdating}
-        requestType={type}
+        requestType={type === FXRequestType.Withdraw ? 'Withdraw' : 'Deposit'}
       />
     </div>
   );

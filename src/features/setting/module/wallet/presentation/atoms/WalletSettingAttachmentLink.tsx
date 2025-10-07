@@ -11,10 +11,15 @@ interface WalletSettingAttachmentLinkProps {
   attachment?: {
     id: string;
     type: string;
-    size: number;
+    size: string;
     url: string;
     path: string;
-  };
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string | null;
+    notificationId: string | null;
+  } | null;
   requestType?: FXRequestType;
   requestCode?: string;
   requestId?: string;
@@ -81,7 +86,8 @@ const WalletSettingAttachmentLink = ({
     );
   }
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (size: string) => {
+    const bytes = parseInt(size);
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
