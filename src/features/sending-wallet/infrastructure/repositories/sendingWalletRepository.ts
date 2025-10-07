@@ -101,27 +101,36 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   async getRecommendReciever(query: string, userId: string): Promise<Reciever[]> {
-    // Query raw: lấy cả partner và user theo email gần giống query
     const receivers = await this._prisma.$queryRaw<Reciever[]>`
-            SELECT id, email, name, image, "isPartner"
-            FROM (
-                -- Partner
-                SELECT p.id, p.email, p.name, p.logo as image,
-                    true AS "isPartner"
-                FROM "Partner" p
-                WHERE p.email ILIKE '%' || ${query} || '%' AND p."userId" = ${userId}::uuid
+      SELECT DISTINCT ON (email) id, email, name, image, "isPartner"
+      FROM (
+          -- Partner
+          SELECT 
+              p.id, 
+              p.email, 
+              p.name, 
+              p.logo AS image,
+              true AS "isPartner"
+          FROM "Partner" p
+          WHERE p.email ILIKE '%' || ${query} || '%' 
+            AND p."userId" = ${userId}::uuid
 
-                UNION
+          UNION ALL
 
-                -- User
-                SELECT u.id, u.email, u.name, u."image" as image,
-                    false AS "isPartner"
-                FROM "User" u
-                WHERE u.email ILIKE '%' || ${query} || '%' AND u.id <> ${userId}::uuid
-            ) results
-            ORDER BY "isPartner" DESC
-            LIMIT 10;
-        `;
+          -- User
+          SELECT 
+              u.id, 
+              u.email, 
+              u.name, 
+              u."image" AS image,
+              false AS "isPartner"
+          FROM "User" u
+          WHERE u.email ILIKE '%' || ${query} || '%' 
+            AND u.id <> ${userId}::uuid
+      ) results
+      ORDER BY email, "isPartner" DESC
+      LIMIT 10;
+    `;
 
     return receivers ?? [];
   }
