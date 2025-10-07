@@ -1,10 +1,12 @@
 import { prisma } from '@/config';
+import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
   Attachment,
   DepositRequest,
   DepositRequestStatus,
+  FxRequestType,
   PackageFX,
   Prisma,
   Wallet,
@@ -225,16 +227,36 @@ class WalletRepository implements IWalletRepository {
             }
             break;
           case 'amount':
-            // amount is from package.fxAmount
             if (rule.operator === 'between') {
-              const arr = Array.isArray(rule.value) ? (rule.value as [number, number]) : [0, 0];
-              where.package = { fxAmount: { gte: arr[0], lte: arr[1] } };
+              const [min, max] = Array.isArray(rule.value) ? rule.value : [0, 0];
+              where.OR = [
+                { amount: { gte: min, lte: max } },
+                { package: { fxAmount: { gte: min, lte: max } } },
+              ];
             } else if (rule.operator === 'gte') {
-              where.package = { fxAmount: { gte: rule.value as number } };
+              where.OR = [
+                { amount: { gte: rule.value as number } },
+                { package: { fxAmount: { gte: rule.value as number } } },
+              ];
             } else if (rule.operator === 'lte') {
-              where.package = { fxAmount: { lte: rule.value as number } };
+              where.OR = [
+                { amount: { lte: rule.value as number } },
+                { package: { fxAmount: { lte: rule.value as number } } },
+              ];
             }
             break;
+          case 'type': {
+            const validValues = Array.isArray(rule.value) ? rule.value : [rule.value];
+            const enumValues = validValues.filter((v) =>
+              Object.values(FxRequestType).includes(v as FxRequestType),
+            );
+            if (enumValues.length === 0) break;
+            where.type =
+              rule.operator === 'in'
+                ? { in: enumValues as FxRequestType[] }
+                : (enumValues[0] as FxRequestType);
+            break;
+          }
           default:
             // fallback: direct field
             where[rule.field] = rule.value;
@@ -289,6 +311,27 @@ class WalletRepository implements IWalletRepository {
     const updateData: any = { status: newStatus };
     if (newStatus === DepositRequestStatus.Rejected && remark) {
       updateData.remark = remark;
+      if (current.type === FxRequestType.WITHDRAW) {
+        const amount = Number(
+          current.packageFXId
+            ? (await this.getPackageFXById(current.packageFXId))?.fxAmount
+            : current.amount,
+        );
+        const paymentWallet = await this.findWalletByType(WalletType.Payment, current.userId);
+
+        if (!paymentWallet) throw new Error(Messages.PAYMENT_WALLET_NOT_FOUND);
+        if (Number(paymentWallet.frBalanceFrozen) < amount) {
+          throw new Error(Messages.INSUFFICIENT_BALANCE);
+        }
+        await this.updateWallet(
+          { id: paymentWallet.id },
+          {
+            frBalanceFrozen: { decrement: amount },
+            frBalanceActive: { increment: amount },
+            updatedBy: current.userId,
+          },
+        );
+      }
     }
 
     return this._prisma.depositRequest.update({
