@@ -66,9 +66,13 @@ interface CategoryCondition {
 interface TypeCondition {
   type?: string;
 }
-
+interface BenefitCondition {
+  membershipBenefit?: {
+    name: string;
+  };
+}
 interface NestedOrCondition {
-  OR?: (AccountCondition | CategoryCondition | WalletCondition)[];
+  OR?: (AccountCondition | CategoryCondition | WalletCondition | BenefitCondition)[];
 }
 
 interface FilterAndCondition {
@@ -97,8 +101,11 @@ interface FilterAndCondition {
   amount?: AmountCondition;
   baseAmount?: BaseAmountCondition;
   baseCurrency?: string;
+  membershipBenefit?: {
+    name: string;
+  };
   date?: string | DateCondition;
-  OR?: (TypeCondition | PartnerCondition | NestedOrCondition)[];
+  OR?: (TypeCondition | PartnerCondition | NestedOrCondition | BenefitCondition)[];
   AND?: FilterAndCondition[];
 }
 
@@ -117,6 +124,7 @@ type FilterParams = {
   categories: string[];
   accounts: string[];
   wallets: string[];
+  membershipBenefit: string[];
   amountMin: number;
   amountMax: number;
 };
@@ -128,6 +136,7 @@ const filterParamsInitState: FilterParams = {
   categories: [],
   accounts: [],
   amountMin: 0,
+  membershipBenefit: [],
   amountMax: DEFAULT_MAX_AMOUNT,
   wallets: [],
 };
@@ -197,6 +206,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
       const categories: Set<string> = new Set();
       const accounts: Set<string> = new Set();
       const wallets: Set<string> = new Set();
+      const benefits: Set<string> = new Set();
       let currentAmountMin = amountMin;
       let currentAmountMax = amountMax;
       let dateFrom: Date | undefined;
@@ -227,6 +237,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
           if (condition.partner?.name) {
             partners.add(condition.partner.name);
           }
+          if (condition.membershipBenefit?.name) benefits.add(condition.membershipBenefit.name);
 
           if (condition.fromCategory?.name) categories.add(condition.fromCategory.name);
           if (condition.toCategory?.name) categories.add(condition.toCategory.name);
@@ -382,6 +393,19 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
             });
           }
 
+          if (
+            Array.isArray(condition.OR) &&
+            condition.OR.some(
+              (c) => 'membershipBenefit' in c && c.membershipBenefit?.name !== undefined,
+            )
+          ) {
+            condition.OR.forEach((orCondition) => {
+              if ('membershipBenefit' in orCondition && orCondition.membershipBenefit?.name) {
+                benefits.add(orCondition.membershipBenefit.name);
+              }
+            });
+          }
+
           // Handle OR conditions for categories with special nested structure
           if (
             Array.isArray(condition.OR) &&
@@ -409,6 +433,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
           }
         });
       }
+      // Handle OR conditions for benefits
 
       // Process flat filter structure for other properties
       if (!Array.isArray(filters?.AND) && typeof filters === 'object' && filters) {
@@ -452,6 +477,7 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         wallets: Array.from(wallets),
         amountMin: currentAmountMin,
         amountMax: currentAmountMax,
+        membershipBenefit: Array.from(benefits),
         dateRange: dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined,
       };
     },
@@ -511,6 +537,15 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
     }
 
     return data.data.wallets.map((option: string) => ({
+      value: option,
+      label: option,
+    }));
+  }, [data]);
+  const benefitOptions = useMemo(() => {
+    if (!data?.data?.benefits) {
+      return [{ label: 'No option available', value: 'none', disabled: true }];
+    }
+    return data.data.benefits.map((option: string) => ({
       value: option,
       label: option,
     }));
@@ -597,6 +632,16 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         disabled={isLoading}
       />
     );
+    const benefitFilterComponent = (
+      <MultiSelectFilter
+        options={benefitOptions}
+        selectedValues={filterParams.membershipBenefit}
+        onChange={(values) => handleEditFilter('membershipBenefit', values)}
+        label="Benefits"
+        placeholder="Select benefits"
+        disabled={isLoading}
+      />
+    );
 
     return [
       {
@@ -640,6 +685,12 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         component: walletFilterComponent,
         column: FilterColumn.LEFT,
         order: 0,
+      },
+      {
+        key: 'benefitFilter',
+        component: benefitFilterComponent,
+        column: FilterColumn.RIGHT,
+        order: 1,
       },
     ];
   }, [
@@ -703,6 +754,14 @@ const FilterMenu = <T extends Record<string, unknown>>(props: FilterMenuProps<T>
         andConditions.push({
           OR: params.wallets.map((wallet) => ({
             OR: [{ toWallet: { type: wallet } }, { fromWallet: { type: wallet } }],
+          })),
+        });
+      }
+      // Benefits OR group
+      if (params.membershipBenefit?.length) {
+        andConditions.push({
+          OR: params.membershipBenefit.map((benefit) => ({
+            membershipBenefit: { name: benefit },
           })),
         });
       }

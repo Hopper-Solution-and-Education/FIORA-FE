@@ -184,6 +184,7 @@ export type TransactionFilterOptionResponse = {
   categories: string[];
   partners: string[];
   wallets: string[];
+  benefits: string[];
   amountMin: number;
   amountMax: number;
 };

@@ -1296,6 +1296,11 @@ class TransactionUseCase {
                   ],
                 },
               },
+              {
+                membershipBenefit: {
+                  name: { contains: typeSearchParams, mode: 'insensitive' },
+                },
+              },
               // adding typeTransactionWhere to where clause if exists
               ...(typeTransactionWhere
                 ? [{ type: typeTransactionWhere as unknown as TransactionType }]
