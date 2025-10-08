@@ -3,7 +3,7 @@
 import { CommonTable } from '@/components/common/organisms';
 import { CommonTableColumn } from '@/components/common/organisms/CommonTable/types';
 import { Button } from '@/components/ui/button';
-import { User } from '../../slices/types/index';
+import { User } from '../../slices/type';
 import UserAvatar from '../atoms/UserAvatar';
 
 interface UserTableProps {

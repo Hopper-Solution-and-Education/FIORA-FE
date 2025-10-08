@@ -141,16 +141,6 @@ export function useUserManagement() {
 
         const hasMore = page * pageSize < totalCount;
         dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
-        console.log(
-          'Fetched data, page:',
-          page,
-          'data length:',
-          transformedRows.length,
-          'hasMore:',
-          hasMore,
-          'total:',
-          totalCount,
-        );
       } catch (error) {
         console.error('Failed to fetch users:', error);
       } finally {
@@ -176,6 +166,11 @@ export function useUserManagement() {
   const filteredUsers: User[] = useMemo(() => {
     return state.data;
   }, [state.data]);
+
+  const setSearchQueryWithRefetch = useCallback((value: string) => {
+    setSearchQuery(value);
+    setShouldRefetch(true);
+  }, []);
 
   const setFilters = useCallback((filters: FilterState) => {
     setAppliedFilters(filters);
@@ -235,7 +230,7 @@ export function useUserManagement() {
   return {
     // Search & Filters
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: setSearchQueryWithRefetch,
     appliedFilters,
     selectedDateRange,
     setFilters,

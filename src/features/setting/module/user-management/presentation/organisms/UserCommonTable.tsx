@@ -27,6 +27,7 @@ interface UserTableProps {
   onLoadMore?: () => void;
   isLoadingMore?: boolean;
   className?: string;
+  loading?: boolean;
 }
 
 export function UserTable({
@@ -43,6 +44,7 @@ export function UserTable({
   onLoadMore,
   isLoadingMore,
   className,
+  loading,
 }: UserTableProps) {
   const totalUsers = users.length;
 
@@ -163,7 +165,8 @@ export function UserTable({
       hasMore={hasMore}
       isLoadingMore={isLoadingMore}
       onLoadMore={onLoadMore}
-      className={className} // Add className for styling
+      loading={loading}
+      className={className}
       leftHeaderNode={
         <UserManagementHeaderLeft
           searchQuery={searchQuery}

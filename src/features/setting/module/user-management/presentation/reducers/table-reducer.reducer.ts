@@ -37,8 +37,7 @@ export const tableReducer = (state: TableState, action: TableAction): TableState
     case 'SET_DATA':
       return { ...state, data: action.payload };
     case 'APPEND_DATA':
-      const newData = [...state.data, ...action.payload];
-      return { ...state, data: newData };
+      return { ...state, data: [...state.data, ...action.payload] };
     case 'SET_PAGINATION':
       return { ...state, pagination: action.payload };
     case 'SET_PAGE':

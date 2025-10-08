@@ -9,7 +9,7 @@ export interface UserApiResponse {
   isBlocked: boolean;
   kyc_levels: string[];
   createdAt: string;
-  updateAt: string;
+  updatedAt: string;
   avatarId?: string | null;
   eKYC?: {
     id: string;
@@ -52,7 +52,7 @@ export const usersApi = createApi({
         if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
         if (params.fromDate) searchParams.append('fromDate', params.fromDate);
         if (params.toDate) searchParams.append('toDate', params.toDate);
-  
+
         if (params.roles && params.roles.length > 0) {
           params.roles.forEach((role) => searchParams.append('role', role));
         }

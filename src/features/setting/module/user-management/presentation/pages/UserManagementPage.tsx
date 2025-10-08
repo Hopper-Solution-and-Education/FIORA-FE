@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserManagement } from '../hooks/useUserManagement';
 import { UserTable } from '../organisms/UserCommonTable';
@@ -49,29 +48,24 @@ export default function UserManagementPage() {
           )}
 
           {/* User Table */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="animate-spin h-8 w-8 mr-2" />
-              <span>Loading users...</span>
-            </div>
-          ) : (
-            <div className="p-4">
-              <UserTable
-                users={tableData.data}
-                onUserAction={handleUserAction}
-                searchQuery={searchQuery}
-                filters={appliedFilters}
-                onSearchChange={setSearchQuery}
-                onFilterChange={setFilters}
-                totalActive={stats.totalActive}
-                totalBlocked={stats.totalBlocked}
-                totalPending={pendingTotal}
-                hasMore={hasMore}
-                onLoadMore={loadMore}
-                isLoadingMore={isLoadingMore}
-              />
-            </div>
-          )}
+
+          <div className="p-4">
+            <UserTable
+              users={tableData.data}
+              onUserAction={handleUserAction}
+              searchQuery={searchQuery}
+              filters={appliedFilters}
+              onSearchChange={setSearchQuery}
+              onFilterChange={setFilters}
+              totalActive={stats.totalActive}
+              totalBlocked={stats.totalBlocked}
+              totalPending={pendingTotal}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              isLoadingMore={isLoadingMore}
+              loading={isLoading}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
