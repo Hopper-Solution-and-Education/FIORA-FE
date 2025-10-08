@@ -346,6 +346,7 @@ class TransactionUseCase {
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
       wallets: filterOptions.wallets ?? [],
+      benefits: filterOptions.benefits ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };
