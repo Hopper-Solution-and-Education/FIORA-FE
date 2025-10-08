@@ -6,9 +6,17 @@ type ChildProps = {
   state?: OtpState;
   countdown?: number;
   callback: () => void;
+  classNameBtn?: string;
+  classNameText?: string;
 };
 
-function SendOtpButton({ state = 'Get', countdown = 120, callback }: ChildProps) {
+function SendOtpButton({
+  state = 'Get',
+  countdown = 120,
+  callback,
+  classNameBtn,
+  classNameText,
+}: ChildProps) {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
@@ -29,13 +37,13 @@ function SendOtpButton({ state = 'Get', countdown = 120, callback }: ChildProps)
   };
 
   return (
-    <div>
+    <div className={classNameBtn}>
       {count === 0 ? (
         <Button variant="outline" onClick={handleButtonClick}>
           {state} OTP
         </Button>
       ) : (
-        <div className="h-9 flex items-center">
+        <div className={`h-9 flex items-center ${classNameText}`}>
           {state} in {count}s
         </div>
       )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { WithdrawFXForm } from '@/features/withdraw-fx/presentation/views';
+import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 import { WalletBarChart, WalletOverview, WalletTopbarAction } from '../organisms';
 
 const WalletDashboardPage = () => {

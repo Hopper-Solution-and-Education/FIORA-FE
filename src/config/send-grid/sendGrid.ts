@@ -189,6 +189,21 @@ export const sendEmailCronJob = async (
     return false;
   }
 };
+export const sendOtpVerifyWithDraw = async (to: any, otp: number, bankAccount: any) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+      subject: 'Verify Your Email - Hopper',
+      html: emailTemplateWithDraw(to, bankAccount, otp), // HTML template from previous response
+    };
+
+    await sgMail.send(msg);
+  } catch (error) {
+    console.error('Failed to send email', error);
+    throw new Error('Failed to send email');
+  }
+};
 
 // Placeholder for the HTML template (kept separate as per request)
 const emailTemplate = (otp: string, verificationLink: string) =>
@@ -312,4 +327,118 @@ const emailTemplateMembershipChange = (username: string, tier_name: string, upda
     </tr>
   </table>
 </body>
+</html>`;
+
+const emailTemplateWithDraw = (userName: any, bankData: any, otp: number) =>
+  `
+  <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Withdrawal Verification - FIORA</title>
+</head>
+
+<body
+    style="margin:0; padding:0; font-family:'Helvetica Neue', Arial, sans-serif; background-color:#f0f4f8; color:#2d3748;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+        style="background:linear-gradient(135deg,#e6eef5 0%,#f0f4f8 100%); padding:40px 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                    style="background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,50,100,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td
+                            style="background:linear-gradient(90deg,#10b981,#34d399); padding:30px; text-align:center; position:relative; overflow:hidden;">
+                            <h1
+                                style="color:#ffffff; margin:0; font-size:28px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">
+                                FIORA</h1>
+                            <p style="color:#d1fae5; margin:8px 0 0; font-size:14px; font-style:italic;">Withdrawal
+                                Verification</p>
+                            <div
+                                style="position:absolute; top:-50px; right:-50px; width:100px; height:100px; background:rgba(255,255,255,0.1); border-radius:50%;">
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:40px; text-align:left;">
+                            <h2 style="font-size:22px; font-weight:600; margin:0 0 20px; color:#1a202c;">Verify Your
+                                Withdrawal Request</h2>
+                            <p style="font-size:16px; line-height:1.6; margin:0 0 15px; color:#4a5568;">
+                                Hello <strong>${userName}</strong>,
+                            </p>
+                            <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
+                                We received a withdrawal request from your FIORA account with the following details:
+                            </p>
+
+                            <!-- Transaction Details Box -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="background:#f7fafc; border-radius:8px; padding:20px; margin:0 0 25px;">
+                                <tr>
+                                    <td style="font-size:14px; color:#4a5568; padding:8px 0;">
+                                        <strong style="color:#1a202c;">Bank Name:</strong> ${bankData.accountNumber}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px; color:#4a5568; padding:8px 0;">
+                                        <strong style="color:#1a202c;">Account Number:</strong> ${bankData.accountName}
+                                    </td>
+                                </tr>
+
+                            </table>
+
+                            <!-- OTP Code Box -->
+                            <div
+                                style="background:linear-gradient(135deg,#10b981,#34d399); border-radius:12px; padding:30px; text-align:center; margin:0 0 25px;">
+                                <p
+                                    style="color:#ffffff; font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:1px; font-weight:600;">
+                                    Your OTP Code</p>
+                                <div style="background:#ffffff; border-radius:8px; padding:20px; display:inline-block;">
+                                    <span
+                                        style="font-size:36px; font-weight:700; letter-spacing:8px; color:#10b981; font-family:'Courier New', monospace;">${otp}</span>
+                                </div>
+
+                            </div>
+
+                            <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
+                                Please enter this OTP code to complete your withdrawal transaction. If you did not
+                                initiate this request, please ignore this email and contact our support team
+                                immediately.
+                            </p>
+
+                            <!-- Security Warning -->
+                            <div
+                                style="background:#fef3c7; border-left:4px solid #f59e0b; padding:15px; border-radius:6px; margin:0 0 20px;">
+                                <p style="margin:0; font-size:14px; color:#92400e; line-height:1.6;">
+                                    <strong>⚠️ Security Notice:</strong> Never share this OTP code with anyone,
+                                    including FIORA staff. We will never ask for your OTP.
+                                </p>
+                            </div>
+
+                            <p style="font-size:16px; line-height:1.6; margin:0 0 10px; color:#4a5568;">
+                                Thank you for trusting FIORA with your financial needs!
+                            </p>
+                            <p style="font-size:16px; line-height:1.6; margin-top:10px; color:#4a5568;">
+                                Best regards,<br><strong>The FIORA Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background:#f7fafc; padding:25px; text-align:center; font-size:12px; color:#718096; border-top:1px solid #e2e8f0;">
+                            <p style="margin:0 0 10px;">Need help? Contact us at <a href="mailto:support@fiora.com"
+                                    style="color:#10b981; text-decoration:none;">support@fiora.com</a></p>
+                            <p style="margin:0;">© 2025 FIORA. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
 </html>`;

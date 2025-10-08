@@ -423,4 +423,11 @@ export enum Messages {
 
   //User
   USER_NOT_FOUND = 'User not found',
+
+  // Wallet Withdraw
+  GET_WALLET_WITHDRAW_SUCCESS = 'Get wallet withdraw successfully',
+  WITHDRAW_REQUEST_SUCCESS = 'Withdraw request successfully',
+  WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
+  INVALID_AMOUNT = 'no data',
+  SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
 }

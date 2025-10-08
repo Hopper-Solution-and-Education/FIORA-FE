@@ -3,22 +3,34 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { useSession } from 'next-auth/react';
 
+import { Loading } from '@/components/common/atoms';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { setWithdrawFXFormClose } from '@/features/home/module/wallet';
+import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { FieldError } from 'react-hook-form';
-import { OtpState } from '../../types';
+import { toast } from 'sonner';
+import { ApiEndpointEnum } from '../../domain/endpoint';
+import { OtpState, WalletWithdrawOverview } from '../../types';
 import AmountSelect from '../components/AmountSelect';
 import BankAccountSelect from '../components/BankAccountSelect';
 import InputOtp from '../components/InputOtp';
 import SendOtpButton from '../components/SendOtpButton';
 
+type OverviewWithdrawResponseType = {
+  data: WalletWithdrawOverview;
+};
+
 function WithdrawFXForm() {
   const dispatch = useAppDispatch();
+  const session = useSession();
+  const { user } = session?.data ?? {};
+  const userId = user?.id;
   const { isShowWithdrawFXForm } = useAppSelector((state) => state.wallet);
   const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
@@ -29,6 +41,15 @@ function WithdrawFXForm() {
   const [errorBankAccount, setErrorBankAccount] = useState<FieldError | undefined>(undefined);
   const [errorAmount, setErrorAmount] = useState<FieldError | undefined>(undefined);
   const [errorOtp, setErrorOtp] = useState<FieldError | undefined>(undefined);
+  const {
+    data: overviewData,
+    isLoading,
+    mutate: refetchOverview,
+  } = useDataFetch<OverviewWithdrawResponseType>({
+    endpoint: ApiEndpointEnum.getWalletWithdraw,
+    method: 'GET',
+    refreshInterval: 1000 * 60 * 5,
+  });
 
   const handleClose = useCallback(() => {
     dispatch(setWithdrawFXFormClose());
@@ -41,9 +62,20 @@ function WithdrawFXForm() {
     setErrorOtp(undefined);
   }, [dispatch]);
 
-  const handleGetOtp = () => {
+  const handleGetOtp = async () => {
     if (otpState === 'Get') {
       setOtpState('Resend');
+      const response = await fetch(ApiEndpointEnum.getOtp, {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      console.log(data);
+      if (!response.ok) {
+        toast.error(data.error || data.message || 'Something went wrong!');
+        return null;
+      }
     }
   };
 
@@ -96,6 +128,7 @@ function WithdrawFXForm() {
     });
   };
 
+  if (isShowWithdrawFXForm && isLoading) return <Loading />;
   return (
     <Dialog open={isShowWithdrawFXForm} onOpenChange={handleClose}>
       <DialogContent className="min-w-[700px] flex flex-col items-center">
@@ -113,14 +146,14 @@ function WithdrawFXForm() {
               <MetricCard
                 className="px-4 py-2 *:p-0"
                 title="Daily Moving Limit"
-                value={70000}
+                value={Number(overviewData?.data?.data?.daily_moving_limit)}
                 type="neutral"
                 icon="vault"
               />
               <MetricCard
                 className="px-4 py-2 *:p-0"
-                title="Daily Moving Limit"
-                value={20000}
+                title="1-time Moving Limit"
+                value={Number(overviewData?.data?.data?.daily_moving_limit)}
                 type="total"
                 icon="handCoins"
               />
@@ -128,15 +161,15 @@ function WithdrawFXForm() {
             <div className="grid grid-cols-2 gap-4">
               <MetricCard
                 className="px-4 py-2 *:p-0"
-                title="Daily Moving Limit"
-                value={60000}
+                title="Moved Amount"
+                value={Number(overviewData?.data?.data?.moved_amount)}
                 type="expense"
                 icon="banknoteArrowDown"
               />
               <MetricCard
                 className="px-4 py-2 *:p-0"
-                title="Daily Moving Limit"
-                value={10000}
+                title="Available Limit"
+                value={Number(overviewData?.data?.data?.available_limit)}
                 type="income"
                 icon="arrowLeftRight"
               />
@@ -147,8 +180,8 @@ function WithdrawFXForm() {
             <div className="grid grid-cols-2 gap-4">
               <BankAccountSelect
                 key="bank-account"
-                name="bank-account"
-                value={bankAccountSelected}
+                name={overviewData?.data?.data?.bankAccount?.accountName || ''}
+                value={overviewData?.data?.data?.bankAccount?.accountNumber || ''}
                 label="Bank Account"
                 onChange={setBankAccountSelected}
                 required
@@ -166,9 +199,14 @@ function WithdrawFXForm() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 items-end">
+            <div className="grid grid-cols-2 gap-4 items-start">
               <InputOtp value={otp} onChange={setOtp} error={errorOtp} />
-              <SendOtpButton state={otpState} callback={handleGetOtp} countdown={120} />
+              <SendOtpButton
+                classNameBtn="mt-[25px]"
+                state={otpState}
+                callback={handleGetOtp}
+                countdown={120}
+              />
             </div>
 
             <CardDescription>
