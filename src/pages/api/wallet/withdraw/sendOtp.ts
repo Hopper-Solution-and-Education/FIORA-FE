@@ -1,15 +1,16 @@
 import { walletWithdrawUsecase } from '@/features/wallet-withdraw/application/walletWithdrawUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { UserRole } from '@/shared/constants/userRole';
 import { errorHandler } from '@/shared/lib';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createResponse } from './../../../../shared/lib/responseUtils/createResponse';
 
 export default withAuthorization({
-  POST: ['Admin'],
-  PUT: ['Admin'],
-  GET: ['Admin'],
+  POST: [UserRole.USER],
+  PUT: [UserRole.USER],
+  GET: [UserRole.USER],
 })((request: NextApiRequest, response: NextApiResponse, userId: string) =>
   errorHandler(
     async (request, response) => {
