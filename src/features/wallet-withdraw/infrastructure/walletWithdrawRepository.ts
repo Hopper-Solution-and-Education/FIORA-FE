@@ -209,7 +209,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       const available_limit =
         Number(daily_moving_limit?.value ?? 0) -
         (Number(countTransaction._sum.amount ?? 0) + Number(countDepositRequest._sum.amount ?? 0));
-      console.log(available_limit);
 
       if (available_limit <= 0) {
         throw new BadRequestError('Exceeded the allowable limit');

@@ -3,7 +3,6 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { useSession } from 'next-auth/react';
 
 import { Loading } from '@/components/common/atoms';
 import { Separator } from '@/components/ui/separator';
@@ -28,9 +27,7 @@ type OverviewWithdrawResponseType = {
 
 function WithdrawFXForm() {
   const dispatch = useAppDispatch();
-  const session = useSession();
-  const { user } = session?.data ?? {};
-  const userId = user?.id;
+  const [loading, setLoading] = useState<boolean>(false);
   const { isShowWithdrawFXForm } = useAppSelector((state) => state.wallet);
   const { currency } = useAppSelector((state) => state.settings);
   const router = useRouter();
@@ -46,7 +43,7 @@ function WithdrawFXForm() {
     isLoading,
     mutate: refetchOverview,
   } = useDataFetch<OverviewWithdrawResponseType>({
-    endpoint: ApiEndpointEnum.getWalletWithdraw,
+    endpoint: ApiEndpointEnum.walletWithdraw,
     method: 'GET',
     refreshInterval: 1000 * 60 * 5,
   });
@@ -71,15 +68,16 @@ function WithdrawFXForm() {
       });
 
       const data = await response.json();
-      console.log(data);
-      if (!response.ok) {
+
+      if (response.ok) {
+        toast.success(data.message);
+      } else {
         toast.error(data.error || data.message || 'Something went wrong!');
-        return null;
       }
     }
   };
 
-  const handleSubmitForm = () => {
+  const handleSubmitForm = async () => {
     setErrorBankAccount(undefined);
     setErrorAmount(undefined);
     setErrorOtp(undefined);
@@ -121,14 +119,30 @@ function WithdrawFXForm() {
       return;
     }
 
-    console.log({
-      'Bank Account': bankAccountSelected,
-      Amount: amountInput,
-      OTP: otp,
+    setLoading(true);
+
+    const response = await fetch(ApiEndpointEnum.walletWithdraw, {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      body: JSON.stringify({
+        amount: amountInput,
+        otp,
+      }),
     });
+
+    const data = await response.json();
+    setLoading(false);
+
+    if (response.ok) {
+      toast.success(data.message);
+      refetchOverview();
+      handleClose();
+    } else {
+      toast.error(data.error || data.message || 'Something went wrong!');
+    }
   };
 
-  if (isShowWithdrawFXForm && isLoading) return <Loading />;
+  if (isShowWithdrawFXForm && (isLoading || loading)) return <Loading />;
   return (
     <Dialog open={isShowWithdrawFXForm} onOpenChange={handleClose}>
       <DialogContent className="min-w-[700px] flex flex-col items-center">

@@ -29,9 +29,9 @@ model User {
   isBlocked                 Boolean?                 @default(false)
   logoId                    String?                  @db.Uuid
   phone                     String?
-  kyc_levels                String[]
   is_referral_bonus_paid    Boolean?                 @default(false)
   is_referral_campaign_paid Boolean?                 @default(false)
+  kyc_levels                String[]
   referral_code             String?                  @unique @db.VarChar(15)
   referrer_code             String?                  @db.VarChar(15)
   accounts                  Account[]                @relation("UserAccounts")
@@ -503,8 +503,8 @@ model DepositRequest {
   updatedBy    String?              @db.Uuid
   currencyId   String?              @db.Uuid
   currency     String?
-  type         FxRequestType        @default(DEPOSIT)
   amount       Decimal              @default(0) @db.Decimal(13, 2)
+  type         FxRequestType        @default(DEPOSIT)
   attachment   Attachment?          @relation(fields: [attachmentId], references: [id])
   package      PackageFX?           @relation(fields: [packageFXId], references: [id])
   user         User                 @relation("UserDepositRequest", fields: [userId], references: [id])
@@ -1118,8 +1118,6 @@ enum emailType {
   DEPOPSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
-  SENDING_OTP
-  SENDING_SUCCESSFUL
 }
 
 enum CronJobStatus {

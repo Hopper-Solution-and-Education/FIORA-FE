@@ -33,9 +33,7 @@ export default withAuthorization({
 );
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  console.log('userId', userId);
   const walletWithdrawData = await walletWithdrawUsecase.getWalletWithdraw(userId);
-  console.log('walletWithdrawData', walletWithdrawData);
   return res
     .status(RESPONSE_CODE.OK)
     .json(

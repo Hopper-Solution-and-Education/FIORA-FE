@@ -1,6 +1,4 @@
 import SelectField from '@/components/common/forms/select/SelectField';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 
@@ -26,11 +24,13 @@ const BankAccountSelect: React.FC<BankAccountSelectProps> = ({
   error,
   ...props
 }) => {
-  const dispatch = useAppDispatch();
-  const { data: userData } = useSession();
-  const userId = userData?.user?.id;
-  const { accounts, filterCriteria } = useAppSelector((state) => state.account);
   const [bankAccounts, setBankAccounts] = useState<BankAccountOptionType[]>([]);
+
+  useEffect(() => {
+    if (value) {
+      onChange(value);
+    }
+  }, [value]);
 
   useEffect(() => {
     if (value && name) {
