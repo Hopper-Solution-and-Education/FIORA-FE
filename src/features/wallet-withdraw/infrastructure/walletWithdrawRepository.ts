@@ -210,8 +210,14 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         Number(daily_moving_limit?.value ?? 0) -
         (Number(countTransaction._sum.amount ?? 0) + Number(countDepositRequest._sum.amount ?? 0));
 
-      if (available_limit <= 0) {
-        throw new BadRequestError('Exceeded the allowable limit');
+      const totalWithdrawToday =
+        Number(countTransaction._sum.amount ?? 0) +
+        Number(countDepositRequest._sum.amount ?? 0) +
+        Number(amount);
+      const dailyLimit = Number(daily_moving_limit?.value ?? 0);
+
+      if (totalWithdrawToday > dailyLimit) {
+        throw new BadRequestError('Exceeded the allowable daily withdrawal limit');
       }
       const walletPayment = await this._prisma.wallet.findFirst({
         where: { userId: userId, type: WalletType.Payment },
@@ -222,7 +228,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         },
       });
 
-      if (walletPayment?.frBalanceActive.lessThan(amount)) {
+      if (walletPayment?.frBalanceActive.lessThan(amount + available_limit)) {
         throw new BadRequestError('Insufficient balance');
       }
 

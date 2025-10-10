@@ -379,12 +379,12 @@ const emailTemplateWithDraw = (userName: any, bankData: any, otp: number) =>
                                 style="background:#f7fafc; border-radius:8px; padding:20px; margin:0 0 25px;">
                                 <tr>
                                     <td style="font-size:14px; color:#4a5568; padding:8px 0;">
-                                        <strong style="color:#1a202c;">Bank Name:</strong> ${bankData.accountNumber}
+                                        <strong style="color:#1a202c;">Bank Name:</strong> ${bankData?.accountNumber ?? 'Unknown'}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td style="font-size:14px; color:#4a5568; padding:8px 0;">
-                                        <strong style="color:#1a202c;">Account Number:</strong> ${bankData.accountName}
+                                        <strong style="color:#1a202c;">Account Number:</strong> ${bankData?.accountName ?? 'Unknown'}
                                     </td>
                                 </tr>
 
