@@ -104,7 +104,11 @@ const ButtonCreation: FC<ButtonCreationProps> = ({
     return button;
   }
 
-  return <CommonTooltip content={toolTip}>{button}</CommonTooltip>;
+  return (
+    <CommonTooltip side={tooltipSide} content={toolTip}>
+      {button}
+    </CommonTooltip>
+  );
 };
 
 export default ButtonCreation;

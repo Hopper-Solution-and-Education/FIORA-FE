@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -220,44 +219,42 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <IdentificationHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <IdentificationHeader status={eKYCData?.status} />
 
-        {isRejected && identificationDocument?.remarks && (
-          <RejectedRemarksField remarks={identificationDocument.remarks} />
-        )}
+      {isRejected && identificationDocument?.remarks && (
+        <RejectedRemarksField remarks={identificationDocument.remarks} />
+      )}
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmitClick();
-            }}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+      <FormProvider {...form}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitClick();
+          }}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <IdentificationActions
-              isLoading={isSubmitting || isDeleting}
-              onSubmit={isDisabled ? undefined : handleSubmitClick}
-              isRejected={isRejected}
-            />
-          </form>
-        </FormProvider>
+          <IdentificationActions
+            isLoading={isSubmitting || isDeleting}
+            onSubmit={isDisabled ? undefined : handleSubmitClick}
+            isRejected={isRejected}
+          />
+        </form>
+      </FormProvider>
 
-        <ResubmitConfirmModal
-          open={showResubmitModal}
-          onOpenChange={setShowResubmitModal}
-          onConfirm={handleResubmitConfirm}
-          isLoading={isDeleting}
-          type="identification"
-        />
-      </div>
-    </TooltipProvider>
+      <ResubmitConfirmModal
+        open={showResubmitModal}
+        onOpenChange={setShowResubmitModal}
+        onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="identification"
+      />
+    </div>
   );
 };
 
