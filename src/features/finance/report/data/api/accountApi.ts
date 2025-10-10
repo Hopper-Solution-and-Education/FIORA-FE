@@ -7,6 +7,7 @@ export interface IAccountAPI {
 }
 
 class AccountAPI implements IAccountAPI {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getListAccount(request: GetListAccountRequestDTO): Promise<GetListAccountResponseDTO> {
     return await httpClient.get('/api/accounts/all');
   }

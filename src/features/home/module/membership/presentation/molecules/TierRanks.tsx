@@ -18,6 +18,7 @@ interface TierRankProps {
   nextTierRanks?: TierRankData[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
   return (
     <div className="h-full max-h-[448px] overflow-y-auto overflow-x-auto relative">

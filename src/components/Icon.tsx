@@ -297,20 +297,20 @@ export const Icons = {
       {...props}
     >
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M13.7824 2H26.1139L36.9991 12.7642V33.4347C36.9991 35.9447 34.9224 38 32.3816 38H13.7825C11.2437 38 9.16699 35.9447 9.16699 33.4347V6.56532C9.16699 4.0553 11.2437 2 13.7824 2Z"
         fill="#DB5656"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M26.1152 2L37.0005 12.7642H27.2889C26.6417 12.7642 26.1152 12.2416 26.1152 11.6018V2Z"
         fill="#C13A3A"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M4.01341 17.3291H29.0904C29.6481 17.3291 30.1038 17.7797 30.1038 18.3311V27.4267C30.1038 27.9781 29.6481 28.4286 29.0904 28.4286H4.01341C3.45572 28.4286 3 27.9781 3 27.4267V18.3311C3 17.7797 3.45579 17.3291 4.01341 17.3291Z"
         fill="#C13A3A"
       />
