@@ -4,18 +4,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
+  EKYCStatus,
   IdentificationDocumentType,
 } from '@/features/profile/domain/entities/models/profile';
 import {
+  useDeleteEKYCMutation,
   useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { TaxInformation } from '../../../schema/personalInfoSchema';
+import { ResubmitConfirmModal } from '../components';
+import { RejectedRemarksField } from '../shared/components';
 import { TaxActions, TaxDetailsForm, TaxDocumentUpload, TaxInfoHeader } from './components';
 
 type Props = {
@@ -30,6 +34,10 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
 
   const [submitDocument] = useSubmitIdentificationDocumentMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
+  const [deleteEKYC, { isLoading: isDeleting }] = useDeleteEKYCMutation();
+
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
 
   const defaults = useMemo(
     () => ({
@@ -54,29 +62,27 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
     handleSubmit,
   } = form;
 
+  // Get tax document
+  const taxDocument = useMemo(() => {
+    if (!existingData || existingData.length === 0) return null;
+    return existingData.find((item: any) => item.type === IdentificationDocumentType.TAX);
+  }, [existingData]);
+
   // Populate form with existing data when loaded
   useEffect(() => {
-    reset(defaults);
-  }, [defaults, reset]);
-
-  useEffect(() => {
-    if (existingData && existingData.length > 0 && eKYCData) {
-      const taxInformation = existingData.find(
-        (item: any) => item.type === IdentificationDocumentType.TAX,
-      );
-
-      if (taxInformation?.idNumber) {
-        reset({
-          taxId: taxInformation.idNumber,
-          taxDocument: null,
-          existingAttachmentUrl: taxInformation.filePhoto?.url || '',
-          existingFileName: taxInformation.filePhoto?.path || '',
-          existingFileType: taxInformation.filePhoto?.type || '',
-          existingFileSize: taxInformation.filePhoto?.size || 0,
-        });
-      }
+    if (taxDocument?.idNumber && eKYCData) {
+      reset({
+        taxId: taxDocument.idNumber,
+        taxDocument: null,
+        existingAttachmentUrl: taxDocument.filePhoto?.url || '',
+        existingFileName: taxDocument.filePhoto?.path || '',
+        existingFileType: taxDocument.filePhoto?.type || '',
+        existingFileSize: taxDocument.filePhoto?.size || 0,
+      });
+      return;
     }
-  }, [existingData, eKYCData, reset]);
+    reset(defaults);
+  }, [taxDocument, eKYCData, reset, defaults]);
 
   const uploadFile = async (
     file: File,
@@ -98,6 +104,31 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
     } catch (error) {
       console.error(`Error uploading ${fileType} file:`, error);
       return null;
+    }
+  };
+
+  const handleResubmitConfirm = async () => {
+    try {
+      if (!eKYCData?.id) {
+        toast.error('eKYC data not found');
+        return;
+      }
+
+      await deleteEKYC(eKYCData.id).unwrap();
+      setShowResubmitModal(false);
+      reset(defaults);
+      toast.success('Previous submission deleted. You can now submit new documents.');
+    } catch (error: any) {
+      console.error('Error deleting eKYC:', error);
+      toast.error(error?.message || 'Failed to delete previous submission');
+    }
+  };
+
+  const handleSubmitClick = () => {
+    if (isRejected) {
+      setShowResubmitModal(true);
+    } else {
+      handleSubmit(handleSubmitForm)();
     }
   };
 
@@ -131,7 +162,11 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
       };
 
       await submitDocument(payload).unwrap();
-      toast.success('Tax information submitted successfully');
+      toast.success(
+        isRejected
+          ? 'Tax information re-submitted successfully'
+          : 'Tax information submitted successfully',
+      );
     } catch (error: any) {
       console.error('Error submitting tax information:', error);
       toast.error(error?.message || 'Failed to submit tax information');
@@ -149,9 +184,16 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
       <div className="w-full max-w-5xl mx-auto">
         <TaxInfoHeader status={eKYCData?.status} />
 
+        {isRejected && taxDocument?.remarks && (
+          <RejectedRemarksField remarks={taxDocument.remarks} />
+        )}
+
         <FormProvider {...form}>
           <form
-            onSubmit={handleSubmit(handleSubmitForm)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmitClick();
+            }}
             noValidate
             className="space-y-4 sm:space-y-6"
           >
@@ -160,11 +202,20 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
             <TaxDocumentUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
             <TaxActions
-              isLoading={isSubmitting}
-              onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
+              isLoading={isSubmitting || isDeleting}
+              onSubmit={isDisabled ? undefined : handleSubmitClick}
+              isRejected={isRejected}
             />
           </form>
         </FormProvider>
+
+        <ResubmitConfirmModal
+          open={showResubmitModal}
+          onOpenChange={setShowResubmitModal}
+          onConfirm={handleResubmitConfirm}
+          isLoading={isDeleting}
+          type="tax"
+        />
       </div>
     </TooltipProvider>
   );

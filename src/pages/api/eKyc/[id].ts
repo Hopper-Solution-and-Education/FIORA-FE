@@ -1,3 +1,4 @@
+import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
@@ -6,8 +7,7 @@ import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
-import { validateBody } from '@/shared/utils/validate';
-import { editIdentificationSchema } from '@/shared/validators/identificationValidator';
+import { KYCType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -16,10 +16,8 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   errorHandler(
     async (request, response) => {
       switch (request.method) {
-        case 'PATCH':
-          return PATCH(request, response, userId);
         case 'DELETE':
-          return DELETE(request, response);
+          return DELETE(request, response, userId);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -31,58 +29,56 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const { id } = req.query;
-  const { error } = validateBody(editIdentificationSchema, req.body);
-  if (error) {
+
+  if (!id || typeof id !== 'string') {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-  }
-  const { kycId, remarks, status } = req.body;
-  const checkIdentify = await identificationRepository.getById(String(id));
-  if (!checkIdentify) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.BANK_ACCOUNT_NOT_FOUND, error));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'eKYC ID is required'));
   }
 
-  const checkKyc = await eKycRepository.getById(kycId);
-  if (!checkKyc) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND, error));
-  }
-  if (checkKyc.refId != id) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.KYC_NOT_MATCH, error));
-  }
-  delete req.body.kycId;
-  const newIdentification = await identificationRepository.verify(
-    {
-      kycId,
-      remarks,
-      status,
-    },
-    String(id),
-    userId,
-  );
-  return res
-    .status(RESPONSE_CODE.CREATED)
-    .json(
-      createResponse(
-        RESPONSE_CODE.CREATED,
-        Messages.VERIFY_IDENTIFICATION_SUCCESS,
-        newIdentification,
-      ),
-    );
-}
+  try {
+    // Get eKYC record to check ownership and type
+    const eKYCRecord = await eKycRepository.getById(id);
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-  await identificationRepository.delete(String(id));
-  return res
-    .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.DELETE_SUCCESS, null));
+    if (!eKYCRecord) {
+      return res
+        .status(RESPONSE_CODE.NOT_FOUND)
+        .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.KYC_NOT_FOUND));
+    }
+
+    // Check if user owns this eKYC
+    if (eKYCRecord.userId !== userId) {
+      return res
+        .status(RESPONSE_CODE.FORBIDDEN)
+        .json(createErrorResponse(RESPONSE_CODE.FORBIDDEN, 'You do not have permission'));
+    }
+
+    // Delete related document/data based on type
+    if (eKYCRecord.refId) {
+      switch (eKYCRecord.type) {
+        case KYCType.IDENTIFICATION:
+        case KYCType.TAX:
+          await identificationRepository.delete(eKYCRecord.refId);
+          break;
+        case KYCType.BANK:
+          await bankAccountRepository.delete(eKYCRecord.refId);
+          break;
+        // CONTACT type doesn't have refId/related document
+      }
+    }
+
+    // Delete eKYC record
+    await eKycRepository.delete(id);
+
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'eKYC deleted successfully', null));
+  } catch (error) {
+    console.error('Error deleting eKYC:', error);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(createErrorResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, 'Failed to delete eKYC'));
+  }
 }

@@ -1,6 +1,7 @@
 'use client';
 import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
+import { KYC_TABS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
@@ -16,6 +17,7 @@ type ProfileTabProps = {
   isUpdating: boolean;
   defaultLogoSrc: string;
   onSave: (values: PersonalInfo) => Promise<void>;
+  eKycId?: string;
 };
 
 const ProfileTab: FC<ProfileTabProps> = ({
@@ -24,6 +26,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
   isUpdating,
   defaultLogoSrc,
   onSave,
+  eKycId = '',
 }) => {
   const router = useRouter();
 
@@ -62,7 +65,9 @@ const ProfileTab: FC<ProfileTabProps> = ({
   };
 
   const handleNavigateToKYC = (id: string) => {
-    router.push(`/profile/ekyc?id=${id}`);
+    const navigateUrl = eKycId ? `/ekyc/${eKycId}/verify?id=${id}` : `/profile/ekyc?id=${id}`;
+
+    router.push(navigateUrl);
   };
 
   const getEKYCStatus = (type: EKYCType) => {
@@ -85,8 +90,8 @@ const ProfileTab: FC<ProfileTabProps> = ({
             <KYCSection
               title="Personal Information"
               description="Update your personal details"
-              kycType="contact-information"
-              onNavigateToKYC={handleNavigateToKYC}
+              kycType={EKYCType.CONTACT_INFORMATION}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.CONTACT_INFORMATION)}
               status={getEKYCStatus(EKYCType.CONTACT_INFORMATION)}
             />
 
@@ -95,25 +100,24 @@ const ProfileTab: FC<ProfileTabProps> = ({
             <KYCSection
               title="Identification Document"
               description="Verify your identity with government-issued documents to unlock full account features and ensure security"
-              kycType="identification-document"
-              onNavigateToKYC={handleNavigateToKYC}
+              kycType={EKYCType.IDENTIFICATION_DOCUMENT}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.IDENTIFICATION_DOCUMENT)}
               status={getEKYCStatus(EKYCType.IDENTIFICATION_DOCUMENT)}
             />
 
             <KYCSection
               title="Tax Information"
               description="Provide your tax details for compliance and to receive proper tax reporting for your transactions"
-              kycType="tax-information"
-              onNavigateToKYC={handleNavigateToKYC}
-              className="mb-4"
+              kycType={EKYCType.TAX_INFORMATION}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.TAX_INFORMATION)}
               status={getEKYCStatus(EKYCType.TAX_INFORMATION)}
             />
 
             <KYCSection
               title="Bank Account"
               description="Connect your bank account for secure transactions, instant transfers, and seamless financial management"
-              kycType="bank-account"
-              onNavigateToKYC={handleNavigateToKYC}
+              kycType={EKYCType.BANK_ACCOUNT}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.BANK_ACCOUNT)}
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
             />
 

@@ -83,6 +83,34 @@ class EKycRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async updateStatus(kycId: string, status: any, verifiedBy: string) {
+    try {
+      return await prisma.eKYC.update({
+        where: { id: kycId },
+        data: {
+          status: status,
+          verifiedBy: verifiedBy,
+          updatedAt: new Date(),
+          updatedBy: verifiedBy,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return error as unknown;
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      return await prisma.eKYC.delete({
+        where: { id },
+      });
+    } catch (error) {
+      console.log(error);
+      return error as unknown;
+    }
+  }
 }
 
 export const eKycRepository = new EKycRepository();

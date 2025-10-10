@@ -5,22 +5,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { STATUS_COLOR } from '@/features/profile/constant';
 import { eKYC, EKYCStatus, EKYCType } from '@/features/profile/domain/entities/models/profile';
-import { useGetEKYCQuery } from '@/features/profile/store/api/profileApi';
+import { useGetEKYCByUserIdQuery } from '@/features/profile/store/api/profileApi';
 import { cn } from '@/shared/utils';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
-import BankAccountForm from './bank-account';
-import ContactInformationForm from './contact-information';
-import IdentificationDocumentForm from './identification-document';
-import TaxInformationForm from './tax-information';
-import { KYCPageType } from './types';
+import { KYCPageType } from '../types';
+import BankAccountVerifyForm from './BankAccountVerifyForm';
+import ContactInformationVerifyForm from './ContactInformationVerifyForm';
+import IdentificationDocumentVerifyForm from './IdentificationDocumentVerifyForm';
+import TaxInformationVerifyForm from './TaxInformationVerifyForm';
 
-const KYCPage = () => {
+const VerifyKYCPage = () => {
   const router = useRouter();
-  const params = useSearchParams();
-  const id = params?.get('id') ?? KYCPageType.identificationDocument;
-  const { data: eKYCDataResponse, isLoading: isLoadingEKYCData } = useGetEKYCQuery();
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const userId = params?.userid as string;
+  const id = searchParams?.get('id') ?? KYCPageType.identificationDocument;
+  const { data: eKYCDataResponse, isLoading: isLoadingEKYCData } = useGetEKYCByUserIdQuery(userId);
 
   const eKYCData = useMemo(() => {
     const getData = (type: EKYCType): eKYC | null => {
@@ -66,25 +68,25 @@ const KYCPage = () => {
     {
       id: KYCPageType.identificationDocument,
       label: 'Identification Document',
-      component: IdentificationDocumentForm,
+      component: IdentificationDocumentVerifyForm,
       eKYCData: eKYCData.identificationDocument,
     },
     {
       id: KYCPageType.contactInformation,
       label: 'Contact Information',
-      component: ContactInformationForm,
+      component: ContactInformationVerifyForm,
       eKYCData: eKYCData.contactInformation,
     },
     {
       id: KYCPageType.taxInformation,
       label: 'Tax Information',
-      component: TaxInformationForm,
+      component: TaxInformationVerifyForm,
       eKYCData: eKYCData.taxInformation,
     },
     {
       id: KYCPageType.bankAccount,
       label: 'Bank Accounts',
-      component: BankAccountForm,
+      component: BankAccountVerifyForm,
       eKYCData: eKYCData.bankAccount,
     },
   ];
@@ -100,12 +102,12 @@ const KYCPage = () => {
   }
 
   return (
-    <div className=" bg-background mb-4">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <Tabs
           value={id}
           onValueChange={(value) => {
-            router.replace(`/profile/ekyc?id=${value}`);
+            router.replace(`/ekyc/verify/${userId}?id=${value}`);
           }}
           orientation="vertical"
           className="w-full"
@@ -133,7 +135,6 @@ const KYCPage = () => {
                             value={tab.id}
                             className={cn(
                               'w-full justify-start p-0 h-auto bg-transparent border-0 text-left relative',
-                              // 'hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200',
                               'data-[state=active]:bg-primary/10 data-[state=active]:text-primary',
                             )}
                           >
@@ -171,7 +172,7 @@ const KYCPage = () => {
                     value={tab.id}
                     className="m-0 focus-visible:outline-none"
                   >
-                    <Component eKYCData={tab.eKYCData as eKYC} />
+                    <Component eKYCData={tab.eKYCData as eKYC} userId={userId} />
                   </TabsContent>
                 );
               })}
@@ -183,4 +184,4 @@ const KYCPage = () => {
   );
 };
 
-export default KYCPage;
+export default VerifyKYCPage;

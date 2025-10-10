@@ -38,7 +38,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({
     );
   };
   return (
-    <div className="mb-8 flex justify-between">
+    <div className="mb-4 flex justify-between">
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 bg-${iconColor.split('-')[1]}-100 rounded-lg`}>
           <Icon className={`h-6 w-6 ${iconColor}`} />
