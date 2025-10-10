@@ -16,7 +16,6 @@ interface UserManagementActionsProps {
   currentUserRole?: UserRole;
   onRoleUpdate?: (userId: string, newRole: UserRole) => Promise<void>;
   onBlockUser?: (userId: string, reason?: string) => Promise<void>;
-  onUnblockUser?: (userId: string, reason?: string) => Promise<void>;
   isBlocked?: boolean; // To determine if the user is currently blocked
 }
 
@@ -27,7 +26,6 @@ export function UserManagementActions({
   currentUserRole = UserRole.User,
   onRoleUpdate,
   onBlockUser,
-  onUnblockUser,
   isBlocked = false,
 }: UserManagementActionsProps) {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
@@ -40,12 +38,18 @@ export function UserManagementActions({
   };
 
   const handleBlockConfirm = async (userId: string, reason?: string) => {
-    if (isBlocked && onUnblockUser) {
-      await onUnblockUser(userId, reason);
-    } else if (!isBlocked && onBlockUser) {
+    if (onBlockUser) {
       await onBlockUser(userId, reason);
     }
   };
+
+  // const handleBlockConfirm = async (userId: string, reason?: string) => {
+  //   if (isBlocked && onUnblockUser) {
+  //     await onUnblockUser(userId, reason);
+  //   } else if (!isBlocked && onBlockUser) {
+  //     await onBlockUser(userId, reason);
+  //   }
+  // };
 
   const ICON_COLOR_BLUE = 'text-blue-500';
   const ICON_COLOR_RED = 'text-red-500';
@@ -54,63 +58,58 @@ export function UserManagementActions({
     CS: 'bg-green-100 text-green-800',
     User: 'bg-blue-100 text-blue-800',
   };
-  // const ROLE_COLORS = {
-  //   Admin: 'bg-red-500 text-white',
-  //   CS: 'bg-green-500 text-white',
-  //   User: 'bg-blue-500 text-white',
-  // };
 
-  const canManageUsers = currentUserRole === UserRole.Admin || currentUserRole === UserRole.CS;
-  const canAssignRoles = currentUserRole === UserRole.Admin;
+  // const canManageUsers = currentUserRole === UserRole.Admin || currentUserRole === UserRole.CS;
+  // const canAssignRoles = currentUserRole === UserRole.Admin;
 
   return (
     <div className="mt-6">
-      {canAssignRoles && (
-        <InfoActionRow
-          label="Roles"
-          iconColor={ICON_COLOR_BLUE}
-          description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-          actions={
-            <>
-              <button
-                type="button"
-                className={`inline-flex items-center gap-2 ${ROLE_COLORS[currentUserRole || 'User']} text-sm font-medium px-4 py-2 rounded-lg shadow`}
-              >
-                <span className="hidden sm:inline font-semibold">{currentRole || 'User'}</span>
-              </button>
+      {/* {canAssignRoles && ( */}
+      <InfoActionRow
+        label="Roles"
+        iconColor={ICON_COLOR_BLUE}
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+        actions={
+          <>
+            <button
+              type="button"
+              className={`inline-flex items-center gap-2 ${ROLE_COLORS[currentUserRole || 'User']} text-sm font-medium px-4 py-2 rounded-lg shadow`}
+            >
+              <span className="hidden sm:inline font-semibold">{currentRole || 'User'}</span>
+            </button>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsRoleDialogOpen(true)}
-                className="inline-flex items-center gap-2 border border-slate-200 text-slate-700 text-sm px-4 py-2 rounded-lg bg-white"
-              >
-                <CirclePlus />
-                <span>Assign</span>
-              </Button>
-            </>
-          }
-        />
-      )}
-
-      {canManageUsers && (
-        <InfoActionRow
-          label="Block This User"
-          iconColor={ICON_COLOR_RED}
-          description="They will be immediately added to the blacklist"
-          actions={
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsBlockDialogOpen(true)}
-              className="inline-flex items-center gap-2 border border-red-100 text-red-600 text-sm px-4 py-2 rounded-lg bg-white shadow-sm"
+              onClick={() => setIsRoleDialogOpen(true)}
+              className="inline-flex items-center gap-2 border border-slate-200 text-slate-700 text-sm px-4 py-2 rounded-lg bg-white"
             >
-              <CircleMinus />
-              <span>{isBlocked ? 'Unblock' : 'Block'}</span>
+              <CirclePlus />
+              <span>Assign</span>
             </Button>
-          }
-        />
-      )}
+          </>
+        }
+      />
+      {/* )} */}
+
+      {/* {canManageUsers && ( */}
+      <InfoActionRow
+        label="Block This User"
+        iconColor={ICON_COLOR_RED}
+        description="They will be immediately added to the blacklist"
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsBlockDialogOpen(true)}
+            className="inline-flex items-center gap-2 border border-red-100 text-red-600 text-sm px-4 py-2 rounded-lg bg-white shadow-sm"
+          >
+            <CircleMinus />
+            <span>{isBlocked ? 'Unblock' : 'Block'}</span>
+          </Button>
+        }
+      />
+      {/* )} */}
 
       <UserRoleSelector
         open={isRoleDialogOpen}

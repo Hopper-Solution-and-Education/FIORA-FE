@@ -24,6 +24,7 @@ export const profileApi = createApi({
     'ProfileByUserId',
     'IdentificationDocumentByUserId',
     'BankAccountByUserId',
+    'UserManagement',
   ],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
@@ -188,6 +189,29 @@ export const profileApi = createApi({
         'ProfileByUserId',
       ],
     }),
+    // Block User
+    blockUser: builder.mutation<any, { blockUserId: string; reason?: string }>({
+      query: (body) => ({
+        url: '/api/profile/block',
+        method: 'PUT',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+    }),
+
+    // Assign Role
+    assignRole: builder.mutation<any, { assignUserId: string; role: string }>({
+      query: (body) => ({
+        url: '/api/profile/assign-role',
+        method: 'PUT',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+    }),
   }),
 });
 
@@ -209,4 +233,6 @@ export const {
   useGetProfileByUserIdQuery,
   useUpdateProfileByUserIdMutation,
   useDeleteEKYCMutation,
+  useBlockUserMutation,
+  useAssignRoleMutation,
 } = profileApi;

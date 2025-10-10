@@ -24,7 +24,7 @@ export default function UserManagementPage() {
   } = useUserManagement();
 
   const handleUserAction = (userId: string) => {
-    router.push(`/profile/users/${encodeURIComponent(userId)}`);
+    router.push(`/ekyc/${encodeURIComponent(userId)}/profile`);
     console.log('User action for ID:', userId);
   };
 

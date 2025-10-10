@@ -1,6 +1,4 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { httpClient } from '@/config';
 import {
   useGetProfileQuery,
@@ -11,8 +9,6 @@ import HopperLogo from '@public/images/logo.jpg';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { PersonalInfo } from '../../../schema/personalInfoSchema';
-import { UserBlockAction } from '../molecules/UserBlockAction';
-import { UserRoleSelector } from '../molecules/UserRoleSelector';
 import ProfileTab from '../organisms/ProfileTab';
 import SettingTab from '../organisms/SettingTab';
 import ProfileTabsContainer from '../templates/ProfileTabsContainer';
@@ -68,8 +64,8 @@ const ProfilePage = () => {
 
       await updateProfile(formData).unwrap();
       toast.success('Profile updated successfully');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.log('🚀 ~ handleSave ~ error:', error);
       toast.error('Failed to update profile');
     }
   };
@@ -129,62 +125,6 @@ const ProfilePage = () => {
           />
         }
         settingContent={<SettingTab />}
-      />
-      {/* User Management Testing Panel */}
-      <div className="mt-8 p-4 border border-dashed border-gray-300 rounded-lg">
-        <h3 className="text-lg font-semibold mb-4">User Management Testing Panel</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">User ID</label>
-              <Input
-                type="text"
-                value={testUserId}
-                onChange={(e) => setTestUserId(e.target.value)}
-                className="w-full"
-                placeholder="Enter a valid user ID"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Button onClick={() => setBlockDialogOpen(true)} variant="destructive">
-              Test Block User
-            </Button>
-            <Button onClick={() => setRoleDialogOpen(true)} variant="outline">
-              Test Change Role
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Include the dialog components */}
-      <UserBlockAction
-        open={blockDialogOpen}
-        onOpenChange={setBlockDialogOpen}
-        action="block"
-        userId={testUserId}
-        userName={testUserName || testUserId}
-        onConfirm={handleBlockUser}
-      />
-
-      <UserBlockAction
-        open={unblockDialogOpen}
-        onOpenChange={setUnblockDialogOpen}
-        action="unblock"
-        userId={testUserId}
-        userName={testUserName || testUserId}
-        onConfirm={handleBlockUser}
-      />
-
-      <UserRoleSelector
-        open={roleDialogOpen}
-        onOpenChange={setRoleDialogOpen}
-        userId={testUserId}
-        currentRole={testUserRole}
-        userName={testUserName || testUserId}
-        onRoleUpdate={handleRoleUpdate}
-        currentUserRole={profile?.role || UserRole.User}
       />
     </div>
   );
