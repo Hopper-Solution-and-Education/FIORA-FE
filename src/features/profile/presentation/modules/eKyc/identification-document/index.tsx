@@ -3,18 +3,22 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   eKYC,
+  EKYCStatus,
   IdentificationDocumentType,
 } from '@/features/profile/domain/entities/models/profile';
 import {
+  useDeleteEKYCMutation,
   useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { IdentificationDocument } from '../../../schema/personalInfoSchema';
+import { ResubmitConfirmModal } from '../components';
+import { RejectedRemarksField } from '../shared/components';
 import {
   DocumentImagesForm,
   DocumentInfoForm,
@@ -34,6 +38,10 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
   const [submitDocument] = useSubmitIdentificationDocumentMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
+  const [deleteEKYC, { isLoading: isDeleting }] = useDeleteEKYCMutation();
+
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
 
   const defaults = useMemo(
     () => ({
@@ -63,37 +71,37 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     handleSubmit,
   } = form;
 
+  // Get identification document (not TAX)
+  const identificationDocument = useMemo(() => {
+    if (!existingData || existingData.length === 0) return null;
+    return existingData.find((item: any) => item.type !== IdentificationDocumentType.TAX);
+  }, [existingData]);
+
   // Populate form with existing data when loaded, or use defaults
   useEffect(() => {
-    if (existingData && existingData.length > 0 && eKYCData) {
-      const identificationDocument = existingData.find(
-        (item: any) => item.type !== IdentificationDocumentType.TAX,
-      );
+    if (identificationDocument && eKYCData) {
+      const formData = {
+        idNumber: identificationDocument.idNumber || '',
+        issuedDate: identificationDocument.issuedDate
+          ? new Date(identificationDocument.issuedDate).toISOString().split('T')[0]
+          : '',
+        issuedPlace: identificationDocument.issuedPlace || '',
+        idAddress: identificationDocument.idAddress || '',
+        type: identificationDocument.type as IdentificationDocumentType,
+        frontImage: null,
+        initialFrontImage: identificationDocument?.fileFront?.url || '',
+        backImage: null,
+        initialBackImage: identificationDocument?.fileBack?.url || '',
+        facePhoto: null,
+        initialFacePhoto: identificationDocument?.filePhoto?.url || '',
+      };
 
-      if (identificationDocument) {
-        const formData = {
-          idNumber: identificationDocument.idNumber || '',
-          issuedDate: identificationDocument.issuedDate
-            ? new Date(identificationDocument.issuedDate).toISOString().split('T')[0]
-            : '',
-          issuedPlace: identificationDocument.issuedPlace || '',
-          idAddress: identificationDocument.idAddress || '',
-          type: identificationDocument.type as IdentificationDocumentType,
-          frontImage: null,
-          initialFrontImage: identificationDocument?.fileFront?.url || '',
-          backImage: null,
-          initialBackImage: identificationDocument?.fileBack?.url || '',
-          facePhoto: null,
-          initialFacePhoto: identificationDocument?.filePhoto?.url || '',
-        };
-
-        reset(formData);
-        return;
-      }
+      reset(formData);
+      return;
     }
     // If no existing data, reset to defaults
     reset(defaults);
-  }, [existingData, eKYCData, reset, defaults]);
+  }, [identificationDocument, eKYCData, reset, defaults]);
 
   const uploadFile = async (
     file: File,
@@ -113,6 +121,31 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     } catch (error) {
       console.error(`Error uploading ${fileType} file:`, error);
       return null;
+    }
+  };
+
+  const handleResubmitConfirm = async () => {
+    try {
+      if (!eKYCData?.id) {
+        toast.error('eKYC data not found');
+        return;
+      }
+
+      await deleteEKYC(eKYCData.id).unwrap();
+      setShowResubmitModal(false);
+      reset(defaults);
+      toast.success('Previous submission deleted. You can now submit new documents.');
+    } catch (error: any) {
+      console.error('Error deleting eKYC:', error);
+      toast.error(error?.message || 'Failed to delete previous submission');
+    }
+  };
+
+  const handleSubmitClick = () => {
+    if (isRejected) {
+      setShowResubmitModal(true);
+    } else {
+      handleSubmit(handleSubmitForm)();
     }
   };
 
@@ -166,7 +199,9 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
       };
 
       await submitDocument(payload).unwrap();
-      toast.success('Document submitted successfully');
+      toast.success(
+        isRejected ? 'Document re-submitted successfully' : 'Document submitted successfully',
+      );
     } catch (error: any) {
       console.error('Error submitting document:', error);
       toast.error(error?.message || 'Failed to submit document');
@@ -184,12 +219,19 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto mb-10">
+    <div className="w-full max-w-5xl mx-auto">
       <IdentificationHeader status={eKYCData?.status} />
+
+      {isRejected && identificationDocument?.remarks && (
+        <RejectedRemarksField remarks={identificationDocument.remarks} />
+      )}
 
       <FormProvider {...form}>
         <form
-          onSubmit={handleSubmit(handleSubmitForm)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitClick();
+          }}
           noValidate
           className="space-y-4 sm:space-y-6"
         >
@@ -198,11 +240,20 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
           <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
           <IdentificationActions
-            isLoading={isSubmitting}
-            onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
+            isLoading={isSubmitting || isDeleting}
+            onSubmit={isDisabled ? undefined : handleSubmitClick}
+            isRejected={isRejected}
           />
         </form>
       </FormProvider>
+
+      <ResubmitConfirmModal
+        open={showResubmitModal}
+        onOpenChange={setShowResubmitModal}
+        onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="identification"
+      />
     </div>
   );
 };

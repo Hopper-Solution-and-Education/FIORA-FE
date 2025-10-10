@@ -53,8 +53,8 @@ const ProfilePage = () => {
 
       await updateProfile(formData).unwrap();
       toast.success('Profile updated successfully');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+      console.log('🚀 ~ handleSave ~ error:', error);
       toast.error('Failed to update profile');
     }
   };

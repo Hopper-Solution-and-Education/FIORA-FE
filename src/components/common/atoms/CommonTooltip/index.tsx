@@ -1,6 +1,6 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
+import { Fragment, ReactNode } from 'react';
 
 interface CommonTooltipProps {
   children: ReactNode;
@@ -32,7 +32,9 @@ export function CommonTooltip({
         delayDuration={delayDuration}
         disableHoverableContent={disableHoverableContent}
       >
-        <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
+        <TooltipTrigger asChild={asChild}>
+          <div>{children}</div>
+        </TooltipTrigger>
         <TooltipContent
           side={side}
           align={align}
@@ -41,7 +43,7 @@ export function CommonTooltip({
             className,
           )}
         >
-          {content}
+          <Fragment>{content}</Fragment>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

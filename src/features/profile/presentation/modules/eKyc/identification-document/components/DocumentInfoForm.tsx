@@ -97,6 +97,7 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
               value={watchedValues.issuedDate ? new Date(watchedValues.issuedDate) : undefined}
               onChange={(date) => setValue('issuedDate', date?.toISOString().split('T')[0] || '')}
               disabled={isSubmitting || disabled}
+              hideTime={true}
             />
             {errors.issuedDate && (
               <p className="text-sm text-red-500">{errors.issuedDate.message}</p>
