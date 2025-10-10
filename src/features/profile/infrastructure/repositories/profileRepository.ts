@@ -55,7 +55,11 @@ class ProfileRepository implements IProfileRepository {
     };
   }
 
-  async update(userId: string, payload: UpdateProfileRequest): Promise<UserProfile> {
+  async update(
+    userId: string,
+    payload: UpdateProfileRequest,
+    updateBy?: string,
+  ): Promise<UserProfile> {
     // Load current user to know existing attachments
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -85,6 +89,7 @@ class ProfileRepository implements IProfileRepository {
         phone: payload.phone ?? undefined,
         address: payload.address ?? undefined,
         birthday: payload.birthday ? new Date(payload.birthday) : undefined,
+        updatedBy: updateBy ?? userId,
       },
       select: {
         id: true,

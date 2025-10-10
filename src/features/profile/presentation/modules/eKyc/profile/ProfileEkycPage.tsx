@@ -1,18 +1,22 @@
 'use client';
+import { UpdateProfileRequest } from '@/features/profile/domain/entities/models/profile';
 import {
-  useGetProfileQuery,
-  useUpdateProfileMutation,
+  useGetProfileByUserIdQuery,
+  useUpdateProfileByUserIdMutation,
 } from '@/features/profile/store/api/profileApi';
 import HopperLogo from '@public/images/logo.jpg';
+import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { PersonalInfo } from '../../../schema/personalInfoSchema';
-import ProfileTab from '../organisms/ProfileTab';
-import SettingTab from '../organisms/SettingTab';
-import ProfileTabsContainer from '../templates/ProfileTabsContainer';
+import ProfileTab from '../../profile/organisms/ProfileTab';
+import ProfileTabsContainer from '../../profile/templates/ProfileTabsContainer';
 
-const ProfilePage = () => {
-  const { data: profile, isLoading } = useGetProfileQuery();
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+const ProfileEkycPage = () => {
+  const params = useParams();
+  const userId = params?.userid as string;
+
+  const { data: profile, isLoading } = useGetProfileByUserIdQuery(userId as string);
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileByUserIdMutation();
 
   const handleSave = async (values: PersonalInfo) => {
     const convertToFile = async (url: string) => {
@@ -51,7 +55,7 @@ const ProfilePage = () => {
         }
       }
 
-      await updateProfile(formData).unwrap();
+      await updateProfile({ userId, payload: formData as UpdateProfileRequest }).unwrap();
       toast.success('Profile updated successfully');
     } catch (error) {
       console.log('🚀 ~ handleSave ~ error:', error);
@@ -69,12 +73,13 @@ const ProfilePage = () => {
             isUpdating={isUpdating}
             defaultLogoSrc={HopperLogo.src}
             onSave={handleSave}
+            eKycId={userId}
           />
         }
-        settingContent={<SettingTab />}
+        // settingContent={<SettingTab />}
       />
     </div>
   );
 };
 
-export default ProfilePage;
+export default ProfileEkycPage;
