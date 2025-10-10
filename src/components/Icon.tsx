@@ -90,6 +90,7 @@ import {
   Save,
   SaveAll,
   ScreenShare,
+  Search,
   Send,
   Settings,
   ShieldCheck,
@@ -362,4 +363,5 @@ export const Icons = {
   mailPlus: MailPlus,
   send: Send,
   vault: Vault,
+  search: Search,
 };

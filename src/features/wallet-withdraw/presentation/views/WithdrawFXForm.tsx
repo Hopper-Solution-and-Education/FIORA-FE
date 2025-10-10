@@ -8,13 +8,17 @@ import { Loading } from '@/components/common/atoms';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { setWithdrawFXFormClose } from '@/features/home/module/wallet';
+import {
+  fetchFrozenAmountAsyncThunk,
+  getWalletsAsyncThunk,
+} from '@/features/home/module/wallet/slices/actions';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ApiEndpointEnum } from '../../domain/endpoint';
 import { OtpState, WalletWithdrawOverview } from '../../types';
 import AmountSelect from '../components/AmountSelect';
 import BankAccountSelect from '../components/BankAccountSelect';
@@ -137,6 +141,8 @@ function WithdrawFXForm() {
       toast.success(data.message);
       refetchOverview();
       handleClose();
+      dispatch(getWalletsAsyncThunk());
+      dispatch(fetchFrozenAmountAsyncThunk());
     } else {
       toast.error(data.error || data.message || 'Something went wrong!');
     }

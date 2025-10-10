@@ -62,4 +62,8 @@ export enum ApiEndpointEnum {
   IdentificationDocument = '/api/indentification-document',
   // Bank Account
   BankAccount = '/api/bank-account',
+
+  // Withdraw FX
+  walletWithdraw = '/api/wallet/withdraw',
+  getOtp = '/api/wallet/withdraw/sendOtp',
 }

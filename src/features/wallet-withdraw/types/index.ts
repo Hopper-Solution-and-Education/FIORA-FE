@@ -12,3 +12,10 @@ export type WalletWithdrawOverview = {
   moved_amount: number;
   bankAccount: WalletWithdrawBankAccount;
 };
+
+export interface OptionDropdown {
+  value: string;
+  label: string;
+  icon?: string;
+  disabled?: boolean;
+}
