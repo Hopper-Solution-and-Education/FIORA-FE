@@ -8,14 +8,19 @@ interface WalletAttachmentPreviewModalProps {
   attachment: {
     id: string;
     type: string;
-    size: number;
+    size: string;
     url: string;
     path: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string | null;
+    notificationId: string | null;
   };
   isImage: boolean;
   isPDF: boolean;
   getFileName: (path: string) => string;
-  formatFileSize: (bytes: number) => string;
+  formatFileSize: (size: string) => string;
 }
 
 const WalletAttachmentPreviewModal = ({

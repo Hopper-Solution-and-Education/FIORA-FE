@@ -1,7 +1,7 @@
 import { Icons } from '@/components/Icon';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 import { FC, ReactNode } from 'react';
+import { CommonTooltip } from './CommonTooltip';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
@@ -104,14 +104,7 @@ const ButtonCreation: FC<ButtonCreationProps> = ({
     return button;
   }
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent side={tooltipSide}>{toolTip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  return <CommonTooltip content={toolTip}>{button}</CommonTooltip>;
 };
 
 export default ButtonCreation;

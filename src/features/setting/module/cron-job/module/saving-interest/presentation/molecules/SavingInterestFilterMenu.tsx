@@ -2,7 +2,6 @@ import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
-import { useAppDispatch } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { FilterOptions } from '../../data/api/ISavingInterestDashboardApi';
@@ -26,9 +25,9 @@ const STATUS_OPTIONS = [
 const SavingInterestFilterMenu = ({
   value,
   onFilterChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   data = [],
 }: SavingInterestFilterMenuProps) => {
-  const dispatch = useAppDispatch();
   const [localFilter, setLocalFilter] = useState<SavingInterestFilterState>(value);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     emailOptions: [],

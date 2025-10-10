@@ -16,7 +16,11 @@ export class WalletSettingMapper {
   static toDepositRequest(response: GetDepositRequestResponse) {
     return {
       ...response,
-      fxAmount: Number(response.package.fxAmount),
+      fxAmount: response.package ? Number(response.package.fxAmount) : Number(response.amount || 0),
+      packageFXId: response.packageFXId || '',
+      attachmentId: response.attachmentId || undefined,
+      createdBy: response.createdBy || '',
+      updatedBy: response.updatedBy || undefined,
     };
   }
 

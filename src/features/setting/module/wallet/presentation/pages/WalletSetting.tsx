@@ -2,7 +2,7 @@
 
 import { useAppDispatch } from '@/store';
 import { useEffect } from 'react';
-import { setColumnConfig } from '../../slices';
+import { resetColumns, setColumnConfig } from '../../slices';
 import { loadColumnConfigFromStorage } from '../../slices/persist';
 import { DispatchTableProvider, TableProvider } from '../context';
 import { useWalletSetting } from '../hooks';
@@ -13,15 +13,19 @@ import { WalletSettingTable, WalletSettingTopBarAction } from '../organisms';
  * Manages the overall layout and provides context for child components
  */
 const WalletSetting = () => {
-  const { tableData, loading, loadMore, dispatchTable } = useWalletSetting();
+  const { tableData, loading, loadMore, dispatchTable, reloadData } = useWalletSetting();
   const dispatch = useAppDispatch();
 
   // Initialize wallet setting on component mount
   useEffect(() => {
     // Load saved column configuration from localStorage
     const config = loadColumnConfigFromStorage();
-    if (config) {
+    if (config && config.Type) {
+      // Only use saved config if it has the Type column
       dispatch(setColumnConfig(config));
+    } else {
+      // Force reset to default config with Type column
+      dispatch(resetColumns());
     }
   }, [dispatch]);
 
@@ -30,7 +34,7 @@ const WalletSetting = () => {
     // Separation of concerns: Dispatch actions and table data are managed independently
     // Performance: Only re-render components that need updates when data or actions change
     // Reusability: Each context can be used independently in different components
-    <DispatchTableProvider value={{ dispatchTable }}>
+    <DispatchTableProvider value={{ dispatchTable, reloadData }}>
       {/* TableProvider: Provides table data state to child components */}
       <TableProvider value={{ table: tableData }}>
         <div className="space-y-6 border p-4 rounded-2xl mb-12">

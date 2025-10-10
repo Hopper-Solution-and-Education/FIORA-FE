@@ -3,12 +3,14 @@ import UploadImageField from '@/components/common/forms/upload/UploadImageField'
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { UserRole } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
 import KYCSection from '../molecules/KYCSection';
 import PersonalInfoFields from '../molecules/PersonalInfoFields';
+import { UserManagementActions } from '../molecules/UserManagementActions';
 
 type ProfileTabProps = {
   profile: UserProfile | null | undefined;
@@ -115,6 +117,16 @@ const ProfileTab: FC<ProfileTabProps> = ({
               kycType="bank-account"
               onNavigateToKYC={handleNavigateToKYC}
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
+            />
+            <UserManagementActions
+              userId={profile?.id || ''}
+              userName={profile?.name || ''}
+              currentRole={profile?.role}
+              currentUserRole={profile?.role || UserRole.User}
+              onRoleUpdate={undefined}
+              onBlockUser={undefined}
+              onUnblockUser={undefined}
+              isBlocked={false}
             />
 
             <DefaultSubmitButton

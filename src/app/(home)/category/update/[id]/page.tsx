@@ -1,10 +1,10 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import Loading from '@/components/common/atoms/Loading';
 import FormPage from '@/components/common/forms/FormPage';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UpdateCategoryForm from '@/features/home/module/category/components/UpdateCategoryForm';
 import { useUpdateCategory } from '@/features/home/module/category/hooks/useUpdateCategory';
 import { useParams } from 'next/navigation';
@@ -16,23 +16,16 @@ export default function UpdateCategory() {
   const { category, isLoading, handleDelete } = useUpdateCategory(categoryId);
 
   const renderDeleteButton = (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={handleDelete}
-            className="text-red-500 hover:text-red-700 hover:bg-red-100"
-          >
-            <Icons.trash className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Delete</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <CommonTooltip content="Delete">
+      <Button
+        variant="ghost"
+        type="button"
+        onClick={handleDelete}
+        className="text-red-500 hover:text-red-700 hover:bg-red-100"
+      >
+        <Icons.trash className="h-4 w-4" />
+      </Button>
+    </CommonTooltip>
   );
 
   if (isLoading) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useSavingInterestDashboard } from '@/features/setting/module/cron-job/module/saving-interest/presentation/hooks/useSavingInterestDashboard';

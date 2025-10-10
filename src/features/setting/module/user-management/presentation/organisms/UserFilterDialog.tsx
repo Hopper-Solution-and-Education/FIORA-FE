@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Filter, X } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-import { FilterState } from '../../slices/types/index';
+import { FilterState } from '../../slices/type';
 
 interface UserFilterDialogProps {
   open: boolean;
@@ -86,19 +86,21 @@ export function UserFilterDialog({
           <div className="space-y-3">
             <h3 className="text-base font-semibold">Status</h3>
             <div className="flex flex-wrap gap-2">
-              {[{ value: 'blocked', label: 'Blocked' },
-                { value: 'active', label: 'Active' },].map(({value, label}) => (
+              {[
+                { value: 'blocked', label: 'Blocked' },
+                { value: 'active', label: 'Active' },
+              ].map(({ value, label }) => (
                 <div
                   key={value}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
-                    tempFilters.statuses.includes(value)
+                    tempFilters.status.includes(value)
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
                       : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                   }`}
                   onClick={() => onStatusToggle(value)}
                 >
                   <span>{label}</span>
-                  {tempFilters.statuses.includes(value) && <X className="h-3 w-3" />}
+                  {tempFilters.status.includes(value) && <X className="h-3 w-3" />}
                 </div>
               ))}
             </div>

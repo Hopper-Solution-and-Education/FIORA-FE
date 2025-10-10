@@ -23,6 +23,11 @@ interface UserTableProps {
   totalActive: number;
   totalBlocked: number;
   totalPending: number;
+  hasMore: boolean;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  className?: string;
+  loading?: boolean;
 }
 
 export function UserTable({
@@ -35,6 +40,11 @@ export function UserTable({
   totalActive,
   totalBlocked,
   totalPending,
+  hasMore,
+  onLoadMore,
+  isLoadingMore,
+  className,
+  loading,
 }: UserTableProps) {
   const totalUsers = users.length;
 
@@ -152,6 +162,11 @@ export function UserTable({
       columnConfig={columnConfig}
       onColumnConfigChange={setColumnConfig}
       storageKey="user-management-table"
+      hasMore={hasMore}
+      isLoadingMore={isLoadingMore}
+      onLoadMore={onLoadMore}
+      loading={loading}
+      className={className}
       leftHeaderNode={
         <UserManagementHeaderLeft
           searchQuery={searchQuery}
@@ -168,9 +183,6 @@ export function UserTable({
           totalBlocked={totalBlocked}
         />
       }
-      loading={false}
-      hasMore={false}
-      isLoadingMore={false}
     />
   );
 }
