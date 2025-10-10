@@ -1,6 +1,6 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import debounce from 'lodash/debounce';
 import { Search, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -73,71 +73,50 @@ const FaqsPageHeader = ({
               className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50"
             />
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <FaqsFilterMenu
-                    categories={categories}
-                    activeFilters={activeFilters}
-                    onFilterChange={handleFilterMenuChange}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Filters</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Filters">
+            <div>
+              <FaqsFilterMenu
+                categories={categories}
+                activeFilters={activeFilters}
+                onFilterChange={handleFilterMenuChange}
+              />
+            </div>
+          </CommonTooltip>
         </div>
 
         {isAdminOrCS && (
           <div className="flex gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => router.push('/helps-center/faqs/import')}
-                    className="px-3 py-2"
-                    variant="outline"
-                  >
-                    <Upload className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Import FAQs</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <CommonTooltip content="Import FAQs">
+              <Button
+                onClick={() => router.push('/helps-center/faqs/import')}
+                className="px-3 py-2"
+                variant="outline"
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+            </CommonTooltip>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => router.push('/helps-center/faqs/create')}
-                    className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
-                  >
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 15 15"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
-                        fill="#000000"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                      ></path>
-                    </svg>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create FAQs</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <CommonTooltip content="Create FAQ">
+              <Button
+                onClick={() => router.push('/helps-center/faqs/create')}
+                className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
+                    fill="#000000"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </Button>
+            </CommonTooltip>
           </div>
         )}
       </div>

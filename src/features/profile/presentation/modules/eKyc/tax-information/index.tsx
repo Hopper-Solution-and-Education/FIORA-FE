@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   IdentificationDocumentType,
@@ -145,28 +144,26 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <TaxInfoHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <TaxInfoHeader status={eKYCData?.status} />
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={handleSubmit(handleSubmitForm)}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <TaxDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+      <FormProvider {...form}>
+        <form
+          onSubmit={handleSubmit(handleSubmitForm)}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <TaxDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <TaxDocumentUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <TaxDocumentUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <TaxActions
-              isLoading={isSubmitting}
-              onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
-            />
-          </form>
-        </FormProvider>
-      </div>
-    </TooltipProvider>
+          <TaxActions
+            isLoading={isSubmitting}
+            onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
+          />
+        </form>
+      </FormProvider>
+    </div>
   );
 };
 

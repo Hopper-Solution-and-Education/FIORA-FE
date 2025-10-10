@@ -1,3 +1,4 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   closestCenter,
@@ -27,11 +27,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, RefreshCcw, SlidersHorizontal } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useMemo, useState } from 'react';
 import { updateVisibleColumns } from '../slices';
 import { TransactionColumn, TransactionTableColumnKey } from '../types';
 import { DEFAULT_TRANSACTION_TABLE_COLUMNS } from '../utils/constants';
-import { useSession } from 'next-auth/react';
 
 interface SortableItemProps {
   id: string;
@@ -243,20 +243,13 @@ const SettingsMenu = () => {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button className="px-3 py-2 bg-gray-500">
-                <SlidersHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Settings</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <CommonTooltip content="Settings">
+        <DropdownMenuTrigger asChild>
+          <Button className="px-3 py-2 bg-gray-500">
+            <SlidersHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+      </CommonTooltip>
 
       <DropdownMenuContent
         className="w-fit min-w-200 rounded-lg p-4"
@@ -266,18 +259,11 @@ const SettingsMenu = () => {
       >
         <DropdownMenuLabel className="p-0 font-normal flex justify-between items-center">
           <h2 className="font-semibold">Column Settings</h2>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={'ghost'} className="px-2" onClick={handleResetSettings}>
-                  <RefreshCcw size={15} color="green" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Reset</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Reset">
+            <Button variant={'ghost'} className="px-2" onClick={handleResetSettings}>
+              <RefreshCcw size={15} color="green" />
+            </Button>
+          </CommonTooltip>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 

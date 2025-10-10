@@ -1,5 +1,5 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
@@ -40,25 +40,18 @@ const SmallMetricCard = ({ title, value, type, className, currency }: SmallMetri
         </CardTitle>
       </CardHeader>
       <CardContent className="py-0 pl-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={cn('text-xl sm:text-xl font-bold', getCardColor())}>
-                {formatCurrency(value, currency || CURRENCY.FX, {
-                  applyExchangeRate: false,
-                  shouldShortened: true,
-                })}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {formatCurrency(value, currency || CURRENCY.FX, {
-                  applyExchangeRate: false,
-                })}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip
+          content={formatCurrency(value, currency || CURRENCY.FX, {
+            applyExchangeRate: false,
+          })}
+        >
+          <div className={cn('text-xl sm:text-xl font-bold', getCardColor())}>
+            {formatCurrency(value, currency || CURRENCY.FX, {
+              applyExchangeRate: false,
+              shouldShortened: true,
+            })}
+          </div>
+        </CommonTooltip>
       </CardContent>
     </Card>
   );

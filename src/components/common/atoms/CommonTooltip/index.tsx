@@ -11,6 +11,7 @@ interface CommonTooltipProps {
   delayDuration?: number;
   asChild?: boolean;
   disableHoverableContent?: boolean;
+  open?: boolean;
 }
 
 export function CommonTooltip({
@@ -22,10 +23,15 @@ export function CommonTooltip({
   delayDuration = 200,
   asChild = true,
   disableHoverableContent = false,
+  open,
 }: CommonTooltipProps) {
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={delayDuration} disableHoverableContent={disableHoverableContent}>
+      <Tooltip
+        open={open ? open : undefined}
+        delayDuration={delayDuration}
+        disableHoverableContent={disableHoverableContent}
+      >
         <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
         <TooltipContent
           side={side}

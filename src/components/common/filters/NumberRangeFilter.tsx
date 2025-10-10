@@ -1,8 +1,8 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import InputCurrency from '@/components/common/forms/input/InputCurrency';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
@@ -96,51 +96,37 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
     <div className="w-full flex flex-col items-center">
       <Label className="mb-2 w-full text-left">{label}</Label>
       <div className="w-full flex flex-row items-center justify-between gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-[45%] h-[40px] overflow-y-hidden">
-                <InputCurrency
-                  value={minValue}
-                  onChange={handleMinValueChange}
-                  placeholder={minLabel}
-                  currency={targetCurrency}
-                  showSuggestion={false}
-                  mode="onChange"
-                  classContainer="mb-0"
-                  className={cn('w-full')}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{getTooltipContent(minValue)}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip content={getTooltipContent(minValue)}>
+          <div className="w-[45%] h-[40px] overflow-y-hidden">
+            <InputCurrency
+              value={minValue}
+              onChange={handleMinValueChange}
+              placeholder={minLabel}
+              currency={targetCurrency}
+              showSuggestion={false}
+              mode="onChange"
+              classContainer="mb-0"
+              className={cn('w-full')}
+            />
+          </div>
+        </CommonTooltip>
 
         <Label className="mx-0.5">to</Label>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-[45%] h-[40px] overflow-y-hidden">
-                <InputCurrency
-                  value={maxValue}
-                  onChange={handleMaxValueChange}
-                  placeholder={maxLabel}
-                  currency={targetCurrency}
-                  showSuggestion={false}
-                  mode="onChange"
-                  classContainer="mb-0"
-                  className={cn('w-full')}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{getTooltipContent(maxValue)}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip content={getTooltipContent(maxValue)}>
+          <div className="w-[45%] h-[40px] overflow-y-hidden">
+            <InputCurrency
+              value={maxValue}
+              onChange={handleMaxValueChange}
+              placeholder={maxLabel}
+              currency={targetCurrency}
+              showSuggestion={false}
+              mode="onChange"
+              classContainer="mb-0"
+              className={cn('w-full')}
+            />
+          </div>
+        </CommonTooltip>
       </div>
 
       {renderRangeSlider({

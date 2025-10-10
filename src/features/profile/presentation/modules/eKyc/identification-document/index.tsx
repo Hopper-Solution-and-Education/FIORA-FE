@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   IdentificationDocumentType,
@@ -185,28 +184,26 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto mb-10">
-        <IdentificationHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto mb-10">
+      <IdentificationHeader status={eKYCData?.status} />
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={handleSubmit(handleSubmitForm)}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+      <FormProvider {...form}>
+        <form
+          onSubmit={handleSubmit(handleSubmitForm)}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <IdentificationActions
-              isLoading={isSubmitting}
-              onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
-            />
-          </form>
-        </FormProvider>
-      </div>
-    </TooltipProvider>
+          <IdentificationActions
+            isLoading={isSubmitting}
+            onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
+          />
+        </form>
+      </FormProvider>
+    </div>
   );
 };
 

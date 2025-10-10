@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC } from '@/features/profile/domain/entities/models/profile';
 import {
   useGetBankAccountQuery,
@@ -143,32 +142,26 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <BankAccountHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <BankAccountHeader status={eKYCData?.status} />
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={handleSubmit(handleSubmitForm)}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <BankAccountDetailsForm
-              form={form}
-              isLoadingData={isLoadingData}
-              disabled={isDisabled}
-            />
+      <FormProvider {...form}>
+        <form
+          onSubmit={handleSubmit(handleSubmitForm)}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <BankAccountDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <BankAccountActions
-              isLoading={isSubmitting}
-              onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
-            />
-          </form>
-        </FormProvider>
-      </div>
-    </TooltipProvider>
+          <BankAccountActions
+            isLoading={isSubmitting}
+            onSubmit={isDisabled ? undefined : handleSubmit(handleSubmitForm)}
+          />
+        </form>
+      </FormProvider>
+    </div>
   );
 };
 
