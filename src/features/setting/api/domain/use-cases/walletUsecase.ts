@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
@@ -343,7 +344,7 @@ class WalletUseCase {
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
-    if (!depositRequest) return null;
+    if (!depositRequest || !depositRequest?.packageFXId || !depositRequest?.userId) return null;
 
     // Precompute values during Approve branch to avoid duplicate queries later (notifications)
     let precomputedFxAmount: number | undefined;
@@ -384,7 +385,17 @@ class WalletUseCase {
       remark,
     );
 
-    await this.notifyDepositStatus(depositRequest, newStatus, remark, precomputedFxAmount);
+    await this.notifyDepositStatus(
+      {
+        userId: depositRequest.userId,
+        packageFXId: depositRequest.packageFXId,
+        type: depositRequest.type,
+        amount: depositRequest.amount,
+      },
+      newStatus,
+      remark,
+      precomputedFxAmount,
+    );
 
     return updatedDepositRequest;
   }

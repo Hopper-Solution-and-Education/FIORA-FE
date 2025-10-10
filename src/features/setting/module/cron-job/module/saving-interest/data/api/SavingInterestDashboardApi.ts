@@ -60,6 +60,7 @@ export class SavingInterestDashboardApi implements ISavingInterestDashboardApi {
   }
 
   async getSavingInterestChartData(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     filters: Partial<SavingInterestFilters>,
   ): Promise<SavingInterestChartResponse> {
     const baseUrl = '/api/smart-saving/statistics';

@@ -13,6 +13,7 @@ export interface IMembershipAPI {
 
 class MembershipAPI implements IMembershipAPI {
   async getListMemberships(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     request: GetListMembershipsRequestDTO,
   ): Promise<GetListMembershipsResponseDTO> {
     return await httpClient.get('/api/memberships');

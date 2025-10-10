@@ -6,5 +6,4 @@ export * from './forms/setErrorsFromObject';
 export * from './responseUtils/errors';
 export * from './responseUtils/getTitleFromStatusCode';
 export * from './responseUtils/response';
-export * from './test-utils/test-utils';
 export * from './utils';

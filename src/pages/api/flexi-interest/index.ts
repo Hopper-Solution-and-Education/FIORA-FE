@@ -131,11 +131,6 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, cronJobLogI
         .status(RESPONSE_CODE.BAD_REQUEST)
         .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'User chưa có Payment Wallet'));
     }
-    const membershipProgress = await prisma.membershipProgress.findFirst({
-      where: { userId },
-      select: { tierId: true },
-      orderBy: { updatedAt: 'desc' },
-    });
     const membershipBenefit = await prisma.membershipBenefit.findFirst({
       where: { name: 'Flexi Interest' },
       select: { id: true },

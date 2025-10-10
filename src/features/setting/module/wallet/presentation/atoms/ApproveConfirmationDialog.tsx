@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { LoadingIndicator } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';

@@ -73,6 +73,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     return res
       .status(RESPONSE_CODE.OK)
       .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_COMMENT_NEWS_SUCCESS, result));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)

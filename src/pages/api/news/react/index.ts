@@ -1,5 +1,4 @@
 import { reactUsecase } from '@/features/news/api/application/usecase/reactUsecase';
-import { CommentUpdationNews } from '@/features/news/api/types/commentDTO';
 import { ReactCreationRequest } from '@/features/news/api/types/reactDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
 import { Messages } from '@/shared/constants/message';
@@ -67,8 +66,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
     .json(createResponse(RESPONSE_CODE.OK, Messages.REACT_NEWS_SUCCESS, result));
 }
 export async function PUT(req: NextApiRequest, res: NextApiResponse) {
-  const { content, userId } = req.body;
-  const param: CommentUpdationNews = { content, userId };
   return res
     .status(RESPONSE_CODE.OK)
     .json(createErrorResponse(RESPONSE_CODE.OK, Messages.REACT_NEWS_SUCCESS));
