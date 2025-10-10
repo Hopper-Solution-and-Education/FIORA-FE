@@ -140,6 +140,18 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       if (!verify_otp) {
         throw new BadRequestError('OTP Incorrect');
       }
+      const walletPayment = await this._prisma.wallet.findFirst({
+        where: { userId: userId, type: WalletType.Payment },
+        select: {
+          frBalanceActive: true,
+          frBalanceFrozen: true,
+          id: true,
+        },
+      });
+
+      if (walletPayment?.frBalanceActive.lessThan(amount)) {
+        throw new BadRequestError('Insufficient balance');
+      }
       const membershipBenefitDaily = await this._prisma.membershipBenefit.findFirst({
         where: { slug: 'moving-daily-limit' },
         select: { id: true },
@@ -165,6 +177,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           id: true,
         },
       });
+
       const now = new Date();
       const startOfDay = new Date(now);
       startOfDay.setHours(0, 0, 0, 0);
@@ -206,10 +219,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           benefitId: membershipBenefitDaily?.id,
         },
       });
-      const available_limit =
-        Number(daily_moving_limit?.value ?? 0) -
-        (Number(countTransaction._sum.amount ?? 0) + Number(countDepositRequest._sum.amount ?? 0));
-
       const totalWithdrawToday =
         Number(countTransaction._sum.amount ?? 0) +
         Number(countDepositRequest._sum.amount ?? 0) +
@@ -219,18 +228,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       if (totalWithdrawToday > dailyLimit) {
         throw new BadRequestError('Exceeded the allowable daily withdrawal limit');
       }
-      const walletPayment = await this._prisma.wallet.findFirst({
-        where: { userId: userId, type: WalletType.Payment },
-        select: {
-          frBalanceActive: true,
-          frBalanceFrozen: true,
-          id: true,
-        },
-      });
-
-      if (walletPayment?.frBalanceActive.lessThan(amount + available_limit)) {
-        throw new BadRequestError('Insufficient balance');
-      }
 
       const result = await this._prisma.wallet.update({
         where: { id: walletPayment?.id },
@@ -239,6 +236,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           frBalanceFrozen: { increment: amount },
         },
       });
+
       const createDepositRequest = await this._prisma.depositRequest.create({
         data: {
           userId: userId,
@@ -249,12 +247,14 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           currency: 'USD',
         },
       });
+
       const emailUser = await this._prisma.user.findFirst({
         where: { id: userId },
         select: {
           email: true,
         },
       });
+
       if (createDepositRequest) {
         await notificationRepository.createBoxNotification({
           title: 'WITHDRAW_REQUEST',
