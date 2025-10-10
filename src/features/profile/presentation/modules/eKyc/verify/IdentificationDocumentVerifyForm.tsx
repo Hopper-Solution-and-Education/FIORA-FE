@@ -4,7 +4,6 @@ import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButt
 import { Icons } from '@/components/Icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -142,7 +141,7 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
   }
 
   return (
-    <TooltipProvider>
+    <>
       <div className="w-full max-w-5xl mx-auto">
         <IdentificationHeader status={eKYCData?.status} />
 
@@ -197,7 +196,7 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
         onConfirm={handleVerify}
         isLoading={isVerifying}
       />
-    </TooltipProvider>
+    </>
   );
 };
 

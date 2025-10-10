@@ -3,7 +3,6 @@
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Icons } from '@/components/Icon';
 import { Card, CardContent } from '@/components/ui/card';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC, EKYCStatus } from '@/features/profile/domain/entities/models/profile';
 import {
   useGetProfileByUserIdQuery,
@@ -68,7 +67,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
   const canVerify = eKYCData?.status === EKYCStatus.PENDING;
 
   return (
-    <TooltipProvider>
+    <>
       <div className="max-w-5xl mx-auto">
         <ContactInfoHeader status={eKYCData?.status} />
 
@@ -115,7 +114,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
         onConfirm={handleVerify}
         isLoading={isVerifying}
       />
-    </TooltipProvider>
+    </>
   );
 };
 

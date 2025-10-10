@@ -4,7 +4,6 @@ import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButt
 import { Icons } from '@/components/Icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -121,7 +120,7 @@ const TaxInformationVerifyForm: FC<TaxInformationVerifyFormProps> = ({ eKYCData,
   }
 
   return (
-    <TooltipProvider>
+    <>
       <div className="w-full max-w-5xl mx-auto">
         <TaxInfoHeader status={eKYCData?.status} />
 
@@ -176,7 +175,7 @@ const TaxInformationVerifyForm: FC<TaxInformationVerifyFormProps> = ({ eKYCData,
         onConfirm={handleVerify}
         isLoading={isVerifying}
       />
-    </TooltipProvider>
+    </>
   );
 };
 
