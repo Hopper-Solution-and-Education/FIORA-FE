@@ -219,13 +219,6 @@ class WalletRepository implements IWalletRepository {
               where.status = rule.value;
             }
             break;
-          case 'type':
-            if (rule.operator === 'in') {
-              where.type = { in: rule.value };
-            } else {
-              where.type = rule.value;
-            }
-            break;
           case 'amount':
             if (rule.operator === 'between') {
               const [min, max] = Array.isArray(rule.value) ? rule.value : [0, 0];
