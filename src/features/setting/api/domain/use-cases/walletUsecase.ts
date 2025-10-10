@@ -344,7 +344,12 @@ class WalletUseCase {
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
-    if (!depositRequest || !depositRequest?.packageFXId || !depositRequest?.userId) return null;
+    if (
+      !depositRequest ||
+      (!depositRequest?.packageFXId && !depositRequest.amount) ||
+      !depositRequest?.userId
+    )
+      return null;
 
     // Precompute values during Approve branch to avoid duplicate queries later (notifications)
     let precomputedFxAmount: number | undefined;
@@ -595,7 +600,12 @@ class WalletUseCase {
 
   // Notify user via in-app + email template (reuses precomputed FX amount when available)
   private async notifyDepositStatus(
-    depositRequest: { userId: string; packageFXId: string; type: FxRequestType; amount: Decimal },
+    depositRequest: {
+      userId: string;
+      packageFXId?: string | null;
+      type: FxRequestType;
+      amount: Decimal;
+    },
     newStatus: DepositRequestStatus,
     remark?: string,
     precomputedFxAmount?: number,
