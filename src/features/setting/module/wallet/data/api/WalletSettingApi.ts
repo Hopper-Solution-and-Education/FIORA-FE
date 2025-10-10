@@ -1,4 +1,5 @@
 import type { IHttpClient } from '@/config';
+import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { _PaginationResponse, HttpResponse } from '@/shared/types';
 import { FilterObject } from '@/shared/types/filter.types';
@@ -33,11 +34,13 @@ export class WalletSettingApi implements IWalletSettingApi {
     id: string,
     status: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
   ): Promise<HttpResponse<UpdateDepositRequestStatusResponse>> {
     return this.httpClient.put(routeConfig(ApiEndpointEnum.WalletSetting), {
       id,
       status,
       ...(remark ? { remark } : {}),
+      ...(attachmentData ? { attachmentData } : {}),
     });
   }
 }

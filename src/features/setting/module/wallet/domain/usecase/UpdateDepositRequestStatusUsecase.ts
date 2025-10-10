@@ -1,3 +1,4 @@
+import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
 import { decorate, inject, injectable } from 'inversify';
 import { UpdateDepositRequestStatusResponse } from '../../data/dto/response/UpdateDepositRequestStatusResponse';
 import type { IWalletSettingRepository } from '../../data/repository/IWalletSettingRepository';
@@ -9,6 +10,7 @@ export interface IUpdateDepositRequestStatusUseCase {
     id: string,
     status: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
   ): Promise<UpdateDepositRequestStatusResponse>;
 }
 
@@ -23,8 +25,9 @@ export class UpdateDepositRequestStatusUseCase implements IUpdateDepositRequestS
     id: string,
     status: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
   ): Promise<UpdateDepositRequestStatusResponse> {
-    return this.walletRepository.updateDepositRequestStatus(id, status, remark);
+    return this.walletRepository.updateDepositRequestStatus(id, status, remark, attachmentData);
   }
 }
 

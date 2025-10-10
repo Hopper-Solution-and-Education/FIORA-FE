@@ -1,6 +1,8 @@
+export { default as ApproveConfirmationDialog } from './ApproveConfirmationDialog';
 export { default as RejectDepositRequestDialog } from './RejectDepositRequestDialog';
 export { default as TableEmptyState } from './TableEmptyState';
 export { default as TableSkeletonRow } from './TableSkeletonRow';
+export { default as UpdateWithdrawReceiptDialog } from './UpdateWithdrawReceiptDialog';
 export { default as UserProfileCard } from './UserProfileCard';
 export { default as WalletSettingActionButton } from './WalletSettingActionButton';
 export { default as WalletSettingAttachmentLink } from './WalletSettingAttachmentLink';

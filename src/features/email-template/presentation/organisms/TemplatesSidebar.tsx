@@ -7,13 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useEmailModal } from '@/features/email-template/hooks/useEmailModal';
 import { Search } from 'lucide-react';
 import { EMAIL_TEMPLATES } from '../../constants';
 
 export default function TemplatesSidebar() {
-  const { handleOpenModal, selectedTemplate } = useEmailModal();
-
   return (
     <div className="flex flex-col gap-4 min-w-80 max-h-[calc(100vh-2rem)] p-4">
       {/* Header */}
