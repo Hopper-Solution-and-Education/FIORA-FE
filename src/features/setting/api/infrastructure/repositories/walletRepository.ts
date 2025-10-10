@@ -1,10 +1,12 @@
 import { prisma } from '@/config';
+import { Messages } from '@/shared/constants/message';
 import { FilterObject } from '@/shared/types/filter.types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
   Attachment,
   DepositRequest,
   DepositRequestStatus,
+  FxRequestType,
   PackageFX,
   Prisma,
   Wallet,
@@ -56,6 +58,7 @@ class WalletRepository implements IWalletRepository {
   async findAllPackageFX(): Promise<PackageFX[]> {
     return this._prisma.packageFX.findMany();
   }
+
   async findPackageFXPaginated({
     sortBy = { createdAt: 'desc' },
     page,
@@ -114,24 +117,29 @@ class WalletRepository implements IWalletRepository {
       limit: safeLimit,
     };
   }
+
   async getPackageFXById(id: string): Promise<(PackageFX & { attachments?: Attachment[] }) | null> {
     const packageFX = await this._prisma.packageFX.findUnique({ where: { id } });
     if (!packageFX) return null;
+
     const attachments =
       packageFX.attachment_id && packageFX.attachment_id.length > 0
         ? await this._prisma.attachment.findMany({ where: { id: { in: packageFX.attachment_id } } })
         : [];
     return { ...packageFX, attachments };
   }
+
   async createPackageFX(data: Prisma.PackageFXCreateInput): Promise<PackageFX> {
     return this._prisma.packageFX.create({ data });
   }
+
   async updatePackageFX(
     id: string,
     data: { fxAmount: number; attachment_id?: string[] },
   ): Promise<PackageFX | null> {
     return this._prisma.packageFX.update({ where: { id }, data });
   }
+
   async deletePackageFX(id: string): Promise<PackageFX> {
     return this._prisma.$transaction(async (tx) => {
       await tx.depositRequest.deleteMany({
@@ -148,6 +156,7 @@ class WalletRepository implements IWalletRepository {
       });
     });
   }
+
   async createDepositRequest(
     data: Prisma.DepositRequestUncheckedCreateInput,
   ): Promise<DepositRequest> {
@@ -211,16 +220,36 @@ class WalletRepository implements IWalletRepository {
             }
             break;
           case 'amount':
-            // amount is from package.fxAmount
             if (rule.operator === 'between') {
-              const arr = Array.isArray(rule.value) ? (rule.value as [number, number]) : [0, 0];
-              where.package = { fxAmount: { gte: arr[0], lte: arr[1] } };
+              const [min, max] = Array.isArray(rule.value) ? rule.value : [0, 0];
+              where.OR = [
+                { amount: { gte: min, lte: max } },
+                { package: { fxAmount: { gte: min, lte: max } } },
+              ];
             } else if (rule.operator === 'gte') {
-              where.package = { fxAmount: { gte: rule.value as number } };
+              where.OR = [
+                { amount: { gte: rule.value as number } },
+                { package: { fxAmount: { gte: rule.value as number } } },
+              ];
             } else if (rule.operator === 'lte') {
-              where.package = { fxAmount: { lte: rule.value as number } };
+              where.OR = [
+                { amount: { lte: rule.value as number } },
+                { package: { fxAmount: { lte: rule.value as number } } },
+              ];
             }
             break;
+          case 'type': {
+            const validValues = Array.isArray(rule.value) ? rule.value : [rule.value];
+            const enumValues = validValues.filter((v) =>
+              Object.values(FxRequestType).includes(v as FxRequestType),
+            );
+            if (enumValues.length === 0) break;
+            where.type =
+              rule.operator === 'in'
+                ? { in: enumValues as FxRequestType[] }
+                : (enumValues[0] as FxRequestType);
+            break;
+          }
           default:
             // fallback: direct field
             where[rule.field] = rule.value;
@@ -275,6 +304,27 @@ class WalletRepository implements IWalletRepository {
     const updateData: any = { status: newStatus };
     if (newStatus === DepositRequestStatus.Rejected && remark) {
       updateData.remark = remark;
+      if (current.type === FxRequestType.WITHDRAW) {
+        const amount = Number(
+          current.packageFXId
+            ? (await this.getPackageFXById(current.packageFXId))?.fxAmount
+            : current.amount,
+        );
+        const paymentWallet = await this.findWalletByType(WalletType.Payment, current.userId);
+
+        if (!paymentWallet) throw new Error(Messages.PAYMENT_WALLET_NOT_FOUND);
+        if (Number(paymentWallet.frBalanceFrozen) < amount) {
+          throw new Error(Messages.INSUFFICIENT_BALANCE);
+        }
+        await this.updateWallet(
+          { id: paymentWallet.id },
+          {
+            frBalanceFrozen: { decrement: amount },
+            frBalanceActive: { increment: amount },
+            updatedBy: current.userId,
+          },
+        );
+      }
     }
 
     return this._prisma.depositRequest.update({
@@ -304,7 +354,7 @@ class WalletRepository implements IWalletRepository {
   async increaseWalletBalance(walletId: string, amount: number): Promise<void> {
     await this._prisma.wallet.update({
       where: { id: walletId },
-      data: { frBalanceActive: { increment: amount } },
+      data: { frBalanceActive: { increment: amount }, frBalanceFrozen: { decrement: amount } },
     });
   }
 
@@ -313,6 +363,39 @@ class WalletRepository implements IWalletRepository {
       where: { id },
       data: { currency: currency as any } as Prisma.DepositRequestUpdateInput,
     });
+  }
+
+  async getFilterOptions(userId: string) {
+    const [accounts, categories, memberships, wallets] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.category.findMany({
+        where: { userId },
+        select: { name: true },
+      }),
+      prisma.membershipBenefit.findMany({
+        where: { userId },
+        select: { name: true, slug: true },
+      }),
+      prisma.wallet.findMany({
+        where: { userId },
+        select: { type: true, name: true },
+      }),
+    ]);
+
+    return {
+      accounts: accounts.map((a) => a.name),
+      categories: categories.map((c) => c.name),
+      memberships: memberships.map((m) => {
+        return {
+          name: m.name,
+          id: m.slug,
+        };
+      }),
+      wallets: wallets.map((w) => (w.name ? w.name : w.type)),
+    };
   }
 }
 

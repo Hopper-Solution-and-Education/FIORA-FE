@@ -9,6 +9,10 @@ export function normalizeToArray(input?: string | string[]): string[] {
 
 export function applyJsonInFilter(filters: any, jsonKey: string, values: string[]) {
   if (!values || values.length === 0) return;
-  const clause = { dynamicValue: { path: [jsonKey], in: values } } as const;
-  filters.AND = [...(filters.AND ?? []), clause];
+
+  const clauses = values.map((value) => ({
+    dynamicValue: { path: [jsonKey], equals: value },
+  }));
+
+  filters.OR = [...(filters.OR ?? []), ...clauses];
 }

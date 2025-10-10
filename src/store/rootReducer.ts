@@ -6,13 +6,22 @@ import { default as budgetControlSlice } from '@/features/home/module/budgets/cr
 import budgetSummarySlice from '@/features/home/module/budgets/summary-detail/slice/budgetSummarySlice';
 import categorySlice from '@/features/home/module/category/slices';
 import membershipSlice from '@/features/home/module/membership/slices';
+import savingWalletSlice from '@/features/home/module/saving/slices';
 import transactionSlice from '@/features/home/module/transaction/slices';
 import createTransactionSlice from '@/features/home/module/transaction/slices/createTransactionSlice';
 import transactionDataSlice from '@/features/home/module/transaction/slices/transactionSlice';
 import walletSlice from '@/features/home/module/wallet/slices';
 import landingSlices from '@/features/landing/slices';
+import { newsApi } from '@/features/news/store/api/newsApi';
+import paymentWalletSlice from '@/features/payment-wallet/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
+import referralTransactionSlice from '@/features/referral/slices';
+import { referralApi } from '@/features/referral/slices/referralApi';
+import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/services/flexi-interest.service';
+import flexiInterestCronjobSlice from '@/features/setting/module/cron-job/module/flexi-interest/presentation/slices';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
+import referralCronjobSlice from '@/features/setting/module/cron-job/module/referral/slices';
+import savingInterestSlice from '@/features/setting/module/cron-job/module/saving-interest/slices';
 import landingSettingSlice from '@/features/setting/module/landing/slices';
 import memberShipSettingsSlice from '@/features/setting/module/membership/slices';
 import notificationDashboardSlice from '@/features/setting/module/notification-dashboard/slices';
@@ -50,15 +59,24 @@ const reducer = {
   membership: membershipSlice,
   wallet: walletSlice,
   walletSetting: walletSettingSlice,
+  paymentWallet: paymentWalletSlice,
   faqsImport: faqsImportSlice,
   budgetDetail: budgetDetailSlice,
   notificationDashboard: notificationDashboardSlice,
   membershipCronjob: membershipCronjobSlice,
+  flexiInterestCronjob: flexiInterestCronjobSlice,
+  referralTransaction: referralTransactionSlice,
+  savingInterest: savingInterestSlice,
+  referralCronjob: referralCronjobSlice,
   email: emailSlice,
+  savingWallet: savingWalletSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  [flexiInterestApi.reducerPath]: flexiInterestApi.reducer,
+  [newsApi.reducerPath]: newsApi.reducer,
+  [referralApi.reducerPath]: referralApi.reducer,
 };
 
 const rootReducer = combineReducers(reducer);

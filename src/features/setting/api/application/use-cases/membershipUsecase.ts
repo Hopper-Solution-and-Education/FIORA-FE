@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
+import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { BadRequestError, ConflictError } from '@/shared/lib';
 import { Prisma } from '@prisma/client';
 import { membershipTierRepository } from '../../infrastructure/repositories/membershipTierRepository';
@@ -10,10 +11,9 @@ import {
   MembershipTierCreation,
   MembershipTierUpdate,
   MembershipTierWithBenefit,
+  OutputTierInfinity,
   Range,
   RangeKeys,
-  TierInfinityParams,
-  UserInfinityResult,
 } from '../../repositories/membershipTierRepository';
 import { IUserRepository } from '../../repositories/userRepository.interface';
 
@@ -424,7 +424,7 @@ class MembershipSettingUseCase {
 
   async updateMembershipThreshold(data: MembershipTierUpdate, userId: string) {
     const FLOOR = 0;
-    const CEILING = 99999999999;
+    const CEILING = 99999999998;
 
     const { axis, oldMin, oldMax, newMin, newMax } = data;
     const { minKey, maxKey } = axisKeys(axis);
@@ -437,10 +437,17 @@ class MembershipSettingUseCase {
     const dFloor = new Prisma.Decimal(FLOOR);
     const dCeil = new Prisma.Decimal(CEILING);
 
+    const newValue = dNewMax.sub(dOldMax); // positive value means increased, negative value means decreased
+
     if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
       throw new BadRequestError(
         'Old min must be greater than 0 and old max must be less than 99999999999',
       );
+    }
+
+    // Not allowed to update new min to be less than old min
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than old min');
     }
 
     const targetCount = await prisma.membershipTier.count({
@@ -535,19 +542,72 @@ class MembershipSettingUseCase {
       }
 
       return await prisma.$transaction(async (tx) => {
-        const updated = await tx.membershipTier.updateMany({
+        const updateCurrentTierIdsAwaited = tx.membershipTier.findMany({
           where: { [minKey]: dOldMin, [maxKey]: dOldMax },
-          data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+          select: { id: true },
         });
 
-        if (updated.count === 0) {
-          return { updated: 0, snappedNext: 0, snappedPrev: 0 };
+        const updateNextMinTierIdsAwaited = tx.membershipTier.findMany({
+          where: {
+            [minKey]: {
+              gt: new Prisma.Decimal(dOldMin),
+              lte: new Prisma.Decimal(CEILING),
+            },
+          },
+          select: { id: true },
+        });
+
+        const updateNextMaxTierIdsAwaited = tx.membershipTier.findMany({
+          where: {
+            [maxKey]: {
+              gt: new Prisma.Decimal(oldMax),
+              lt: new Prisma.Decimal(CEILING),
+            },
+          },
+          select: { id: true },
+        });
+
+        const [updateCurrentTierIds = [], updateNextMinTierIds = [], updateNextMaxTierIds = []] =
+          await Promise.all([
+            updateCurrentTierIdsAwaited,
+            updateNextMinTierIdsAwaited,
+            updateNextMaxTierIdsAwaited,
+          ]);
+
+        let updatedCurrentTierCount;
+        let updatedNextMinTierCount;
+        let updatedNextMaxTierCount;
+
+        if (updateCurrentTierIds) {
+          updatedCurrentTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateCurrentTierIds.map((tier) => tier.id) } },
+            data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+          });
         }
 
-        const snapNext = await tx.membershipTier.updateMany({
-          where: { [minKey]: new Prisma.Decimal(nextMinOld) },
-          data: { [minKey]: dNewMax.add(1), updatedBy: userId },
-        });
+        if (updateNextMinTierIds) {
+          updatedNextMinTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateNextMinTierIds.map((tier) => tier.id) } },
+            data: {
+              [minKey]: {
+                increment: newValue,
+              },
+              updatedBy: userId,
+            },
+          });
+        }
+
+        if (updateNextMaxTierIds) {
+          updatedNextMaxTierCount = await tx.membershipTier.updateMany({
+            where: { id: { in: updateNextMaxTierIds.map((tier) => tier.id) } },
+            data: {
+              [maxKey]: {
+                increment: newValue,
+              },
+              updatedBy: userId,
+            },
+          });
+        }
 
         const snapPrev =
           oldMin > 0
@@ -558,15 +618,15 @@ class MembershipSettingUseCase {
             : { count: 0 };
 
         return {
-          updated: updated.count,
-          snapNext: snapNext.count,
+          updated: updatedCurrentTierCount,
+          snapNext: (updatedNextMinTierCount?.count ?? 0) + (updatedNextMaxTierCount?.count ?? 0),
           snapPrev: snapPrev.count,
         };
       });
     }
   }
 
-  async getTierInfinity(params: TierInfinityParams): Promise<UserInfinityResult> {
+  async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
     const { limit = 20, search, page } = params;
 
     const whereClause: any = {};
@@ -598,7 +658,7 @@ class MembershipSettingUseCase {
     const actualTiers = hasMore ? tiers.slice(0, limit) : tiers;
     const totalPages = Math.ceil(total / limit);
     return {
-      tiers: actualTiers as any,
+      items: actualTiers as any,
       hasMore: Number(page) < totalPages,
     };
   }

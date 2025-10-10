@@ -2,8 +2,7 @@ import {
   IRelationalTransaction,
   ITransactionPaginatedResponse,
 } from '@/features/home/module/transaction/types';
-import { FilterCriteria } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, Response } from '@/shared/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { transactionInitialState } from '../constants';
 import {

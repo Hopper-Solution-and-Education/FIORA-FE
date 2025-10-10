@@ -4,7 +4,7 @@ import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
 import { AmplitudeProvider, ReduxProvider, ThemeProvider } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
-import growthbook from '@/config/growthbook/growthbook';
+import growthbook, { initGrowthBook } from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
@@ -14,7 +14,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Inter } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'reflect-metadata';
 import { SWRConfig } from 'swr';
 import './globals.css';
@@ -28,7 +28,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { section } = useGetSection(SectionTypeEnum.HEADER);
+  const { section } = useGetSection(SectionTypeEnum.HEADER, {
+    refreshInterval: 300000, // Refetch every 5 minutes
+    revalidateOnFocus: false, // Disable refetch on window focus
+  });
+
+  useEffect(() => {
+    // Initialize GrowthBook when the component mounts
+    initGrowthBook().catch((error) => {
+      console.error('Failed to initialize GrowthBook:', error);
+    });
+  }, []);
 
   return (
     <html lang="en" suppressHydrationWarning>

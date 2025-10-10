@@ -1,11 +1,11 @@
-"use client"
+'use client';
 
-import { X, Send, ArrowLeft, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useEmailModal } from "@/features/email-template/hooks/useEmailModal"
-import { SEND_TO_OPTIONS } from "@/features/email-template/constants"
-import { formatRecipientCount } from "@/features/email-template/utils/emailHelpers"
+import { X, Send, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useEmailModal } from '@/features/email-template/hooks/useEmailModal';
+import { SEND_TO_OPTIONS } from '@/features/email-template/constants';
+import { formatRecipientCount } from '@/features/email-template/utils/emailHelpers';
 
 export default function SendMailModal() {
   const {
@@ -17,11 +17,11 @@ export default function SendMailModal() {
     handleSendToChange,
     handleSubjectChange,
     handleSendEmail,
-  } = useEmailModal()
+  } = useEmailModal();
 
-  if (!isModalOpen) return null
+  if (!isModalOpen) return null;
 
-  const showRecipients = sendTo === "personal"
+  const showRecipients = sendTo === 'personal';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -29,7 +29,12 @@ export default function SendMailModal() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-semibold text-gray-900">Send Mail</h2>
-          <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCloseModal}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="h-6 w-6" />
           </Button>
         </div>
@@ -50,7 +55,7 @@ export default function SendMailModal() {
                 />
                 <div
                   className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                    sendTo === option.id ? "border-gray-900 bg-gray-900" : "border-gray-300"
+                    sendTo === option.id ? 'border-gray-900 bg-gray-900' : 'border-gray-300'
                   }`}
                 >
                   {sendTo === option.id && <div className="w-2 h-2 rounded-full bg-white" />}
@@ -71,7 +76,9 @@ export default function SendMailModal() {
                   <span className="text-gray-700">{recipients[0]}</span>
                   <button className="bg-gray-200 text-gray-600 rounded px-2 py-1 text-sm">×</button>
                   {recipients.length > 1 && (
-                    <span className="text-gray-600 font-medium">{formatRecipientCount(recipients.length)}</span>
+                    <span className="text-gray-600 font-medium">
+                      {formatRecipientCount(recipients.length)}
+                    </span>
                   )}
                 </div>
                 <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -109,11 +116,14 @@ export default function SendMailModal() {
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
           </Button>
-          <Button onClick={handleSendEmail} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white">
+          <Button
+            onClick={handleSendEmail}
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white"
+          >
             <Send className="h-5 w-5 mr-2" />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

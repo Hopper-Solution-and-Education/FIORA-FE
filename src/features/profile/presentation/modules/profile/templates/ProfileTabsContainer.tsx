@@ -5,13 +5,13 @@ import { FC, ReactNode } from 'react';
 type ProfileTabsContainerProps = {
   defaultValue?: string;
   profileContent: ReactNode;
-  settingContent: ReactNode;
+  settingContent?: ReactNode;
 };
 
 const ProfileTabsContainer: FC<ProfileTabsContainerProps> = ({
   defaultValue = 'profile',
   profileContent,
-  settingContent,
+  settingContent = null,
 }) => {
   return (
     <div className="bg-white shadow-sm ">
@@ -35,9 +35,11 @@ const ProfileTabsContainer: FC<ProfileTabsContainerProps> = ({
           <main>{profileContent}</main>
         </TabsContent>
 
-        <TabsContent value="setting" className="mt-0">
-          <main>{settingContent}</main>
-        </TabsContent>
+        {settingContent && (
+          <TabsContent value="setting" className="mt-0">
+            <main>{settingContent}</main>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

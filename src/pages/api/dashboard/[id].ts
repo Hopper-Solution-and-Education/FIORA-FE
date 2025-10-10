@@ -14,7 +14,7 @@ export default sessionWrapper(
       async (request, response) => {
         switch (request.method) {
           case 'PATCH':
-            return PATCH(request, response, userId);
+            return PATCH(request, response, user);
           default:
             return response
               .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -26,9 +26,9 @@ export default sessionWrapper(
     ),
 );
 
-export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function PATCH(req: NextApiRequest, res: NextApiResponse, user: SessionUser) {
   const { id } = req.query;
-  const { tierId } = req.body;
+  const { tierId, reason } = req.body;
 
   if (!tierId) {
     return res
@@ -42,19 +42,33 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: s
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'You must input cronjob id!'));
   }
   const cronjob = await dashboardRepository.getCronjob(id as string);
+
+  if (!cronjob) {
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
+  }
+
+  if (!cronjob?.status) {
+    return res
+      .status(RESPONSE_CODE.CONFLICT)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cronjob has been processed!'));
+  }
+
   const tier = await dashboardRepository.getTier(tierId as string);
   if (!tier) {
     return res
       .status(RESPONSE_CODE.NOT_FOUND)
       .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Membership tier not found!'));
   }
-  if (!cronjob) {
+
+  const result = await dashboardRepository.changeCronjob(cronjob, user, tier, reason);
+  if (result == 404) {
     return res
-      .status(RESPONSE_CODE.NOT_FOUND)
-      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, 'Cron job not found!'));
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.UPDATE_FAIL));
   }
-  await dashboardRepository.changeCronjob(cronjob, userId, tier);
   return res
     .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS));
+    .json(createResponse(RESPONSE_CODE.OK, Messages.UPDATE_SUCCESS, result));
 }

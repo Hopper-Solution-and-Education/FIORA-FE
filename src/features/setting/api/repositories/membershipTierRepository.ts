@@ -5,7 +5,10 @@ export interface IMembershipTierRepository {
     data: Prisma.MembershipTierCreateInput,
     prismaTx?: Prisma.TransactionClient,
   ): Promise<MembershipTier>;
-  findMembershipTierById(id: string): Promise<MembershipTier | null>;
+  findMembershipTierById(
+    id: string,
+    options?: Prisma.MembershipTierFindFirstArgs,
+  ): Promise<MembershipTier | null>;
   updateMembershipTier(id: string, data: Prisma.MembershipTierUpdateInput): Promise<MembershipTier>;
   deleteMembershipTier(id: string): Promise<void>;
   findMembershipTiersDashboard(
@@ -93,8 +96,4 @@ export interface OutputTierInfinity {
   id?: number;
   name?: string;
   email?: string;
-}
-export interface UserInfinityResult {
-  tiers: OutputTierInfinity[];
-  hasMore: boolean;
 }

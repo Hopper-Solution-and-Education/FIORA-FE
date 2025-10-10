@@ -1,4 +1,5 @@
 import { profileUseCase } from '@/features/profile/application/use-cases/profileUseCase';
+import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
@@ -45,9 +46,13 @@ export const config = {
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const profile = await profileUseCase.getById(userId);
   if (!profile) {
-    return res.status(404).json({ message: 'Profile not found', data: null, status: 404 });
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json({ message: Messages.USER_NOT_FOUND, data: null, status: RESPONSE_CODE.NOT_FOUND });
   }
-  return res.status(RESPONSE_CODE.OK).json({ message: 'OK', data: profile, status: 200 });
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json({ message: Messages.GET_SUCCESS, data: profile, status: RESPONSE_CODE.OK });
 }
 
 export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
@@ -85,7 +90,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       newAvatar: newAvatar || undefined,
       newLogo: newLogo || undefined,
     });
-    return res.status(200).json({ message: 'Updated', data: updated, status: 200 });
+
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json({ message: Messages.UPDATE_SUCCESS, data: updated, status: RESPONSE_CODE.OK });
   }
 
   // JSON fallback
@@ -98,5 +106,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
     address: body.address,
     birthday: body.birthday,
   });
-  return res.status(200).json({ message: 'Updated', data: updated, status: 200 });
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json({ message: Messages.UPDATE_SUCCESS, data: updated, status: RESPONSE_CODE.OK });
 }

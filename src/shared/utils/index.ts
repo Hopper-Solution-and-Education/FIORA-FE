@@ -1,9 +1,9 @@
 import { iconOptions } from '@/shared/constants/data';
+import { OrderByFields } from '@/shared/types';
 import { Filter } from '@growthbook/growthbook';
 import { Prisma } from '@prisma/client';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { OrderByFields } from '../types/Common.types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

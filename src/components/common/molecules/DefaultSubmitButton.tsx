@@ -5,6 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 
+interface CustomButtonConfig {
+  onClick: () => void;
+  tooltip?: string;
+  icon?: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  className?: string;
+  disabled?: boolean;
+}
+
 interface DefaultSubmitButtonProps {
   isSubmitting?: boolean;
   disabled?: boolean;
@@ -13,6 +22,8 @@ interface DefaultSubmitButtonProps {
   backTooltip?: string;
   submitTooltip?: string;
   className?: string;
+  customButton?: CustomButtonConfig;
+  submitIcon?: React.ReactNode;
 }
 
 const DefaultSubmitButton = ({
@@ -23,10 +34,13 @@ const DefaultSubmitButton = ({
   backTooltip,
   submitTooltip,
   className,
+  customButton,
+  submitIcon,
 }: DefaultSubmitButtonProps) => {
   return (
     <TooltipProvider>
-      <div className={cn('flex justify-between gap-4 mt-6', className)}>
+      <div className={cn('flex justify-between items-center gap-4 mt-6', className)}>
+        {/* Back Button */}
         {onBack ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -47,26 +61,54 @@ const DefaultSubmitButton = ({
           <div className="w-32 h-12" />
         )}
 
-        {onSubmit && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onSubmit}
-                disabled={disabled || isSubmitting}
-                className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                {isSubmitting ? (
-                  <Icons.spinner className="animate-spin h-5 w-5" />
-                ) : (
-                  <Icons.check className="h-5 w-5" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isSubmitting ? 'Submiting...' : submitTooltip || 'Submit'}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
+        {/* Right side buttons container */}
+        <div className="flex items-center gap-4">
+          {/* Custom Button (e.g., Reject) */}
+          {customButton && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={customButton.variant || 'destructive'}
+                  type="button"
+                  onClick={customButton.onClick}
+                  disabled={customButton.disabled || isSubmitting}
+                  className={cn(
+                    'w-32 h-12 flex items-center justify-center transition-colors duration-200',
+                    customButton.className,
+                  )}
+                >
+                  {customButton.icon || <Icons.close className="h-5 w-5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{customButton.tooltip || 'Custom Action'}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Submit Button */}
+          {onSubmit && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={onSubmit}
+                  type="button"
+                  disabled={disabled || isSubmitting}
+                  className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isSubmitting ? (
+                    <Icons.spinner className="animate-spin h-5 w-5" />
+                  ) : (
+                    submitIcon || <Icons.check className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isSubmitting ? 'Submiting...' : submitTooltip || 'Submit'}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </div>
     </TooltipProvider>
   );

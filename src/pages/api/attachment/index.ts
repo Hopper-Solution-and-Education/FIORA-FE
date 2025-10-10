@@ -5,12 +5,12 @@ import { errorHandler } from '@/shared/lib';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
         case 'POST':
-          return POST(request, response, userId);
+          return POST(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -22,7 +22,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { url, path, type, size } = req.body;
   if (!url || !path || !type) {
     return res.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'No file provided' });

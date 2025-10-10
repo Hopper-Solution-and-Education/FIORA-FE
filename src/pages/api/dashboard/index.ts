@@ -8,12 +8,12 @@ import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
         case 'GET':
-          return GET(request, response, userId);
+          return GET(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -25,7 +25,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const {
       status,
@@ -38,11 +38,11 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       typeCronJob,
       search,
       page = 1,
-      limit = 10,
+      pageSize = 10,
     } = req.query as DashboardFilterParams;
 
     const pageNum = Math.max(1, Number(page));
-    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     const filters: any = {};
     if (typeCronJob) {
@@ -100,7 +100,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     }
     const [result, counts] = await Promise.all([
       dashboardRepository.getWithFilters(filters, skip, limitNum, tierFilters),
-      dashboardRepository.getCount(filters),
+      dashboardRepository.getCount(filters, tierFilters),
     ]);
 
     const { filteredCount, statusCounts } = counts;

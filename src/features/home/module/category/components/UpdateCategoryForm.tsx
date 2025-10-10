@@ -1,9 +1,10 @@
 'use client';
 
-import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
-import InputField from '@/components/common/forms/input/InputField';
-import TextareaField from '@/components/common/forms/text-area/TextareaField';
+import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import GlobalForm from '@/components/common/forms/GlobalForm';
+import InputField from '@/components/common/forms/input/InputField';
+import GlobalIconSelect from '@/components/common/forms/select/GlobalIconSelect';
+import TextareaField from '@/components/common/forms/text-area/TextareaField';
 import ParentCategorySelectUpdate from '@/features/home/module/category/components/ParentCategorySelectUpdate';
 import TypeSelect from '@/features/home/module/category/components/TypeSelect';
 import { updateCategory } from '@/features/home/module/category/slices/actions';
@@ -13,13 +14,12 @@ import {
   UpdateCategoryDefaultValues,
   validateUpdateCategorySchema,
 } from '@/features/home/module/category/slices/utils/formSchema';
+import { Response } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import DeleteDialog from './DeleteDialog';
-import GlobalLabel from '@/components/common/atoms/GlobalLabel';
-import { Response } from '@/shared/types/Common.types';
 
 interface UpdateCategoryFormProps {
   initialData?: Category;

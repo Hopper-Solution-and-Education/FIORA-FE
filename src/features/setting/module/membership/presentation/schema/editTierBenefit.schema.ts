@@ -8,6 +8,7 @@ export const editTierBenefitSchema = yup.object({
     .min(0, 'Value must be greater than 0')
     .positive('Value must be positive')
     .required('Value is required'),
+  description: yup.string().nullable(),
   unit: yup.string().required('Unit is required'),
   mode: yup.string().required('Mode is required').oneOf(Object.values(ProcessMembershipMode)),
 });
@@ -17,6 +18,7 @@ export type EditTierBenefitFormValues = yup.InferType<typeof editTierBenefitSche
 export const defaultEditTierBenefitValue: EditTierBenefitFormValues = {
   name: '',
   value: 0,
+  description: '',
   unit: '',
   mode: ProcessMembershipMode.UPDATE,
 };

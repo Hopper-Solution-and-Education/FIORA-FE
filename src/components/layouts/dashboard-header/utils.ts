@@ -50,7 +50,7 @@ export const helpItems = [
   },
 ];
 
-export const newsItems = [{ label: 'News', icon: NewspaperIcon, url: '/news-center/news' }];
+export const newsItems = [{ label: 'News', icon: NewspaperIcon, url: '/news' }];
 
 export const filterMenuItems = (
   items: MenuSettingItem[],

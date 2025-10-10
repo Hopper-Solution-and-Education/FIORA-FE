@@ -2,5 +2,5 @@ import type { UpdateProfileRequest, UserProfile } from '../../domain/entities/mo
 
 export interface IProfileRepository {
   getById(userId: string): Promise<UserProfile | null>;
-  update(userId: string, payload: UpdateProfileRequest): Promise<UserProfile>;
+  update(userId: string, payload: UpdateProfileRequest, updateBy?: string): Promise<UserProfile>;
 }
