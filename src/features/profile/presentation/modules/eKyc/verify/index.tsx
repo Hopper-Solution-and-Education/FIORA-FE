@@ -107,7 +107,7 @@ const VerifyKYCPage = () => {
         <Tabs
           value={id}
           onValueChange={(value) => {
-            router.replace(`/ekyc/verify/${userId}?id=${value}`);
+            router.replace(`/ekyc/${userId}/verify?id=${value}`);
           }}
           orientation="vertical"
           className="w-full"

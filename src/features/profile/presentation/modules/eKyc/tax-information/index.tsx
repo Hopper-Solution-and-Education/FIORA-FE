@@ -199,7 +199,7 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
 
           <TaxActions
             isLoading={isSubmitting || isDeleting}
-            onSubmit={isDisabled ? undefined : handleSubmitClick}
+            onSubmit={isDisabled && !isRejected ? undefined : handleSubmitClick}
             isRejected={isRejected}
           />
         </form>
