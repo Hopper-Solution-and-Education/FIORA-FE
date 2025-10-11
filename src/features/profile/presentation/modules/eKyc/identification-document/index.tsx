@@ -13,6 +13,7 @@ import {
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -31,6 +32,7 @@ interface IdentificationDocumentProps {
 }
 
 const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData }) => {
+  const router = useRouter();
   const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
     undefined,
     { skip: !eKYCData },
@@ -135,6 +137,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
       setShowResubmitModal(false);
       reset(defaults);
       toast.success('Previous submission deleted. You can now submit new documents.');
+      router.refresh();
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
       toast.error(error?.message || 'Failed to delete previous submission');
@@ -241,7 +244,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
           <IdentificationActions
             isLoading={isSubmitting || isDeleting}
-            onSubmit={isDisabled ? undefined : handleSubmitClick}
+            onSubmit={handleSubmitClick}
             isRejected={isRejected}
           />
         </form>

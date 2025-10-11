@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 import { Button } from '@/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -10,7 +9,9 @@ import {
   IdentificationDocumentType,
 } from '@/features/profile/domain/entities/models/profile';
 import {
+  useGetBankAccountByUserIdQuery,
   useGetBankAccountQuery,
+  useGetIdentificationDocumentByUserIdQuery,
   useGetIdentificationDocumentQuery,
 } from '@/features/profile/store/api/profileApi';
 import { AlertCircle, CheckCircle, RefreshCcw, Shield, XCircle } from 'lucide-react';
@@ -23,6 +24,7 @@ type KYCSectionProps = {
   onNavigateToKYC: () => void;
   className?: string;
   status?: EKYCStatus;
+  eKycId?: string;
 };
 
 export const KYCSection: React.FC<KYCSectionProps> = ({
@@ -32,22 +34,40 @@ export const KYCSection: React.FC<KYCSectionProps> = ({
   onNavigateToKYC,
   className = '',
   status,
+  eKycId = '',
 }) => {
   // identification and bank account data get from same api
-  const { data: identificationDocumentData, isLoading: isLoadingIdentificationDocumentData } =
-    useGetIdentificationDocumentQuery(undefined, {
-      skip:
-        !(kycType === EKYCType.IDENTIFICATION_DOCUMENT || kycType === EKYCType.BANK_ACCOUNT) &&
-        status !== EKYCStatus.APPROVAL,
-    });
+  const { data: identificationDocumentData } = useGetIdentificationDocumentQuery(undefined, {
+    skip:
+      !(kycType === EKYCType.IDENTIFICATION_DOCUMENT || kycType === EKYCType.BANK_ACCOUNT) &&
+      status !== EKYCStatus.APPROVAL,
+  });
 
-  const { data: bankAccountData, isLoading: isLoadingBankAccountData } = useGetBankAccountQuery(
-    undefined,
-    { skip: kycType !== EKYCType.BANK_ACCOUNT && status !== EKYCStatus.APPROVAL },
+  const { data: identificationDocumentDataByUserId } = useGetIdentificationDocumentByUserIdQuery(
+    eKycId,
+    {
+      skip: kycType !== EKYCType.IDENTIFICATION_DOCUMENT && status !== EKYCStatus.APPROVAL,
+    },
   );
+
+  const { data: bankAccountDataByUserId } = useGetBankAccountByUserIdQuery(eKycId, {
+    skip: kycType !== EKYCType.BANK_ACCOUNT && status !== EKYCStatus.APPROVAL,
+  });
+
+  const { data: bankAccountData } = useGetBankAccountQuery(undefined, {
+    skip: kycType !== EKYCType.BANK_ACCOUNT && status !== EKYCStatus.APPROVAL,
+  });
 
   // Get tax document
   const taxDocument = useMemo(() => {
+    if (eKycId) {
+      if (!identificationDocumentDataByUserId || identificationDocumentDataByUserId.length === 0)
+        return null;
+      return identificationDocumentDataByUserId.find(
+        (item: any) => item.type === IdentificationDocumentType.TAX,
+      );
+    }
+
     if (!identificationDocumentData || identificationDocumentData.length === 0) return null;
     return identificationDocumentData.find(
       (item: any) => item.type === IdentificationDocumentType.TAX,
@@ -56,6 +76,13 @@ export const KYCSection: React.FC<KYCSectionProps> = ({
 
   // Get identification document
   const identificationDocument = useMemo(() => {
+    if (eKycId) {
+      if (!identificationDocumentDataByUserId || identificationDocumentDataByUserId.length === 0)
+        return null;
+      return identificationDocumentDataByUserId.find(
+        (item: any) => item.type !== IdentificationDocumentType.TAX,
+      );
+    }
     if (!identificationDocumentData || identificationDocumentData.length === 0) return null;
     return identificationDocumentData.find(
       (item: any) => item.type !== IdentificationDocumentType.TAX,
@@ -141,7 +168,11 @@ export const KYCSection: React.FC<KYCSectionProps> = ({
                   <Input
                     id="bank-name"
                     {...field}
-                    value={bankAccountData?.bankName ?? ''}
+                    value={
+                      eKycId
+                        ? (bankAccountDataByUserId?.bankName ?? '')
+                        : (bankAccountData?.bankName ?? '')
+                    }
                     disabled={true}
                   />
                 </FormControl>
@@ -158,7 +189,11 @@ export const KYCSection: React.FC<KYCSectionProps> = ({
                   <Input
                     id="account-number"
                     {...field}
-                    value={bankAccountData?.accountNumber ?? ''}
+                    value={
+                      eKycId
+                        ? (bankAccountDataByUserId?.accountNumber ?? '')
+                        : (bankAccountData?.accountNumber ?? '')
+                    }
                     disabled={true}
                   />
                 </FormControl>
@@ -227,7 +262,7 @@ export const KYCSection: React.FC<KYCSectionProps> = ({
                   <Input
                     id="tax-code"
                     {...field}
-                    value={taxDocument?.taxCode ?? ''}
+                    value={taxDocument?.idNumber ?? ''}
                     disabled={true}
                   />
                 </FormControl>

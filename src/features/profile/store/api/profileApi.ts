@@ -119,18 +119,6 @@ export const profileApi = createApi({
       providesTags: ['eKYCByUserId'],
     }),
 
-    // Admin/CS: Verify eKYC (approve/reject)
-    verifyEKYC: builder.mutation<any, { kycId: string; status: string; remarks?: string }>({
-      query: ({ kycId, ...body }) => ({
-        url: `/api/eKyc/verify/${kycId}`,
-        method: 'PATCH',
-        body,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-      transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['eKYC'],
-    }),
-
     // Admin/CS: Get Identification Document by userId
     getIdentificationDocumentByUserId: builder.query<any, string>({
       query: (userId) => ({
@@ -177,15 +165,34 @@ export const profileApi = createApi({
       invalidatesTags: ['ProfileByUserId'],
     }),
 
+    // Admin/CS: Verify eKYC (approve/reject)
+    verifyEKYC: builder.mutation<any, { kycId: string; status: string; remarks?: string }>({
+      query: ({ kycId, ...body }) => ({
+        url: `/api/eKyc/verify/${kycId}`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: [
+        'eKYCByUserId',
+        'eKYC',
+        'IdentificationDocumentByUserId',
+        'BankAccountByUserId',
+        'ProfileByUserId',
+      ],
+    }),
+
     // Delete eKYC for re-submit
     deleteEKYC: builder.mutation<any, string>({
       query: (kycId) => ({ url: `/api/eKyc/${kycId}`, method: 'DELETE' }),
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: [
+        'eKYC',
+        'IdentificationDocument',
+        'BankAccount',
         'eKYCByUserId',
         'IdentificationDocumentByUserId',
         'BankAccountByUserId',
-        'ProfileByUserId',
       ],
     }),
   }),
