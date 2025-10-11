@@ -4,7 +4,6 @@ import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButt
 import { Icons } from '@/components/Icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -14,6 +13,7 @@ import {
   useGetIdentificationDocumentByUserIdQuery,
   useVerifyEKYCMutation,
 } from '@/features/profile/store/api/profileApi';
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -35,6 +35,7 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
   eKYCData,
   userId,
 }) => {
+  const router = useRouter();
   const { data: existingData, isLoading: isLoadingData } =
     useGetIdentificationDocumentByUserIdQuery(userId, {
       skip: !eKYCData || !userId,
@@ -134,16 +135,61 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
   };
 
   const isDisabled = true; // Always disabled for admin view
-  const canVerify = eKYCData?.status === EKYCStatus.PENDING;
+  const isPending = eKYCData?.status === EKYCStatus.PENDING;
   const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
 
   if (isLoadingData) {
     return <Skeleton className="w-full h-96" />;
   }
 
+  const renderSubmitButton = () => {
+    if (isPending) {
+      return (
+        <DefaultSubmitButton
+          isSubmitting={isVerifying}
+          disabled={isVerifying}
+          onSubmit={handleOpenApprove}
+          submitTooltip="Approve eKYC"
+          customButton={{
+            onClick: handleOpenReject,
+            tooltip: 'Reject eKYC',
+            icon: <Icons.close className="h-5 w-5" />,
+            variant: 'destructive',
+            disabled: isVerifying,
+          }}
+          onBack={() => {
+            router.back();
+          }}
+        />
+      );
+    }
+
+    // if (isRejected) {
+    //   return (
+    //     <DefaultSubmitButton
+    //       isSubmitting={isVerifying}
+    //       disabled={isVerifying}
+    //       onSubmit={handleOpenReject}
+    //       submitTooltip="Re-submit eKYC"
+    //       onBack={() => {
+    //         router.back();
+    //       }}
+    //     />
+    //   );
+    // }
+
+    return (
+      <DefaultSubmitButton
+        onBack={() => {
+          router.back();
+        }}
+      />
+    );
+  };
+
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
+    <>
+      <div className="w-full max-w-5xl mx-auto mb-4">
         <IdentificationHeader status={eKYCData?.status} />
 
         {isRejected && identificationDocument?.remarks && (
@@ -162,28 +208,7 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
                   disabled={isDisabled}
                 />
 
-                {canVerify && (
-                  <DefaultSubmitButton
-                    isSubmitting={isVerifying}
-                    disabled={isVerifying}
-                    onSubmit={handleOpenApprove}
-                    submitTooltip="Approve eKYC"
-                    customButton={{
-                      onClick: handleOpenReject,
-                      tooltip: 'Reject eKYC',
-                      icon: <Icons.close className="h-5 w-5" />,
-                      variant: 'destructive',
-                      disabled: isVerifying,
-                    }}
-                  />
-                )}
-
-                {!canVerify && eKYCData && (
-                  <div className="text-center text-sm text-muted-foreground py-4">
-                    This eKYC has already been{' '}
-                    {eKYCData.status === EKYCStatus.APPROVAL ? 'approved' : 'processed'}.
-                  </div>
-                )}
+                {renderSubmitButton()}
               </form>
             </FormProvider>
           </CardContent>
@@ -197,7 +222,7 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
         onConfirm={handleVerify}
         isLoading={isVerifying}
       />
-    </TooltipProvider>
+    </>
   );
 };
 

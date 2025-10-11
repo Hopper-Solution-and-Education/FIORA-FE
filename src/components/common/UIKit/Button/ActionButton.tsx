@@ -1,5 +1,5 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
 import { ButtonProps } from './type';
 
@@ -46,14 +46,9 @@ const ActionButton = ({
 
   if (tooltipContent) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent side={tooltipSide}>
-            <p>{tooltipContent}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <CommonTooltip side={tooltipSide} content={tooltipContent}>
+        {button}
+      </CommonTooltip>
     );
   }
 

@@ -1,14 +1,13 @@
 'use client';
 
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import { Icons } from '@/components/Icon';
 import { Card, CardContent } from '@/components/ui/card';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC, EKYCStatus } from '@/features/profile/domain/entities/models/profile';
 import {
   useGetProfileByUserIdQuery,
   useVerifyEKYCMutation,
 } from '@/features/profile/store/api/profileApi';
+import { useRouter } from 'next/navigation';
 import { FC, useState } from 'react';
 import { toast } from 'sonner';
 import { ContactInfoForm, ContactInfoHeader } from '../contact-information/components';
@@ -23,6 +22,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
   eKYCData,
   userId,
 }) => {
+  const router = useRouter();
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileByUserIdQuery(userId, {
     skip: !userId,
   });
@@ -68,7 +68,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
   const canVerify = eKYCData?.status === EKYCStatus.PENDING;
 
   return (
-    <TooltipProvider>
+    <>
       <div className="max-w-5xl mx-auto">
         <ContactInfoHeader status={eKYCData?.status} />
 
@@ -82,28 +82,12 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
               onSendOtp={() => {}}
             />
 
-            {canVerify && (
-              <DefaultSubmitButton
-                isSubmitting={isVerifying}
-                disabled={isVerifying}
-                onSubmit={handleOpenApprove}
-                submitTooltip="Approve eKYC"
-                customButton={{
-                  onClick: handleOpenReject,
-                  tooltip: 'Reject eKYC',
-                  icon: <Icons.close className="h-5 w-5" />,
-                  variant: 'destructive',
-                  disabled: isVerifying,
-                }}
-              />
-            )}
-
-            {!canVerify && eKYCData && (
-              <div className="text-center text-sm text-muted-foreground py-4">
-                This eKYC has already been{' '}
-                {eKYCData.status === EKYCStatus.APPROVAL ? 'approved' : 'processed'}.
-              </div>
-            )}
+            <DefaultSubmitButton
+              onBack={() => {
+                router.back();
+              }}
+              backTooltip="Go back"
+            />
           </CardContent>
         </Card>
       </div>
@@ -115,7 +99,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
         onConfirm={handleVerify}
         isLoading={isVerifying}
       />
-    </TooltipProvider>
+    </>
   );
 };
 

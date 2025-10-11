@@ -337,6 +337,15 @@ class NotificationUseCase {
       );
       return result;
     } catch (error) {
+      await prisma.emailNotificationLogs.create({
+        data: {
+          notificationId: emailTemplateId,
+          userId: 'unknown',
+          status: 'FAILED',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          createdBy: null,
+        },
+      });
       console.error('sendNotificationWithTemplate failed:', error);
       throw new BadRequestError(
         `Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`,

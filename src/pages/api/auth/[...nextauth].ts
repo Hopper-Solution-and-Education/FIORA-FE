@@ -111,20 +111,29 @@ export const authOptions: NextAuthOptions = {
 
             const defaultMembership = await prisma.membershipTier.findFirst({
               where: {
-                balanceMinThreshold: 0,
-                spentMinThreshold: 0,
+                balanceMinThreshold: {
+                  equals: 0,
+                },
+                spentMinThreshold: {
+                  equals: 0,
+                },
+              },
+              select: {
+                id: true,
               },
             });
 
-            await prisma.membershipProgress.create({
-              data: {
-                userId: dbUser.id,
-                currentSpent: new Prisma.Decimal(0),
-                currentBalance: new Prisma.Decimal(0),
-                createdBy: dbUser.id,
-                tierId: defaultMembership?.id || '',
-              },
-            });
+            if (defaultMembership) {
+              await prisma.membershipProgress.create({
+                data: {
+                  userId: dbUser.id,
+                  currentSpent: new Prisma.Decimal(0),
+                  currentBalance: new Prisma.Decimal(0),
+                  createdBy: dbUser.id,
+                  tierId: defaultMembership.id,
+                },
+              });
+            }
 
             const categoriesCreated = await createDefaultCategories(dbUser.id);
             if (!categoriesCreated) {

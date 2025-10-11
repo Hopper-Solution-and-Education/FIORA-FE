@@ -138,6 +138,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               kycType={EKYCType.IDENTIFICATION_DOCUMENT}
               onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.IDENTIFICATION_DOCUMENT)}
               status={getEKYCStatus(EKYCType.IDENTIFICATION_DOCUMENT)}
+              eKycId={eKycId}
             />
 
             <KYCSection
@@ -146,6 +147,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               kycType={EKYCType.TAX_INFORMATION}
               onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.TAX_INFORMATION)}
               status={getEKYCStatus(EKYCType.TAX_INFORMATION)}
+              eKycId={eKycId}
             />
 
             <KYCSection
@@ -154,6 +156,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               kycType={EKYCType.BANK_ACCOUNT}
               onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.BANK_ACCOUNT)}
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
+              eKycId={eKycId}
             />
 
             {showUserManagement && (

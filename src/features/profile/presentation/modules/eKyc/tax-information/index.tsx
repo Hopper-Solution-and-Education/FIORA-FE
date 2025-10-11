@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -180,44 +179,40 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <TaxInfoHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <TaxInfoHeader status={eKYCData?.status} />
 
-        {isRejected && taxDocument?.remarks && (
-          <RejectedRemarksField remarks={taxDocument.remarks} />
-        )}
+      {isRejected && taxDocument?.remarks && <RejectedRemarksField remarks={taxDocument.remarks} />}
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmitClick();
-            }}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <TaxDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+      <FormProvider {...form}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitClick();
+          }}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <TaxDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <TaxDocumentUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <TaxDocumentUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <TaxActions
-              isLoading={isSubmitting || isDeleting}
-              onSubmit={isDisabled ? undefined : handleSubmitClick}
-              isRejected={isRejected}
-            />
-          </form>
-        </FormProvider>
+          <TaxActions
+            isLoading={isSubmitting || isDeleting}
+            onSubmit={isDisabled && !isRejected ? undefined : handleSubmitClick}
+            isRejected={isRejected}
+          />
+        </form>
+      </FormProvider>
 
-        <ResubmitConfirmModal
-          open={showResubmitModal}
-          onOpenChange={setShowResubmitModal}
-          onConfirm={handleResubmitConfirm}
-          isLoading={isDeleting}
-          type="tax"
-        />
-      </div>
-    </TooltipProvider>
+      <ResubmitConfirmModal
+        open={showResubmitModal}
+        onOpenChange={setShowResubmitModal}
+        onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="tax"
+      />
+    </div>
   );
 };
 

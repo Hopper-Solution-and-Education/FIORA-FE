@@ -49,6 +49,15 @@ class EKycRepository {
       where: {
         id,
       },
+      include: {
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
   }
 

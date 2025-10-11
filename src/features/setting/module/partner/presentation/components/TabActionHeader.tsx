@@ -1,9 +1,9 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FilterCriteria } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
@@ -65,18 +65,11 @@ export const TabActionHeader = ({ buttonLabel, redirectPath }: TabActionHeaderPr
               className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50"
             />
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Filters</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Filters">
+            <div>
+              <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
+            </div>
+          </CommonTooltip>
         </div>
 
         {buttonLabel ? (

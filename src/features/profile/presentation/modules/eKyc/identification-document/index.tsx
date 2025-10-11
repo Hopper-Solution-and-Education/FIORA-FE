@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   eKYC,
   EKYCStatus,
@@ -14,6 +13,7 @@ import {
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ interface IdentificationDocumentProps {
 }
 
 const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData }) => {
+  const router = useRouter();
   const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
     undefined,
     { skip: !eKYCData },
@@ -136,6 +137,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
       setShowResubmitModal(false);
       reset(defaults);
       toast.success('Previous submission deleted. You can now submit new documents.');
+      router.refresh();
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
       toast.error(error?.message || 'Failed to delete previous submission');
@@ -220,44 +222,42 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <IdentificationHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <IdentificationHeader status={eKYCData?.status} />
 
-        {isRejected && identificationDocument?.remarks && (
-          <RejectedRemarksField remarks={identificationDocument.remarks} />
-        )}
+      {isRejected && identificationDocument?.remarks && (
+        <RejectedRemarksField remarks={identificationDocument.remarks} />
+      )}
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmitClick();
-            }}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+      <FormProvider {...form}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitClick();
+          }}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+          <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-            <IdentificationActions
-              isLoading={isSubmitting || isDeleting}
-              onSubmit={isDisabled ? undefined : handleSubmitClick}
-              isRejected={isRejected}
-            />
-          </form>
-        </FormProvider>
+          <IdentificationActions
+            isLoading={isSubmitting || isDeleting}
+            onSubmit={handleSubmitClick}
+            isRejected={isRejected}
+          />
+        </form>
+      </FormProvider>
 
-        <ResubmitConfirmModal
-          open={showResubmitModal}
-          onOpenChange={setShowResubmitModal}
-          onConfirm={handleResubmitConfirm}
-          isLoading={isDeleting}
-          type="identification"
-        />
-      </div>
-    </TooltipProvider>
+      <ResubmitConfirmModal
+        open={showResubmitModal}
+        onOpenChange={setShowResubmitModal}
+        onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="identification"
+      />
+    </div>
   );
 };
 

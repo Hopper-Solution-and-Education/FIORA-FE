@@ -1,7 +1,6 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC, EKYCStatus } from '@/features/profile/domain/entities/models/profile';
 import {
   useDeleteEKYCMutation,
@@ -177,48 +176,42 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   }
 
   return (
-    <TooltipProvider>
-      <div className="w-full max-w-5xl mx-auto">
-        <BankAccountHeader status={eKYCData?.status} />
+    <div className="w-full max-w-5xl mx-auto">
+      <BankAccountHeader status={eKYCData?.status} />
 
-        {isRejected && existingData?.remarks && (
-          <RejectedRemarksField remarks={existingData.remarks} />
-        )}
+      {isRejected && existingData?.remarks && (
+        <RejectedRemarksField remarks={existingData.remarks} />
+      )}
 
-        <FormProvider {...form}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmitClick();
-            }}
-            noValidate
-            className="space-y-4 sm:space-y-6"
-          >
-            <BankAccountDetailsForm
-              form={form}
-              isLoadingData={isLoadingData}
-              disabled={!!eKYCData}
-            />
+      <FormProvider {...form}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitClick();
+          }}
+          noValidate
+          className="space-y-4 sm:space-y-6"
+        >
+          <BankAccountDetailsForm form={form} isLoadingData={isLoadingData} disabled={!!eKYCData} />
 
-            <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={!!eKYCData} />
+          <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={!!eKYCData} />
 
-            <BankAccountActions
-              isLoading={isSubmitting || isDeleting}
-              onSubmit={isDisabledSubmit ? undefined : handleSubmitClick}
-              isRejected={isRejected}
-            />
-          </form>
-        </FormProvider>
+          <BankAccountActions
+            isLoading={isSubmitting || isDeleting}
+            onSubmit={isDisabledSubmit ? undefined : handleSubmitClick}
+            isRejected={isRejected}
+          />
+        </form>
+      </FormProvider>
 
-        <ResubmitConfirmModal
-          open={showResubmitModal}
-          onOpenChange={setShowResubmitModal}
-          onConfirm={handleResubmitConfirm}
-          isLoading={isDeleting}
-          type="bank"
-        />
-      </div>
-    </TooltipProvider>
+      <ResubmitConfirmModal
+        open={showResubmitModal}
+        onOpenChange={setShowResubmitModal}
+        onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="bank"
+      />
+    </div>
   );
 };
 

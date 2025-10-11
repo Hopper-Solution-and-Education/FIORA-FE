@@ -1,5 +1,6 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { DateTimePicker } from '@/components/common/forms';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { IdentificationDocumentType } from '@/features/profile/domain/entities/models/profile';
 import { CreditCard, HelpCircle } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
@@ -44,17 +44,9 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
         <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-purple-600" />
           <CardTitle className="text-base sm:text-lg">Document Information</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                Your documents are encrypted and securely processed. We use this information only
-                for identity verification as required by law.
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          <CommonTooltip content="Your documents are encrypted and securely processed. We use this information only for identity verification as required by law.">
+            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+          </CommonTooltip>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
