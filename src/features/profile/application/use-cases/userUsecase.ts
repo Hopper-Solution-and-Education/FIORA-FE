@@ -68,7 +68,7 @@ class UserUseCase {
     );
 
     const skip = (pageNum - 1) * limitNum;
-
+    console.log('email', email);
     // Get data
     try {
       const result: UserSearchResult[] = await this.userRepository.getWithFilters(
@@ -76,8 +76,6 @@ class UserUseCase {
         skip,
         limitNum,
       );
-
-      console.log('result', result);
 
       return result;
     } catch (error) {
@@ -164,6 +162,7 @@ class UserUseCase {
 
     if (params.email) {
       const emailArray = normalizeToArray(params.email as any);
+      console.log('emailArray', emailArray);
       filters.email = { in: emailArray };
     }
 

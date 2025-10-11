@@ -32,6 +32,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       userFromDate,
       userToDate,
       page = 1,
+      email,
       pageSize = 10,
     } = req.query as UserFilterParams;
 
@@ -41,6 +42,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     // Initialize use case with repository
 
     // Execute use case
+
     let result;
     const currentUserRole: UserRole = user.role as UserRole; // Role của user đang login
     if (user.role === UserRole.CS) {
@@ -51,6 +53,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
           status,
           fromDate,
           toDate,
+          email,
           userFromDate,
           userToDate,
           page: Number(page),
@@ -65,6 +68,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
           role: roleFilter, // Truyền role từ query để filter
           status,
           fromDate,
+          email,
           toDate,
           userFromDate,
           userToDate,

@@ -12,8 +12,8 @@ import {
 import { UserRole } from '@prisma/client';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useState } from 'react';
-import { UserInfo } from '../atoms/UserInfo';
 import { RoleSelect } from '../atoms/RoleSelect';
+import { UserInfo } from '../atoms/UserInfo';
 
 interface UserRoleSelectorProps {
   open: boolean;
@@ -66,7 +66,7 @@ export function UserRoleSelector({
         <DialogHeader className="text-center">
           <DialogTitle className="text-2xl text-center font-semibold">Assign Role</DialogTitle>
           <DialogDescription className="text-center text-base mt-4 max-w-2xl">
-            Select a new role to assign to this user. Changing a user's role will update their
+            Select a new role to assign to this user. Changing a user&apos;s role will update their
             permissions immediately.
           </DialogDescription>
         </DialogHeader>
