@@ -3,11 +3,16 @@ import UploadImageField from '@/components/common/forms/upload/UploadImageField'
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { KYC_TABS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
+import {
+  useAssignRoleMutation,
+  useBlockUserMutation,
+} from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
 import KYCSection from '../molecules/KYCSection';
 import PersonalInfoFields from '../molecules/PersonalInfoFields';
@@ -20,6 +25,7 @@ type ProfileTabProps = {
   defaultLogoSrc: string;
   onSave: (values: PersonalInfo) => Promise<void>;
   eKycId?: string;
+  showUserManagement?: boolean;
 };
 
 const ProfileTab: FC<ProfileTabProps> = ({
@@ -29,8 +35,11 @@ const ProfileTab: FC<ProfileTabProps> = ({
   defaultLogoSrc,
   onSave,
   eKycId = '',
+  showUserManagement = false,
 }) => {
   const router = useRouter();
+  const [assignRole] = useAssignRoleMutation();
+  const [blockUser] = useBlockUserMutation();
 
   const defaults = useMemo(
     () => ({
@@ -74,6 +83,30 @@ const ProfileTab: FC<ProfileTabProps> = ({
 
   const getEKYCStatus = (type: EKYCType) => {
     return profile?.eKYC?.find((item) => item.type === type)?.status;
+  };
+
+  // Handler for role updates
+  const handleRoleUpdate = async (userId: string, newRole: UserRole) => {
+    try {
+      await assignRole({ assignUserId: userId, role: newRole }).unwrap();
+      toast.success('User role updated successfully');
+    } catch (error: any) {
+      console.error('Error updating role:', error);
+      toast.error(error?.data?.message || 'Failed to update user role');
+      throw error;
+    }
+  };
+
+  // Handler for block user
+  const handleBlockUser = async (userId: string, reason?: string) => {
+    try {
+      await blockUser({ blockUserId: userId, reason }).unwrap();
+      toast.success('User blocked successfully');
+    } catch (error: any) {
+      console.error('Error blocking user:', error);
+      toast.error(error?.data?.message || 'Failed to block user');
+      throw error;
+    }
   };
 
   if (!profile) {
@@ -122,16 +155,18 @@ const ProfileTab: FC<ProfileTabProps> = ({
               onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.BANK_ACCOUNT)}
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
             />
-            <UserManagementActions
-              userId={profile?.id || ''}
-              userName={profile?.name || ''}
-              currentRole={profile?.role}
-              currentUserRole={profile?.role || UserRole.User}
-              onRoleUpdate={undefined}
-              onBlockUser={undefined}
-              onUnblockUser={undefined}
-              isBlocked={false}
-            />
+
+            {showUserManagement && (
+              <UserManagementActions
+                userId={profile?.id || ''}
+                userName={profile?.name || ''}
+                currentRole={profile?.role}
+                currentUserRole={profile?.role || UserRole.User}
+                onRoleUpdate={handleRoleUpdate}
+                onBlockUser={handleBlockUser}
+                isBlocked={false}
+              />
+            )}
 
             <DefaultSubmitButton
               isSubmitting={isLoading || isSubmitting}
