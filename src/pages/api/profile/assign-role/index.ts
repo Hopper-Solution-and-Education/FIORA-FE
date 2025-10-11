@@ -33,7 +33,9 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   if (userId === assignUserId) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.USER_SELF_ASSIGN_ROLE));
+      .json(
+        createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CANNOT_ASSIGN_ROLE_TO_YOURSELF),
+      );
   }
 
   const user: string = assignUserId as string;

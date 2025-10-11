@@ -1,7 +1,11 @@
 import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserBlocked } from '../../domain/entities/models/profile';
-import { UserFilterParams, UserSearchResult } from '../../domain/entities/models/user.types';
+import {
+  UserFilterParams,
+  UserSearchResult,
+  UserSearchResultCS,
+} from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
 
@@ -28,20 +32,40 @@ class UserUseCase {
   async getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
     return this.userRepository.getCountUserEkycByStatus(eKycStatus);
   }
-  async getAllUserEkycPending(params: UserFilterParams): Promise<UserSearchResult[]> {
-    const { search, role, status, fromDate, toDate, page = 1, pageSize = 10 } = params;
+  async getAllUserEkycPending(
+    params: UserFilterParams,
+    userRole: UserRole,
+  ): Promise<UserSearchResult[]> {
+    const {
+      search,
+      status,
+      role,
+      fromDate,
+      toDate,
+      userFromDate,
+      userToDate,
+      email,
+      page = 1,
+      pageSize = 10,
+    } = params;
 
     const pageNum = Math.max(1, Number(page));
     const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     // Build filters
-    const filters: Prisma.UserWhereInput = this.buildFilters({
-      search,
-      role,
-      status,
-      fromDate,
-      toDate,
-    });
+    const filters: Prisma.UserWhereInput = this.buildFilters(
+      {
+        search,
+        status,
+        role,
+        email,
+        fromDate,
+        toDate,
+        userFromDate,
+        userToDate,
+      },
+      userRole,
+    );
 
     const skip = (pageNum - 1) * limitNum;
 
@@ -53,6 +77,8 @@ class UserUseCase {
         limitNum,
       );
 
+      console.log('result', result);
+
       return result;
     } catch (error) {
       console.error('Error in getUsersUseCase:', error);
@@ -60,7 +86,58 @@ class UserUseCase {
       throw error;
     }
   }
-  buildFilters(params: UserFilterParams): Prisma.UserWhereInput {
+
+  async getAllUserEkycPendingCS(
+    params: UserFilterParams,
+    userRole: UserRole,
+  ): Promise<UserSearchResultCS[]> {
+    const {
+      search,
+      status,
+      fromDate,
+      toDate,
+      userFromDate,
+      userToDate,
+      email,
+      page = 1,
+      pageSize = 10,
+    } = params;
+
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
+
+    // Build filters
+    const filters: Prisma.UserWhereInput = this.buildFilters(
+      {
+        search,
+        status,
+        email,
+        fromDate,
+        toDate,
+        userFromDate,
+        userToDate,
+      },
+      userRole,
+    );
+
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get data
+    try {
+      const result: UserSearchResultCS[] = await this.userRepository.getWithFiltersCS(
+        filters,
+        skip,
+        limitNum,
+      );
+
+      return result;
+    } catch (error) {
+      console.error('Error in getUsersUseCase:', error);
+      throw error;
+    }
+  }
+
+  buildFilters(params: UserFilterParams, role: UserRole): Prisma.UserWhereInput {
     const filters: any = {
       eKYC: {
         some: { status: KYCStatus.PENDING },
@@ -85,8 +162,13 @@ class UserUseCase {
       ];
     }
 
+    if (params.email) {
+      const emailArray = normalizeToArray(params.email as any);
+      filters.email = { in: emailArray };
+    }
+
     // Filter by role
-    if (params.role) {
+    if (params.role && role === UserRole.Admin) {
       const roleArray = normalizeToArray(params.role as any);
       if (roleArray.length > 0) {
         filters.role = { in: roleArray };
@@ -94,7 +176,7 @@ class UserUseCase {
     }
 
     // Filter by status (isBlocked)
-    if (params.status) {
+    if (params.status && role === UserRole.Admin) {
       const statusArray = normalizeToArray(params.status as any);
       const validStatuses = ['active', 'blocked'];
       const filteredStatuses = statusArray.filter((s) => validStatuses.includes(s));
@@ -125,6 +207,23 @@ class UserUseCase {
         const toDateObj = new Date(params.toDate);
         if (!isNaN(toDateObj.getTime())) {
           filters.eKYC.some.createdAt.lte = toDateObj;
+        }
+      }
+    }
+
+    // Filter by date range on User createdAt
+    if (params.userFromDate || params.userToDate) {
+      filters.createdAt = {};
+      if (params.userFromDate) {
+        const userFromDateObj = new Date(params.userFromDate);
+        if (!isNaN(userFromDateObj.getTime())) {
+          filters.createdAt.gte = userFromDateObj;
+        }
+      }
+      if (params.userToDate) {
+        const userToDateObj = new Date(params.userToDate);
+        if (!isNaN(userToDateObj.getTime())) {
+          filters.createdAt.lte = userToDateObj;
         }
       }
     }

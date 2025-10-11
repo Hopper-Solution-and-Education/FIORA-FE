@@ -5,14 +5,15 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import { User, UserRole } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
-  GET: ['Admin'],
-})((req: NextApiRequest, res: NextApiResponse, userId: string) => {
+  GET: ['Admin', 'CS'],
+})((req: NextApiRequest, res: NextApiResponse, userId: string, user: User) => {
   switch (req.method) {
     case 'GET':
-      return GET(req, res, userId);
+      return GET(req, res, userId, user);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -20,14 +21,16 @@ export default withAuthorization({
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string, user: User) {
   try {
     const {
       search,
-      role,
+      role: roleFilter, // Role filter từ query params
       status,
       fromDate,
       toDate,
+      userFromDate,
+      userToDate,
       page = 1,
       pageSize = 10,
     } = req.query as UserFilterParams;
@@ -38,15 +41,39 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
     // Initialize use case with repository
 
     // Execute use case
-    const result = await userUseCase.getAllUserEkycPending({
-      search,
-      role,
-      status,
-      fromDate,
-      toDate,
-      page: Number(page),
-      pageSize: Number(pageSize),
-    });
+    let result;
+    const currentUserRole: UserRole = user.role as UserRole; // Role của user đang login
+    if (user.role === UserRole.CS) {
+      result = await userUseCase.getAllUserEkycPendingCS(
+        {
+          search,
+          role: roleFilter, // Truyền role từ query để filter
+          status,
+          fromDate,
+          toDate,
+          userFromDate,
+          userToDate,
+          page: Number(page),
+          pageSize: Number(pageSize),
+        },
+        currentUserRole,
+      ); // Truyền role của user để check permission
+    } else {
+      result = await userUseCase.getAllUserEkycPending(
+        {
+          search,
+          role: roleFilter, // Truyền role từ query để filter
+          status,
+          fromDate,
+          toDate,
+          userFromDate,
+          userToDate,
+          page: Number(page),
+          pageSize: Number(pageSize),
+        },
+        currentUserRole,
+      ); // Truyền role của user để check permission
+    }
 
     return res
       .status(RESPONSE_CODE.OK)

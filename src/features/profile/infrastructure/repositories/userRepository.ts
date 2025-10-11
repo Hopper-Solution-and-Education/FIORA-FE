@@ -1,7 +1,7 @@
 import prisma from '@/config/prisma/prisma';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserAssignedRole, UserBlocked } from '../../domain/entities/models/profile';
-import { UserSearchResult } from '../../domain/entities/models/user.types';
+import { UserSearchResult, UserSearchResultCS } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
@@ -116,7 +116,44 @@ export class UserRepository implements IUserRepository {
 
     return users.map((user) => ({
       ...user,
-      role: user.role.toString(),
+    }));
+  }
+
+  async getWithFiltersCS(
+    whereClause: Prisma.UserWhereInput,
+    skip: number,
+    limit: number,
+  ): Promise<UserSearchResultCS[]> {
+    const users = await prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        kyc_levels: true,
+        createdAt: true,
+        updatedAt: true,
+        avatarId: true,
+        eKYC: {
+          select: {
+            id: true,
+            status: true,
+            method: true,
+            type: true,
+            fieldName: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take: limit,
+    });
+
+    return users.map((user) => ({
+      ...user,
     }));
   }
 }

@@ -35,6 +35,12 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error.error));
   }
 
+  if (userId === blockUser) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CANNOT_BLOCK_YOURSELF));
+  }
+
   //check user exist
   const userexist = await userUseCase.getUserIdById(blockUser);
 

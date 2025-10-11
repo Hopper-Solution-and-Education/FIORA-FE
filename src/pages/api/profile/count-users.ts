@@ -8,11 +8,11 @@ import { KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
-  GET: ['Admin'],
-})((req: NextApiRequest, res: NextApiResponse, userId: string) => {
+  GET: ['Admin', 'CS'],
+})((req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET':
-      return GET(req, res, userId);
+      return GET(req, res);
     default:
       return res
         .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -20,7 +20,7 @@ export default withAuthorization({
   }
 });
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { eKycStatus } = req.query;
 
