@@ -40,7 +40,7 @@ export default function Header() {
   };
 
   return (
-    <header className="transition-[width,height] ease-linear">
+    <header className="transition-[width,height] ease-linear pt-2">
       {/* Announcement */}
       {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
         <div className="flex items-center justify-between w-full">
@@ -95,6 +95,7 @@ export default function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
           <NewsCenter />
           <HelpCenter />
           <SettingCenter />
