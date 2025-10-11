@@ -28,10 +28,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { section } = useGetSection(SectionTypeEnum.HEADER, {
-    refreshInterval: 300000, // Refetch every 5 minutes
-    revalidateOnFocus: false, // Disable refetch on window focus
-  });
+  const { section } = useGetSection(SectionTypeEnum.HEADER);
 
   useEffect(() => {
     // Initialize GrowthBook when the component mounts
@@ -49,6 +46,7 @@ export default function RootLayout({
           className="rounded-full"
         />
       </head>
+
       <body className={inter.className}>
         <React.StrictMode>
           <SWRConfig value={swrOptions}>
@@ -64,7 +62,7 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                       >
-                        <SessionProvider>
+                        <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
                           <Toaster />
                           <Updater />
 
