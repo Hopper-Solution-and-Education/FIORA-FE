@@ -133,13 +133,19 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
     try {
       const verify_otp = await this._prisma.otp.findFirst({
         where: {
-          AND: [{ userId: userId }, { otp: otp }],
+          AND: [{ userId: userId }, { otp: otp }, { type: OtpType.WITHDRAW }],
         },
       });
 
       if (!verify_otp) {
         throw new BadRequestError('OTP Incorrect');
       }
+      await this._prisma.otp.deleteMany({
+        where: {
+          userId: userId,
+          type: OtpType.WITHDRAW,
+        },
+      });
       const walletPayment = await this._prisma.wallet.findFirst({
         where: { userId: userId, type: WalletType.Payment },
         select: {
@@ -276,6 +282,31 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
   }
 
   async sendOtpWithDraw(userId: string): Promise<{ data: any }> {
+    const lastOtp = await this._prisma.otp.findFirst({
+      where: {
+        userId: userId,
+        type: OtpType.WITHDRAW,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (lastOtp) {
+      const twoMinutes = 2 * 60 * 1000;
+      const expiresAt = new Date(lastOtp.createdAt.getTime() + twoMinutes);
+
+      if (new Date() < expiresAt) {
+        throw new BadRequestError('Please wait before requesting a new OTP');
+      }
+    }
+    await this._prisma.otp.deleteMany({
+      where: {
+        userId: userId,
+        type: OtpType.WITHDRAW,
+      },
+    });
+
     const bankAccount = await this._prisma.bankAccount.findFirst({
       where: { userId: userId },
       select: {
@@ -290,6 +321,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         email: true,
       },
     });
+
     const random6Digits = generateSixDigitNumber();
     await sendOtpVerifyWithDraw(userName?.email, random6Digits, bankAccount);
     const data = await prisma.otp.create({
