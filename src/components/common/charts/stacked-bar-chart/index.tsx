@@ -1,15 +1,11 @@
 'use client';
 
 import { BarLabel, ChartLegend, IconDisplay } from '@/components/common/atoms';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  TooltipContent,
-  TooltipProvider,
-  Tooltip as TooltipShadcn,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+
 import {
   BASE_BAR_HEIGHT,
   COLORS,
@@ -258,16 +254,11 @@ const StackedBarChart = ({
 
       {showButton && (
         <div className="flex justify-end mt-4">
-          <TooltipProvider>
-            <TooltipShadcn>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleButtonClick}>
-                  {isExpanded ? <Icons.circleChevronDown /> : <Icons.circleChevronLeft />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{isExpanded ? <p>Collapse</p> : <p>Expand</p>}</TooltipContent>
-            </TooltipShadcn>
-          </TooltipProvider>
+          <CommonTooltip content={isExpanded ? 'Collapse' : 'Expand'}>
+            <Button variant="outline" size="icon" onClick={handleButtonClick}>
+              {isExpanded ? <Icons.circleChevronDown /> : <Icons.circleChevronLeft />}
+            </Button>
+          </CommonTooltip>
         </div>
       )}
     </div>

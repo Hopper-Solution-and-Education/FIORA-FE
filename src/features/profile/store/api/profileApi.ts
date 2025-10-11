@@ -4,6 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {
   BankAccountFormData,
   IdentificationDocumentPayload,
+  UpdateProfileRequest,
   UserProfile,
   eKYC,
 } from '../../domain/entities/models/profile';
@@ -14,7 +15,16 @@ export const profileApi = createApi({
     baseUrl: '/',
     prepareHeaders: (headers) => headers,
   }),
-  tagTypes: ['Profile', 'eKYC', 'BankAccount', 'IdentificationDocument'],
+  tagTypes: [
+    'Profile',
+    'eKYC',
+    'BankAccount',
+    'IdentificationDocument',
+    'eKYCByUserId',
+    'ProfileByUserId',
+    'IdentificationDocumentByUserId',
+    'BankAccountByUserId',
+  ],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
       query: () => ({ url: ApiEndpointEnum.Profile, method: 'GET' }),
@@ -101,6 +111,90 @@ export const profileApi = createApi({
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: ['BankAccount', 'eKYC'],
     }),
+
+    // Admin/CS: Get eKYC by userId
+    getEKYCByUserId: builder.query<eKYC[], string>({
+      query: (userId) => ({ url: `/api/eKyc/user/${userId}`, method: 'GET' }),
+      transformResponse: (response: Response<eKYC[]>) => response.data,
+      providesTags: ['eKYCByUserId'],
+    }),
+
+    // Admin/CS: Get Identification Document by userId
+    getIdentificationDocumentByUserId: builder.query<any, string>({
+      query: (userId) => ({
+        url: `/api/indentification-document/user/${userId}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['IdentificationDocumentByUserId'],
+    }),
+
+    // Admin/CS: Get Bank Account by userId
+    getBankAccountByUserId: builder.query<any, string>({
+      query: (userId) => ({ url: `/api/bank-account/user/${userId}`, method: 'GET' }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['BankAccountByUserId'],
+    }),
+
+    // Admin/CS: Get Profile by userId
+    getProfileByUserId: builder.query<UserProfile, string>({
+      query: (userId) => ({ url: `/api/profile/user/${userId}`, method: 'GET' }),
+      transformResponse: (response: Response<UserProfile>) => response.data,
+      providesTags: ['ProfileByUserId'],
+    }),
+
+    // Admin/CS: Update Profile by userId
+    updateProfileByUserId: builder.mutation<
+      UserProfile,
+      { userId: string; payload: UpdateProfileRequest }
+    >({
+      query: ({ userId, payload }) =>
+        payload instanceof FormData
+          ? {
+              url: `/api/profile/user/${userId}`,
+              method: 'PUT',
+              body: payload,
+            }
+          : {
+              url: `/api/profile/user/${userId}`,
+              method: 'PUT',
+              body: payload,
+              headers: { 'Content-Type': 'application/json' },
+            },
+      transformResponse: (response: Response<UserProfile>) => response.data,
+      invalidatesTags: ['ProfileByUserId'],
+    }),
+
+    // Admin/CS: Verify eKYC (approve/reject)
+    verifyEKYC: builder.mutation<any, { kycId: string; status: string; remarks?: string }>({
+      query: ({ kycId, ...body }) => ({
+        url: `/api/eKyc/verify/${kycId}`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: [
+        'eKYCByUserId',
+        'eKYC',
+        'IdentificationDocumentByUserId',
+        'BankAccountByUserId',
+        'ProfileByUserId',
+      ],
+    }),
+
+    // Delete eKYC for re-submit
+    deleteEKYC: builder.mutation<any, string>({
+      query: (kycId) => ({ url: `/api/eKyc/${kycId}`, method: 'DELETE' }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: [
+        'eKYC',
+        'IdentificationDocument',
+        'BankAccount',
+        'eKYCByUserId',
+        'IdentificationDocumentByUserId',
+        'BankAccountByUserId',
+      ],
+    }),
   }),
 });
 
@@ -115,4 +209,11 @@ export const {
   useUploadAttachmentMutation,
   useGetBankAccountQuery,
   useSubmitBankAccountMutation,
+  useGetEKYCByUserIdQuery,
+  useVerifyEKYCMutation,
+  useGetIdentificationDocumentByUserIdQuery,
+  useGetBankAccountByUserIdQuery,
+  useGetProfileByUserIdQuery,
+  useUpdateProfileByUserIdMutation,
+  useDeleteEKYCMutation,
 } = profileApi;

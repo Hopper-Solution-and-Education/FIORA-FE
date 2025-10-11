@@ -1,5 +1,6 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
@@ -78,22 +78,17 @@ export default function Header() {
           />
 
           <DropdownMenu>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <div className="flex flex-col gap-1 justify-center items-center">
-                    <Gift
-                      size={ICON_SIZE.MD}
-                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-                    />
-                    <span className="text-sm">Rewards</span>
-                  </div>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Rewards</p>
-              </TooltipContent>
-            </Tooltip>
+            <CommonTooltip content="Rewards">
+              <DropdownMenuTrigger asChild>
+                <div className="flex flex-col gap-1 justify-center items-center">
+                  <Gift
+                    size={ICON_SIZE.MD}
+                    className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  />
+                  <span className="text-sm">Rewards</span>
+                </div>
+              </DropdownMenuTrigger>
+            </CommonTooltip>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
                 <Link href="/referral">Check your rewards</Link>

@@ -1,9 +1,9 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CURRENCY } from '@/shared/constants';
 import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { format } from 'date-fns';
@@ -96,24 +96,17 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               Transaction Details
             </CardTitle>
             <div className="mb-6">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      className="px-3 py-2 hover:bg-red-200"
-                      onClick={() => {
-                        handleOpenDeleteModal();
-                      }}
-                    >
-                      <Trash size={18} color="red" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete Transaction</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <CommonTooltip content="Delete Transaction">
+                <Button
+                  variant="secondary"
+                  className="px-3 py-2 hover:bg-red-200"
+                  onClick={() => {
+                    handleOpenDeleteModal();
+                  }}
+                >
+                  <Trash size={18} color="red" />
+                </Button>
+              </CommonTooltip>
             </div>
           </CardHeader>
           <CardContent>
@@ -173,81 +166,60 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                 {data.fromAccount && (
                   <div className="w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Account</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.fromAccount.icon && (
-                              <LucieIcon
-                                icon={data.fromAccount.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.fromAccount.name}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.fromAccount.icon && (
+                          <LucieIcon
+                            icon={data.fromAccount.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.fromAccount.name}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.fromAccount.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.fromAccount.name}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
                 {data.fromCategory && (
                   <div className="w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Category</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.fromCategory.icon && (
-                              <LucieIcon
-                                icon={data.fromCategory.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.fromCategory.name}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.fromCategory.icon && (
+                          <LucieIcon
+                            icon={data.fromCategory.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.fromCategory.name}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.fromCategory.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.fromCategory.name}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
                 {data.fromWallet && (
                   <div className="w-full flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Wallet</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.fromWallet.icon && (
-                              <LucieIcon
-                                icon={data.fromWallet.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.fromWallet.type}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.fromWallet.icon && (
+                          <LucieIcon
+                            icon={data.fromWallet.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.fromWallet.type}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.fromWallet.type}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.fromWallet.type}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
@@ -267,81 +239,60 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                 {data.toAccount && (
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Account</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.toAccount.icon && (
-                              <LucieIcon
-                                icon={data.toAccount.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.toAccount.name}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.toAccount.icon && (
+                          <LucieIcon
+                            icon={data.toAccount.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.toAccount.name}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.toAccount.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.toAccount.name}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
                 {data.toCategory && (
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Category</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.toCategory.icon && (
-                              <LucieIcon
-                                icon={data.toCategory.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.toCategory.name}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.toCategory.icon && (
+                          <LucieIcon
+                            icon={data.toCategory.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.toCategory.name}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.toCategory.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.toCategory.name}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
                 {data.toWallet && (
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">Wallet</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                            {data.toWallet.icon && (
-                              <LucieIcon
-                                icon={data.toWallet.icon}
-                                className="w-4 h-4 border-1 border-gray-500"
-                              />
-                            )}
+                    <CommonTooltip content={data.toWallet.type}>
+                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                        {data.toWallet.icon && (
+                          <LucieIcon
+                            icon={data.toWallet.icon}
+                            className="w-4 h-4 border-1 border-gray-500"
+                          />
+                        )}
 
-                            <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                              {data.toWallet.type}
-                            </h3>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{data.toWallet.type}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
+                          {data.toWallet.type}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
                   </div>
                 )}
 
@@ -360,31 +311,24 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                 <h3 className="font-medium text-md">Partner</h3>
                 <div className="relative w-full flex justify-between items-center">
                   <div className="text-sm text-muted-foreground">Name</div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                          {data.partner?.logo && (
-                            <Image
-                              src={data.partner.logo}
-                              alt={data.partner?.name || 'Unknown'}
-                              width={30}
-                              height={30}
-                              className="rounded-full"
-                            />
-                          )}
-                          <h3
-                            className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.name ? 'text-gray-500 italic' : ''}`}
-                          >
-                            {data.partner?.name || 'Unknown'}
-                          </h3>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{data.partner?.name || 'Unknown'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <CommonTooltip content={data.partner?.name || 'Unknown'}>
+                    <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
+                      {data.partner?.logo && (
+                        <Image
+                          src={data.partner.logo}
+                          alt={data.partner?.name || 'Unknown'}
+                          width={30}
+                          height={30}
+                          className="rounded-full"
+                        />
+                      )}
+                      <h3
+                        className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.name ? 'text-gray-500 italic' : ''}`}
+                      >
+                        {data.partner?.name || 'Unknown'}
+                      </h3>
+                    </div>
+                  </CommonTooltip>
                 </div>
                 <div className="relative w-full flex justify-between items-center">
                   <div className="text-sm text-muted-foreground">Type</div>
@@ -477,39 +421,27 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               </div>
             </div>
 
-            <TooltipProvider>
-              <div className="flex justify-between gap-4 mt-6">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      type="button"
-                      onClick={() => router.back()}
-                      className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
-                    >
-                      <Icons.circleArrowLeft className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Cancel and go back</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      onClick={() => router.back()}
-                      className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-                    >
-                      <Icons.check className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Done reading</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+            <div className="flex justify-between gap-4 mt-6">
+              <CommonTooltip content="Cancel and go back">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => router.back()}
+                  className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+                >
+                  <Icons.circleArrowLeft className="h-5 w-5" />
+                </Button>
+              </CommonTooltip>
+              <CommonTooltip content="Done reading">
+                <Button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  <Icons.check className="h-5 w-5" />
+                </Button>
+              </CommonTooltip>
+            </div>
           </CardContent>
         </Card>
       </div>

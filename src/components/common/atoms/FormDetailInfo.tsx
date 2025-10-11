@@ -3,11 +3,10 @@
 // Remove Avatar imports
 // import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { formatDateTime } from '@/shared/lib';
+import { cn, formatDateTime } from '@/shared/lib';
 import { CreatedBy, UpdatedBy } from '@/shared/types';
-import { cn } from '@/shared/utils';
-import React, { useMemo } from 'react';
 import Image from 'next/image'; // Import Next.js Image component
+import React, { useMemo } from 'react';
 
 interface FormDetailInfoProps {
   createdAt?: string | null;

@@ -1,7 +1,7 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -42,25 +42,18 @@ const NotificationDashboardTopBarAction = () => {
 
       {/* Right side: Column management */}
       <div className="flex items-center gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={() => {
-                  router.push('/setting/notification/email-template');
-                }}
-                variant="outline"
-                size="icon"
-                className="rounded-md hover:bg-accent hover:text-accent-foreground px-5 transition-colors"
-              >
-                <Icons.mail className="w-5 h-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Create Email Template</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip content="Create Email Template">
+          <Button
+            onClick={() => {
+              router.push('/setting/notification/email-template');
+            }}
+            variant="outline"
+            size="icon"
+            className="rounded-md hover:bg-accent hover:text-accent-foreground px-5 transition-colors"
+          >
+            <Icons.mail className="w-5 h-5" />
+          </Button>
+        </CommonTooltip>
         <Popover>
           <PopoverTrigger asChild>
             <Button

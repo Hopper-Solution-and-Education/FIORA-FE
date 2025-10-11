@@ -346,6 +346,7 @@ class TransactionUseCase {
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
       wallets: filterOptions.wallets ?? [],
+      benefits: filterOptions.benefits ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };
@@ -1293,6 +1294,11 @@ class TransactionUseCase {
                     { name: { contains: typeSearchParams, mode: 'insensitive' } },
                     ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
                   ],
+                },
+              },
+              {
+                membershipBenefit: {
+                  name: { contains: typeSearchParams, mode: 'insensitive' },
                 },
               },
               // adding typeTransactionWhere to where clause if exists

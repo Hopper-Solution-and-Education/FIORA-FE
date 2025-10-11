@@ -21,7 +21,7 @@ const SavingInterestChart = ({
 
   const totalAmount = displayData.reduce((sum, item) => sum + item.value, 0);
 
-  const handleBarClick = (item: { name: string; value: number; color: string }, index: number) => {
+  const handleBarClick = (item: { name: string; value: number; color: string }) => {
     if (onBarClick) {
       onBarClick(item.name);
     }

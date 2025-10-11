@@ -1,9 +1,8 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { eKYC } from '@/features/profile/domain/entities/models/profile';
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 import {
   ContactInfoActions,
   ContactInfoForm,
@@ -30,7 +29,7 @@ const ContactInformationForm: FC<Props> = ({ eKYCData }) => {
   } = useContactInfoForm();
 
   return (
-    <TooltipProvider>
+    <Fragment>
       <div className="max-w-5xl mx-auto">
         <ContactInfoHeader status={eKYCData?.status} />
 
@@ -55,7 +54,7 @@ const ContactInformationForm: FC<Props> = ({ eKYCData }) => {
         />
       </div>
       <ContactInfoActions isLoading={isSendingOtp} />
-    </TooltipProvider>
+    </Fragment>
   );
 };
 

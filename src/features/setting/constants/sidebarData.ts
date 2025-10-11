@@ -32,7 +32,7 @@ export const settingNavItems: NavItem[] = [
     isActive: false,
   },
   {
-    title: 'Deposit FX',
+    title: 'FX Request',
     url: '/setting/wallet',
     icon: 'coins',
     isActive: false,

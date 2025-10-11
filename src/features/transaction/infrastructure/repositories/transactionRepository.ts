@@ -177,7 +177,7 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   async getFilterOptions(userId: string) {
-    const [accounts, categories, partners, wallets] = await Promise.all([
+    const [accounts, categories, partners, wallets, benefits] = await Promise.all([
       prisma.account.findMany({
         where: { userId },
         select: { name: true },
@@ -194,6 +194,9 @@ class TransactionRepository implements ITransactionRepository {
         where: { userId },
         select: { type: true },
       }),
+      prisma.membershipBenefit.findMany({
+        select: { name: true },
+      }),
     ]);
 
     return {
@@ -201,6 +204,7 @@ class TransactionRepository implements ITransactionRepository {
       categories: categories.map((c) => c.name),
       partners: partners.map((p) => p.name),
       wallets: wallets.map((w) => w.type),
+      benefits: benefits.map((b) => b.name),
     };
   }
 

@@ -2,12 +2,7 @@
 
 import { ChartLegend } from '@/components/common/atoms';
 import { ChartSkeleton } from '@/components/common/organisms';
-import {
-  Tooltip as ShadcnTooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
 import {
   COLORS,
@@ -36,6 +31,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Payload } from 'recharts/types/component/DefaultTooltipContent';
+import { CommonTooltip } from '../../atoms/CommonTooltip';
 import { DEFAULT_COMPOSED_CHART_HEIGHT, DEFAULT_COMPOSED_CHART_ITEM_WIDTH } from './constant';
 import { ComposedChartProps } from './type';
 
@@ -234,34 +230,25 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
                     return (
                       <g transform={`translate(${x},${y})`}>
                         <foreignObject x={-20} y={5} width={35} height={35}>
-                          <TooltipProvider>
-                            <ShadcnTooltip>
-                              <TooltipTrigger asChild>
-                                <div
-                                  className={cn(
-                                    'w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105',
-                                    isNegative
-                                      ? 'bg-warning/10 dark:bg-warning/20'
-                                      : 'bg-gray-100 dark:bg-gray-800',
-                                  )}
-                                >
-                                  <div
-                                    className={cn(
-                                      'w-5 h-5 flex items-center justify-center',
-                                      isNegative
-                                        ? 'text-warning'
-                                        : 'text-gray-600 dark:text-gray-400',
-                                    )}
-                                  >
-                                    {renderIconOrImage(item?.icon ?? 'user')}
-                                  </div>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{item?.name}</p>
-                              </TooltipContent>
-                            </ShadcnTooltip>
-                          </TooltipProvider>
+                          <CommonTooltip content={item?.name}>
+                            <div
+                              className={cn(
+                                'w-full h-full rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105',
+                                isNegative
+                                  ? 'bg-warning/10 dark:bg-warning/20'
+                                  : 'bg-gray-100 dark:bg-gray-800',
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  'w-5 h-5 flex items-center justify-center',
+                                  isNegative ? 'text-warning' : 'text-gray-600 dark:text-gray-400',
+                                )}
+                              >
+                                {renderIconOrImage(item?.icon ?? 'user')}
+                              </div>
+                            </div>
+                          </CommonTooltip>
                         </foreignObject>
                       </g>
                     );
