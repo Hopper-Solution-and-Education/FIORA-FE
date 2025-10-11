@@ -4,6 +4,7 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { UserRole } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { clearUserFilters, setUserFilters } from '../../slices';
@@ -14,6 +15,9 @@ const getInitialFilterState = (): FilterState => ({
   status: [],
   fromDate: null,
   toDate: null,
+  emails: [],
+  userFromDate: null,
+  userToDate: null,
 });
 
 const ROLE_OPTIONS = [
@@ -31,16 +35,22 @@ const STATUS_OPTIONS = [
 interface UserManagementFilterMenuProps {
   value: FilterState;
   onFilterChange: (newFilter: FilterState) => void;
+  emailOptions: Array<{ value: string; label: string }>;
 }
 
 const UserManagementFilterMenu = ({
   value,
   onFilterChange,
+  emailOptions = [],
 }: UserManagementFilterMenuProps) => {
   const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.userManagement.filters);
+  const { data: session } = useSession();
+  const currentUserRole = session?.user?.role;
+  const isCS = currentUserRole === UserRole.CS;
 
   const [localFilter, setLocalFilter] = useState<FilterState>(value || getInitialFilterState());
+  const [emailInput, setEmailInput] = useState('');
 
   useEffect(() => {
     setLocalFilter({
@@ -48,11 +58,26 @@ const UserManagementFilterMenu = ({
       status: reduxFilter.status || [],
       fromDate: reduxFilter.fromDate || null,
       toDate: reduxFilter.toDate || null,
+      emails: reduxFilter.emails || [],
+      userFromDate: reduxFilter.userFromDate || null,
+      userToDate: reduxFilter.userToDate || null,
     });
   }, [reduxFilter]);
 
-  // Convert date range for display - add null check
-  const dateRange: DateRange | undefined = useMemo(() => {
+  // // Convert date range for display - add null check
+  // const dateRange: DateRange | undefined = useMemo(() => {
+  //   if (!localFilter) return undefined;
+  //   if (localFilter.fromDate || localFilter.toDate) {
+  //     return {
+  //       from: localFilter.fromDate || undefined,
+  //       to: localFilter.toDate || undefined,
+  //     };
+  //   }
+  //   return undefined;
+  // }, [localFilter]);
+
+  // Convert KYC date range for display
+  const kycDateRange: DateRange | undefined = useMemo(() => {
     if (!localFilter) return undefined;
     if (localFilter.fromDate || localFilter.toDate) {
       return {
@@ -63,7 +88,27 @@ const UserManagementFilterMenu = ({
     return undefined;
   }, [localFilter]);
 
-  const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
+  // Convert User Registration date range for display
+  const userDateRange: DateRange | undefined = useMemo(() => {
+    if (!localFilter) return undefined;
+    if (localFilter.userFromDate || localFilter.userToDate) {
+      return {
+        from: localFilter.userFromDate || undefined,
+        to: localFilter.userToDate || undefined,
+      };
+    }
+    return undefined;
+  }, [localFilter]);
+
+  // const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
+  //   setLocalFilter((prev) => ({
+  //     ...prev,
+  //     fromDate: dateRange?.from || null,
+  //     toDate: dateRange?.to || null,
+  //   }));
+  // }, []);
+
+  const handleKycDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
     setLocalFilter((prev) => ({
       ...prev,
       fromDate: dateRange?.from || null,
@@ -71,16 +116,68 @@ const UserManagementFilterMenu = ({
     }));
   }, []);
 
+  const handleUserDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
+    setLocalFilter((prev) => ({
+      ...prev,
+      userFromDate: dateRange?.from || null,
+      userToDate: dateRange?.to || null,
+    }));
+  }, []);
+
+  const handleAddEmail = useCallback(() => {
+    const trimmedEmail = emailInput.trim();
+    if (trimmedEmail && !localFilter.emails.includes(trimmedEmail)) {
+      setLocalFilter((prev) => ({
+        ...prev,
+        emails: [...prev.emails, trimmedEmail],
+      }));
+      setEmailInput('');
+    }
+  }, [emailInput, localFilter.emails]);
+
+  const handleRemoveEmail = useCallback((email: string) => {
+    setLocalFilter((prev) => ({
+      ...prev,
+      emails: prev.emails.filter((e) => e !== email),
+    }));
+  }, []);
+
+  const handleEmailInputKeyPress = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddEmail();
+      }
+    },
+    [handleAddEmail],
+  );
+
   // Check if any filter is applied
   const isFilterApplied = useMemo(() => {
     if (!localFilter) return false;
+
+    // For CS
+    if (isCS) {
+      return (
+        localFilter.fromDate !== null ||
+        localFilter.toDate !== null ||
+        localFilter.userFromDate !== null ||
+        localFilter.userToDate !== null ||
+        localFilter.emails.length > 0
+      );
+    }
+
+    // For Admin, check all filters
     return (
       localFilter.roles.length > 0 ||
       localFilter.status.length > 0 ||
       localFilter.fromDate !== null ||
-      localFilter.toDate !== null
+      localFilter.toDate !== null ||
+      localFilter.userFromDate !== null ||
+      localFilter.userToDate !== null ||
+      localFilter.emails.length > 0
     );
-  }, [localFilter]);
+  }, [localFilter, isCS]);
 
   const handleLocalFilterChange = useCallback((key: keyof FilterState, newValue: any) => {
     setLocalFilter((prev) => ({
@@ -90,15 +187,25 @@ const UserManagementFilterMenu = ({
   }, []);
 
   const handleApplyFilters = useCallback(() => {
-    dispatch(setUserFilters(localFilter));
+    // If CS, clear roles and status before applying
+    const filterToApply = isCS
+      ? {
+          ...localFilter,
+          roles: [],
+          status: [],
+        }
+      : localFilter;
 
-    onFilterChange(localFilter);
-  }, [localFilter, onFilterChange, dispatch]);
+    dispatch(setUserFilters(filterToApply));
+
+    onFilterChange(filterToApply);
+  }, [localFilter, onFilterChange, dispatch, isCS]);
 
   const handleResetFilters = useCallback(() => {
     const resetState = getInitialFilterState();
 
     setLocalFilter(resetState);
+    setEmailInput('');
 
     dispatch(clearUserFilters());
 
@@ -106,10 +213,13 @@ const UserManagementFilterMenu = ({
   }, [dispatch, onFilterChange]);
 
   // Filter components configuration
-  const filterComponents: FilterComponentConfig[] = useMemo(
-    () => [
-      // LEFT COLUMN
-      {
+  const filterComponents: FilterComponentConfig[] = useMemo(() => {
+    const components: FilterComponentConfig[] = [];
+
+    // LEFT COLUMN
+    // Only add Roles filter if NOT CS
+    if (!isCS) {
+      components.push({
         key: 'roles',
         component: (
           <MultiSelectFilter
@@ -122,8 +232,12 @@ const UserManagementFilterMenu = ({
         ),
         column: FilterColumn.LEFT,
         order: 0,
-      },
-      {
+      });
+    }
+
+    // Only add Status filter if NOT CS
+    if (!isCS) {
+      components.push({
         key: 'status',
         component: (
           <MultiSelectFilter
@@ -136,26 +250,90 @@ const UserManagementFilterMenu = ({
         ),
         column: FilterColumn.LEFT,
         order: 1,
-      },
-      // RIGHT COLUMN
-      {
-        key: 'dateRange',
-        component: (
-          <DateRangeFilter
-            dateRange={dateRange}
-            onChange={handleDateRangeChange}
-            label="Date Range"
-            colorScheme="default"
-            disableFuture={true}
-            pastDaysLimit={365}
-          />
-        ),
-        column: FilterColumn.RIGHT,
-        order: 0,
-      },
-    ],
-    [localFilter, dateRange, handleLocalFilterChange, handleDateRangeChange],
-  );
+      });
+    }
+
+    // Email Filter - MultiSelect instead of input text
+    components.push({
+      key: 'emails',
+      component: (
+        <MultiSelectFilter
+          options={emailOptions ?? []}
+          selectedValues={localFilter.emails}
+          onChange={(values) => handleLocalFilterChange('emails', values)}
+          label="Emails"
+          placeholder="Select emails"
+        />
+      ),
+      column: FilterColumn.LEFT,
+      order: isCS ? 0 : 2,
+    });
+
+    // // Always add Date Range filter
+    // components.push({
+    //   key: 'dateRange',
+    //   component: (
+    //     <DateRangeFilter
+    //       dateRange={dateRange}
+    //       onChange={handleDateRangeChange}
+    //       label="Date Range"
+    //       colorScheme="default"
+    //       disableFuture={true}
+    //       pastDaysLimit={365}
+    //     />
+    //   ),
+    //   column: isCS ? FilterColumn.LEFT : FilterColumn.RIGHT,
+    //   order: 0,
+    // });
+
+    // RIGHT COLUMN
+    // KYC Date Range filter - Always show
+    components.push({
+      key: 'kycDateRange',
+      component: (
+        <DateRangeFilter
+          dateRange={kycDateRange}
+          onChange={handleKycDateRangeChange}
+          label="KYC Submission Date"
+          colorScheme="default"
+          disableFuture={true}
+          pastDaysLimit={365}
+        />
+      ),
+      column: FilterColumn.RIGHT,
+      order: 0,
+    });
+
+    // User Registration Date Range filter - Always show
+    components.push({
+      key: 'userDateRange',
+      component: (
+        <DateRangeFilter
+          dateRange={userDateRange}
+          onChange={handleUserDateRangeChange}
+          label="Registration Date"
+          colorScheme="default"
+          disableFuture={true}
+          pastDaysLimit={365}
+        />
+      ),
+      column: FilterColumn.RIGHT,
+      order: 1,
+    });
+
+    return components;
+  }, [
+    localFilter,
+    kycDateRange,
+    userDateRange,
+    emailOptions,
+    handleLocalFilterChange,
+    handleKycDateRangeChange,
+    handleUserDateRangeChange,
+    // handleEmailInputKeyPress,
+    // handleRemoveEmail,
+    isCS,
+  ]);
 
   return (
     <GlobalFilter

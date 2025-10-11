@@ -17,7 +17,7 @@ export type MenuSettingItem = {
   icon: any;
   url: string;
   featureFlags?: FeatureFlags;
-  role?: string;
+  role?: string | string[];
 };
 
 export const menuSettingItems: MenuSettingItem[] = [
@@ -40,7 +40,8 @@ export const menuSettingItems: MenuSettingItem[] = [
     label: 'User Management',
     icon: Icons.shieldCheck,
     url: '/setting/user-management',
-    role: 'Admin',
+    // role: ['Admin', 'CS'],
+    role: 'CS',
   },
 ];
 
@@ -65,7 +66,12 @@ export const filterMenuItems = (
 ): MenuSettingItem[] => {
   return items.filter((item: MenuSettingItem) => {
     const hasFeatureFlag = !item.featureFlags || gb.isOn(item.featureFlags);
-    const hasRoleAccess = !item.role || userRole === item.role;
+    
+    // Check role access: handle both string and array
+    const hasRoleAccess = !item.role || 
+      (Array.isArray(item.role) 
+        ? item.role.includes(userRole || '')
+        : userRole === item.role);
 
     if (hasFeatureFlag && hasRoleAccess) {
       return item;

@@ -27,7 +27,7 @@ export function UserAvatar({
   showTooltip = false,
 }: UserAvatarProps) {
   const [copied, setCopied] = useState<string | null>(null);
-  const displayName = name || 'No name';
+  const displayName = email || name || 'No name';
 
   const getInitials = () => {
     if (name && name.trim().length > 0) {

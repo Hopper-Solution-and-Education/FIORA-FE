@@ -4,7 +4,7 @@ export interface User {
   email: string;
   role: string;
   status: string;
-  creationDate: string;
+  registrationDate: string;
   avatarUrl?: string | null;
   eKYC?: {
     id: string;
@@ -21,6 +21,9 @@ export interface FilterState {
   status: string[];
   fromDate: Date | null;
   toDate: Date | null;
+  emails: string[]; // New
+  userFromDate: Date | null; // New
+  userToDate: Date | null; // New
 }
 
 export interface UserManagementState {

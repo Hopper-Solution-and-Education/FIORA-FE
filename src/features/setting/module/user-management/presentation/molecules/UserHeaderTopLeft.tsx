@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FilterState } from '../../slices/type';
 import UserManagementFilterMenu from './UserManagementFilterMenu';
 import UserManagementSearch from './UserManagementSearch';
@@ -8,6 +8,7 @@ interface UserManagementHeaderLeftProps {
   filters: FilterState;
   onSearchChange: (value: string) => void;
   onFilterChange: (filters: FilterState) => void;
+  users?: Array<{ id: string; email: string }>; // Add users prop
 }
 
 const UserManagementHeaderLeft: React.FC<UserManagementHeaderLeftProps> = ({
@@ -15,6 +16,7 @@ const UserManagementHeaderLeft: React.FC<UserManagementHeaderLeftProps> = ({
   filters,
   onSearchChange,
   onFilterChange,
+  users = [],
 }) => {
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -30,11 +32,26 @@ const UserManagementHeaderLeft: React.FC<UserManagementHeaderLeftProps> = ({
     [onFilterChange],
   );
 
+  // Create email options - use EMAIL as both value and label
+const emailOptions = useMemo(() => {
+  // Remove duplicates based on email
+  const uniqueEmails = Array.from(new Set(users.map((user) => user.email)));
+  
+  return uniqueEmails.map((email) => ({
+    value: email, // Email for filtering
+    label: email, // Email for display
+  }));
+}, [users]);
+
   return (
     <div className="flex gap-4 items-center">
       <UserManagementSearch value={searchQuery} onChange={handleSearchChange} />
 
-      <UserManagementFilterMenu value={filters} onFilterChange={handleFilterChange} />
+      <UserManagementFilterMenu
+        value={filters}
+        onFilterChange={handleFilterChange}
+        emailOptions={emailOptions}
+      />
     </div>
   );
 };

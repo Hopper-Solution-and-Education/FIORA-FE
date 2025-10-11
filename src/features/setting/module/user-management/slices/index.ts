@@ -9,6 +9,9 @@ export const initialState: UserManagementState = {
     status: [],
     fromDate: null,
     toDate: null,
+    emails: [],
+    userFromDate: null,
+    userToDate: null,
   },
   searchQuery: '',
 };

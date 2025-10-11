@@ -24,6 +24,9 @@ export function useUserManagement() {
     status: [],
     fromDate: null,
     toDate: null,
+    emails: [],
+    userFromDate: null,
+    userToDate: null,
   });
 
   const [shouldRefetch, setShouldRefetch] = useState(false);
@@ -56,11 +59,29 @@ export function useUserManagement() {
       }
     }
 
+    // Add userIds filter (emails array contains user IDs)
+    if (appliedFilters.emails && appliedFilters.emails.length > 0) {
+      params.userIds = appliedFilters.emails; // emails array now contains user IDs
+    }
+
     if (searchQuery.trim()) {
       params.search = searchQuery.trim();
     }
 
-    // Format date range to ISO strings
+    // // Format date range to ISO strings
+    // if (appliedFilters.fromDate) {
+    //   const fromDate = new Date(appliedFilters.fromDate);
+    //   fromDate.setHours(0, 0, 0, 0);
+    //   params.fromDate = fromDate.toISOString().split('T')[0];
+    // }
+
+    // if (appliedFilters.toDate) {
+    //   const toDate = new Date(appliedFilters.toDate);
+    //   toDate.setHours(23, 59, 59, 999);
+    //   params.toDate = toDate.toISOString().split('T')[0];
+    // }
+
+    // Format KYC date range to ISO strings
     if (appliedFilters.fromDate) {
       const fromDate = new Date(appliedFilters.fromDate);
       fromDate.setHours(0, 0, 0, 0);
@@ -71,6 +92,19 @@ export function useUserManagement() {
       const toDate = new Date(appliedFilters.toDate);
       toDate.setHours(23, 59, 59, 999);
       params.toDate = toDate.toISOString().split('T')[0];
+    }
+
+    // Format User Registration date range to ISO strings
+    if (appliedFilters.userFromDate) {
+      const userFromDate = new Date(appliedFilters.userFromDate);
+      userFromDate.setHours(0, 0, 0, 0);
+      params.userFromDate = userFromDate.toISOString().split('T')[0];
+    }
+
+    if (appliedFilters.userToDate) {
+      const userToDate = new Date(appliedFilters.userToDate);
+      userToDate.setHours(23, 59, 59, 999);
+      params.userToDate = userToDate.toISOString().split('T')[0];
     }
 
     return params;
@@ -90,7 +124,7 @@ export function useUserManagement() {
       }
 
       try {
-        const localFilter = { ...filters };
+        // const localFilter = { ...filters };
 
         const filterParams = { ...queryParams };
         delete filterParams.page;
@@ -98,15 +132,18 @@ export function useUserManagement() {
 
         const totalCountParams = {
           ...queryParams,
-          ...localFilter,
+          // ...localFilter,
         };
-        const totalCount = await triggerGetCountUsers(totalCountParams).unwrap();
 
+        // Use filterParams for count query
+        const totalCount = await triggerGetCountUsers(filterParams).unwrap();
+
+        // Use filterParams for get users query
         const response = await triggerGetUsers({
           page,
           pageSize,
           ...filterParams,
-          ...localFilter,
+          // ...localFilter,
         }).unwrap();
 
         const rows: UserApiResponse[] = response?.data || [];
@@ -118,7 +155,7 @@ export function useUserManagement() {
             email: user.email,
             role: user.role,
             status: user.isBlocked ? 'blocked' : 'active',
-            creationDate: new Date(user.createdAt).toLocaleDateString('en-GB'),
+            registrationDate: new Date(user.createdAt).toLocaleDateString('en-GB'),
             avatarUrl: user.avatarId ? `/api/avatar/${user.avatarId}` : null,
             eKYC: user.eKYC || [],
           }),
@@ -152,7 +189,8 @@ export function useUserManagement() {
         isFetching.current = false;
       }
     },
-    [dispatch, filters, queryParams, triggerGetUsers, triggerGetCountUsers],
+    [dispatch, queryParams, triggerGetUsers, triggerGetCountUsers],
+    // [dispatch, filters, queryParams, triggerGetUsers, triggerGetCountUsers],
   );
 
   // Add loadMore function (called by table on scroll)
@@ -187,6 +225,9 @@ export function useUserManagement() {
       status: [],
       fromDate: null,
       toDate: null,
+      emails: [],
+      userFromDate: null,
+      userToDate: null,
     };
     setAppliedFilters(resetFilters);
     setSearchQuery('');
