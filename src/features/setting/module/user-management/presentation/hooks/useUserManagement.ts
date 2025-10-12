@@ -8,7 +8,7 @@ import { initialState, tableReducer } from '../reducers/table-reducer.reducer';
 
 export function useUserManagement() {
   const dispatch = useAppDispatch();
-  const { filters, loading } = useAppSelector((state) => state.userManagement);
+  const { loading } = useAppSelector((state) => state.userManagement);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
 
@@ -61,7 +61,7 @@ export function useUserManagement() {
 
     // Add userIds filter (emails array contains user IDs)
     if (appliedFilters.emails && appliedFilters.emails.length > 0) {
-      params.userIds = appliedFilters.emails; // emails array now contains user IDs
+      params.emails = appliedFilters.emails;
     }
 
     if (searchQuery.trim()) {
@@ -206,6 +206,11 @@ export function useUserManagement() {
   }, [state.data]);
 
   const setSearchQueryWithRefetch = useCallback((value: string) => {
+    if (value === '') {
+      setSearchQuery('');
+      setShouldRefetch(true);
+      return;
+    }
     if (value.trim() === '') {
       return;
     }

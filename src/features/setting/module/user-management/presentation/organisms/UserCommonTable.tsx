@@ -83,6 +83,7 @@ export function UserTable({
             src={user.avatarUrl ? String(user.avatarUrl) : null}
             name={user.name}
             email={user.email}
+            user={user}
             size="sm"
             showTooltip={true}
           />

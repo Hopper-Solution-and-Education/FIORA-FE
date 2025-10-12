@@ -9,7 +9,6 @@ export default function UserManagementPage() {
   const router = useRouter();
   const {
     tableData,
-    filteredUsers,
     searchQuery,
     setSearchQuery,
     appliedFilters,

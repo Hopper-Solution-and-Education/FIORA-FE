@@ -59,7 +59,7 @@ export function UserBlockAction({
 
           <DialogHeader className="p-0">
             <DialogTitle className="text-center text-2xl font-semibold">
-              'Block this user from the platform?'
+              Block this user from the platform?
             </DialogTitle>
           </DialogHeader>
 

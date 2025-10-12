@@ -1,5 +1,5 @@
-import { Metadata } from 'next';
 import UserManagementPage from '@/features/setting/module/user-management/presentation/pages/UserManagementPage';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'User Management | FIORA',

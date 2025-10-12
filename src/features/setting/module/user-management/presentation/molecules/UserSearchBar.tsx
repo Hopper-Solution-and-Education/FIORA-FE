@@ -101,11 +101,7 @@ export function UserSearchBar({
 
       {/* Clear Filters Button */}
       {hasActiveFilters && (
-        <Button
-          variant="outline"
-          onClick={handleClearFilters}
-          className="w-full sm:w-auto"
-        >
+        <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
           <X className="mr-2 h-4 w-4" />
           Clear
         </Button>
