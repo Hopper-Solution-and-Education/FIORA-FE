@@ -7,38 +7,30 @@ const bundleAnalyzer = withBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  swcMinify: false, // Disable SWC minification to avoid issues with decorators
   compiler: {
-    // SWC options
     styledComponents: true,
     removeConsole: false,
   },
-  experimental: {
-    swcPlugins: [],
-    serverComponentsExternalPackages: ['reflect-metadata', 'inversify'],
-  },
-  /* config options here */
+  serverExternalPackages: ['reflect-metadata', 'inversify'],
   images: {
     dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*',
+        hostname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
       },
     ],
-    domains: ['firebasestorage.googleapis.com'],
   },
-
-  //----Configurations for the PDF viewer
   webpack: (config) => {
     config.resolve.alias.canvas = false;
-    // Explicitly add alias for ~
     config.resolve.alias['@'] = path.join(__dirname, 'src');
     config.resolve.alias['@public'] = path.join(__dirname, 'public');
     return config;
   },
-  //----End Configurations for the PDF viewer
 };
 
-// Wrap nextConfig with bundleAnalyzer
 export default bundleAnalyzer(nextConfig);

@@ -1,6 +1,6 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
@@ -63,18 +63,11 @@ const DashboardHeader = () => {
           />
           <Search size={15} className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50" />
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Filters</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip content="Filters">
+          <div>
+            <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
+          </div>
+        </CommonTooltip>
       </div>
       <Link href="/account/create">
         <button

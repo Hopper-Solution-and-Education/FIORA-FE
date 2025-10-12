@@ -432,6 +432,7 @@ export enum Messages {
   WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
   MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
 
-  //Attachment
+  //Withdrawal Request
+  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
   ATTACHMENT_NOT_FOUND = 'Attachment not found',
 }

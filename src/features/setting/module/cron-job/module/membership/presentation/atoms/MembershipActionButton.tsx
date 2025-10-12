@@ -23,6 +23,7 @@ interface MembershipActionButtonProps {
   className?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MembershipActionButton = ({ id, status, className }: MembershipActionButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');

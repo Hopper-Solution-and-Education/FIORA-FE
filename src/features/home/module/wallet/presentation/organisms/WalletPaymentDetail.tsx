@@ -61,8 +61,8 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
     );
   }
 
-  const { fxAmount, id } = selectedPackage;
-  const { convertedAmount: actualAmount, exchangeRate: rate } = getExchangeAmount({
+  const { fxAmount } = selectedPackage;
+  const { convertedAmount: actualAmount } = getExchangeAmount({
     amount: fxAmount,
     fromCurrency: CURRENCY.FX,
     toCurrency: currency,

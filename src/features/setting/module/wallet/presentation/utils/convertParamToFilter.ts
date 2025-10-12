@@ -13,6 +13,7 @@ import { DEFAULT_MAX_AMOUNT, DEFAULT_MIN_AMOUNT } from '../../data';
 export function filterGroupToParams(filter: DynamicFilterGroup) {
   // Initialize default values for all filter parameters
   let status: string[] = [];
+  let type: string[] = [];
   let amountMin = DEFAULT_MIN_AMOUNT;
   let amountMax = DEFAULT_MAX_AMOUNT;
   let search = '';
@@ -23,6 +24,13 @@ export function filterGroupToParams(filter: DynamicFilterGroup) {
       // Extract status filter - handles multiple status values
       if (rule.field === 'status' && rule.operator === FilterOperator.IN) {
         status = Array.isArray(rule.value)
+          ? rule.value.filter((v): v is string => typeof v === 'string')
+          : [];
+      }
+
+      // Extract type filter - handles multiple type values
+      if (rule.field === 'type' && rule.operator === FilterOperator.IN) {
+        type = Array.isArray(rule.value)
           ? rule.value.filter((v): v is string => typeof v === 'string')
           : [];
       }
@@ -42,7 +50,7 @@ export function filterGroupToParams(filter: DynamicFilterGroup) {
     }
   });
 
-  return { status, amountMin, amountMax, search };
+  return { status, type, amountMin, amountMax, search };
 }
 
 /**
@@ -60,6 +68,9 @@ export function paramsToFilterGroup(params: any): DynamicFilterGroup {
   // Filter out 'all' status and create status filter rule
   const statusValues = (params.status || []).filter((v: string) => v !== 'all');
 
+  // Filter out 'all' type and create type filter rule
+  const typeValues = (params.type || []).filter((v: string) => v !== 'all');
+
   // Add search filter rule if search term exists and is not empty
   if (params.search && params.search.trim() !== '') {
     rules.push({ field: 'search', operator: FilterOperator.CONTAINS, value: params.search });
@@ -68,6 +79,11 @@ export function paramsToFilterGroup(params: any): DynamicFilterGroup {
   // Add status filter rule if specific statuses are selected
   if (statusValues.length > 0) {
     rules.push({ field: 'status', operator: FilterOperator.IN, value: statusValues });
+  }
+
+  // Add type filter rule if specific types are selected
+  if (typeValues.length > 0) {
+    rules.push({ field: 'type', operator: FilterOperator.IN, value: typeValues });
   }
 
   // Validate and extract amount range parameters

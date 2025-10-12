@@ -44,6 +44,9 @@ next-env.d.ts
 # qodo
 .qodo
 
+# cursor
+.cursor
+
 # bun
 bun.lock
 

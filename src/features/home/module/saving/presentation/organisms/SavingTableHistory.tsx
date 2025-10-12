@@ -1,11 +1,11 @@
 'use client';
 
 import { Loading } from '@/components/common/atoms';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { editFilter } from '@/components/common/filters';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { OrderType } from '@/shared/types';
@@ -336,22 +336,11 @@ function SavingTableHistory() {
                   <TableCell className="italic text-gray-500">Unknown</TableCell>
                 )}
                 <TableCell>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => gotoDetailPage(record.id)}
-                        >
-                          <FileText size={18} color="#595959" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Details</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <CommonTooltip content="Details">
+                    <Button variant="ghost" size="icon" onClick={() => gotoDetailPage(record.id)}>
+                      <FileText size={18} color="#595959" />
+                    </Button>
+                  </CommonTooltip>
                 </TableCell>
               </TableRow>
             );

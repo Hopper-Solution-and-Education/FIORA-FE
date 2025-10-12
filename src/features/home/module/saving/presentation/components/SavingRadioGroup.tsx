@@ -1,5 +1,5 @@
-import { uuid4 } from '@sentry/core';
 import React, { ReactElement, useState } from 'react';
+import { v4 as uuid4 } from 'uuid';
 import { ISavingWallet } from '../../types';
 
 type SavingRadioProps = {

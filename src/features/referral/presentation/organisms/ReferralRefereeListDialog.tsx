@@ -30,6 +30,7 @@ const ReferralRefereeListDialog = ({
   onOpenChange,
   referees,
   isLoading = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onInviteMore,
 }: ReferralRefereeListDialogProps) => {
   const hasReferees = Array.isArray(referees) && referees.length > 0;

@@ -1,8 +1,8 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { UploadField } from '@/components/common/forms';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileText, HelpCircle } from 'lucide-react';
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { IdentificationDocument } from '../../../../schema/personalInfoSchema';
@@ -29,11 +29,8 @@ const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-green-600" />
           <CardTitle className="text-base sm:text-lg">Document Images</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
+          <CommonTooltip
+            content={
               <div className="space-y-1">
                 <p>Document Requirements:</p>
                 <ul className="text-xs space-y-1">
@@ -44,8 +41,10 @@ const DocumentImagesForm: React.FC<DocumentImagesFormProps> = ({
                   <li>• File size should not exceed 5MB per document</li>
                 </ul>
               </div>
-            </TooltipContent>
-          </Tooltip>
+            }
+          >
+            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+          </CommonTooltip>
         </div>
       </CardHeader>
       <CardContent>
