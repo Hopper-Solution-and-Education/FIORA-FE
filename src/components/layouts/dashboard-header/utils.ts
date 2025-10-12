@@ -40,8 +40,7 @@ export const menuSettingItems: MenuSettingItem[] = [
     label: 'User Management',
     icon: Icons.shieldCheck,
     url: '/setting/user-management',
-    // role: ['Admin', 'CS'],
-    role: 'CS',
+    role: ['Admin', 'CS'],
   },
 ];
 
@@ -66,12 +65,11 @@ export const filterMenuItems = (
 ): MenuSettingItem[] => {
   return items.filter((item: MenuSettingItem) => {
     const hasFeatureFlag = !item.featureFlags || gb.isOn(item.featureFlags);
-    
+
     // Check role access: handle both string and array
-    const hasRoleAccess = !item.role || 
-      (Array.isArray(item.role) 
-        ? item.role.includes(userRole || '')
-        : userRole === item.role);
+    const hasRoleAccess =
+      !item.role ||
+      (Array.isArray(item.role) ? item.role.includes(userRole || '') : userRole === item.role);
 
     if (hasFeatureFlag && hasRoleAccess) {
       return item;

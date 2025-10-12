@@ -206,6 +206,9 @@ export function useUserManagement() {
   }, [state.data]);
 
   const setSearchQueryWithRefetch = useCallback((value: string) => {
+    if (value.trim() === '') {
+      return;
+    }
     setSearchQuery(value);
     setShouldRefetch(true);
   }, []);
