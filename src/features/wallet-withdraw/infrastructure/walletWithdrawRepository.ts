@@ -10,6 +10,7 @@ import {
   FxRequestType,
   OtpType,
   TransactionType,
+  UserRole,
   WalletType,
 } from '@prisma/client';
 import { IWalletWithdrawRepository } from '../domain/repository/walletWithdrawRepository.interface';
@@ -283,15 +284,25 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           email: true,
         },
       });
+      const emailAdmin = await this._prisma.user.findMany({
+        where: { role: UserRole.Admin },
+        select: {
+          email: true,
+        },
+      });
 
       if (createDepositRequest) {
+        const emails: string[] = [
+          ...(emailUser?.email ? [emailUser.email] : []),
+          ...emailAdmin.map((admin) => admin.email),
+        ];
         await notificationRepository.createBoxNotification({
           title: 'WITHDRAW_REQUEST',
           type: 'WITHDRAW_REQUEST',
           notifyTo: 'PERSONAL',
           attachmentId: '',
           deepLink: '/wallet/payment',
-          emails: [emailUser?.email ?? ''],
+          emails,
           message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
         });
       }
