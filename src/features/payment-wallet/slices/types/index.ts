@@ -120,3 +120,11 @@ export interface FetchPaymentWalletTransactionsSuccess {
 export interface PaymentWalletApiError {
   error: string;
 }
+
+export interface AccountSelectField {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+  isPartner: boolean;
+}
