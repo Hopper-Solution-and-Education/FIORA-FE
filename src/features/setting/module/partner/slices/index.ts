@@ -1,13 +1,13 @@
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
+import { FilterCriteria } from '@/shared/types/filter.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { Partner } from '../domain/entities/Partner';
-import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
-import { updatePartner } from './actions/updatePartnerAsyncThunk';
 import { deletePartner } from './actions/deletePartnerAsyncThunk'; // Import the delete thunk
+import { fetchPartners } from './actions/fetchPartnersAsyncThunk';
 import { searchPartners } from './actions/searchPartnersAsyncThunk'; // Import the search thunk
+import { updatePartner } from './actions/updatePartnerAsyncThunk';
 import { initialPartnerState, PartnerResponse } from './types';
-import { FilterCriteria } from '@/shared/types/filter.types';
 
 const partnerManagementSlice = createSlice({
   name: 'partnerManagement',

@@ -1,8 +1,7 @@
 import { ITransactionPaginatedResponse } from '@/features/home/module/transaction/types';
 import transactionServices from '@/features/home/services/transactionServices';
 import { Transaction } from '@/features/setting/module/product/domain/entities/Transaction';
-import { FilterCriteria } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const fetchTransactions = createAsyncThunk(

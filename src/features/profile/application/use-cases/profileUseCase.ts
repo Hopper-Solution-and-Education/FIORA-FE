@@ -9,8 +9,12 @@ class ProfileUseCase {
     return this.repo.getById(userId);
   }
 
-  async update(userId: string, payload: UpdateProfileRequest): Promise<UserProfile> {
-    return this.repo.update(userId, payload);
+  async update(
+    userId: string,
+    payload: UpdateProfileRequest,
+    updateBy?: string,
+  ): Promise<UserProfile> {
+    return this.repo.update(userId, payload, updateBy);
   }
 }
 

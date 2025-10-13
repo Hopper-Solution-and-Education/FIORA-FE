@@ -180,10 +180,19 @@ export const useWalletSetting = () => {
     fetchData,
   ]);
 
+  /**
+   * Reload current page data with existing filters
+   * Used after successful approve/reject actions
+   */
+  const reloadData = useCallback(async () => {
+    await fetchData(state.pagination.current, state.pagination.pageSize, false);
+  }, [fetchData, state.pagination.current, state.pagination.pageSize]);
+
   return {
     tableData: state,
     loading,
     loadMore,
     dispatchTable,
+    reloadData,
   };
 };

@@ -1,9 +1,9 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CreditCard, HelpCircle } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { BankAccount } from '../../../../schema/personalInfoSchema';
@@ -30,17 +30,12 @@ const BankAccountDetailsForm: React.FC<BankAccountDetailsFormProps> = ({
         <div className="flex items-center gap-2">
           <CreditCard className="h-5 w-5 text-blue-600" />
           <CardTitle className="text-base sm:text-lg">Account Details</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                Your bank information is encrypted and secured. We use this information only for
-                verification and transaction purposes.
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          <CommonTooltip
+            content="Your bank information is encrypted and secured. We use this information only for
+                verification and transaction purposes."
+          >
+            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+          </CommonTooltip>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

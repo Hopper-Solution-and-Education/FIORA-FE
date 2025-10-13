@@ -1,3 +1,4 @@
+import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
 import { FilterObject } from '@/shared/types/filter.types';
 import { DepositRequestStatus } from '../../domain';
 import { DepositRequestsPaginated } from '../../presentation';
@@ -13,5 +14,6 @@ export interface IWalletSettingRepository {
     id: string,
     status: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
   ): Promise<UpdateDepositRequestStatusResponse>;
 }

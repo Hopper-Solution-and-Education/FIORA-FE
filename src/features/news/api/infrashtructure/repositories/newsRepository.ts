@@ -151,6 +151,7 @@ export class NewsRepository implements INewsRepository {
         },
       });
       return post;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
       throw new AppError(303, 'Create NEWS failfail');
     }
@@ -229,8 +230,9 @@ export class NewsRepository implements INewsRepository {
         limit: limit,
       };
       return response;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
-      throw new AppError(400, 'Lỗi khi lấy tin tức');
+      throw new AppError(400, 'Get news fail');
     }
   }
 }

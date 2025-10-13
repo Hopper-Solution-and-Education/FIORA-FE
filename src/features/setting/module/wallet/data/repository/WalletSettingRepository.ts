@@ -1,3 +1,4 @@
+import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
 import { FilterObject } from '@/shared/types/filter.types';
 import { decorate, inject, injectable } from 'inversify';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
@@ -32,8 +33,14 @@ export class WalletSettingRepository implements IWalletSettingRepository {
     id: string,
     status: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
   ): Promise<UpdateDepositRequestStatusResponse> {
-    const response = await this.walletSettingApi.updateDepositRequestStatus(id, status, remark);
+    const response = await this.walletSettingApi.updateDepositRequestStatus(
+      id,
+      status,
+      remark,
+      attachmentData,
+    );
     return WalletSettingMapper.toUpdateDepositRequestStatus(response.data);
   }
 }

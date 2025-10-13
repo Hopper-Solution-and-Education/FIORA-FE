@@ -133,17 +133,43 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
     try {
       const verify_otp = await this._prisma.otp.findFirst({
         where: {
-          AND: [{ userId: userId }, { otp: otp }],
+          AND: [{ userId: userId }, { otp: otp }, { type: OtpType.WITHDRAW }],
         },
       });
 
       if (!verify_otp) {
         throw new BadRequestError('OTP Incorrect');
       }
-      const membershipBenefitDaily = await this._prisma.membershipBenefit.findFirst({
-        where: { slug: 'moving-daily-limit' },
-        select: { id: true },
+      await this._prisma.otp.deleteMany({
+        where: {
+          userId: userId,
+          type: OtpType.WITHDRAW,
+        },
       });
+      const walletPayment = await this._prisma.wallet.findFirst({
+        where: { userId: userId, type: WalletType.Payment },
+        select: {
+          frBalanceActive: true,
+          frBalanceFrozen: true,
+          id: true,
+        },
+      });
+
+      if (walletPayment?.frBalanceActive.lessThan(amount)) {
+        throw new BadRequestError('Insufficient balance');
+      }
+
+      const [membershipBenefitDaily, membershipBenefitOnetime] = await Promise.all([
+        this._prisma.membershipBenefit.findFirst({
+          where: { slug: 'moving-daily-limit' },
+          select: { id: true },
+        }),
+        this._prisma.membershipBenefit.findFirst({
+          where: { slug: 'moving-1-time-limit' },
+          select: { id: true },
+        }),
+      ]);
+
       const membershipProgress = await this._prisma.membershipProgress.findFirst({
         where: {
           userId: userId,
@@ -165,6 +191,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           id: true,
         },
       });
+
       const now = new Date();
       const startOfDay = new Date(now);
       startOfDay.setHours(0, 0, 0, 0);
@@ -200,30 +227,35 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         },
       });
 
-      const daily_moving_limit = await this._prisma.tierBenefit.findFirst({
-        where: {
-          tierId: membershipProgress?.tierId ?? undefined,
-          benefitId: membershipBenefitDaily?.id,
-        },
-      });
-      const available_limit =
-        Number(daily_moving_limit?.value ?? 0) -
-        (Number(countTransaction._sum.amount ?? 0) + Number(countDepositRequest._sum.amount ?? 0));
+      const [daily_moving_limit, onetime_moving_limit] = await Promise.all([
+        this._prisma.tierBenefit.findFirst({
+          where: {
+            tierId: membershipProgress?.tierId ?? undefined,
+            benefitId: membershipBenefitDaily?.id,
+          },
+        }),
+        this._prisma.tierBenefit.findFirst({
+          where: {
+            tierId: membershipProgress?.tierId ?? undefined,
+            benefitId: membershipBenefitOnetime?.id,
+          },
+        }),
+      ]);
 
-      if (available_limit <= 0) {
-        throw new BadRequestError('Exceeded the allowable limit');
+      const dailyLimit = Number(daily_moving_limit?.value ?? 0);
+      const oneTimeLimit = Number(onetime_moving_limit?.value ?? 0);
+
+      if (amount > oneTimeLimit) {
+        throw new BadRequestError('Exceeded the allowable one-time withdrawal limit');
       }
-      const walletPayment = await this._prisma.wallet.findFirst({
-        where: { userId: userId, type: WalletType.Payment },
-        select: {
-          frBalanceActive: true,
-          frBalanceFrozen: true,
-          id: true,
-        },
-      });
 
-      if (walletPayment?.frBalanceActive.lessThan(amount)) {
-        throw new BadRequestError('Insufficient balance');
+      const totalWithdrawToday =
+        Number(countTransaction._sum.amount ?? 0) +
+        Number(countDepositRequest._sum.amount ?? 0) +
+        Number(amount);
+
+      if (totalWithdrawToday > dailyLimit) {
+        throw new BadRequestError('Exceeded the allowable daily withdrawal limit');
       }
 
       const result = await this._prisma.wallet.update({
@@ -233,6 +265,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           frBalanceFrozen: { increment: amount },
         },
       });
+
       const createDepositRequest = await this._prisma.depositRequest.create({
         data: {
           userId: userId,
@@ -243,19 +276,21 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           currency: 'USD',
         },
       });
+
       const emailUser = await this._prisma.user.findFirst({
         where: { id: userId },
         select: {
           email: true,
         },
       });
+
       if (createDepositRequest) {
         await notificationRepository.createBoxNotification({
           title: 'WITHDRAW_REQUEST',
           type: 'WITHDRAW_REQUEST',
           notifyTo: 'PERSONAL',
           attachmentId: '',
-          deepLink: '',
+          deepLink: '/wallet/payment',
           emails: [emailUser?.email ?? ''],
           message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
         });
@@ -270,6 +305,31 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
   }
 
   async sendOtpWithDraw(userId: string): Promise<{ data: any }> {
+    const lastOtp = await this._prisma.otp.findFirst({
+      where: {
+        userId: userId,
+        type: OtpType.WITHDRAW,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (lastOtp) {
+      const twoMinutes = 2 * 60 * 1000;
+      const expiresAt = new Date(lastOtp.createdAt.getTime() + twoMinutes);
+
+      if (new Date() < expiresAt) {
+        throw new BadRequestError('Please wait before requesting a new OTP');
+      }
+    }
+    await this._prisma.otp.deleteMany({
+      where: {
+        userId: userId,
+        type: OtpType.WITHDRAW,
+      },
+    });
+
     const bankAccount = await this._prisma.bankAccount.findFirst({
       where: { userId: userId },
       select: {
@@ -284,6 +344,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         email: true,
       },
     });
+
     const random6Digits = generateSixDigitNumber();
     await sendOtpVerifyWithDraw(userName?.email, random6Digits, bankAccount);
     const data = await prisma.otp.create({

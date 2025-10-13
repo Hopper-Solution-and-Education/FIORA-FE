@@ -5,6 +5,7 @@ import { TableAction } from '../types';
 
 interface DispatchTableContextType {
   dispatchTable: Dispatch<TableAction>;
+  reloadData: () => Promise<void>;
 }
 
 export const DispatchTableContext = createContext<DispatchTableContextType | undefined>(undefined);

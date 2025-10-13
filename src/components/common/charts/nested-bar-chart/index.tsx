@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
@@ -18,18 +19,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Button } from '@/components/ui/button';
-import {
-  Tooltip as TooltipShadcn,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Icons } from '@/components/Icon';
-import { debounce } from 'lodash';
-import { cn } from '@/shared/utils';
+
 import { BarLabel, ChartLegend, CustomTooltip, CustomYAxisTick } from '@/components/common/atoms';
 import { ChartSkeleton } from '@/components/common/organisms';
+import { Icons } from '@/components/Icon';
+import { cn } from '@/shared/utils';
+import { debounce } from 'lodash';
+import { CommonTooltip } from '../../atoms/CommonTooltip';
 import { BarItem, NestedBarChartProps } from './type';
 
 const NestedBarChart = ({
@@ -205,38 +201,31 @@ const NestedBarChart = ({
               Showing {preparedData.length} of {data.length} items
             </span>
             {data.length > 5 && (
-              <TooltipProvider>
-                <TooltipShadcn>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleToggleShowAll}
-                      className="h-8 w-8 hover:bg-primary/10 relative"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
-                      ) : showAll ? (
-                        <Icons.shrink
-                          className={cn(
-                            'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
-                          )}
-                        />
-                      ) : (
-                        <Icons.expand
-                          className={cn(
-                            'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
-                          )}
-                        />
+              <CommonTooltip content={showAll ? 'Show Less' : 'View All'}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleToggleShowAll}
+                  className="h-8 w-8 hover:bg-primary/10 relative"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
+                  ) : showAll ? (
+                    <Icons.shrink
+                      className={cn(
+                        'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
                       )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <span>{showAll ? 'Show Less' : 'View All'}</span>
-                  </TooltipContent>
-                </TooltipShadcn>
-              </TooltipProvider>
+                    />
+                  ) : (
+                    <Icons.expand
+                      className={cn(
+                        'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                      )}
+                    />
+                  )}
+                </Button>
+              </CommonTooltip>
             )}
           </div>
         </div>

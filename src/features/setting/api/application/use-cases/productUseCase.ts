@@ -6,14 +6,14 @@ import {
 
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { BadRequestError } from '@/shared/lib';
+import { PaginationResponse } from '@/shared/types';
 import { ProductItem } from '@/shared/types/product.types';
 import { Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';
 import { ICategoryProductRepository } from '../../repositories/categoryProductRepository.interface';
-import { BadRequestError } from '@/shared/lib';
 
 class ProductUseCase {
   private productRepository: IProductRepository;

@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
+import { CommonTooltip } from '../atoms/CommonTooltip';
 
 export const DEFAULT_FILTER_CRITERIA: FilterCriteria = {
   userId: '',
@@ -219,25 +219,17 @@ const GlobalFilter = (props: GlobalFilterProps) => {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={(open) => (open ? setIsOpen(open) : handleClose())}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant={shouldShowFilterIcon ? 'default' : 'secondary'}
-                className="px-3 py-2"
-                onClick={() => setIsOpen((prev) => !prev)}
-              >
-                {shouldShowFilterIcon ? <Funnel size={15} /> : <FunnelPlus size={15} />}
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Filters</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
+      <CommonTooltip content="Filters">
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant={shouldShowFilterIcon ? 'default' : 'secondary'}
+            className="px-3 py-2"
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            {shouldShowFilterIcon ? <Funnel size={15} /> : <FunnelPlus size={15} />}
+          </Button>
+        </DropdownMenuTrigger>
+      </CommonTooltip>
       <DropdownMenuContent
         className="w-fit min-w-200 rounded-lg p-4"
         side="bottom"
@@ -284,30 +276,16 @@ const GlobalFilter = (props: GlobalFilterProps) => {
 
         <DropdownMenuSeparator />
         <div className="w-full flex justify-end items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={'destructive'} className="px-3 py-2" onClick={handleResetFilter}>
-                  <FunnelX className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Reset all filters</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Apply filters</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Reset all filters">
+            <Button variant={'destructive'} className="px-3 py-2" onClick={handleResetFilter}>
+              <FunnelX className="h-4 w-4" />
+            </Button>
+          </CommonTooltip>
+          <CommonTooltip content="Apply filters">
+            <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
+              <Check className="h-4 w-4" />
+            </Button>
+          </CommonTooltip>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -8,13 +8,17 @@ import { Loading } from '@/components/common/atoms';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { setWithdrawFXFormClose } from '@/features/home/module/wallet';
+import {
+  fetchFrozenAmountAsyncThunk,
+  getWalletsAsyncThunk,
+} from '@/features/home/module/wallet/slices/actions';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ApiEndpointEnum } from '../../domain/endpoint';
 import { OtpState, WalletWithdrawOverview } from '../../types';
 import AmountSelect from '../components/AmountSelect';
 import BankAccountSelect from '../components/BankAccountSelect';
@@ -119,6 +123,16 @@ function WithdrawFXForm() {
       return;
     }
 
+    if (amountInput > (overviewData?.data?.data?.onetime_moving_limit ?? 0)) {
+      toast.error('Exceeded the allowable one-time withdrawal limit');
+      return;
+    }
+
+    if (amountInput > (overviewData?.data?.data?.available_limit ?? 0)) {
+      toast.error('Exceeded the allowable daily withdrawal limit');
+      return;
+    }
+
     setLoading(true);
 
     const response = await fetch(ApiEndpointEnum.walletWithdraw, {
@@ -134,6 +148,8 @@ function WithdrawFXForm() {
     setLoading(false);
 
     if (response.ok) {
+      dispatch(getWalletsAsyncThunk());
+      dispatch(fetchFrozenAmountAsyncThunk());
       toast.success(data.message);
       refetchOverview();
       handleClose();
@@ -167,7 +183,7 @@ function WithdrawFXForm() {
               <MetricCard
                 className="px-4 py-2 *:p-0"
                 title="1-time Moving Limit"
-                value={Number(overviewData?.data?.data?.daily_moving_limit)}
+                value={Number(overviewData?.data?.data?.onetime_moving_limit)}
                 type="total"
                 icon="handCoins"
               />

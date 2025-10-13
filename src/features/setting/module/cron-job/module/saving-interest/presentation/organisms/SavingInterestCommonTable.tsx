@@ -130,6 +130,7 @@ const SavingInterestCommonTable = ({
             <SavingInterestActionButton
               status={r.status}
               savingInterestId={r.id}
+              amount={r.smartSavingAmount?.toString()}
               onRetry={(id, savingInterestAmount, reason) => {
                 console.log('Retry saving interest:', { id, savingInterestAmount, reason });
                 // Refresh data after successful retry

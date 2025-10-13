@@ -1,21 +1,8 @@
 import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
-// import { FeatureFlags } from './shared/constants/featuresFlags';
-// import growthbook from './config/growthbook/growthbook';
 
 const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path'];
-
-// const featureProtectedRoutes: { [key: string]: FeatureFlags } = {
-//   '/transaction': FeatureFlags.TRANSACTION_FEATURE,
-//   '/category': FeatureFlags.CATEGORY_FEATURE,
-//   '/account': FeatureFlags.ACCOUNT_FEATURE,
-//   '/partner': FeatureFlags.PARTNER_FEATURE,
-//   '/setting/product': FeatureFlags.PRODUCT_FEATURE,
-//   '/setting/partner': FeatureFlags.PARTNER_FEATURE,
-// };
-
-// document: https:// github.com/pillarjs/path-to-regexp
 
 const isPathMatchPattern = (path: string, pattern: string): boolean => {
   const { regexp } = pathToRegexp(pattern);
@@ -25,8 +12,6 @@ const isPathMatchPattern = (path: string, pattern: string): boolean => {
 
 export async function middleware(request: NextRequest) {
   try {
-    // const gb = growthbook;
-    // await gb.refreshFeatures();
     const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
     const { pathname } = request.nextUrl;
 

@@ -4,8 +4,7 @@ import {
   ITransactionPaginatedResponse,
 } from '@/features/home/module/transaction/types';
 import { Transaction } from '@/features/setting/module/product/domain/entities/Transaction';
-import { FilterCriteria } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, Response } from '@/shared/types';
 import { Partner, Product, TransactionType } from '@prisma/client';
 
 // Currency type based on API response

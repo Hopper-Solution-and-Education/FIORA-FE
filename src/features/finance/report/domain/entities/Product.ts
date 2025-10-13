@@ -1,4 +1,4 @@
-import { Pagination, PaginationResponse } from '@/shared/types/Common.types';
+import { Pagination, PaginationResponse } from '@/shared/types';
 
 enum ProductType {
   Edu = 'Edu',

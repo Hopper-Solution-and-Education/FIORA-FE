@@ -1,14 +1,14 @@
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
+import { FilterCriteria } from '@/shared/types/filter.types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   createAccount,
   fetchAccounts,
   fetchParents,
-  updateAccount,
   searchAccounts,
+  updateAccount,
 } from './actions';
 import { Account, initialAccountState } from './types';
-import { FilterCriteria } from '@/shared/types/filter.types';
 
 const accountSlice = createSlice({
   name: 'account',

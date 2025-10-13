@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { shortenFileName } from '@/shared/utils/shortfilename';
+import { shortenFileName } from '@/shared/utils/stringHelper';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import Image from 'next/image';

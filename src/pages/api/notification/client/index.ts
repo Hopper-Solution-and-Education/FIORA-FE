@@ -8,12 +8,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default withAuthorization({
   GET: ['User', 'Admin', 'CS'],
-})((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+})((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
         case 'GET':
-          return GET(request, response, userId);
+          return GET(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -25,7 +25,7 @@ export default withAuthorization({
   ),
 );
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const { page = 1, pageSize = 20, search = '', ...filters } = req.query;
   const result = await notificationUseCase.getNotificationsPagination({
     page: Number(page),
