@@ -59,13 +59,13 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.BLOCK_USER_FAILED, {}));
   }
 
-  return res
-    .status(RESPONSE_CODE.CREATED)
-    .json(
-      createResponse(
-        RESPONSE_CODE.CREATED,
-        userBlocked.isBlocked ? Messages.BLOCK_USER_SUCCESS : Messages.UNBLOCK_USER_SUCCESS,
-        userBlocked,
-      ),
-    );
+  if (userBlocked.isBlocked) {
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.BLOCK_USER_SUCCESS, userBlocked));
+  } else {
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, Messages.UNBLOCK_USER_SUCCESS, userBlocked));
+  }
 }

@@ -206,7 +206,7 @@ export const profileApi = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response,
-      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
     }),
 
     // Assign Role
@@ -218,7 +218,7 @@ export const profileApi = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
     }),
 
     // myprofile

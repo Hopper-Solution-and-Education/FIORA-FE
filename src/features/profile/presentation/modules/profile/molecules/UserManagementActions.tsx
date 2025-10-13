@@ -26,7 +26,7 @@ export function UserManagementActions({
   currentUserRole = UserRole.User,
   onRoleUpdate,
   onBlockUser,
-  isBlocked = false,
+  isBlocked,
 }: UserManagementActionsProps) {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);

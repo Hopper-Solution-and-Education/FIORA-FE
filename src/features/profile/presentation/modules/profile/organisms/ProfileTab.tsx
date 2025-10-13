@@ -10,6 +10,7 @@ import {
 } from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
@@ -39,13 +40,17 @@ const ProfileTab: FC<ProfileTabProps> = ({
   showUserManagement = false,
 }) => {
   const router = useRouter();
+  const { data: session } = useSession(); // Lấy session của user đang đăng nhập
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
 
   // Lấy myProfile data từ API
-  const { data: myProfile } = useGetMyProfileQuery(profile?.id || '', {
+  const { data: myProfile, refetch } = useGetMyProfileQuery(profile?.id || '', {
     skip: !profile?.id, // Chỉ gọi API khi có userId
   });
+
+  // Check xem current user có phải Admin không
+  const isCurrentUserAdmin = session?.user?.role === UserRole.Admin;
 
   const [isBlocked, setIsBlocked] = useState(myProfile?.isBlocked || false);
 
@@ -118,9 +123,10 @@ const ProfileTab: FC<ProfileTabProps> = ({
       const resulBlockUser = await blockUser({ blockUserId: userId, reason }).unwrap();
       toast.success(resulBlockUser?.message);
       setIsBlocked(resulBlockUser?.data?.isBlocked || false);
+      console.log('resulBlockUser', resulBlockUser);
     } catch (error: any) {
       console.error('Error blocking user:', error);
-      toast.error(error?.data?.message || 'Failed to block user');
+      toast.error(error?.data?.message);
       throw error;
     }
   };
@@ -175,7 +181,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               eKycId={eKycId}
             />
 
-            {showUserManagement && (
+            {showUserManagement && isCurrentUserAdmin && (
               <UserManagementActions
                 userId={profile?.id || ''}
                 userName={profile?.name || ''}

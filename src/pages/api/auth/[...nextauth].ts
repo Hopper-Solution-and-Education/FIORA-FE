@@ -168,7 +168,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.image = user.image;
-        token.role = user.role;
+        token.role = user.role as UserRole;
         token.rememberMe = user.rememberMe;
 
         const maxAge = user.rememberMe ? 60 * 60 * 24 : 30 * 60; // 24 giờ hoặc 30 phút
