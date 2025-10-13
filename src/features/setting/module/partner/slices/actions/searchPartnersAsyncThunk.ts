@@ -1,6 +1,5 @@
+import { GlobalFilters, Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { GlobalFilters } from '@/shared/types';
-import { Response } from '@/shared/types/Common.types';
 import { PartnerResponse } from '../types';
 
 export const searchPartners = createAsyncThunk<

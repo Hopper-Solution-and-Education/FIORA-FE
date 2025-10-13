@@ -1,6 +1,6 @@
 import { httpClient } from '@/config';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { routeConfig } from '@/shared/utils/route';
-import { ApiEndpointEnum } from '../ApiEndpointEnum';
 import { CreateSavingClaimRequest } from '../tdo/request/CreateSavingClaimRequest';
 import { CreateSavingHistoryRequest } from '../tdo/request/CreateSavingHistoryRequest';
 import { CreateSavingTransferRequest } from '../tdo/request/CreateSavingTransferRequest';

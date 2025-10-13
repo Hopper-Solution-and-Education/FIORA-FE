@@ -1,3 +1,4 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { InputField } from '@/components/common/forms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React from 'react';
 import { Controller, FieldError, FormProvider, useForm } from 'react-hook-form';
@@ -107,47 +107,35 @@ const FaqCategoryCreationDialog: React.FC<FaqCategoryCreationDialogProps> = ({
               )}
             />
 
-            <TooltipProvider>
-              <div className="flex justify-between gap-4 mt-6">
-                {/* Cancel Button */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      disabled={isSubmitting}
-                      onClick={() => handleClose()}
-                      variant="outline"
-                      type="button"
-                      className="flex items-center justify-center gap-2 px-10 py-2 border rounded-lg transition hover:bg-gray-100"
-                    >
-                      <Icons.trash className=" text-red-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Cancel</p>
-                  </TooltipContent>
-                </Tooltip>
+            <div className="flex justify-between gap-4 mt-6">
+              {/* Cancel Button */}
+              <CommonTooltip content="Cancel">
+                <Button
+                  disabled={isSubmitting}
+                  onClick={() => handleClose()}
+                  variant="outline"
+                  type="button"
+                  className="flex items-center justify-center gap-2 px-10 py-2 border rounded-lg transition hover:bg-gray-100"
+                >
+                  <Icons.trash className=" text-red-600" />
+                </Button>
+              </CommonTooltip>
 
-                {/* Submit Button */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="submit"
-                      disabled={false}
-                      className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
-                    >
-                      {isSubmitting ? (
-                        <Icons.spinner className="animate-spin h-5 w-5" />
-                      ) : (
-                        <Icons.check className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isSubmitting ? 'Submitting...' : 'Submit'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+              {/* Submit Button */}
+              <CommonTooltip content={isSubmitting ? 'Submitting...' : 'Submit'}>
+                <Button
+                  type="submit"
+                  disabled={false}
+                  className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  {isSubmitting ? (
+                    <Icons.spinner className="animate-spin h-5 w-5" />
+                  ) : (
+                    <Icons.check className="h-5 w-5" />
+                  )}
+                </Button>
+              </CommonTooltip>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

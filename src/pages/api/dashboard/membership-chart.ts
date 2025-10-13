@@ -8,12 +8,12 @@ import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
         case 'GET':
-          return GET(request, response, userId);
+          return GET(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -25,7 +25,7 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
   ),
 );
 
-export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { status, typeCronJob } = req.query as DashboardFilterParams;
 

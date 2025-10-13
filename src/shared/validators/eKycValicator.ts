@@ -1,4 +1,4 @@
-import { KYCMethod, KYCType } from '@prisma/client';
+import { KYCMethod, KYCStatus, KYCType } from '@prisma/client';
 import Joi from 'joi';
 
 export const eKYCSchema = Joi.object({
@@ -20,4 +20,18 @@ export const eKYCSchema = Joi.object({
   }),
 
   type: Joi.string().valid(...Object.values(KYCType)),
+});
+
+export const verifyEKYCSchema = Joi.object({
+  status: Joi.string()
+    .valid(...Object.values(KYCStatus))
+    .required()
+    .messages({
+      'any.required': 'status is required',
+      'any.only': `status must be one of [${Object.values(KYCStatus).join(', ')}]`,
+    }),
+
+  remarks: Joi.string().max(500).optional().allow('').messages({
+    'string.max': 'remarks must be at most 500 characters',
+  }),
 });

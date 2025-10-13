@@ -7,9 +7,9 @@ import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
 import { SectionDefaultValues, sectionFormSchema } from '../../schema/section-form.schema';
@@ -194,34 +194,27 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
       <SectionCard sectionData={sectionData} control={methods.control} sectionType={sectionType} />
 
       <div className="flex justify-end space-x-2">
-        <TooltipProvider delayDuration={0}>
-          <div className="flex justify-end gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  onClick={methods.handleSubmit(onSubmit)}
-                  disabled={
-                    methods.formState.isSubmitting ||
-                    methods.formState.isValidating ||
-                    isLoadingSaveChange ||
-                    isLoading
-                  }
-                  className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  {methods.formState.isSubmitting ? (
-                    <Icons.spinner className="animate-spin h-5 w-5" />
-                  ) : (
-                    <Icons.check className="h-5 w-5" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{methods.formState.isSubmitting ? 'Submiting...' : 'Submit'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+        <div className="flex justify-end gap-4">
+          <CommonTooltip content={methods.formState.isSubmitting ? 'Submiting...' : 'Submit'}>
+            <Button
+              type="button"
+              onClick={methods.handleSubmit(onSubmit)}
+              disabled={
+                methods.formState.isSubmitting ||
+                methods.formState.isValidating ||
+                isLoadingSaveChange ||
+                isLoading
+              }
+              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {methods.formState.isSubmitting ? (
+                <Icons.spinner className="animate-spin h-5 w-5" />
+              ) : (
+                <Icons.check className="h-5 w-5" />
+              )}
+            </Button>
+          </CommonTooltip>
+        </div>
       </div>
     </FormProvider>
   );

@@ -14,7 +14,7 @@ interface TransactionLayoutProps {
 export default function TransactionLayout({ children }: TransactionLayoutProps) {
   return (
     <ModuleAccessLayout featureFlag={FeatureFlags.TRANSACTION_FEATURE}>
-      <section className="container mx-auto sm:px-6 lg:px-8">{children}</section>
+      <section className="sm:px-6 lg:px-8">{children}</section>
     </ModuleAccessLayout>
   );
 }

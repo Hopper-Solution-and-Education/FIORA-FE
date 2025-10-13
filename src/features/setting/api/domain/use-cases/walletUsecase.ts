@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { prisma } from '@/config';
 import { IAccountRepository } from '@/features/auth/domain/repositories/accountRepository.interface';
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
@@ -14,12 +15,15 @@ import { SessionUser } from '@/shared/types/session';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
+  DepositRequest,
   DepositRequestStatus,
+  FxRequestType,
   NotificationType,
   Prisma,
   TransactionType,
   WalletType,
 } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
@@ -27,6 +31,8 @@ import {
   DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
+  WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
+  WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
 } from '../../../data/module/wallet/constants';
 import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -333,11 +339,17 @@ class WalletUseCase {
     id: string,
     newStatus: DepositRequestStatus,
     remark?: string,
+    attachmentData?: AttachmentData,
     currency: string = 'VND',
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
-    if (!depositRequest) return null;
+    if (
+      !depositRequest ||
+      (!depositRequest?.packageFXId && !depositRequest.amount) ||
+      !depositRequest?.userId
+    )
+      return null;
 
     // Precompute values during Approve branch to avoid duplicate queries later (notifications)
     let precomputedFxAmount: number | undefined;
@@ -346,10 +358,14 @@ class WalletUseCase {
       this.validateStatusTransition(depositRequest.status, newStatus);
 
       const { userId, packageFXId } = depositRequest;
-      const packageFX = await this._walletRepository.getPackageFXById(packageFXId);
-      if (!packageFX) throw new NotFoundError(Messages.PACKAGE_FX_NOT_FOUND);
+      const packageFX = packageFXId
+        ? await this._walletRepository.getPackageFXById(packageFXId)
+        : null;
 
-      const amount = Number(packageFX.fxAmount);
+      if (depositRequest.type === FxRequestType.DEPOSIT && !packageFX)
+        throw new NotFoundError(Messages.PACKAGE_FX_NOT_FOUND);
+
+      const amount = Number(packageFX?.fxAmount || depositRequest.amount);
       precomputedFxAmount = amount;
       const txCurrency = await this.getTransactionCurrency(id, depositRequest.currency, currency);
       const paymentAccount = await this.ensurePaymentAccount(userId);
@@ -362,6 +378,8 @@ class WalletUseCase {
         paymentAccountId: paymentAccount.id,
         paymentAccountCurrency: paymentAccount.currency!,
         paymentWalletId: paymentWallet.id,
+        depositRequest,
+        attachmentData,
       });
     }
 
@@ -372,7 +390,17 @@ class WalletUseCase {
       remark,
     );
 
-    await this.notifyDepositStatus(depositRequest, newStatus, remark, precomputedFxAmount);
+    await this.notifyDepositStatus(
+      {
+        userId: depositRequest.userId,
+        packageFXId: depositRequest.packageFXId,
+        type: depositRequest.type,
+        amount: depositRequest.amount,
+      },
+      newStatus,
+      remark,
+      precomputedFxAmount,
+    );
 
     return updatedDepositRequest;
   }
@@ -454,6 +482,8 @@ class WalletUseCase {
     paymentAccountId,
     paymentAccountCurrency,
     paymentWalletId,
+    depositRequest,
+    attachmentData,
   }: {
     userId: string;
     amount: number;
@@ -461,41 +491,121 @@ class WalletUseCase {
     paymentAccountId: string;
     paymentAccountCurrency: string;
     paymentWalletId: string;
+    depositRequest: DepositRequest;
+    attachmentData?: AttachmentData;
   }) {
-    const baseTransactionAmount = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, CURRENCY.FX);
-    const amountConvert = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, txCurrency);
+    if (depositRequest.type === FxRequestType.DEPOSIT) {
+      const baseTransactionAmount = await convertCurrency(
+        amount,
+        DEFAULT_BASE_CURRENCY,
+        CURRENCY.FX,
+      );
+      const amountConvert = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, txCurrency);
 
-    await this._transactionRepository.createTransaction({
-      userId,
-      fromAccountId: paymentAccountId,
-      toWalletId: paymentWalletId,
-      amount: amountConvert,
-      currency: txCurrency,
-      type: TransactionType.Transfer,
-      createdBy: userId,
-      baseAmount: baseTransactionAmount,
-      baseCurrency: DEFAULT_BASE_CURRENCY,
-      remark: `Deposit request approved`,
-      isMarked: true,
-    });
-
-    const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
-
-    if (deductAmount > 0) {
-      await this._accountRepository.update(paymentAccountId, {
-        balance: { decrement: deductAmount },
-        baseAmount: { decrement: amount },
+      await this._transactionRepository.createTransaction({
+        userId,
+        fromAccountId: paymentAccountId,
+        toWalletId: paymentWalletId,
+        amount: amountConvert,
+        currency: txCurrency,
+        type: TransactionType.Transfer,
+        createdBy: userId,
+        baseAmount: baseTransactionAmount,
         baseCurrency: DEFAULT_BASE_CURRENCY,
-        updatedBy: userId,
+        remark: `Deposit request approved`,
+        isMarked: true,
+      });
+
+      const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
+
+      if (deductAmount > 0) {
+        await this._accountRepository.update(paymentAccountId, {
+          balance: { decrement: deductAmount },
+          baseAmount: { decrement: amount },
+          baseCurrency: DEFAULT_BASE_CURRENCY,
+          updatedBy: userId,
+        });
+      }
+
+      await this._walletRepository.increaseWalletBalance(paymentWalletId, amount);
+    } else {
+      const paymentWallet = await this._walletRepository.findWalletByType(
+        WalletType.Payment,
+        userId,
+      );
+
+      if (!paymentWallet) throw new BadRequestError(Messages.PAYMENT_WALLET_NOT_FOUND);
+
+      if (Number(paymentWallet.frBalanceFrozen) < amount) {
+        throw new BadRequestError(Messages.INSUFFICIENT_BALANCE);
+      }
+
+      const baseAmount = await convertCurrency(amount, DEFAULT_BASE_CURRENCY, CURRENCY.FX);
+      const transferAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
+
+      await prisma.$transaction(async (_) => {
+        if (attachmentData) {
+          if (attachmentData.size > ATTACHMENT_CONSTANTS.MAX_FILE_SIZE) {
+            throw new BadRequestError(
+              `File size exceeds maximum limit of ${ATTACHMENT_CONSTANTS.MAX_FILE_SIZE / (1024 * 1024)}MB`,
+            );
+          }
+
+          const attachment = await this._attachmentRepository.createAttachment({
+            type: attachmentData.type || ATTACHMENT_CONSTANTS.TYPES.DEPOSIT_PROOF,
+            size: attachmentData.size || ATTACHMENT_CONSTANTS.DEFAULT_SIZE,
+            url: attachmentData.url,
+            path: attachmentData.path,
+            createdBy: userId,
+          });
+
+          await prisma.depositRequest.update({
+            where: { id: depositRequest.id },
+            data: { attachmentId: attachment.id, updatedBy: userId },
+          });
+        } else {
+          throw new BadRequestError(Messages.ATTACHMENT_REQUIRED);
+        }
+
+        await this._transactionRepository.createTransaction({
+          userId,
+          fromWalletId: paymentWalletId,
+          toAccountId: paymentAccountId,
+          amount: amount,
+          currency: CURRENCY.FX,
+          type: TransactionType.Transfer,
+          createdBy: userId,
+          baseAmount: baseAmount,
+          baseCurrency: DEFAULT_BASE_CURRENCY,
+          remark: `Withdrawal request approved`,
+          isMarked: true,
+        });
+
+        await this._walletRepository.updateWallet(
+          { id: paymentWalletId },
+          { frBalanceFrozen: { decrement: amount }, updatedBy: userId },
+        );
+
+        if (transferAmount > 0) {
+          await this._accountRepository.update(paymentAccountId, {
+            balance: { increment: transferAmount },
+            baseAmount: { increment: baseAmount },
+            baseCurrency: DEFAULT_BASE_CURRENCY,
+            updatedBy: userId,
+          });
+        }
       });
     }
-
-    await this._walletRepository.increaseWalletBalance(paymentWalletId, amount);
   }
 
   // Notify user via in-app + email template (reuses precomputed FX amount when available)
   private async notifyDepositStatus(
-    depositRequest: { userId: string; packageFXId: string },
+    depositRequest: {
+      userId: string;
+      packageFXId?: string | null;
+      type: FxRequestType;
+      amount: Decimal;
+    },
     newStatus: DepositRequestStatus,
     remark?: string,
     precomputedFxAmount?: number,
@@ -506,19 +616,23 @@ class WalletUseCase {
     const userEmail = userInfo.email;
     const recipient = userEmail;
     const displayName = userInfo.name || userEmail;
+    const type = depositRequest.type === FxRequestType.DEPOSIT ? 'Deposit' : 'Withdrawal';
 
     const fxAmount =
       precomputedFxAmount ??
       Number(
-        (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount || 0,
+        depositRequest.packageFXId
+          ? (await this._walletRepository.getPackageFXById(depositRequest.packageFXId))?.fxAmount ||
+              0
+          : depositRequest.amount,
       );
 
     if (newStatus === DepositRequestStatus.Approved) {
       await this._notificationUsecase.createBoxNotification({
-        title: 'Deposit Request Approved',
-        type: 'DEPOSIT_APPROVED',
+        title: `${type} Request Approved`,
+        type: `${depositRequest.type}_APPROVED`,
         notifyTo: NotificationType.PERSONAL,
-        message: `Your deposit request has been approved successfully.`,
+        message: `Your ${type.toLowerCase()} request has been approved successfully.`,
         deepLink: RouteEnum.WalletDashboard,
         emails: [userInfo.email],
       });
@@ -532,18 +646,20 @@ class WalletUseCase {
       };
 
       await this._notificationUsecase.sendNotificationWithTemplate(
-        DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
+        depositRequest.type === FxRequestType.DEPOSIT
+          ? DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
+          : WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
-        'DEPOSIT_APPROVED',
-        'Deposit Request Approved',
+        `${depositRequest.type}_APPROVED`,
+        `${type} Request Approved`,
       );
     } else if (newStatus === DepositRequestStatus.Rejected) {
       await this._notificationUsecase.createBoxNotification({
-        title: 'Deposit Request Rejected',
-        type: 'DEPOSIT_REJECTED',
+        title: `${type} Request Rejected`,
+        type: `${depositRequest.type}_REJECTED`,
         notifyTo: NotificationType.PERSONAL,
-        message: `Your deposit request has been rejected. ${remark ? `Reason: ${remark}` : ''}`,
+        message: `Your ${type.toLowerCase()} request has been rejected. ${remark ? `Reason: ${remark}` : ''}`,
         deepLink: RouteEnum.WalletDashboard,
         emails: [userInfo.email],
       });
@@ -558,11 +674,13 @@ class WalletUseCase {
       };
 
       await this._notificationUsecase.sendNotificationWithTemplate(
-        DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
+        depositRequest.type === FxRequestType.DEPOSIT
+          ? DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
+          : WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
-        'DEPOSIT_REJECTED',
-        'Deposit Request Rejected',
+        `${depositRequest.type}_REJECTED`,
+        `${type} Request Rejected`,
       );
     }
   }
@@ -596,7 +714,7 @@ class WalletUseCase {
 
       const baseAmount = await convertCurrency(amount, fromCurrency.name, toCurrency.name);
 
-      return await prisma.$transaction(async (tx) => {
+      return await prisma.$transaction(async (_) => {
         if (amount < 100) {
           throw new Error(`Claims Reward must be greater than 100 FX`);
         }
@@ -647,7 +765,7 @@ class WalletUseCase {
         return transaction;
       });
     } catch (error: any) {
-      throw new Error(error.message || 'Error withdrawing from saving wallet');
+      throw new Error(error.message || Messages.WITHDRAW_AMOUNT_ERROR);
     }
   }
 
@@ -688,9 +806,9 @@ class WalletUseCase {
 
       const baseAmount = await convertCurrency(amount, fromCurrency.name, toCurrency.name);
 
-      return await prisma.$transaction(async (tx) => {
+      return await prisma.$transaction(async (_) => {
         if (action === SavingWalletAction.TRANSFER && amount < 100) {
-          throw new Error(`Transfer amount must be greater than 100 FX`);
+          throw new Error(Messages.MIN_TRANSFER_AMOUNT_ERROR);
         }
 
         if (Number(fromWallet.frBalanceActive) < amount) {
@@ -732,8 +850,8 @@ class WalletUseCase {
       throw new Error(
         error.message ||
           (action === SavingWalletAction.DEPOSIT
-            ? 'Error depositing to saving wallet'
-            : 'Error withdrawing from saving wallet'),
+            ? Messages.DEPOSIT_AMOUNT_ERROR
+            : Messages.WITHDRAW_AMOUNT_ERROR),
       );
     }
   }

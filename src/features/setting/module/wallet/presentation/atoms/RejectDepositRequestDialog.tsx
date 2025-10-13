@@ -16,6 +16,7 @@ interface RejectDepositRequestModalProps {
   onClose: () => void;
   onConfirm: (remark: string) => void;
   isUpdating: boolean;
+  requestType?: 'Deposit' | 'Withdraw';
 }
 
 const RejectDepositRequestDialog = ({
@@ -23,6 +24,7 @@ const RejectDepositRequestDialog = ({
   onClose,
   onConfirm,
   isUpdating,
+  requestType = 'Deposit',
 }: RejectDepositRequestModalProps) => {
   const [remark, setRemark] = useState('');
   const [touched, setTouched] = useState(false);
@@ -54,10 +56,10 @@ const RejectDepositRequestDialog = ({
 
           <div className="text-center space-y-3 w-full">
             <DialogTitle className="text-xl font-semibold text-foreground">
-              Reject Deposit Request
+              Reject {requestType} Request
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              Are you sure you want to reject this deposit request?
+              Are you sure you want to reject this {requestType.toLowerCase()} request?
               <br />
               This action cannot be undone and will notify the user
             </DialogDescription>
@@ -80,24 +82,16 @@ const RejectDepositRequestDialog = ({
             {isError && <div className="text-xs text-[#F04438] mt-1">Reason is required</div>}
           </div>
 
-          <div className="rounded-lg p-4 w-full space-y-3 text-center bg-muted/50 dark:bg-muted/20 mt-2">
-            <div className="flex items-center gap-3 text-xs justify-center">
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                <Icons.arrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <span className="text-foreground">
-                <span className="font-medium text-blue-600 dark:text-blue-400">Stay</span> to
-                continue your review
-              </span>
+          <div className="w-full mt-4 space-y-2 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <span>Click</span>
+              <Icons.arrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>to stay back</span>
             </div>
-            <div className="flex items-center gap-3 text-xs justify-center">
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <Icons.check className="w-4 h-4 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="text-foreground">
-                <span className="font-medium text-green-600 dark:text-green-400">Leave</span> and
-                reject request
-              </span>
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <span>Or click</span>
+              <Icons.check className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span>to confirm</span>
             </div>
           </div>
         </div>

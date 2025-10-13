@@ -2,7 +2,7 @@ import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { ReferralCronjobFilterState } from '../../slices/types';
@@ -52,14 +52,10 @@ interface ReferralFilterMenuProps {
   data?: ReferralCronjobTableData[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ReferralFilterMenu = ({ value, onFilterChange, data = [] }: ReferralFilterMenuProps) => {
-  const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.referralCronjob.filter);
-  const {
-    filterOptions,
-    loading: filterOptionsLoading,
-    loadFilterOptions,
-  } = useReferralFilterOptions();
+  const { filterOptions, loadFilterOptions } = useReferralFilterOptions();
 
   // Local state for managing filter changes before applying
   const [localFilter, setLocalFilter] = useState<LocalFilterState>(() => {

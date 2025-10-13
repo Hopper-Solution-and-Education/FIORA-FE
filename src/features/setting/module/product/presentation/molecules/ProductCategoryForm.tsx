@@ -1,10 +1,10 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { FormConfig } from '@/components/common/forms';
 import { GlobalDialog } from '@/components/common/molecules';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { isEmpty } from 'lodash';
 import { Check, Loader2 } from 'lucide-react';
@@ -140,49 +140,34 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
 
   const footerButtonGroup = useCallback(
     () => (
-      <TooltipProvider>
-        <div className="flex justify-between gap-4 mt-6">
-          {/* Cancel Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                disabled={ProductCategoryFormState === 'add'}
-                onClick={() => setIsOpenDialogDelete(true)}
-                variant="outline"
-                type="button"
-                className="flex items-center justify-center gap-2 px-10 py-2 border rounded-lg transition hover:bg-gray-100"
-              >
-                <Icons.trash className=" text-red-600" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete</p>
-            </TooltipContent>
-          </Tooltip>
+      <div className="flex justify-between gap-4 mt-6">
+        {/* Cancel Button */}
+        <CommonTooltip content="Delete">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setIsOpenDialogDelete(true)}
+            className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+          >
+            <Icons.circleArrowLeft className="h-5 w-5" />
+          </Button>
+        </CommonTooltip>
 
-          {/* Submit Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="submit"
-                disabled={isButtonDisabled}
-                className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
-              >
-                {formState.isSubmitting ||
-                isUpdatingCategoryProduct ||
-                isCreatingCategoryProduct ? (
-                  <Loader2 className="animate-spin h-5 w-5" />
-                ) : (
-                  <Check className="h-5 w-5" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{formState.isSubmitting ? 'Submitting...' : 'Submit'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      </TooltipProvider>
+        {/* Submit Button */}
+        <CommonTooltip content={formState.isSubmitting ? 'Submitting...' : 'Submit'}>
+          <Button
+            type="submit"
+            disabled={isButtonDisabled}
+            className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+          >
+            {formState.isSubmitting || isUpdatingCategoryProduct || isCreatingCategoryProduct ? (
+              <Loader2 className="animate-spin h-5 w-5" />
+            ) : (
+              <Check className="h-5 w-5" />
+            )}
+          </Button>
+        </CommonTooltip>
+      </div>
     ),
     [
       ProductCategoryFormState,

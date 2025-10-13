@@ -23,10 +23,10 @@ export const STATUS_COLOR = {
     hoverColor: 'hover:bg-yellow-400',
   },
   [EKYCStatus.REJECTED]: {
-    color: 'bg-red-500',
+    color: 'bg-red-100',
     textColor: 'text-red-700',
     iconColor: 'text-red-700',
-    borderColor: 'border-red-500',
-    hoverColor: 'hover:bg-red-600',
+    borderColor: 'border-red-300',
+    hoverColor: 'hover:bg-red-400',
   },
 };

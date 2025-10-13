@@ -423,4 +423,12 @@ export enum Messages {
 
   //User
   USER_NOT_FOUND = 'User not found',
+
+  //Saving Wallet
+  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
+  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
+  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
+
+  //Withdrawal Request
+  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
 }

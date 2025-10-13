@@ -7,7 +7,7 @@ import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -346,6 +346,7 @@ class TransactionUseCase {
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
       wallets: filterOptions.wallets ?? [],
+      benefits: filterOptions.benefits ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };
@@ -1293,6 +1294,11 @@ class TransactionUseCase {
                     { name: { contains: typeSearchParams, mode: 'insensitive' } },
                     ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
                   ],
+                },
+              },
+              {
+                membershipBenefit: {
+                  name: { contains: typeSearchParams, mode: 'insensitive' },
                 },
               },
               // adding typeTransactionWhere to where clause if exists

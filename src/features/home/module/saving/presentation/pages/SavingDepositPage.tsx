@@ -1,10 +1,10 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppSelector } from '@/store';
 import { Check, CircleArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -120,35 +120,21 @@ function SavingDepositPage({
           </CardContent>
         </Card>
         <div className="flex items-center justify-between gap-4 mt-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button variant="outline" className="w-32 h-14" onClick={handleClose}>
-                  <CircleArrowLeft />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Cancel and go back</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button
-                  variant="default"
-                  className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
-                  onClick={onSubmit}
-                  disabled={packageSelected === null}
-                >
-                  <Check />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Submit</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Cancel and go back">
+            <Button variant="outline" className="w-32 h-14" onClick={handleClose}>
+              <CircleArrowLeft />
+            </Button>
+          </CommonTooltip>
+          <CommonTooltip content="Submit">
+            <Button
+              variant="default"
+              className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
+              onClick={onSubmit}
+              disabled={packageSelected === null}
+            >
+              <Check />
+            </Button>
+          </CommonTooltip>
         </div>
       </DialogContent>
     </Dialog>

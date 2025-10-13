@@ -710,13 +710,6 @@ class DashboardRepository {
       where: { symbol: TypeCronJob.REFERRAL_CAMPAIGN },
     });
 
-    const rawBonusAmount =
-      (commonSetting?.dynamicValue as Prisma.JsonObject)?.['bonus_1st_amount'] || 5;
-    const bonusAmount = new Prisma.Decimal(Number(rawBonusAmount) || 5).toDecimalPlaces(
-      2,
-      Prisma.Decimal.ROUND_DOWN,
-    );
-
     const emailReferrer = (cronJobFound.dynamicValue as Prisma.JsonObject)?.referrerEmail || null;
 
     const result = await prisma.$transaction(
@@ -745,7 +738,7 @@ class DashboardRepository {
         const updateWallet = await tx.wallet.update({
           where: { id: wallet?.id },
           data: {
-            frBalanceActive: { increment: bonusAmount },
+            frBalanceActive: { increment: amount },
             updatedAt: new Date(),
           },
         });
@@ -758,12 +751,12 @@ class DashboardRepository {
             userId: referrerId,
             date: new Date(),
             type: TransactionType.Income,
-            amount: bonusAmount,
+            amount: amount,
             currency: 'FX',
             toCategoryId: null,
             createdBy: userId,
             updatedBy: userId,
-            baseAmount: bonusAmount,
+            baseAmount: amount,
             baseCurrency: 'USD',
             remark: `Referral bonus for ${emailReferrer}`,
             toWalletId: wallet?.id,

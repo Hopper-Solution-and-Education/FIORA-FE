@@ -1,7 +1,7 @@
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CreatedBy, UpdatedBy } from '@/shared/types';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
@@ -53,43 +53,31 @@ const GlobalForm = <T extends yup.AnyObject>({
   const { control, handleSubmit, formState } = methods;
 
   const renderSubmitButtonDefault = () => (
-    <TooltipProvider>
-      <div className="flex justify-between gap-4 mt-6">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => (onBack ? onBack() : router.back())}
-              className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
-            >
-              <Icons.circleArrowLeft className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Cancel and go back</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="submit"
-              disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
-              className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {formState.isSubmitting ? (
-                <Icons.spinner className="animate-spin h-5 w-5" />
-              ) : (
-                <Icons.check className="h-5 w-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{formState.isSubmitting ? 'Submiting...' : 'Submit'}</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
+    <div className="flex justify-between gap-4 mt-6">
+      <CommonTooltip content="Cancel and go back">
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => (onBack ? onBack() : router.back())}
+          className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+        >
+          <Icons.circleArrowLeft className="h-5 w-5" />
+        </Button>
+      </CommonTooltip>
+      <CommonTooltip content={formState.isSubmitting ? 'Submiting...' : 'Submit'}>
+        <Button
+          type="submit"
+          disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
+          className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
+        >
+          {formState.isSubmitting ? (
+            <Icons.spinner className="animate-spin h-5 w-5" />
+          ) : (
+            <Icons.check className="h-5 w-5" />
+          )}
+        </Button>
+      </CommonTooltip>
+    </div>
   );
 
   return (

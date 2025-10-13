@@ -60,7 +60,7 @@ const MembershipRankChart = () => {
   }, [memberships]);
 
   // handle click spent and balance to edit membership threshold benefit tier
-  const handleClickYAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+  const handleClickYAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier) => {
     dispatch(
       setTierToEdit({
         selectedTier: tier,
@@ -71,7 +71,7 @@ const MembershipRankChart = () => {
     );
     dispatch(setIsShowDialogEditThresholdBenefitTier(true));
   };
-  const handleClickXAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier, index: number) => {
+  const handleClickXAxisRange = (tier: Tier, previousTier: Tier, nextTier: Tier) => {
     dispatch(
       setTierToEdit({
         selectedTier: tier,
