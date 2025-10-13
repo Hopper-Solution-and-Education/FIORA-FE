@@ -158,10 +158,18 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       if (walletPayment?.frBalanceActive.lessThan(amount)) {
         throw new BadRequestError('Insufficient balance');
       }
-      const membershipBenefitDaily = await this._prisma.membershipBenefit.findFirst({
-        where: { slug: 'moving-daily-limit' },
-        select: { id: true },
-      });
+
+      const [membershipBenefitDaily, membershipBenefitOnetime] = await Promise.all([
+        this._prisma.membershipBenefit.findFirst({
+          where: { slug: 'moving-daily-limit' },
+          select: { id: true },
+        }),
+        this._prisma.membershipBenefit.findFirst({
+          where: { slug: 'moving-1-time-limit' },
+          select: { id: true },
+        }),
+      ]);
+
       const membershipProgress = await this._prisma.membershipProgress.findFirst({
         where: {
           userId: userId,
@@ -219,17 +227,32 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         },
       });
 
-      const daily_moving_limit = await this._prisma.tierBenefit.findFirst({
-        where: {
-          tierId: membershipProgress?.tierId ?? undefined,
-          benefitId: membershipBenefitDaily?.id,
-        },
-      });
+      const [daily_moving_limit, onetime_moving_limit] = await Promise.all([
+        this._prisma.tierBenefit.findFirst({
+          where: {
+            tierId: membershipProgress?.tierId ?? undefined,
+            benefitId: membershipBenefitDaily?.id,
+          },
+        }),
+        this._prisma.tierBenefit.findFirst({
+          where: {
+            tierId: membershipProgress?.tierId ?? undefined,
+            benefitId: membershipBenefitOnetime?.id,
+          },
+        }),
+      ]);
+
+      const dailyLimit = Number(daily_moving_limit?.value ?? 0);
+      const oneTimeLimit = Number(onetime_moving_limit?.value ?? 0);
+
+      if (amount > oneTimeLimit) {
+        throw new BadRequestError('Exceeded the allowable one-time withdrawal limit');
+      }
+
       const totalWithdrawToday =
         Number(countTransaction._sum.amount ?? 0) +
         Number(countDepositRequest._sum.amount ?? 0) +
         Number(amount);
-      const dailyLimit = Number(daily_moving_limit?.value ?? 0);
 
       if (totalWithdrawToday > dailyLimit) {
         throw new BadRequestError('Exceeded the allowable daily withdrawal limit');
@@ -267,7 +290,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           type: 'WITHDRAW_REQUEST',
           notifyTo: 'PERSONAL',
           attachmentId: '',
-          deepLink: '',
+          deepLink: '/wallet/payment',
           emails: [emailUser?.email ?? ''],
           message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
         });

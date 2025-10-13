@@ -69,11 +69,11 @@ function InputDropdown({
   }, [value, isFocused]);
 
   // [HOT FIX] `localValue` automatically displays the `value` as 0 while the value remains unchanged
-  useEffect(() => {
-    if (value > 0 && localValue !== formatCurrency(value, currency, { applyExchangeRate })) {
-      setLocalValue(formatCurrency(value, currency, { applyExchangeRate }));
-    }
-  }, [localValue]);
+  // useEffect(() => {
+  //   if (value > 0 && localValue !== formatCurrency(value, currency, { applyExchangeRate })) {
+  //     setLocalValue(formatCurrency(value, currency, { applyExchangeRate }));
+  //   }
+  // }, [localValue]);
 
   // measure width of wrapper to match dropdown
   useEffect(() => {
@@ -97,7 +97,7 @@ function InputDropdown({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setLocalValue(formatCurrency(value, currency, { applyExchangeRate }).toString());
+        setLocalValue(formatCurrency(value, currency, { applyExchangeRate }));
         setIsFocused(false);
         setIsOpen(false);
         setHighlightIndex(-1);
@@ -109,7 +109,7 @@ function InputDropdown({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [onBlur]);
+  }, [onBlur, value, currency, applyExchangeRate]);
 
   // Filter options
   const handleFilter = (value: string) => {

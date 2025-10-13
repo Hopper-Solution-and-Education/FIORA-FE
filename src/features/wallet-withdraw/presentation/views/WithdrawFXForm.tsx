@@ -123,6 +123,16 @@ function WithdrawFXForm() {
       return;
     }
 
+    if (amountInput > (overviewData?.data?.data?.onetime_moving_limit ?? 0)) {
+      toast.error('Exceeded the allowable one-time withdrawal limit');
+      return;
+    }
+
+    if (amountInput > (overviewData?.data?.data?.available_limit ?? 0)) {
+      toast.error('Exceeded the allowable daily withdrawal limit');
+      return;
+    }
+
     setLoading(true);
 
     const response = await fetch(ApiEndpointEnum.walletWithdraw, {
@@ -138,11 +148,11 @@ function WithdrawFXForm() {
     setLoading(false);
 
     if (response.ok) {
+      dispatch(getWalletsAsyncThunk());
+      dispatch(fetchFrozenAmountAsyncThunk());
       toast.success(data.message);
       refetchOverview();
       handleClose();
-      dispatch(getWalletsAsyncThunk());
-      dispatch(fetchFrozenAmountAsyncThunk());
     } else {
       toast.error(data.error || data.message || 'Something went wrong!');
     }
@@ -173,7 +183,7 @@ function WithdrawFXForm() {
               <MetricCard
                 className="px-4 py-2 *:p-0"
                 title="1-time Moving Limit"
-                value={Number(overviewData?.data?.data?.daily_moving_limit)}
+                value={Number(overviewData?.data?.data?.onetime_moving_limit)}
                 type="total"
                 icon="handCoins"
               />
