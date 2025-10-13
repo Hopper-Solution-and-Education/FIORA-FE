@@ -11,7 +11,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -37,13 +37,18 @@ const ProfileTab: FC<ProfileTabProps> = ({
   defaultLogoSrc,
   onSave,
   eKycId = '',
-  showUserManagement = false,
+  showUserManagement,
 }) => {
   const router = useRouter();
+  const params = useParams(); // Lấy dynamic parameters từ URL
   const { data: session } = useSession(); // Lấy session của user đang đăng nhập
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
 
+  // Lấy ID từ URL: /ekyc/[id]/profile
+  const userIdFromUrl = params?.userid as string;
+
+  showUserManagement = userIdFromUrl !== session?.user?.id;
   // Lấy myProfile data từ API
   const { data: myProfile, refetch } = useGetMyProfileQuery(profile?.id || '', {
     skip: !profile?.id, // Chỉ gọi API khi có userId
