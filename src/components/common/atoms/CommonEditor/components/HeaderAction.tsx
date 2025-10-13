@@ -1,11 +1,11 @@
 'use client';
 
 import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button, ButtonProps } from '@/components/ui/button';
 import { DeviceType } from '@/shared/hooks/useIsMobile';
-import React from 'react';
+import React, { Fragment } from 'react';
 import { locale } from 'reactjs-tiptap-editor/locale-bundle';
+import { CommonTooltip } from '../../CommonTooltip';
 
 interface HeaderActionsProps {
   mode: DeviceType | 'full' | 'small' | 'medium' | 'large';
@@ -22,145 +22,108 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
   setMode,
   handleReview,
 }) => {
+  const sizeItems = [
+    {
+      icon: <Icons.monitorSmartphone className="h-4 w-4" />,
+      label: 'Default View',
+      onClick: () => setMode(type),
+      variant: mode === type ? 'default' : 'ghost',
+    },
+    {
+      icon: <Icons.smartphone className="h-4 w-4" />,
+      label: 'Small view',
+      onClick: () => setMode('small'),
+      variant: mode === 'small' ? 'default' : 'ghost',
+    },
+    {
+      icon: <Icons.tablet className="h-4 w-4" />,
+      label: 'Medium view',
+      onClick: () => setMode('medium'),
+      variant: mode === 'medium' ? 'default' : 'ghost',
+    },
+    {
+      icon: <Icons.monitor className="h-4 w-4" />,
+      label: 'Large view',
+      onClick: () => setMode('large'),
+      variant: mode === 'large' ? 'default' : 'ghost',
+    },
+    {
+      icon: <Icons.screenShare className="h-4 w-4" />,
+      label: 'Full view',
+      onClick: () => setMode('full'),
+      variant: mode === 'full' ? 'default' : 'ghost',
+    },
+  ];
+
+  const languageItems = [
+    {
+      icon: (
+        <Fragment>
+          <Icons.languages className="h-3 w-3 mr-1" /> VI
+        </Fragment>
+      ),
+      label: 'Tiếng Việt',
+      onClick: () => locale.setLang('vi'),
+      variant: 'ghost',
+    },
+    {
+      icon: (
+        <Fragment>
+          <Icons.languages className="h-3 w-3 mr-1" /> EN
+        </Fragment>
+      ),
+      label: 'English',
+      onClick: () => locale.setLang('en'),
+      variant: 'ghost',
+    },
+  ];
+
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border mb-4">
-        {/* Size Controls */}
-        <div className="flex items-center gap-1 border-r pr-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === type ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMode(type)}
-                className="h-8 w-8 p-0"
-              >
-                <Icons.monitorSmartphone className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Default View</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === 'small' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMode('small')}
-                className="h-8 w-8 p-0"
-              >
-                <Icons.smartphone className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Small view</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === 'medium' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMode('medium')}
-                className="h-8 w-8 p-0"
-              >
-                <Icons.tablet className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Medium view</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === 'large' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMode('large')}
-                className="h-8 w-8 p-0"
-              >
-                <Icons.monitor className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Large view</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === 'full' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setMode('full')}
-                className="h-8 w-8 p-0"
-              >
-                <Icons.screenShare className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Full view</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Language Controls */}
-        <div className="flex items-center gap-1 border-r pr-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => locale.setLang('vi')}
-                className="h-8 px-2 text-xs font-medium"
-              >
-                <Icons.languages className="h-3 w-3 mr-1" /> VI
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Tiếng Việt</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => locale.setLang('en')}
-                className="h-8 px-2 text-xs font-medium"
-              >
-                <Icons.languages className="h-3 w-3 mr-1" /> EN
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>English</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Edit Mode Toggle */}
-        <Tooltip>
-          <TooltipTrigger asChild>
+    <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border mb-4">
+      {/* Size Controls */}
+      <div className="flex items-center gap-1 border-r pr-3">
+        {sizeItems.map((item, index) => (
+          <CommonTooltip key={index} content={item.label}>
             <Button
-              variant={disable ? 'default' : 'ghost'}
+              variant={item.variant as ButtonProps['variant']}
               size="sm"
-              onClick={handleReview}
+              onClick={item.onClick}
               className="h-8 w-8 p-0"
             >
-              {disable ? <Icons.eye className="h-4 w-4" /> : <Icons.edit3 className="h-4 w-4" />}
+              {item.icon}
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{disable ? 'Switch to editable mode' : 'Switch to readonly mode'}</p>
-          </TooltipContent>
-        </Tooltip>
+          </CommonTooltip>
+        ))}
       </div>
-    </TooltipProvider>
+
+      {/* Language Controls */}
+      <div className="flex items-center gap-1 border-r pr-3">
+        {languageItems.map((item, index) => (
+          <CommonTooltip key={index} content={item.label}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={item.onClick}
+              className="h-8 px-2 text-xs font-medium"
+            >
+              {item.icon}
+            </Button>
+          </CommonTooltip>
+        ))}
+      </div>
+
+      {/* Edit Mode Toggle */}
+      <CommonTooltip content={disable ? 'Switch to editable mode' : 'Switch to readonly mode'}>
+        <Button
+          variant={disable ? 'default' : 'ghost'}
+          size="sm"
+          onClick={handleReview}
+          className="h-8 w-8 p-0"
+        >
+          {disable ? <Icons.eye className="h-4 w-4" /> : <Icons.edit3 className="h-4 w-4" />}
+        </Button>
+      </CommonTooltip>
+    </div>
   );
 };
 

@@ -7,7 +7,12 @@ import {
   FilterComponentConfig,
 } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { DEFAULT_MAX_AMOUNT, DEFAULT_MIN_AMOUNT, WALLET_SETTING_FILTER_OPTIONS } from '../../data';
+import {
+  DEFAULT_MAX_AMOUNT,
+  DEFAULT_MIN_AMOUNT,
+  WALLET_SETTING_FILTER_OPTIONS,
+  WALLET_SETTING_TYPE_FILTER_OPTIONS,
+} from '../../data';
 import { clearFilter } from '../../slices';
 import { filterGroupToParams, paramsToFilterGroup } from '../utils';
 
@@ -50,6 +55,22 @@ const WalletSettingFilterMenu = ({
       order: 0,
     },
     {
+      key: 'type',
+      component: (
+        <MultiSelectFilter
+          options={WALLET_SETTING_TYPE_FILTER_OPTIONS as any}
+          selectedValues={filterParams.type}
+          onChange={(values) => {
+            onFilterChange(paramsToFilterGroup({ ...filterParams, type: values }));
+          }}
+          label="Type"
+          placeholder="Select type"
+        />
+      ),
+      column: FilterColumn.LEFT,
+      order: 1,
+    },
+    {
       key: 'amount',
       component: (
         <NumberRangeFilter
@@ -73,7 +94,7 @@ const WalletSettingFilterMenu = ({
         />
       ),
       column: FilterColumn.LEFT,
-      order: 1,
+      order: 2,
     },
   ];
 

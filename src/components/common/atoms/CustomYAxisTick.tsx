@@ -1,13 +1,13 @@
 'use client';
 
+import { IconDisplay } from '@/components/common/atoms/IconDisplay';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/shared/utils';
+import { throttle } from 'lodash';
 import type React from 'react';
 import { memo, useState } from 'react';
-import { throttle } from 'lodash';
-import { IconDisplay } from '@/components/common/atoms/IconDisplay';
 
 const THROTTLE_DELAY = 300;
 

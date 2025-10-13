@@ -1,7 +1,7 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import InputField from '@/components/common/forms/input/InputField';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { cn } from '@/shared/utils';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -92,36 +92,32 @@ const SettingTierInputField = ({
             pr-1
           "
         >
-          <TooltipProvider>
-            <Tooltip open={!!error?.message}>
-              <TooltipTrigger asChild>
-                <InputField
-                  name={name}
-                  value={value?.toString() ?? '0'}
-                  onChange={(e) => onChange(e as unknown as number)}
-                  options={options}
-                  placeholder="0"
-                  required={required}
-                  onBlur={onBlur ? onBlur : undefined}
-                  disabled={disabled}
-                  className={cn(
-                    'text-center',
-                    'w-[60px]',
-                    'sm:w-[70px]',
-                    'md:w-[80px]',
-                    'my-1',
-                    'text-xs sm:text-sm md:text-sm',
-                    error && 'border-red-500',
-                  )}
-                />
-              </TooltipTrigger>
-              {error?.message && (
-                <TooltipContent>
-                  <span className="text-red-500 text-xs">{error.message}</span>
-                </TooltipContent>
+          <CommonTooltip
+            content={
+              error?.message && <span className="text-red-500 text-xs">{error.message}</span>
+            }
+            open={!!error?.message}
+          >
+            <InputField
+              name={name}
+              value={value?.toString() ?? '0'}
+              onChange={(e) => onChange(e as unknown as number)}
+              options={options}
+              placeholder="0"
+              required={required}
+              onBlur={onBlur ? onBlur : undefined}
+              disabled={disabled}
+              className={cn(
+                'text-center',
+                'w-[60px]',
+                'sm:w-[70px]',
+                'md:w-[80px]',
+                'my-1',
+                'text-xs sm:text-sm md:text-sm',
+                error && 'border-red-500',
               )}
-            </Tooltip>
-          </TooltipProvider>
+            />
+          </CommonTooltip>
         </div>
 
         {/* Suffix */}
@@ -145,55 +141,41 @@ const SettingTierInputField = ({
       </div>
       {/* Trash icon button, show on hover */}
       {(showRemove || showEdit) && (
-        <>
-          <TooltipProvider delayDuration={0}>
-            <div className="flex gap-2">
-              {showEdit && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      data-test="setting-tier-input-field-edit"
-                      type="button"
-                      className={`absolute right-10 top-1/3 -translate-y-1/2 p-2 text-primary hover:bg-primary/10 rounded-full transition-all duration-300 ease-in-out ${
-                        isHover
-                          ? 'opacity-100 translate-x-0 pointer-events-auto'
-                          : 'opacity-0 translate-x-4 pointer-events-none'
-                      }`}
-                      onClick={onEdit}
-                      tabIndex={-1}
-                    >
-                      <Pencil size={ICON_SIZE.SM} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <span className="text-xs">Edit</span>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+        <div className="flex gap-2">
+          {showEdit && (
+            <CommonTooltip content="Edit" delayDuration={0}>
+              <button
+                data-test="setting-tier-input-field-edit"
+                type="button"
+                className={`absolute right-10 top-1/3 -translate-y-1/2 p-2 text-primary hover:bg-primary/10 rounded-full transition-all duration-300 ease-in-out ${
+                  isHover
+                    ? 'opacity-100 translate-x-0 pointer-events-auto'
+                    : 'opacity-0 translate-x-4 pointer-events-none'
+                }`}
+                onClick={onEdit}
+                tabIndex={-1}
+              >
+                <Pencil size={ICON_SIZE.SM} />
+              </button>
+            </CommonTooltip>
+          )}
 
-              {showRemove && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      data-test="setting-tier-input-field-remove"
-                      type="button"
-                      className={`absolute right-0 top-1/3 -translate-y-1/2 p-2 text-destructive hover:bg-destructive/10 rounded-full
+          {showRemove && (
+            <CommonTooltip content="Remove" delayDuration={0}>
+              <button
+                data-test="setting-tier-input-field-remove"
+                type="button"
+                className={`absolute right-0 top-1/3 -translate-y-1/2 p-2 text-destructive hover:bg-destructive/10 rounded-full
             transition-all duration-300 ease-in-out
             ${isHover ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'}`}
-                      onClick={onRemove}
-                      tabIndex={-1}
-                    >
-                      <Trash2 size={ICON_SIZE.SM} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <span className="text-destructive text-xs">Remove</span>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          </TooltipProvider>
-        </>
+                onClick={onRemove}
+                tabIndex={-1}
+              >
+                <Trash2 size={ICON_SIZE.SM} />
+              </button>
+            </CommonTooltip>
+          )}
+        </div>
       )}
     </div>
   );

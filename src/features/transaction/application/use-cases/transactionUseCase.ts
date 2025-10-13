@@ -3,11 +3,11 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { currencySettingRepository } from '@/features/setting/api/infrastructure/repositories/currencySettingRepository';
 import { ICurrencySettingRepository } from '@/features/setting/api/repositories/currencySettingRepository.interface';
-import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
+import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { PaginationResponse } from '@/shared/types';
 import { TransactionGetPagination } from '@/shared/types/transaction.types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
 import { convertCurrency } from '@/shared/utils/convertCurrency';
@@ -346,6 +346,7 @@ class TransactionUseCase {
       categories: filterOptions.categories ?? [],
       partners: filterOptions.partners ?? [],
       wallets: filterOptions.wallets ?? [],
+      benefits: filterOptions.benefits ?? [],
       amountMin: amountRange.min,
       amountMax: amountRange.max,
     };
@@ -1242,6 +1243,134 @@ class TransactionUseCase {
     if (account.balance!.toNumber() <= amount) {
       throw new BadRequestError('Invest Account must have balance above 0.');
     }
+  }
+  async getSavingTransactionsPagination(
+    params: TransactionGetPagination,
+  ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
+    const { page = 1, pageSize = 20, searchParams = '', filters, sortBy = {}, userId } = params;
+    const take = pageSize;
+    const skip = (page - 1) * pageSize;
+
+    let where = buildWhereClause(filters) as Prisma.TransactionWhereInput;
+
+    if (searchParams) {
+      const typeSearchParams = searchParams.toLowerCase();
+      // test with Regex-Type Transaction
+      const regex = new RegExp('^' + typeSearchParams, 'i'); // ^: start with, i: ignore case
+      const typeTransaction = Object.values(TransactionType).find((type) => regex.test(type));
+      const typeWallet = Object.values(WalletType).find((type) => regex.test(type));
+
+      let typeTransactionWhere = '';
+      let typeWalletWhere = '';
+
+      if (typeTransaction) {
+        typeTransactionWhere = typeTransaction;
+      }
+
+      if (typeWallet) {
+        typeWalletWhere = typeWallet as WalletType;
+      }
+
+      where = {
+        AND: [
+          where,
+          {
+            OR: [
+              { fromAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { toAccount: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { partner: { name: { contains: typeSearchParams, mode: 'insensitive' } } },
+              { remark: { contains: typeSearchParams, mode: 'insensitive' } },
+              {
+                fromWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
+              },
+              {
+                toWallet: {
+                  OR: [
+                    { name: { contains: typeSearchParams, mode: 'insensitive' } },
+                    ...(typeWalletWhere ? [{ type: { in: [typeWalletWhere as WalletType] } }] : []),
+                  ],
+                },
+              },
+              {
+                membershipBenefit: {
+                  name: { contains: typeSearchParams, mode: 'insensitive' },
+                },
+              },
+              // adding typeTransactionWhere to where clause if exists
+              ...(typeTransactionWhere
+                ? [{ type: typeTransactionWhere as unknown as TransactionType }]
+                : []),
+            ],
+          },
+        ],
+      };
+    }
+
+    const orderBy = buildOrderByTransactionV2(sortBy);
+
+    const transactionAwaited = this.transactionRepository.findManyTransactions(
+      {
+        ...where,
+        isDeleted: false,
+        userId,
+      },
+      {
+        skip,
+        take,
+        orderBy,
+        include: {
+          fromAccount: true,
+          fromCategory: true,
+          toAccount: true,
+          toCategory: true,
+          partner: true,
+          toWallet: true,
+          fromWallet: true,
+          membershipBenefit: true,
+        },
+      },
+    );
+
+    const totalTransactionAwaited = this.transactionRepository.count({
+      ...where,
+      isDeleted: false,
+      userId,
+      currency: CURRENCY.FX,
+    });
+    // getting amountMax from transactions
+    const amountMaxAwaited = this.transactionRepository.aggregate({
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
+      _max: { baseAmount: true },
+    });
+
+    const amountMinAwaited = this.transactionRepository.aggregate({
+      where: { userId, baseCurrency: DEFAULT_BASE_CURRENCY },
+      _min: { baseAmount: true },
+    });
+
+    const [transactions, total, amountMax, amountMin] = await Promise.all([
+      transactionAwaited,
+      totalTransactionAwaited,
+      amountMaxAwaited,
+      amountMinAwaited,
+    ]);
+
+    const totalPage = Math.ceil(total / pageSize);
+
+    return {
+      data: transactions as any,
+      totalPage,
+      page,
+      pageSize,
+      amountMax: Number(amountMax['_max']?.baseAmount) || 0,
+      amountMin: Number(amountMin['_min']?.baseAmount) || 0,
+      total,
+    };
   }
 }
 

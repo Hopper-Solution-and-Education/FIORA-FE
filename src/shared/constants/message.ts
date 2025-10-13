@@ -430,4 +430,12 @@ export enum Messages {
   WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
   INVALID_AMOUNT = 'no data',
   SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
+
+  //Saving Wallet
+  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
+  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
+  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
+
+  //Withdrawal Request
+  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
 }

@@ -8,7 +8,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {

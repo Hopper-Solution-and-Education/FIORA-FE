@@ -1,9 +1,9 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HttpResponse } from '@/features/setting/module/product/model';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
@@ -62,45 +62,31 @@ export function Transaction({ tx }: { tx: IRelationalTransaction }) {
         {/* Partner Avatar (logo or icon) */}
         <Avatar className="h-10 w-10 flex-shrink-0">
           {isLogoUrl && tx.partner?.logo ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-center h-full w-full">
-                    {tx.partner?.logo ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden">
-                        <Image
-                          src={tx.partner.logo}
-                          alt={tx.partner.name}
-                          width={32}
-                          height={32}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold">
-                        {tx.partner.name?.slice(0, 2)?.toUpperCase() || 'CN'}
-                      </div>
-                    )}
+            <CommonTooltip content={<div className="flex flex-col gap-1">{tx.partner.name}</div>}>
+              <div className="flex items-center justify-center h-full w-full">
+                {tx.partner?.logo ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden">
+                    <Image
+                      src={tx.partner.logo}
+                      alt={tx.partner.name}
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" align="center">
-                  <div className="flex flex-col gap-1">{tx.partner.name}</div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold">
+                    {tx.partner.name?.slice(0, 2)?.toUpperCase() || 'CN'}
+                  </div>
+                )}
+              </div>
+            </CommonTooltip>
           ) : PartnerIcon ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center justify-center h-full w-full">
-                    <PartnerIcon className="h-5 w-5 text-gray-700" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" align="center">
-                  <div className="flex flex-col gap-1">{tx?.partner?.name}</div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <CommonTooltip content={<div className="flex flex-col gap-1">{tx?.partner?.name}</div>}>
+              <div className="flex items-center justify-center h-full w-full">
+                <PartnerIcon className="h-5 w-5 text-gray-700" />
+              </div>
+            </CommonTooltip>
           ) : (
             <AvatarFallback>{tx.partner?.name?.charAt(0).toUpperCase() ?? ''}</AvatarFallback>
           )}

@@ -67,14 +67,19 @@ const UploadField: React.FC<UploadFieldProps> = ({
       const previewUrl = URL.createObjectURL(value);
       setPreview(previewUrl);
       return () => URL.revokeObjectURL(previewUrl);
-    }
-    if (typeof value === 'string' && isImageUrl(value)) {
+    } else if (typeof value === 'string' && isImageUrl(value)) {
       setPreview(value);
     } else {
       setPreview(null);
     }
     if (value === null) {
       setPreview(null);
+    }
+
+    // Reset file input when value is not a File
+    // This ensures that when the value changes to a string or null, the file input is reset
+    if ((typeof value === 'string' || value === null) && fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   }, [value]);
 
