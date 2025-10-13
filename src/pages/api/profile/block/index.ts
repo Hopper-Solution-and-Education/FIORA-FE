@@ -51,9 +51,9 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   //block user
-  const blockededUser = await userUseCase.blockUser(blockUser, userId);
+  const userBlocked = await userUseCase.blockUser(blockUser, userId);
 
-  if (!blockededUser || blockededUser == null) {
+  if (!userBlocked || userBlocked == null) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
       .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.BLOCK_USER_FAILED, {}));
@@ -61,5 +61,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.BLOCK_USER_SUCCESS, blockededUser));
+    .json(
+      createResponse(
+        RESPONSE_CODE.CREATED,
+        userBlocked.isBlocked ? Messages.BLOCK_USER_SUCCESS : Messages.UNBLOCK_USER_SUCCESS,
+        userBlocked,
+      ),
+    );
 }

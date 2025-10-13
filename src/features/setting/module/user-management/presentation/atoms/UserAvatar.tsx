@@ -119,9 +119,12 @@ export function UserAvatar({
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                   {user?.name || 'No name provided'}
                 </h3>
-                <div className="mt-2">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                    <Icons.user className="w-3 h-3 mr-1.5" />
+                <div className="mt-2 ">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 
+                    ${(user?.role === 'Admin' && 'bg-red-100 text-red-800') || (user?.role === 'CS' && 'bg-green-100 text-green-800') || (user?.role === 'User' && 'bg-blue-100 text-blue-800') || 'bg-gray-100 text-gray-800'}`}
+                  >
+                    <Icons.user className={`w-3 h-3 mr-1.5 `} />
                     {user?.role}
                   </span>
                 </div>

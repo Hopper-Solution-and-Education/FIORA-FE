@@ -6,11 +6,12 @@ import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models
 import {
   useAssignRoleMutation,
   useBlockUserMutation,
+  useGetMyProfileQuery,
 } from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
@@ -40,6 +41,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
   const router = useRouter();
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
+
+  // Lấy myProfile data từ API
+  const { data: myProfile } = useGetMyProfileQuery(profile?.id || '', {
+    skip: !profile?.id, // Chỉ gọi API khi có userId
+  });
+
+  const [isBlocked, setIsBlocked] = useState(myProfile?.isBlocked || false);
 
   const defaults = useMemo(
     () => ({
@@ -71,6 +79,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
     reset(defaults);
   }, [defaults, reset]);
 
+  // Update isBlocked state khi myProfile data thay đổi
+  useEffect(() => {
+    if (myProfile?.isBlocked !== undefined) {
+      setIsBlocked(myProfile.isBlocked);
+    }
+  }, [myProfile?.isBlocked]);
+
   const handleSubmitForm = async (values: PersonalInfo) => {
     await onSave(values);
   };
@@ -100,8 +115,9 @@ const ProfileTab: FC<ProfileTabProps> = ({
   // Handler for block user
   const handleBlockUser = async (userId: string, reason?: string) => {
     try {
-      await blockUser({ blockUserId: userId, reason }).unwrap();
-      toast.success('User blocked successfully');
+      const resulBlockUser = await blockUser({ blockUserId: userId, reason }).unwrap();
+      toast.success(resulBlockUser?.message);
+      setIsBlocked(resulBlockUser?.data?.isBlocked || false);
     } catch (error: any) {
       console.error('Error blocking user:', error);
       toast.error(error?.data?.message || 'Failed to block user');
@@ -167,7 +183,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
                 currentUserRole={profile?.role || UserRole.User}
                 onRoleUpdate={handleRoleUpdate}
                 onBlockUser={handleBlockUser}
-                isBlocked={false}
+                isBlocked={isBlocked}
               />
             )}
 

@@ -1,5 +1,5 @@
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
-import { UserAssignedRole, UserBlocked } from '../entities/models/profile';
+import { UserAssignedRole, UserBlocked, UserMyProfile } from '../entities/models/profile';
 import { UserSearchResult, UserSearchResultCS } from '../entities/models/user.types';
 
 export interface IUserRepository {
@@ -22,4 +22,5 @@ export interface IUserRepository {
     userId: string,
   ): Promise<UserAssignedRole | null>;
   getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number>;
+  getMyProfile(userId: string): Promise<UserMyProfile | null>;
 }

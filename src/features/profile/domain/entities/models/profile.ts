@@ -106,3 +106,8 @@ export interface UserAssignedRole {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface UserMyProfile {
+  role: UserRole;
+  isBlocked: boolean | null;
+}

@@ -6,7 +6,6 @@ import {
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
 import { Button } from '@/components/ui/button';
-import { TableCell } from '@/components/ui/table';
 import { UserRole } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 import { useMemo, useState } from 'react';
@@ -76,19 +75,14 @@ export function UserTable({
       align: 'left',
       width: '12%',
       render: (user) => (
-        // <div className="flex items-center gap-2">
-        <TableCell className="max-w-[350px]">
-          {/* <TableCell className={isCS ? 'max-w-[350px]' : 'max-w-[270px]'}> */}
-          <UserAvatar
-            src={user.avatarUrl ? String(user.avatarUrl) : null}
-            name={user.name}
-            email={user.email}
-            user={user}
-            size="sm"
-            showTooltip={true}
-          />
-        </TableCell>
-        // {/* // </div> */}
+        <UserAvatar
+          src={user.avatarUrl ? String(user.avatarUrl) : null}
+          name={user.name}
+          email={user.email}
+          user={user}
+          size="sm"
+          showTooltip={true}
+        />
       ),
     },
     // {

@@ -1,10 +1,19 @@
 import prisma from '@/config/prisma/prisma';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
-import { UserAssignedRole, UserBlocked } from '../../domain/entities/models/profile';
+import { UserAssignedRole, UserBlocked, UserMyProfile } from '../../domain/entities/models/profile';
 import { UserSearchResult, UserSearchResultCS } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
+  getMyProfile(userId: string): Promise<UserMyProfile | null> {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+        isBlocked: true,
+      },
+    });
+  }
   getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
     return prisma.user.count({
       where: {
@@ -49,21 +58,30 @@ export class UserRepository implements IUserRepository {
     return user ? user.id : null;
   }
   async blockUser(blockUserId: string, userId: string): Promise<UserBlocked | null> {
-    const userBlocked = await prisma.user.update({
-      where: { id: blockUserId },
-      data: {
-        isBlocked: true,
-        updatedBy: userId,
-        updatedAt: new Date(),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-        isBlocked: true,
-      },
+    const userBlocked = await prisma.$transaction(async (tx) => {
+      // Lấy giá trị hiện tại
+      const currentUser = await tx.user.findUnique({
+        where: { id: blockUserId },
+        select: { isBlocked: true },
+      });
+
+      // Toggle giá trị
+      return await tx.user.update({
+        where: { id: blockUserId },
+        data: {
+          isBlocked: !currentUser?.isBlocked,
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          isBlocked: true,
+        },
+      });
     });
 
     return userBlocked ? userBlocked : null;
