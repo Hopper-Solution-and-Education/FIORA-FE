@@ -281,7 +281,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
           status: DepositRequestStatus.Requested,
           type: FxRequestType.WITHDRAW,
           amount: amount,
-          currency: 'USD',
+          currency: 'FX',
         },
       });
 

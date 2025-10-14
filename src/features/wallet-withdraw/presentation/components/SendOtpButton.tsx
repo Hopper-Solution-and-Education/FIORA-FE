@@ -5,6 +5,7 @@ import { OtpState } from '../../types';
 type ChildProps = {
   state?: OtpState;
   countdown?: number;
+  isStartCountdown?: boolean;
   callback: () => void;
   classNameBtn?: string;
   classNameText?: string;
@@ -16,6 +17,7 @@ function SendOtpButton({
   callback,
   classNameBtn,
   classNameText,
+  isStartCountdown = false,
 }: ChildProps) {
   const [count, setCount] = useState<number>(0);
 
@@ -29,12 +31,17 @@ function SendOtpButton({
     }
 
     return () => clearInterval(timer);
-  });
+  }, [count]);
 
   const handleButtonClick = () => {
     callback();
-    setCount(countdown);
+
+    if (isStartCountdown) setCount(countdown);
   };
+
+  useEffect(() => {
+    if (isStartCountdown) setCount(countdown);
+  }, [isStartCountdown]);
 
   return (
     <div className={classNameBtn}>
@@ -43,7 +50,9 @@ function SendOtpButton({
           {state} OTP
         </Button>
       ) : (
-        <div className={`h-9 flex items-center ${classNameText}`}>
+        <div
+          className={`h-9 flex items-center ${classNameText} ${count <= 5 && 'text-red-600 dark:text-red-400'}`}
+        >
           {state} in {count}s
         </div>
       )}
