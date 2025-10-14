@@ -1,7 +1,6 @@
 'use client';
 
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
-import { Icons } from '@/components/Icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,7 +85,7 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
           session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
         } p-4 grid gap-4 border shadow-md`}
       >
-        <CommonTooltip content={<span>Toggle Theme</span>} side="top" delayDuration={0}>
+        {/* <CommonTooltip content={<span>Toggle Theme</span>} side="top" delayDuration={0}>
           <div
             onClick={toggleTheme}
             className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -97,7 +96,7 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
               <Icons.moon size={ICON_SIZE.MD} />
             )}
           </div>
-        </CommonTooltip>
+        </CommonTooltip> */}
 
         <CommonTooltip content={<span>Currency Display</span>} side="top" delayDuration={0}>
           <div
