@@ -132,30 +132,6 @@ export function UserAvatar({
             </div>
 
             <div className="flex flex-col gap-2 pt-4 border-t border-gray-100 dark:border-neutral-800">
-              {/* User ID */}
-              {user?.id && (
-                <div className="flex flex-row items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-20 flex-shrink-0">
-                    User ID
-                  </span>
-                  <span className="text-sm text-gray-900 dark:text-gray-100 truncate max-w-[180px]">
-                    {user.id}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 opacity-100 transition-opacity flex-shrink-0"
-                    onClick={() => handleCopy(user?.id, 'userId')}
-                  >
-                    {copied === 'userId' ? (
-                      <Icons.check className="w-3 h-3 text-green-600" />
-                    ) : (
-                      <Icons.clipboardList className="w-3 h-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" />
-                    )}
-                  </Button>
-                </div>
-              )}
-
               {/* Email */}
               {user?.email && (
                 <div className="flex flex-row items-center gap-2 min-w-0">
