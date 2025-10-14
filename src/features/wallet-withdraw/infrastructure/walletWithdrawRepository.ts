@@ -386,6 +386,9 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         id: true,
       },
     });
+    if (!templateEmailType) {
+      throw new BadRequestError('Email template type not found');
+    }
     const WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID = await this._prisma.emailTemplate.findFirst({
       where: {
         emailtemplatetypeid: templateEmailType?.id,
@@ -394,7 +397,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         id: true,
       },
     });
-
     if (!WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID || !WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id) {
       throw new BadRequestError('WITHDRAWAL_OTP_EMAIL_TEMPLATE not found');
     }

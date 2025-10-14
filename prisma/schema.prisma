@@ -29,9 +29,9 @@ model User {
   isBlocked                 Boolean?                 @default(false)
   logoId                    String?                  @db.Uuid
   phone                     String?
+  kyc_levels                String[]
   is_referral_bonus_paid    Boolean?                 @default(false)
   is_referral_campaign_paid Boolean?                 @default(false)
-  kyc_levels                String[]
   referral_code             String?                  @unique @db.VarChar(15)
   referrer_code             String?                  @db.VarChar(15)
   accounts                  Account[]                @relation("UserAccounts")
@@ -1118,6 +1118,9 @@ enum emailType {
   DEPOPSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
+  FLEXI_INTEREST
+  MEMBERSHIP_CHANGE
+  WITHDRAW_OTP
 }
 
 enum CronJobStatus {
