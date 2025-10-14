@@ -77,6 +77,7 @@ export function UserTable({
         <div className="pl-1 py-3 truncate items-center">
           <UserAvatar
             src={user.avatarUrl ? String(user.avatarUrl) : null}
+            user={user}
             name={user.name}
             email={user.email}
             size="sm"
