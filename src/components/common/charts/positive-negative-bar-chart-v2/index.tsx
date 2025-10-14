@@ -35,6 +35,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortChartData } from '../utils/sortChartData';
 import {
   buildProcessedData,
   calculateChartDomains,
@@ -63,7 +64,21 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
     expanded = true,
     header,
     labelFormatter,
+    sortEnable = true,
   } = props;
+
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () =>
+      sortChartData(data, sortEnable, (d) =>
+        [...d].sort((a, b) => {
+          const aTotal = Math.abs(a.positiveValue) + Math.abs(a.negativeValue);
+          const bTotal = Math.abs(b.positiveValue) + Math.abs(b.negativeValue);
+          return bTotal - aTotal;
+        }),
+      ),
+    [data, sortEnable],
+  );
 
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -93,13 +108,13 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
   }, []);
 
   const preparedData = useMemo(
-    () => prepareChartData(data, showAll, showTotal, totalName, levelConfig),
-    [data, showAll, showTotal, totalName, levelConfig],
+    () => prepareChartData(sortedData, showAll, showTotal, totalName, levelConfig),
+    [sortedData, showAll, showTotal, totalName, levelConfig],
   );
 
   const mainBarCount = useMemo(
-    () => calculateMainBarCount(data.length, showAll),
-    [data.length, showAll],
+    () => calculateMainBarCount(sortedData.length, showAll),
+    [sortedData.length, showAll],
   );
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -20,6 +20,7 @@ import {
 import { useWindowSize } from '@/shared/utils/device';
 import { debounce } from 'lodash';
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { sortByAbsoluteValue, sortChartData } from '../utils/sortChartData';
 import { processChartData } from './utils';
 import { PositiveAndNegativeBarChartProps } from './type';
 
@@ -37,9 +38,16 @@ const PositiveAndNegativeBarChart = ({
   baseBarHeight,
   expanded,
   header,
+  sortEnable = true,
 }: PositiveAndNegativeBarChartProps) => {
   const { width } = useWindowSize();
   const totalName = levelConfig?.totalName || 'Net Total';
+
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, sortByAbsoluteValue),
+    [data, sortEnable],
+  );
 
   // Manage expanded items state
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({
@@ -59,7 +67,7 @@ const PositiveAndNegativeBarChart = ({
 
   // Process chart data
   const { processedData, chartHeight, chartMargins, maxValue, minValue } = processChartData({
-    data,
+    data: sortedData,
     width,
     levelConfig,
     height,

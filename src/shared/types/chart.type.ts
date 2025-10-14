@@ -27,6 +27,13 @@ export interface BaseChartProps<T> {
   tooltipContent?: ReactNode;
   tutorialText?: string;
   legendItems?: LegendItem[];
+  /**
+   * Enable automatic sorting of data by value
+   * - For vertical charts: sorts highest values first (left to right)
+   * - For horizontal charts: sorts highest values first (top to bottom)
+   * @default true
+   */
+  sortEnable?: boolean;
 }
 
 export type ColumnConfig = {

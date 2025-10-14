@@ -32,6 +32,7 @@ import {
 } from 'recharts';
 import { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import { CommonTooltip } from '../../atoms/CommonTooltip';
+import { sortByAllColumns, sortChartData } from '../utils/sortChartData';
 import { DEFAULT_COMPOSED_CHART_HEIGHT, DEFAULT_COMPOSED_CHART_ITEM_WIDTH } from './constant';
 import { ComposedChartProps } from './type';
 
@@ -85,20 +86,28 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
     fontSize = DEFAULT_CHART_FONT_SIZE,
     tickCount = DEFAULT_CHART_TICK_COUNT,
     tooltipFormatter,
+    sortEnable = true,
   } = props;
   const { width } = useWindowSize();
   const isMobile = useIsMobile();
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
+  // Sort data if sortEnable is true (highest values first for vertical chart)
+  // Sort by sum of all columns to get the most accurate ranking
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, (d) => sortByAllColumns(d, columns)),
+    [data, sortEnable, columns],
+  );
+
   const labelsDistance = useMemo(() => {
     const availableWidth = width - (chartMargins.left + chartMargins.right);
-    const averageWidth = availableWidth / data.length;
+    const averageWidth = availableWidth / sortedData.length;
     return {
       shouldRotateLabels: averageWidth < 250,
       shouldTruncate: averageWidth < 300,
       averageWidth,
     };
-  }, [width, chartMargins, data.length]);
+  }, [width, chartMargins, sortedData.length]);
 
   const legendItems = useMemo(() => {
     const items = [
@@ -116,13 +125,13 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
   }, [columns, lines]);
 
   const { maxValue, minValue } = useMemo(() => {
-    const columnsMaxMin = findMaxMinValues(data, columns);
+    const columnsMaxMin = findMaxMinValues(sortedData, columns);
 
     let linesMax = 0;
     let linesMin = 0;
 
     if (lines && lines.length > 0) {
-      data.forEach((item) => {
+      sortedData.forEach((item) => {
         lines.forEach((line) => {
           const value = item[line.key] as number;
           if (value > 0 && value > linesMax) linesMax = value;
@@ -135,7 +144,7 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
     const finalMin = Math.min(columnsMaxMin.minValue, linesMin);
 
     return { maxValue: finalMax, minValue: finalMin };
-  }, [data, columns, lines]);
+  }, [sortedData, columns, lines]);
 
   const renderTooltipContent = (props: TooltipProps) => {
     const { active, payload, label } = props;
@@ -207,23 +216,23 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
       <div className={cn('overflow-x-auto', !isMobile && 'overflow-x-hidden')}>
         <div
           style={{
-            minWidth: isMobile ? Math.max(width * 0.8, data.length * 100) : '100%',
+            minWidth: isMobile ? Math.max(width * 0.8, sortedData.length * 100) : '100%',
             width: isMobile ? 'auto' : '100%',
           }}
         >
           <ResponsiveContainer width="100%" height={height}>
-            <ComposedChart data={data} margin={{ bottom: 30, top: 30 }} onClick={handleChartClick}>
+            <ComposedChart data={sortedData} margin={{ bottom: 30, top: 30 }} onClick={handleChartClick}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
                 stroke="#E5E7EB"
                 className="dark:stroke-gray-600 transition-colors duration-200"
               />
-              {data.some((item) => item.icon) ? (
+              {sortedData.some((item) => item.icon) ? (
                 <XAxis
                   dataKey="name"
                   tick={({ x, y, payload }) => {
-                    const item = data.find((d) => d.name === String(payload.value));
+                    const item = sortedData.find((d) => d.name === String(payload.value));
                     const balance = typeof item?.balance === 'number' ? item.balance : 0;
                     const isNegative = balance < 0;
 
@@ -342,7 +351,7 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
                   }}
                   maxBarSize={DEFAULT_COMPOSED_CHART_ITEM_WIDTH}
                 >
-                  {data.map((entry, i) => {
+                  {sortedData.map((entry, i) => {
                     if (column.customCell) {
                       return column.customCell(entry, i);
                     }
