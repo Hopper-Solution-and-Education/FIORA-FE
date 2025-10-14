@@ -1,5 +1,6 @@
-import { prisma, sendOtpVerifyWithDraw } from '@/config';
+import { prisma } from '@/config';
 
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { BadRequestError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
@@ -7,17 +8,23 @@ import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   AccountType,
   DepositRequestStatus,
+  emailType,
   FxRequestType,
+  NotificationType,
   OtpType,
   TransactionType,
   UserRole,
   WalletType,
 } from '@prisma/client';
 import { IWalletWithdrawRepository } from '../domain/repository/walletWithdrawRepository.interface';
+import { WalletWithDrawOTP } from '../domain/types';
 import { WalletWithdrawOverview } from '../types';
 
 class walletWithdrawRepository implements IWalletWithdrawRepository {
-  constructor(private _prisma = prisma) {}
+  constructor(
+    private _prisma = prisma,
+    private _notificationUsecase = notificationUseCase,
+  ) {}
   async getWalletWithdraw(userId: string): Promise<{ data: any }> {
     const membershipBenefitDaily = await this._prisma.membershipBenefit.findFirst({
       where: { slug: 'moving-daily-limit' },
@@ -340,6 +347,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         type: OtpType.WITHDRAW,
       },
     });
+    console.log(userId);
 
     const bankAccount = await this._prisma.bankAccount.findFirst({
       where: { userId: userId },
@@ -349,15 +357,58 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         accountName: true,
       },
     });
-    const userName = await this._prisma.user.findFirst({
+    if (!bankAccount) {
+      throw new BadRequestError('No linked bank account found');
+    }
+
+    const user = await this._prisma.user.findFirst({
       where: { id: userId },
       select: {
         email: true,
       },
     });
+    if (!user || !user.email) {
+      throw new BadRequestError('User email not found');
+    }
 
     const random6Digits = generateSixDigitNumber();
-    await sendOtpVerifyWithDraw(userName?.email, random6Digits, bankAccount);
+    const emailPart: WalletWithDrawOTP = {
+      recipient: user.email,
+      user_id: userId,
+      otp: random6Digits,
+      bankAccountNumber: bankAccount?.accountNumber,
+      bankAccountName: bankAccount?.accountName,
+    };
+    const templateEmailType = await this._prisma.emailTemplateType.findFirst({
+      where: {
+        type: emailType.WITHDRAW_OTP,
+      },
+      select: {
+        id: true,
+      },
+    });
+    console.log(templateEmailType?.id);
+
+    const WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID = await this._prisma.emailTemplate.findFirst({
+      where: {
+        emailtemplatetypeid: templateEmailType?.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+    console.log(WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID);
+
+    if (!WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID || !WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id) {
+      throw new BadRequestError('WITHDRAWAL_OTP_EMAIL_TEMPLATE not found');
+    }
+    await this._notificationUsecase.sendNotificationWithTemplate(
+      WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id,
+      [emailPart],
+      NotificationType.PERSONAL,
+      'WITHDRAW_OTP',
+      'Your OTP for withdrawal verification',
+    );
     const data = await prisma.otp.create({
       data: {
         type: OtpType.WITHDRAW,
