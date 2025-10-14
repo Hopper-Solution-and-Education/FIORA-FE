@@ -7,19 +7,25 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Loading } from '@/components/common/atoms';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { setWithdrawFXFormClose } from '@/features/home/module/wallet';
+import { httpClient } from '@/config';
+import { setWithdrawFXFormClose, Wallet } from '@/features/home/module/wallet';
+import { WalletType } from '@/features/home/module/wallet/domain/enum';
 import {
   fetchFrozenAmountAsyncThunk,
   getWalletsAsyncThunk,
 } from '@/features/home/module/wallet/slices/actions';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { Messages } from '@/shared/constants/message';
+import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
+import { Response } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
 import { OtpState, WalletWithdrawOverview } from '../../types';
+import errorCatching from '../../utils/errorCatching';
 import AmountSelect from '../components/AmountSelect';
 import BankAccountSelect from '../components/BankAccountSelect';
 import InputOtp from '../components/InputOtp';
@@ -42,6 +48,7 @@ function WithdrawFXForm() {
   const [errorBankAccount, setErrorBankAccount] = useState<FieldError | undefined>(undefined);
   const [errorAmount, setErrorAmount] = useState<FieldError | undefined>(undefined);
   const [errorOtp, setErrorOtp] = useState<FieldError | undefined>(undefined);
+  const [paymentBalance, setPaymentBalance] = useState<number>(0);
   const {
     data: overviewData,
     isLoading,
@@ -63,28 +70,9 @@ function WithdrawFXForm() {
     setErrorOtp(undefined);
   }, [dispatch]);
 
-  const handleGetOtp = async () => {
-    if (otpState === 'Get') {
-      setOtpState('Resend');
-      const response = await fetch(ApiEndpointEnum.getOtp, {
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message);
-      } else {
-        toast.error(data.error || data.message || 'Something went wrong!');
-      }
-    }
-  };
-
-  const handleSubmitForm = async () => {
+  const isFieldErrorBeforeOtp = () => {
     setErrorBankAccount(undefined);
     setErrorAmount(undefined);
-    setErrorOtp(undefined);
 
     if (!bankAccountSelected) {
       setErrorBankAccount({
@@ -92,15 +80,52 @@ function WithdrawFXForm() {
         message: 'Bank account is required!',
       });
 
-      return;
+      return true;
     } else if (!amountInput || Number(amountInput) <= 0) {
       setErrorAmount({
         type: 'value',
         message: 'Amount must be greater than 0!',
       });
 
-      return;
-    } else if (!otp) {
+      return true;
+    } else if (paymentBalance !== 0 && Number(amountInput) > paymentBalance) {
+      setErrorAmount({
+        type: 'value',
+        message: Messages.INSUFFICIENT_BALANCE,
+      });
+
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleGetOtp = async () => {
+    if (isFieldErrorBeforeOtp()) return;
+
+    if (otpState === 'Get') {
+      setOtpState('Resend');
+    }
+
+    try {
+      const response: Response<any> = await httpClient.post(ApiEndpointEnum.getOtp, {});
+
+      if (response.status === RESPONSE_CODE.CREATED) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message || 'Something went wrong!');
+      }
+    } catch (error: unknown) {
+      toast.error(errorCatching(error)?.message);
+    }
+  };
+
+  const handleSubmitForm = async () => {
+    setErrorOtp(undefined);
+
+    if (isFieldErrorBeforeOtp()) return;
+
+    if (!otp) {
       setErrorOtp({
         type: 'value',
         message: 'OTP is required!',
@@ -133,46 +158,73 @@ function WithdrawFXForm() {
       return;
     }
 
-    setLoading(true);
+    // Call api
+    try {
+      setLoading(true);
 
-    const response = await fetch(ApiEndpointEnum.walletWithdraw, {
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-      body: JSON.stringify({
+      const response: Response<any> = await httpClient.post(ApiEndpointEnum.walletWithdraw, {
         amount: amountInput,
         otp,
-      }),
-    });
+      });
 
-    const data = await response.json();
-    setLoading(false);
+      setLoading(false);
 
-    if (response.ok) {
-      dispatch(getWalletsAsyncThunk());
-      dispatch(fetchFrozenAmountAsyncThunk());
-      toast.success(data.message);
-      refetchOverview();
-      handleClose();
-    } else {
-      toast.error(data.error || data.message || 'Something went wrong!');
+      if (response.status === RESPONSE_CODE.CREATED) {
+        dispatch(getWalletsAsyncThunk());
+        dispatch(fetchFrozenAmountAsyncThunk());
+        toast.success(response.message);
+        refetchOverview();
+        handleClose();
+      } else {
+        toast.error(response.message || 'Something went wrong!');
+      }
+    } catch (error: unknown) {
+      setLoading(false);
+      toast.error(errorCatching(error)?.message);
     }
   };
+
+  useEffect(() => {
+    if (!isShowWithdrawFXForm) return;
+
+    const fetchWalletData = async () => {
+      try {
+        const query = {
+          type: WalletType.Payment,
+        };
+
+        const params = new URLSearchParams(query);
+        const response: Response<Wallet> = await httpClient.get(
+          `${ApiEndpointEnum.Wallet}?${params}`,
+        );
+
+        if (response && response?.data?.frBalanceActive) {
+          setPaymentBalance(Number(response?.data?.frBalanceActive));
+        }
+      } catch (error) {
+        toast.error('Network error or invalid response!');
+        console.error(error);
+      }
+    };
+
+    fetchWalletData();
+  }, [isShowWithdrawFXForm]);
 
   if (isShowWithdrawFXForm && (isLoading || loading)) return <Loading />;
   return (
     <Dialog open={isShowWithdrawFXForm} onOpenChange={handleClose}>
-      <DialogContent className="min-w-[700px] flex flex-col items-center">
-        <DialogTitle className="text-3xl font-bold">WITHDRAW FX</DialogTitle>
-        <DialogDescription className="text-center">
+      <DialogContent className="sm:min-w-fit lg:min-w-[700px] flex flex-col items-center mx-4">
+        <DialogTitle className="text-3xl font-bold sm:block hidden">WITHDRAW FX</DialogTitle>
+        <DialogDescription className="text-center sm:block hidden">
           Please be carefully when withdraw your FX, any mistaken will be responsible yourself.
         </DialogDescription>
-        <DialogDescription className="mt-[-1rem]">
+        <DialogDescription className="mt-[-1rem] sm:block hidden">
           Only suspicious transactions will be FIORA and Insurance case.
         </DialogDescription>
 
         <Card className="w-full">
-          <CardContent className="w-full pt-6 space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
               <MetricCard
                 className="px-4 py-2 *:p-0"
                 title="Daily Moving Limit"
@@ -188,7 +240,7 @@ function WithdrawFXForm() {
                 icon="handCoins"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
               <MetricCard
                 className="px-4 py-2 *:p-0"
                 title="Moved Amount"
@@ -207,7 +259,7 @@ function WithdrawFXForm() {
 
             <Separator />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
               <BankAccountSelect
                 key="bank-account"
                 name={overviewData?.data?.data?.bankAccount?.accountName || ''}
@@ -216,6 +268,7 @@ function WithdrawFXForm() {
                 onChange={setBankAccountSelected}
                 required
                 error={errorBankAccount}
+                className="mb-0"
               />
               <AmountSelect
                 key="amount"
@@ -226,20 +279,22 @@ function WithdrawFXForm() {
                 value={amountInput}
                 onChange={setAmountInput}
                 error={errorAmount}
+                className="mb-0"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 items-start">
-              <InputOtp value={otp} onChange={setOtp} error={errorOtp} />
+            <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
+              <InputOtp className="flex-1" value={otp} onChange={setOtp} error={errorOtp} />
               <SendOtpButton
                 classNameBtn="mt-[25px]"
                 state={otpState}
                 callback={handleGetOtp}
                 countdown={120}
+                isStartCountdown={otpState !== 'Get'}
               />
             </div>
 
-            <CardDescription>
+            <CardDescription className="sm:block hidden">
               By input OTP and click submit button, you confirm that this transaction is
               unsuspicious and will be fully responsible yourself!
             </CardDescription>
@@ -274,7 +329,7 @@ function WithdrawFXForm() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Done reading</p>
+                <p>Submit</p>
               </TooltipContent>
             </Tooltip>
           </div>

@@ -53,6 +53,8 @@ const AmountSelect: React.FC<AmountSelectProps> = ({
       placeholder="Please type or select amount!"
       onChange={onChange}
       error={error}
+      classContainer={props?.className}
+      {...props}
     />
   );
 };
