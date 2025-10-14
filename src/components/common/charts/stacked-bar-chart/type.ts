@@ -1,4 +1,5 @@
 import { STACK_TYPE } from '@/shared/constants/chart';
+import { BaseChartProps } from '@/shared/types/chart.type';
 import { TooltipProps as RechartsTooltipProps } from 'recharts';
 
 // Types for bar item
@@ -27,19 +28,10 @@ export type StackBarDisplay = CustomBarItem & {
 // Types for tooltip
 export type TooltipProps = RechartsTooltipProps<number, string>;
 
-export type StackedBarProps = {
+export interface StackedBarProps extends Omit<BaseChartProps<CustomBarItem>, 'data'> {
   data?: CustomBarItem[];
-  title?: string;
   icon?: string;
-  currency?: string;
-  locale?: string;
-  isLoading?: boolean;
-  callback?: (item: any) => void;
-  className?: string;
-  xAxisFormatter?: (value: number) => string;
-  tutorialText?: string;
-  legendItems?: { name: string; color: string }[];
   showButton?: boolean;
   onClickButton?: () => void;
   onClickTitle?: () => void;
-};
+}

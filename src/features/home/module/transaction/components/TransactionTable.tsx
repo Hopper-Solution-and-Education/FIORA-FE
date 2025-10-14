@@ -511,6 +511,7 @@ const TransactionTable = () => {
                                   'cursor-default',
                                   transRecord.fromAccountId ||
                                     transRecord.fromCategoryId ||
+                                    transRecord.fromWalletId ||
                                     transRecord.membershipBenefitId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
@@ -522,13 +523,16 @@ const TransactionTable = () => {
                                     target:
                                       transRecord.type === 'Income'
                                         ? 'fromCategory'
-                                        : 'fromAccount',
-                                    subTarget: 'name',
+                                        : transRecord.fromAccountId
+                                          ? 'fromAccount'
+                                          : 'fromWallet',
+                                    subTarget: transRecord.fromWalletId ? 'type' : 'name',
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Income'
                                         ? (transRecord.fromCategory?.name ?? undefined)
                                         : (transRecord.fromAccount?.name ??
+                                          transRecord.fromWallet?.type ??
                                           transRecord.membershipBenefit?.name ??
                                           undefined),
                                   })
