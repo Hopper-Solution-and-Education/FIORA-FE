@@ -1,6 +1,7 @@
 'use client';
 
-import { memo } from 'react';
+import { BaseChartProps } from '@/shared/types/chart.type';
+import { memo, useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -11,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortByValue, sortChartData } from '../utils/sortChartData';
 
 interface SimpleBarItem {
   name: string;
@@ -18,10 +20,7 @@ interface SimpleBarItem {
   color: string;
 }
 
-interface VerticalBarChartProps {
-  data: SimpleBarItem[];
-  height?: number;
-  yAxisFormatter?: (value: number) => string;
+interface VerticalBarChartProps extends Omit<BaseChartProps<SimpleBarItem>, 'tooltipContent'> {
   tooltipContent?: (props: any) => React.ReactNode;
   onBarClick?: (item: SimpleBarItem, index: number) => void;
 }
@@ -32,8 +31,15 @@ const VerticalBarChart = ({
   yAxisFormatter = (value) => value.toLocaleString(),
   tooltipContent,
   onBarClick,
+  sortEnable = true,
 }: VerticalBarChartProps) => {
-  const maxValue = Math.max(...data.map((item) => item.value));
+  // Sort data if sortEnable is true (highest values first)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, sortByValue),
+    [data, sortEnable],
+  );
+
+  const maxValue = Math.max(...sortedData.map((item) => item.value));
 
   // Default tooltip content
   const defaultTooltipContent = (props: any) => {
@@ -54,7 +60,7 @@ const VerticalBarChart = ({
     <div style={{ height: `${height + 120}px` }}>
       <ResponsiveContainer width="100%" height={height + 120}>
         <BarChart
-          data={data}
+          data={sortedData}
           margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           barCategoryGap={15}
           barGap={8}
@@ -86,7 +92,7 @@ const VerticalBarChart = ({
             className="cursor-pointer"
             onClick={(data, index) => onBarClick && onBarClick(data, index)}
           >
-            {data.map((entry, index) => (
+            {sortedData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Bar>
