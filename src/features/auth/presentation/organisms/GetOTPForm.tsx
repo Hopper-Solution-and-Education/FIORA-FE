@@ -38,7 +38,22 @@ const EmailOtpForm = ({
   countdown,
   isLoading,
 }: EmailOtpFormProps) => {
-  const { isSubmitting } = emailOtpForm.formState;
+  const { isSubmitting, errors } = emailOtpForm.formState;
+
+  const emailValue = emailOtpForm.watch('email');
+
+  const isEmailValid = emailValue && !errors.email;
+
+  const isGetOtpDisabled = !isEmailValid || isLoading;
+
+  const handleGetOtpClick = (e: React.MouseEvent) => {
+    if (isGetOtpDisabled) {
+      e.preventDefault();
+      return;
+    }
+    onSubmitForgotPassword(e);
+  };
+
   return (
     <Form {...emailOtpForm}>
       <form
@@ -67,14 +82,20 @@ const EmailOtpForm = ({
                       value={field.value ?? ''}
                     />
                   </FormControl>
+
+                  {/* Mobile */}
                   <div className="w-full flex justify-end md:hidden mt-2">
                     {countdown === null || countdown <= 0 ? (
                       !isOtpSent && (
                         <span
-                          onClick={onSubmitForgotPassword}
-                          className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer whitespace-nowrap"
+                          onClick={handleGetOtpClick}
+                          className={`text-sm font-semibold transition-all duration-200 underline underline-offset-4 whitespace-nowrap ${
+                            isGetOtpDisabled
+                              ? 'text-gray-400 cursor-not-allowed' // Disabled style
+                              : 'text-blue-500 hover:text-blue-600 cursor-pointer' // Enabled style
+                          }`}
                         >
-                          Get OTP
+                          {isLoading ? 'Sending...' : 'Get OTP'}
                         </span>
                       )
                     ) : (
@@ -84,14 +105,20 @@ const EmailOtpForm = ({
                     )}
                   </div>
                 </div>
+
+                {/* Desktop */}
                 <div className="w-1/6 hidden md:flex md:items-center">
                   {countdown === null || countdown <= 0 ? (
                     !isOtpSent && (
                       <span
-                        onClick={(e) => onSubmitForgotPassword(e)}
-                        className="text-sm font-semibold text-blue-500 transition-all duration-200 underline underline-offset-4 cursor-pointer whitespace-nowrap"
+                        onClick={handleGetOtpClick}
+                        className={`text-sm font-semibold transition-all duration-200 underline underline-offset-4 whitespace-nowrap ${
+                          isGetOtpDisabled
+                            ? 'text-gray-400 cursor-not-allowed' // Disabled style
+                            : 'text-blue-500 hover:text-blue-600 cursor-pointer' // Enabled style
+                        }`}
                       >
-                        Get OTP
+                        {isLoading ? 'Sending...' : 'Get OTP'}
                       </span>
                     )
                   ) : (
@@ -147,7 +174,9 @@ const EmailOtpForm = ({
           <Button
             type="submit"
             disabled={!emailOtpForm.formState.isValid}
-            className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${!emailOtpForm.formState.isValid && 'cursor-not-allowed'}`}
+            className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${
+              !emailOtpForm.formState.isValid && 'cursor-not-allowed'
+            }`}
           >
             {isLoading || isSubmitting ? (
               <LoadingIndicator className="w-4 h-4" color="white" />

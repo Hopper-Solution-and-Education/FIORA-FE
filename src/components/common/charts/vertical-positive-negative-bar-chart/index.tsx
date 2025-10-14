@@ -25,6 +25,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortByFirstColumnAbsolute, sortChartData } from '../utils/sortChartData';
 import { renderCustomLegend } from './components/VerticalPositiveNegativeBarChartLegend';
 import {
   DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
@@ -50,11 +51,21 @@ const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChar
     height = DEFAULT_VERTICAL_BAR_CHART_HEIGHT,
     fontSize = DEFAULT_CHART_FONT_SIZE,
     tickCount = DEFAULT_CHART_TICK_COUNT,
+    sortEnable = true,
   } = props;
 
   const chartMargins = useMemo(() => getChartMargins(width), [width]);
 
-  const { maxValue, minValue } = useMemo(() => findMaxMinValues(data, columns), [data, columns]);
+  // Sort data if sortEnable is true (highest values first for vertical chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, (d) => sortByFirstColumnAbsolute(d, columns)),
+    [data, sortEnable, columns],
+  );
+
+  const { maxValue, minValue } = useMemo(
+    () => findMaxMinValues(sortedData, columns),
+    [sortedData, columns],
+  );
 
   const renderTooltipContent = useCallback(
     (props: TooltipProps) => {
@@ -95,7 +106,7 @@ const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChar
 
   const barCategoryGap = useMemo(
     () =>
-      buildResponsiveBarCategoryGap(data, {
+      buildResponsiveBarCategoryGap(sortedData, {
         thresholds: {
           2: '35%',
           5: '20%',
@@ -103,7 +114,7 @@ const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChar
           Infinity: '0%',
         },
       }),
-    [data],
+    [sortedData],
   );
 
   if (isLoading) return <ChartSkeleton />;
@@ -122,7 +133,7 @@ const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChar
 
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
-          data={data}
+          data={sortedData}
           margin={chartMargins}
           barGap={2}
           barCategoryGap={barCategoryGap}

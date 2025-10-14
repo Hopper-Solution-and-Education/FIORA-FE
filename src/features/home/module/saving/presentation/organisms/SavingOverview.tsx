@@ -2,6 +2,7 @@
 
 import { Loading } from '@/components/common/atoms';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
+import { Messages } from '@/shared/constants/message';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -44,8 +45,23 @@ const SavingOverview = () => {
     }
   }, [wallets]);
 
+  // Create transaction [DEPOSIT/TRANSFER/CLAIM]
   useEffect(() => {
     if (transactionRequest !== null) {
+      if (transactionRequest?.action === SavingTransactionStatus.TRANSFER) {
+        if (transactionRequest?.fxAmount > (overview?.data?.wallet?.balance ?? 0)) {
+          toast.error(Messages.INSUFFICIENT_BALANCE);
+          return;
+        }
+      }
+
+      if (transactionRequest?.action === SavingTransactionStatus.CLAIM) {
+        if (transactionRequest?.fxAmount > (overview?.data?.wallet?.availableReward ?? 0)) {
+          toast.error(Messages.INSUFFICIENT_BALANCE);
+          return;
+        }
+      }
+
       dispatch(createSavingTransaction(transactionRequest));
     }
   }, [transactionRequest]);

@@ -30,6 +30,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortByProperty, sortChartData } from '../utils/sortChartData';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
 
 const largestKey = (item: CustomBarItem): string => {
@@ -68,6 +69,7 @@ const StackedBarChart = ({
   showButton,
   onClickButton,
   onClickTitle,
+  sortEnable = true,
 }: StackedBarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -76,7 +78,13 @@ const StackedBarChart = ({
   const isMobile = useIsMobile();
   const { formatCurrency } = useCurrencyFormatter();
 
-  const processedData = useMemo(() => calculateDisplayValues(data), [data]);
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, (d) => sortByProperty(d, 'B')),
+    [data, sortEnable],
+  );
+
+  const processedData = useMemo(() => calculateDisplayValues(sortedData), [sortedData]);
 
   const calculateRValue = (item: StackBarDisplay): number => {
     let R: number = 0;
