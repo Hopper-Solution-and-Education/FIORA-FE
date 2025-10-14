@@ -563,10 +563,7 @@ class WalletUseCase {
             where: { id: depositRequest.id },
             data: { attachmentId: attachment.id, updatedBy: userId },
           });
-        } else {
-          throw new BadRequestError(Messages.ATTACHMENT_REQUIRED);
         }
-
         await this._transactionRepository.createTransaction({
           userId,
           fromWalletId: paymentWalletId,
