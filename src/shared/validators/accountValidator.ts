@@ -80,3 +80,9 @@ export const validateAssignRequest = Joi.object({
     'any.required': 'Role is required',
   }),
 });
+
+export const ValidatedUserId = Joi.string().uuid().required().messages({
+  'string.empty': 'UserId id is required',
+  'string.uuid': 'UserId id must be a valid UUID',
+  'any.required': 'UserId id is required',
+});

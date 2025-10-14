@@ -1,6 +1,6 @@
 import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
-import { UserBlocked } from '../../domain/entities/models/profile';
+import { UserBlocked, UserMyProfile } from '../../domain/entities/models/profile';
 import {
   UserFilterParams,
   UserSearchResult,
@@ -11,7 +11,9 @@ import { userRepository } from '../../infrastructure/repositories/userRepository
 
 class UserUseCase {
   constructor(private userRepository: IUserRepository) {}
-
+  async getMyProfile(userId: string): Promise<UserMyProfile | null> {
+    return this.userRepository.getMyProfile(userId);
+  }
   async blockUser(blockUserId: string, userId: string): Promise<UserBlocked | null> {
     return this.userRepository.blockUser(blockUserId, userId);
   }

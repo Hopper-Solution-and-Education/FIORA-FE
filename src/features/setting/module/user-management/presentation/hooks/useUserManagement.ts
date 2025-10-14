@@ -61,7 +61,7 @@ export function useUserManagement() {
 
     // Add userIds filter (emails array contains user IDs)
     if (appliedFilters.emails && appliedFilters.emails.length > 0) {
-      params.emails = appliedFilters.emails; // emails array now contains user IDs
+      params.emails = appliedFilters.emails;
     }
 
     if (searchQuery.trim()) {
@@ -192,10 +192,12 @@ export function useUserManagement() {
   }, [state.data]);
 
   const setSearchQueryWithRefetch = useCallback((value: string) => {
-    // If user clears the search (empty string), trigger refetch to show all users
     if (value === '') {
-      setSearchQuery(value);
+      setSearchQuery('');
       setShouldRefetch(true);
+      return;
+    }
+    if (value.trim() === '') {
       return;
     }
     

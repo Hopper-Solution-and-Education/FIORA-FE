@@ -25,6 +25,7 @@ export const profileApi = createApi({
     'IdentificationDocumentByUserId',
     'BankAccountByUserId',
     'UserManagement',
+    'MyProfile',
   ],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
@@ -204,8 +205,8 @@ export const profileApi = createApi({
         body,
         headers: { 'Content-Type': 'application/json' },
       }),
-      transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+      transformResponse: (response: Response<any>) => response,
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
     }),
 
     // Assign Role
@@ -217,7 +218,17 @@ export const profileApi = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['UserManagement', 'ProfileByUserId'],
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
+    }),
+
+    // myprofile
+    getMyProfile: builder.query<any, string>({
+      query: (userId) => ({
+        url: `/api/profile/myprofile?userId=${userId}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['MyProfile'],
     }),
   }),
 });
@@ -242,4 +253,5 @@ export const {
   useDeleteEKYCMutation,
   useBlockUserMutation,
   useAssignRoleMutation,
+  useGetMyProfileQuery,
 } = profileApi;

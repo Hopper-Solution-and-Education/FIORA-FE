@@ -7,11 +7,13 @@ import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import {
   useAssignRoleMutation,
   useBlockUserMutation,
+  useGetMyProfileQuery,
 } from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
-import { useRouter } from 'next/navigation';
-import { FC, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
+import { useParams, useRouter } from 'next/navigation';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
@@ -36,13 +38,28 @@ const ProfileTab: FC<ProfileTabProps> = ({
   defaultLogoSrc,
   onSave,
   eKycId = '',
-  showUserManagement = false,
+  showUserManagement,
 }) => {
   const router = useRouter();
+  const params = useParams(); // Lấy dynamic parameters từ URL
+  const { data: session } = useSession(); // Lấy session của user đang đăng nhập
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
 
   const { currentUserRole } = useUserSession();
+  // Lấy ID từ URL: /ekyc/[id]/profile
+  const userIdFromUrl = params?.userid as string;
+
+  showUserManagement = userIdFromUrl !== session?.user?.id;
+  // Lấy myProfile data từ API
+  const { data: myProfile, refetch } = useGetMyProfileQuery(profile?.id || '', {
+    skip: !profile?.id, // Chỉ gọi API khi có userId
+  });
+
+  // Check xem current user có phải Admin không
+  const isCurrentUserAdmin = session?.user?.role === UserRole.Admin;
+
+  const [isBlocked, setIsBlocked] = useState(myProfile?.isBlocked || false);
 
   const defaults = useMemo(
     () => ({
@@ -74,6 +91,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
     reset(defaults);
   }, [defaults, reset]);
 
+  // Update isBlocked state khi myProfile data thay đổi
+  useEffect(() => {
+    if (myProfile?.isBlocked !== undefined) {
+      setIsBlocked(myProfile.isBlocked);
+    }
+  }, [myProfile?.isBlocked]);
+
   const handleSubmitForm = async (values: PersonalInfo) => {
     await onSave(values);
   };
@@ -103,11 +127,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
   // Handler for block user
   const handleBlockUser = async (userId: string, reason?: string) => {
     try {
-      await blockUser({ blockUserId: userId, reason }).unwrap();
-      toast.success('User blocked successfully');
+      const resulBlockUser = await blockUser({ blockUserId: userId, reason }).unwrap();
+      toast.success(resulBlockUser?.message);
+      setIsBlocked(resulBlockUser?.data?.isBlocked || false);
+      console.log('resulBlockUser', resulBlockUser);
     } catch (error: any) {
       console.error('Error blocking user:', error);
-      toast.error(error?.data?.message || 'Failed to block user');
+      toast.error(error?.data?.message);
       throw error;
     }
   };
@@ -162,7 +188,8 @@ const ProfileTab: FC<ProfileTabProps> = ({
               eKycId={eKycId}
             />
 
-            {showUserManagement && currentUserRole === UserRole.Admin && (
+            {/* {showUserManagement && currentUserRole === UserRole.Admin && ( */}
+            {showUserManagement && isCurrentUserAdmin && (
               <UserManagementActions
                 userId={profile?.id || ''}
                 userEmail={profile?.email || ''}
@@ -171,7 +198,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
                 currentUserRole={currentUserRole || UserRole.User}
                 onRoleUpdate={handleRoleUpdate}
                 onBlockUser={handleBlockUser}
-                isBlocked={false}
+                isBlocked={isBlocked}
               />
             )}
 

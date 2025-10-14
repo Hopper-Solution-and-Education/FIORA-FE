@@ -363,6 +363,7 @@ export enum Messages {
   KYC_CHECK = 'Kyc is used',
   KYC_NOT_MATCH = 'Kyc not match',
   BLOCK_USER_SUCCESS = 'Block user successfully',
+  UNBLOCK_USER_SUCCESS = 'Unblock user successfully',
   BLOCK_USER_FAILED = 'Block user failed',
   ASSIGN_ROLE_SUCCESS = 'Assign role successfully',
   ASSIGN_ROLE_FAILED = 'Assign role failed',
