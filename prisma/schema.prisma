@@ -1120,6 +1120,7 @@ enum emailType {
   WITHDRAW_REJECT
   FLEXI_INTEREST
   MEMBERSHIP_CHANGE
+  WITHDRAW_OTP
 }
 
 enum CronJobStatus {
