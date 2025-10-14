@@ -347,7 +347,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         type: OtpType.WITHDRAW,
       },
     });
-    console.log(userId);
 
     const bankAccount = await this._prisma.bankAccount.findFirst({
       where: { userId: userId },
@@ -376,8 +375,8 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       recipient: user.email,
       user_id: userId,
       otp: random6Digits,
-      bankAccountNumber: bankAccount?.accountNumber,
-      bankAccountName: bankAccount?.accountName,
+      bankAccountNumber: bankAccount.accountNumber,
+      bankAccountName: bankAccount.accountName,
     };
     const templateEmailType = await this._prisma.emailTemplateType.findFirst({
       where: {
@@ -387,8 +386,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         id: true,
       },
     });
-    console.log(templateEmailType?.id);
-
     const WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID = await this._prisma.emailTemplate.findFirst({
       where: {
         emailtemplatetypeid: templateEmailType?.id,
@@ -397,7 +394,6 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         id: true,
       },
     });
-    console.log(WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID);
 
     if (!WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID || !WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id) {
       throw new BadRequestError('WITHDRAWAL_OTP_EMAIL_TEMPLATE not found');
