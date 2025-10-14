@@ -3,6 +3,7 @@ import UploadImageField from '@/components/common/forms/upload/UploadImageField'
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { KYC_TABS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
+import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import {
   useAssignRoleMutation,
   useBlockUserMutation,
@@ -40,6 +41,8 @@ const ProfileTab: FC<ProfileTabProps> = ({
   const router = useRouter();
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
+
+  const { currentUserRole } = useUserSession();
 
   const defaults = useMemo(
     () => ({
@@ -159,12 +162,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
               eKycId={eKycId}
             />
 
-            {showUserManagement && (
+            {showUserManagement && currentUserRole === UserRole.Admin && (
               <UserManagementActions
                 userId={profile?.id || ''}
+                userEmail={profile?.email || ''}
                 userName={profile?.name || ''}
                 currentRole={profile?.role}
-                currentUserRole={profile?.role || UserRole.User}
+                currentUserRole={currentUserRole || UserRole.User}
                 onRoleUpdate={handleRoleUpdate}
                 onBlockUser={handleBlockUser}
                 isBlocked={false}

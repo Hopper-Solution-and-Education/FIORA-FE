@@ -4,11 +4,11 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { UserRole } from '@prisma/client';
-import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { clearUserFilters, setUserFilters } from '../../slices';
 import { FilterState } from '../../slices/type';
+import { useSession } from 'next-auth/react';
 
 const getInitialFilterState = (): FilterState => ({
   roles: [],
@@ -46,11 +46,10 @@ const UserManagementFilterMenu = ({
   const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.userManagement.filters);
   const { data: session } = useSession();
-  const currentUserRole = session?.user?.role;
+  const currentUserRole = session?.user.role; 
   const isCS = currentUserRole === UserRole.CS;
 
   const [localFilter, setLocalFilter] = useState<FilterState>(value || getInitialFilterState());
-  const [emailInput, setEmailInput] = useState('');
 
   useEffect(() => {
     setLocalFilter({
@@ -63,18 +62,6 @@ const UserManagementFilterMenu = ({
       userToDate: reduxFilter.userToDate || null,
     });
   }, [reduxFilter]);
-
-  // // Convert date range for display - add null check
-  // const dateRange: DateRange | undefined = useMemo(() => {
-  //   if (!localFilter) return undefined;
-  //   if (localFilter.fromDate || localFilter.toDate) {
-  //     return {
-  //       from: localFilter.fromDate || undefined,
-  //       to: localFilter.toDate || undefined,
-  //     };
-  //   }
-  //   return undefined;
-  // }, [localFilter]);
 
   // Convert KYC date range for display
   const kycDateRange: DateRange | undefined = useMemo(() => {
@@ -100,14 +87,6 @@ const UserManagementFilterMenu = ({
     return undefined;
   }, [localFilter]);
 
-  // const handleDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
-  //   setLocalFilter((prev) => ({
-  //     ...prev,
-  //     fromDate: dateRange?.from || null,
-  //     toDate: dateRange?.to || null,
-  //   }));
-  // }, []);
-
   const handleKycDateRangeChange = useCallback((dateRange: DateRange | undefined) => {
     setLocalFilter((prev) => ({
       ...prev,
@@ -123,34 +102,6 @@ const UserManagementFilterMenu = ({
       userToDate: dateRange?.to || null,
     }));
   }, []);
-
-  const handleAddEmail = useCallback(() => {
-    const trimmedEmail = emailInput.trim();
-    if (trimmedEmail && !localFilter.emails.includes(trimmedEmail)) {
-      setLocalFilter((prev) => ({
-        ...prev,
-        emails: [...prev.emails, trimmedEmail],
-      }));
-      setEmailInput('');
-    }
-  }, [emailInput, localFilter.emails]);
-
-  const handleRemoveEmail = useCallback((email: string) => {
-    setLocalFilter((prev) => ({
-      ...prev,
-      emails: prev.emails.filter((e) => e !== email),
-    }));
-  }, []);
-
-  const handleEmailInputKeyPress = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleAddEmail();
-      }
-    },
-    [handleAddEmail],
-  );
 
   // Check if any filter is applied
   const isFilterApplied = useMemo(() => {
@@ -205,8 +156,6 @@ const UserManagementFilterMenu = ({
     const resetState = getInitialFilterState();
 
     setLocalFilter(resetState);
-    setEmailInput('');
-
     dispatch(clearUserFilters());
 
     onFilterChange(resetState);
@@ -268,23 +217,7 @@ const UserManagementFilterMenu = ({
       column: FilterColumn.LEFT,
       order: isCS ? 0 : 2,
     });
-
-    // // Always add Date Range filter
-    // components.push({
-    //   key: 'dateRange',
-    //   component: (
-    //     <DateRangeFilter
-    //       dateRange={dateRange}
-    //       onChange={handleDateRangeChange}
-    //       label="Date Range"
-    //       colorScheme="default"
-    //       disableFuture={true}
-    //       pastDaysLimit={365}
-    //     />
-    //   ),
-    //   column: isCS ? FilterColumn.LEFT : FilterColumn.RIGHT,
-    //   order: 0,
-    // });
+    
 
     // RIGHT COLUMN
     // KYC Date Range filter - Always show
@@ -330,8 +263,6 @@ const UserManagementFilterMenu = ({
     handleLocalFilterChange,
     handleKycDateRangeChange,
     handleUserDateRangeChange,
-    // handleEmailInputKeyPress,
-    // handleRemoveEmail,
     isCS,
   ]);
 

@@ -8,7 +8,7 @@ interface UserManagementHeaderLeftProps {
   filters: FilterState;
   onSearchChange: (value: string) => void;
   onFilterChange: (filters: FilterState) => void;
-  users?: Array<{ id: string; email: string }>; // Add users prop
+  users?: Array<{ id: string; email: string }>;
 }
 
 const UserManagementHeaderLeft: React.FC<UserManagementHeaderLeftProps> = ({

@@ -14,12 +14,12 @@ interface RoleSelectProps {
 
 export function RoleSelect({ selectedRole, onRoleChange }: RoleSelectProps) {
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       <label htmlFor="role" className="text-sm font-medium block mb-2">
         Select a role
       </label>
       <Select value={selectedRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
-        <SelectTrigger className="w-full rounded-lg h-14 px-4 border border-gray-200">
+        <SelectTrigger className="w-full rounded-lg h-10 px-4 border border-gray-200">
           <SelectValue placeholder="Select a role" />
         </SelectTrigger>
         <SelectContent>

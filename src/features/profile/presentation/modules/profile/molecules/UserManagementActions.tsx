@@ -11,17 +11,19 @@ import { UserRoleSelector } from './UserRoleSelector';
 
 interface UserManagementActionsProps {
   userId: string;
+  userEmail: string;
   userName?: string;
   currentRole?: UserRole;
   currentUserRole?: UserRole;
   onRoleUpdate?: (userId: string, newRole: UserRole) => Promise<void>;
   onBlockUser?: (userId: string, reason?: string) => Promise<void>;
-  isBlocked?: boolean; // To determine if the user is currently blocked
+  isBlocked?: boolean;
 }
 
 export function UserManagementActions({
   userId,
   userName,
+  userEmail,
   currentRole,
   currentUserRole = UserRole.User,
   onRoleUpdate,
@@ -59,12 +61,8 @@ export function UserManagementActions({
     User: 'bg-blue-100 text-blue-800',
   };
 
-  // const canManageUsers = currentUserRole === UserRole.Admin || currentUserRole === UserRole.CS;
-  // const canAssignRoles = currentUserRole === UserRole.Admin;
-
   return (
     <div className="mt-6">
-      {/* {canAssignRoles && ( */}
       <InfoActionRow
         label="Roles"
         iconColor={ICON_COLOR_BLUE}
@@ -90,9 +88,7 @@ export function UserManagementActions({
           </>
         }
       />
-      {/* )} */}
 
-      {/* {canManageUsers && ( */}
       <InfoActionRow
         label="Block This User"
         iconColor={ICON_COLOR_RED}
@@ -109,13 +105,13 @@ export function UserManagementActions({
           </Button>
         }
       />
-      {/* )} */}
 
       <UserRoleSelector
         open={isRoleDialogOpen}
         onOpenChange={setIsRoleDialogOpen}
         userId={userId}
         currentRole={currentRole}
+        userEmail={userEmail}
         userName={userName}
         onRoleUpdate={handleRoleUpdate}
         currentUserRole={currentUserRole}

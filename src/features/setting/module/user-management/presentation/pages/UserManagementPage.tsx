@@ -25,7 +25,7 @@ export default function UserManagementPage() {
 
   const handleUserAction = (userId: string) => {
     router.push(`/ekyc/${encodeURIComponent(userId)}/profile`);
-    console.log('User action for ID:', userId);
+    // console.log('User action for ID:', userId);
   };
 
   return (
@@ -48,7 +48,6 @@ export default function UserManagementPage() {
           )}
 
           {/* User Table */}
-
           <div className="p-4">
             <UserTable
               users={tableData.data}

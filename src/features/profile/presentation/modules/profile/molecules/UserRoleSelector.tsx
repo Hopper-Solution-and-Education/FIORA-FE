@@ -1,14 +1,7 @@
 'use client';
 
+import { GlobalDialog } from '@/components/common/molecules/GlobalDialog';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { UserRole } from '@prisma/client';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useState } from 'react';
@@ -61,24 +54,21 @@ export function UserRoleSelector({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-white rounded-lg">
-        <DialogHeader className="text-center">
-          <DialogTitle className="text-2xl text-center font-semibold">Assign Role</DialogTitle>
-          <DialogDescription className="text-center text-base mt-4 max-w-2xl">
-            Select a new role to assign to this user. Changing a user&apos;s role will update their
-            permissions immediately.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="mt-8 grid grid-cols-1 gap-6">
+    <GlobalDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="Assign Role"
+      description="Select a new role to assign to this user. Changing a user's role will update their permissions immediately."
+      className="sm:max-w-lg bg-white rounded-lg"
+      renderContent={() => (
+        <div className="mt-4 grid grid-cols-1 gap-6">
           <UserInfo label="Name" value={userName || '-'} />
           <UserInfo label="Email" value={userEmail || '-'} />
-
           <RoleSelect selectedRole={selectedRole} onRoleChange={setSelectedRole} />
         </div>
-
-        <DialogFooter className="flex items-center justify-between gap-6 mt-8">
+      )}
+      footer={
+        <div className="flex items-center justify-between gap-6 mt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -87,22 +77,18 @@ export function UserRoleSelector({
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-
           <Button
             onClick={handleRoleUpdate}
             disabled={isLoading || selectedRole === currentRole}
             className="flex-1 h-14 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
           >
-            {isLoading ? (
-              'Updating...'
-            ) : (
-              <>
-                <Check className="h-5 w-5" />
-              </>
-            )}
+            {isLoading ? 'Updating...' : <Check className="h-5 w-5" />}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+      hideCancel
+      hideConfirm
+      isLoading={isLoading}
+    />
   );
 }

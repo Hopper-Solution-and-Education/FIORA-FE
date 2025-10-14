@@ -1,10 +1,12 @@
-import { Metadata } from 'next';
-import UserManagementPage from '@/features/setting/module/user-management/presentation/pages/UserManagementPage';
+import { Loading } from '@/components/common/atoms';
+import dynamic from 'next/dynamic';
 
-export const metadata: Metadata = {
-  title: 'User Management | FIORA',
-  description: 'Manage users, roles, and permissions',
-};
+const UserManagementPage = dynamic(
+  () => import('@/features/setting/module/user-management/presentation/pages/UserManagementPage'),
+  {
+    loading: () => <Loading />,
+  },
+);
 
 export default function Page() {
   return <UserManagementPage />;

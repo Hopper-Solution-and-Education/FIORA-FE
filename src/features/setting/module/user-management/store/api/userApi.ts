@@ -24,13 +24,13 @@ export interface UserApiResponse {
 export interface GetUsersParams {
   page?: number;
   pageSize?: number;
-  fromDate?: string; // KYC submission date from
-  toDate?: string; // KYC submission date to
-  userFromDate?: string; // User registration date from - NEW
-  userToDate?: string; // User registration date to - NEW
+  fromDate?: string;
+  toDate?: string;
+  userFromDate?: string;
+  userToDate?: string;
   roles?: string[];
   status?: string[];
-  emails?: string[]; // Changed from userIds to emails
+  emails?: string[];
   search?: string;
 }
 

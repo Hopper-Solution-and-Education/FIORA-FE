@@ -8,7 +8,7 @@ import { initialState, tableReducer } from '../reducers/table-reducer.reducer';
 
 export function useUserManagement() {
   const dispatch = useAppDispatch();
-  const { filters, loading } = useAppSelector((state) => state.userManagement);
+  const { loading } = useAppSelector((state) => state.userManagement);
 
   const [state, dispatchTable] = useReducer(tableReducer, initialState);
 
@@ -61,25 +61,12 @@ export function useUserManagement() {
 
     // Add userIds filter (emails array contains user IDs)
     if (appliedFilters.emails && appliedFilters.emails.length > 0) {
-      params.userIds = appliedFilters.emails; // emails array now contains user IDs
+      params.emails = appliedFilters.emails; // emails array now contains user IDs
     }
 
     if (searchQuery.trim()) {
       params.search = searchQuery.trim();
     }
-
-    // // Format date range to ISO strings
-    // if (appliedFilters.fromDate) {
-    //   const fromDate = new Date(appliedFilters.fromDate);
-    //   fromDate.setHours(0, 0, 0, 0);
-    //   params.fromDate = fromDate.toISOString().split('T')[0];
-    // }
-
-    // if (appliedFilters.toDate) {
-    //   const toDate = new Date(appliedFilters.toDate);
-    //   toDate.setHours(23, 59, 59, 999);
-    //   params.toDate = toDate.toISOString().split('T')[0];
-    // }
 
     // Format KYC date range to ISO strings
     if (appliedFilters.fromDate) {
@@ -190,7 +177,6 @@ export function useUserManagement() {
       }
     },
     [dispatch, queryParams, triggerGetUsers, triggerGetCountUsers],
-    // [dispatch, filters, queryParams, triggerGetUsers, triggerGetCountUsers],
   );
 
   // Add loadMore function (called by table on scroll)
@@ -206,9 +192,20 @@ export function useUserManagement() {
   }, [state.data]);
 
   const setSearchQueryWithRefetch = useCallback((value: string) => {
-    if (value.trim() === '') {
+    // If user clears the search (empty string), trigger refetch to show all users
+    if (value === '') {
+      setSearchQuery(value);
+      setShouldRefetch(true);
       return;
     }
+    
+    const trimmedValue = value.trim();
+    // Don't trigger search if the value is only spaces or empty
+    if (trimmedValue === '') {
+      setSearchQuery(value); // Keep the UI value but don't refetch
+      return;
+    }
+
     setSearchQuery(value);
     setShouldRefetch(true);
   }, []);

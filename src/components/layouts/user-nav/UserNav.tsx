@@ -44,6 +44,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
   );
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
+    userId: user.id,
     title: user.name || user.email || 'No Name',
     image: user.avatarUrl,
   }));
@@ -151,7 +152,11 @@ export function UserNav({ handleSignOut }: UserNavProps) {
             </div>
             <DropdownMenuGroup>
               {switchProfile.map((item) => (
-                <DropdownMenuItem className="cursor-pointer " key={item.title}>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  key={item.title}
+                  onClick={() => router.push(`/ekyc/${encodeURIComponent(item.userId)}/profile`)}
+                >
                   <div className="flex items-center justify-center gap-2 w-full">
                     <UserAvatar src={item.image} name={item.title} size="sm" />
                     <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">

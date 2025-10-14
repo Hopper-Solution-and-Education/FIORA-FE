@@ -21,9 +21,9 @@ export interface FilterState {
   status: string[];
   fromDate: Date | null;
   toDate: Date | null;
-  emails: string[]; // New
-  userFromDate: Date | null; // New
-  userToDate: Date | null; // New
+  emails: string[];
+  userFromDate: Date | null;
+  userToDate: Date | null; 
 }
 
 export interface UserManagementState {
