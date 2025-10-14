@@ -62,4 +62,10 @@ export enum ApiEndpointEnum {
   IdentificationDocument = '/api/indentification-document',
   // Bank Account
   BankAccount = '/api/bank-account',
+
+  // Wallet Smart Saving
+  SavingOverview = '/api/wallet/smart-saving/{id}',
+  SavingTransactionHistory = '/api/wallet/smart-saving/transaction',
+  SavingTransfer = '/api/wallet/smart-saving/transfer',
+  SavingClaim = '/api/wallet/smart-saving/claims',
 }
