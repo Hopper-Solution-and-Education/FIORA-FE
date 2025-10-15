@@ -89,6 +89,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       birthday: getField('birthday'),
       newAvatar: newAvatar || undefined,
       newLogo: newLogo || undefined,
+      referrer_code: getField('referrer_code'),
     });
 
     return res
