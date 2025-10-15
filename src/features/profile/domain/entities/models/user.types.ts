@@ -23,6 +23,7 @@ export interface UserSearchResult {
   createdAt: Date;
   updatedAt: Date;
   avatarId: string | null;
+  avatarUrl: string | null;
   eKYC: {
     id: string;
     status: KYCStatus;
@@ -41,6 +42,7 @@ export interface UserSearchResultCS {
   createdAt: Date;
   updatedAt: Date;
   avatarId: string | null;
+  avatarUrl: string | null;
   eKYC: {
     id: string;
     status: KYCStatus;

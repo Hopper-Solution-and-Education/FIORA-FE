@@ -3,7 +3,6 @@ import UploadImageField from '@/components/common/forms/upload/UploadImageField'
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { KYC_TABS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
-import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import {
   useAssignRoleMutation,
   useBlockUserMutation,
@@ -46,13 +45,12 @@ const ProfileTab: FC<ProfileTabProps> = ({
   const [assignRole] = useAssignRoleMutation();
   const [blockUser] = useBlockUserMutation();
 
-  const { currentUserRole } = useUserSession();
   // Lấy ID từ URL: /ekyc/[id]/profile
   const userIdFromUrl = params?.userid as string;
 
   showUserManagement = userIdFromUrl !== session?.user?.id;
   // Lấy myProfile data từ API
-  const { data: myProfile, refetch } = useGetMyProfileQuery(profile?.id || '', {
+  const { data: myProfile } = useGetMyProfileQuery(profile?.id || '', {
     skip: !profile?.id, // Chỉ gọi API khi có userId
   });
 
@@ -130,7 +128,6 @@ const ProfileTab: FC<ProfileTabProps> = ({
       const resulBlockUser = await blockUser({ blockUserId: userId, reason }).unwrap();
       toast.success(resulBlockUser?.message);
       setIsBlocked(resulBlockUser?.data?.isBlocked || false);
-      console.log('resulBlockUser', resulBlockUser);
     } catch (error: any) {
       console.error('Error blocking user:', error);
       toast.error(error?.data?.message);

@@ -25,7 +25,6 @@ interface UserActionButtonProps {
 
 export function UserActionButton({
   userId,
-  userRole,
   userStatus,
   onViewProfile,
   onEditRole,

@@ -1,5 +1,4 @@
 'use client';
-import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import {
   useGetProfileQuery,
   useUpdateProfileMutation,
@@ -14,7 +13,6 @@ import ProfileTabsContainer from '../templates/ProfileTabsContainer';
 const ProfilePage = () => {
   const { data: profile, isLoading } = useGetProfileQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
-
 
   const handleSave = async (values: PersonalInfo) => {
     const convertToFile = async (url: string) => {

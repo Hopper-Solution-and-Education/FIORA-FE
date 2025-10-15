@@ -70,7 +70,6 @@ class UserUseCase {
     );
 
     const skip = (pageNum - 1) * limitNum;
-    console.log('email', email);
     // Get data
     try {
       const result: UserSearchResult[] = await this.userRepository.getWithFilters(

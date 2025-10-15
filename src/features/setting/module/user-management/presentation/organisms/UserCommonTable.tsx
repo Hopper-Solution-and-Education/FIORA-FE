@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import { UserRole } from '@prisma/client';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, ArrowUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { FilterState, User } from '../../slices/type';
 import UserAvatar from '../atoms/UserAvatar';
@@ -16,6 +16,19 @@ import UserEKYCStatusBadge from '../atoms/UserEKYCStatusBadge';
 import { UserStatusBadge } from '../atoms/UserStatusBadge';
 import UserManagementHeaderLeft from '../molecules/UserHeaderTopLeft';
 import UserManagementHeaderRight from '../molecules/UserHeaderTopRight';
+
+const SortArrowBtn = ({
+  sortDirection,
+  isActivated,
+}: {
+  sortDirection: 'asc' | 'desc';
+  isActivated: boolean;
+}) => {
+  if (isActivated && sortDirection === 'asc') {
+    return <ArrowUp className="h-4 w-4" />;
+  }
+  return <ArrowDown className="h-4 w-4" />;
+};
 
 interface UserTableProps {
   users: User[];
@@ -51,8 +64,20 @@ export function UserTable({
   loading,
 }: UserTableProps) {
   const { isCS } = useUserSession();
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [hoveringColumn, setHoveringColumn] = useState<string | null>(null);
 
   const totalUsers = users.length;
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
 
   const getRoleClass = (role: string) => {
     switch (role) {
@@ -67,12 +92,62 @@ export function UserTable({
     }
   };
 
+  const sortedUsers = useMemo(() => {
+    if (!sortKey) return users;
+
+    return [...users].sort((a, b) => {
+      let aValue: string;
+      let bValue: string;
+
+      switch (sortKey) {
+        case 'profile':
+          aValue = (a.name || a.email || '').toLowerCase();
+          bValue = (b.name || b.email || '').toLowerCase();
+          break;
+        case 'role':
+          aValue = a.role.toLowerCase();
+          bValue = b.role.toLowerCase();
+          break;
+        case 'registrationDate':
+          aValue = a.registrationDate;
+          bValue = b.registrationDate;
+          break;
+        case 'kycSubmissionDate':
+          aValue = a.eKYC?.[0]?.createdAt || '';
+          bValue = b.eKYC?.[0]?.createdAt || '';
+          break;
+        case 'userStatus':
+          aValue = a.status.toLowerCase();
+          bValue = b.status.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [users, sortKey, sortDirection]);
+
   const allColumns: CommonTableColumn<User>[] = [
     {
       key: 'profile',
-      title: 'Profile',
+      title: (
+        <div
+          className="flex items-center justify-start gap-2 cursor-pointer"
+          onClick={() => handleSort('profile')}
+          onMouseEnter={() => setHoveringColumn('profile')}
+          onMouseLeave={() => setHoveringColumn(null)}
+        >
+          <span className={sortKey === 'profile' ? 'text-blue-500' : ''}>Profile</span>
+          {(hoveringColumn === 'profile' || sortKey === 'profile') && (
+            <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'profile'} />
+          )}
+        </div>
+      ),
       align: 'left',
-      width: '14%',
+      width: '12%',
       render: (user) => (
         <div className="pl-1 py-3 truncate items-center">
           <UserAvatar
@@ -88,9 +163,21 @@ export function UserTable({
     },
     {
       key: 'role',
-      title: 'Role',
+      title: (
+        <div
+          className="flex items-center justify-center gap-2 cursor-pointer"
+          onClick={() => handleSort('role')}
+          onMouseEnter={() => setHoveringColumn('role')}
+          onMouseLeave={() => setHoveringColumn(null)}
+        >
+          <span className={sortKey === 'role' ? 'text-blue-500' : ''}>Role</span>
+          {(hoveringColumn === 'role' || sortKey === 'role') && (
+            <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'role'} />
+          )}
+        </div>
+      ),
       align: 'center',
-      width: '3%',
+      width: '5%',
       render: (user) => (
         <span
           className={`px-2 py-1 rounded text-xs font-medium ${getRoleClass(user.role)} border-gray-200`}
@@ -101,16 +188,50 @@ export function UserTable({
     },
     {
       key: 'registrationDate',
-      title: 'Registration Date',
+      title: (
+        <div
+          className="flex items-center justify-center gap-2 cursor-pointer"
+          onClick={() => handleSort('registrationDate')}
+          onMouseEnter={() => setHoveringColumn('registrationDate')}
+          onMouseLeave={() => setHoveringColumn(null)}
+        >
+          <span className={sortKey === 'registrationDate' ? 'text-blue-500' : ''}>
+            Registration Date
+          </span>
+          {(hoveringColumn === 'registrationDate' || sortKey === 'registrationDate') && (
+            <SortArrowBtn
+              sortDirection={sortDirection}
+              isActivated={sortKey === 'registrationDate'}
+            />
+          )}
+        </div>
+      ),
       align: 'center',
       width: '8%',
       render: (user) => <span className="text-gray-600">{user.registrationDate}</span>,
     },
     {
       key: 'kycSubmissionDate',
-      title: 'KYC Submission Date',
+      title: (
+        <div
+          className="flex items-center justify-center gap-2 cursor-pointer"
+          onClick={() => handleSort('kycSubmissionDate')}
+          onMouseEnter={() => setHoveringColumn('kycSubmissionDate')}
+          onMouseLeave={() => setHoveringColumn(null)}
+        >
+          <span className={sortKey === 'kycSubmissionDate' ? 'text-blue-500' : ''}>
+            KYC Submission Date
+          </span>
+          {(hoveringColumn === 'kycSubmissionDate' || sortKey === 'kycSubmissionDate') && (
+            <SortArrowBtn
+              sortDirection={sortDirection}
+              isActivated={sortKey === 'kycSubmissionDate'}
+            />
+          )}
+        </div>
+      ),
       align: 'center',
-      width: '8%',
+      width: '10%',
       render: (user) => (
         <span className="text-gray-600">
           {user.eKYC?.[0]?.createdAt
@@ -123,7 +244,7 @@ export function UserTable({
       key: 'status',
       title: 'KYC Status',
       align: 'center',
-      width: '6%',
+      width: '5%',
       render: (user) => {
         const latestEKYCStatus = user.eKYC && user.eKYC.length > 0 ? user.eKYC[0].status : null;
         const displayStatus = latestEKYCStatus || user.status;
@@ -133,7 +254,19 @@ export function UserTable({
     },
     {
       key: 'userStatus',
-      title: 'User Status',
+      title: (
+        <div
+          className="flex items-center justify-center gap-2 cursor-pointer"
+          onClick={() => handleSort('userStatus')}
+          onMouseEnter={() => setHoveringColumn('userStatus')}
+          onMouseLeave={() => setHoveringColumn(null)}
+        >
+          <span className={sortKey === 'userStatus' ? 'text-blue-500' : ''}>User Status</span>
+          {(hoveringColumn === 'userStatus' || sortKey === 'userStatus') && (
+            <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'userStatus'} />
+          )}
+        </div>
+      ),
       align: 'center',
       width: '6%',
       render: (user) => (
@@ -160,7 +293,7 @@ export function UserTable({
       return allColumns.filter((col) => col.key !== 'role' && col.key !== 'userStatus');
     }
     return allColumns;
-  }, [isCS, allColumns]);
+  }, [isCS, sortKey, sortDirection, hoveringColumn]);
 
   const initialConfig: ColumnConfigMap = useMemo(() => {
     return columns.reduce((acc, c, idx) => {
@@ -179,7 +312,7 @@ export function UserTable({
 
   return (
     <CommonTable<User>
-      data={users}
+      data={sortedUsers}
       columns={columns}
       columnConfig={columnConfig}
       onColumnConfigChange={setColumnConfig}
@@ -195,7 +328,7 @@ export function UserTable({
           filters={filters}
           onSearchChange={onSearchChange}
           onFilterChange={onFilterChange}
-          users={users}
+          users={sortedUsers}
         />
       }
       rightHeaderNode={

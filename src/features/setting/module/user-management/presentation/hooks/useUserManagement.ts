@@ -143,7 +143,7 @@ export function useUserManagement() {
             role: user.role,
             status: user.isBlocked ? 'blocked' : 'active',
             registrationDate: new Date(user.createdAt).toLocaleDateString('en-GB'),
-            avatarUrl: user.avatarId ? `/api/avatar/${user.avatarId}` : null,
+            avatarUrl: user.avatarUrl || null,
             eKYC: user.eKYC || [],
           }),
         );
@@ -200,7 +200,7 @@ export function useUserManagement() {
     if (value.trim() === '') {
       return;
     }
-    
+
     const trimmedValue = value.trim();
     // Don't trigger search if the value is only spaces or empty
     if (trimmedValue === '') {

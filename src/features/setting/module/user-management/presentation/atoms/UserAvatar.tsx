@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { User } from '../../slices/type';
 interface UserAvatarProps {
   src?: string | null;
@@ -27,6 +27,7 @@ export function UserAvatar({
   showTooltip = false,
 }: UserAvatarProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const displayName = email || name || 'No name';
 
   const getInitials = () => {
@@ -53,9 +54,14 @@ export function UserAvatar({
 
   const handleCopy = async (text: string, type: string) => {
     try {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       await navigator.clipboard.writeText(text);
       setCopied(type);
-      setTimeout(() => setCopied(null), 2000);
+
+      timeoutRef.current = setTimeout(() => {
+        setCopied(null);
+        timeoutRef.current = null;
+      }, 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }

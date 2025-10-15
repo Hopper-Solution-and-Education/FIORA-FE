@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export interface UserApiResponse {
-  avatarUrl: any;
   id: string;
   name: string;
   email: string;
@@ -11,6 +10,7 @@ export interface UserApiResponse {
   createdAt: string;
   updatedAt: string;
   avatarId?: string | null;
+  avatarUrl?: string | null;
   eKYC?: {
     id: string;
     status: string;

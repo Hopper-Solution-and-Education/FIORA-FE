@@ -132,8 +132,34 @@ export class UserRepository implements IUserRepository {
       take: limit,
     });
 
+    // Get all unique avatarIds that are not null
+    const avatarIds = users
+      .map((user) => user.avatarId)
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    // Fetch avatars in one query if there are any avatarIds
+    const avatars =
+      avatarIds.length > 0
+        ? await prisma.attachment.findMany({
+            where: {
+              id: {
+                in: avatarIds,
+              },
+            },
+            select: {
+              id: true,
+              url: true,
+            },
+          })
+        : [];
+
+    // Create a map for O(1) lookup
+    const avatarMap = new Map(avatars.map((avatar) => [avatar.id, avatar.url]));
+
+    // Merge avatar URLs with users
     return users.map((user) => ({
       ...user,
+      avatarUrl: user.avatarId ? avatarMap.get(user.avatarId) || null : null,
     }));
   }
 
@@ -170,8 +196,34 @@ export class UserRepository implements IUserRepository {
       take: limit,
     });
 
+    // Get all unique avatarIds that are not null
+    const avatarIds = users
+      .map((user) => user.avatarId)
+      .filter((id): id is string => id !== null && id !== undefined);
+
+    // Fetch avatars in one query if there are any avatarIds
+    const avatars =
+      avatarIds.length > 0
+        ? await prisma.attachment.findMany({
+            where: {
+              id: {
+                in: avatarIds,
+              },
+            },
+            select: {
+              id: true,
+              url: true,
+            },
+          })
+        : [];
+
+    // Create a map for O(1) lookup
+    const avatarMap = new Map(avatars.map((avatar) => [avatar.id, avatar.url]));
+
+    // Merge avatar URLs with users
     return users.map((user) => ({
       ...user,
+      avatarUrl: user.avatarId ? avatarMap.get(user.avatarId) || null : null,
     }));
   }
 }

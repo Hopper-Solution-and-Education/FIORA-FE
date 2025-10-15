@@ -27,7 +27,6 @@ export function UserRoleSelector({
   userName,
   userEmail,
   onRoleUpdate,
-  currentUserRole = UserRole.User,
 }: UserRoleSelectorProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole || UserRole.User);
   const [isLoading, setIsLoading] = useState(false);
