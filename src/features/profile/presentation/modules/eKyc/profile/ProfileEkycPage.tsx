@@ -74,6 +74,7 @@ const ProfileEkycPage = () => {
             defaultLogoSrc={HopperLogo.src}
             onSave={handleSave}
             eKycId={userId}
+            showUserManagement={true}
           />
         }
         // settingContent={<SettingTab />}

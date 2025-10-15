@@ -1,4 +1,4 @@
-import { UserRole } from '@/shared/constants/userRole';
+import { UserRole } from '@prisma/client';
 
 export type UserProfile = {
   id: string;
@@ -86,4 +86,28 @@ export interface BankAccountFormData {
 
 export interface IdentificationDocumentProps {
   isVerified: boolean;
+}
+
+export interface UserBlocked {
+  id: string;
+  email: string;
+  name: string | null;
+  isBlocked: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserAssignedRole {
+  id: string;
+  email: string;
+  name: string | null;
+  role: UserRole;
+  isBlocked: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserMyProfile {
+  role: UserRole;
+  isBlocked: boolean | null;
 }

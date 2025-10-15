@@ -142,10 +142,9 @@ class HttpClient implements IHttpClient {
 
     try {
       const response = await fetch(fullUrl, config);
-
       if (!response.ok) {
-        // If response status is 403, log out
-        if (response.status === 403) {
+        // If response status is 403 or 550, log out
+        if (response.status === 403 || response.status === 550) {
           await signOut();
         }
         // get response error from server

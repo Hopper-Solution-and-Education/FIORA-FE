@@ -22,13 +22,18 @@ function SendOtpButton({
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    if (count <= 0) return;
 
-    if (count > 0) {
-      timer = setInterval(() => {
-        setCount((prev) => prev - 1);
-      }, 1000);
-    }
+    const timer = setInterval(() => {
+      setCount((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => clearInterval(timer);
   }, [count]);
@@ -36,11 +41,11 @@ function SendOtpButton({
   const handleButtonClick = () => {
     callback();
 
-    if (isStartCountdown) setCount(countdown);
+    if (isStartCountdown && count === 0) setCount(countdown);
   };
 
   useEffect(() => {
-    if (isStartCountdown) setCount(countdown);
+    if (isStartCountdown && count === 0) setCount(countdown);
   }, [isStartCountdown]);
 
   return (
