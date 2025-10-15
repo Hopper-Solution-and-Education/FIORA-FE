@@ -221,7 +221,11 @@ const ComposedChartComponent = (props: ComposedChartProps) => {
           }}
         >
           <ResponsiveContainer width="100%" height={height}>
-            <ComposedChart data={sortedData} margin={{ bottom: 30, top: 30 }} onClick={handleChartClick}>
+            <ComposedChart
+              data={sortedData}
+              margin={{ bottom: 30, top: 30 }}
+              onClick={handleChartClick}
+            >
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}

@@ -42,10 +42,8 @@ const EmailOtpForm = ({
 
   const emailValue = emailOtpForm.watch('email');
 
-
   const isEmailValid = emailValue && !errors.email;
-  
- 
+
   const isGetOtpDisabled = !isEmailValid || isLoading;
 
   const handleGetOtpClick = (e: React.MouseEvent) => {
@@ -107,7 +105,7 @@ const EmailOtpForm = ({
                     )}
                   </div>
                 </div>
-                
+
                 {/* Desktop */}
                 <div className="w-1/6 hidden md:flex md:items-center">
                   {countdown === null || countdown <= 0 ? (
@@ -157,8 +155,7 @@ const EmailOtpForm = ({
                     />
                   </FormControl>
                 </div>
-                <div className="w-1/6 hidden md:block" />{' '}
-                {/* Empty column to match email row */}
+                <div className="w-1/6 hidden md:block" /> {/* Empty column to match email row */}
               </div>
               <FormMessage className="w-full text-left md:pl-[calc(15%+1rem)]" />
             </FormItem>
