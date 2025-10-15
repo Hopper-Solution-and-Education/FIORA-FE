@@ -1,3 +1,4 @@
+import { BaseChartProps } from '@/shared/types/chart.type';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
 
@@ -25,17 +26,9 @@ export type LevelConfig = {
 };
 
 // Props for the NestedBarChart component
-export type NestedBarChartProps = {
-  data: BarItem[];
-  title?: string;
-  currency?: string;
-  locale?: string;
+export interface NestedBarChartProps extends Omit<BaseChartProps<BarItem>, 'tooltipContent'> {
   tooltipContent?: ContentType<ValueType, NameType>;
-  legendItems?: { name: string; color: string }[];
   maxBarRatio?: number;
-  tutorialText?: string;
   levelConfig?: LevelConfig;
   expanded?: boolean;
-  xAxisFormatter?: (value: number) => string;
-  callback?: (item: any) => void;
-};
+}

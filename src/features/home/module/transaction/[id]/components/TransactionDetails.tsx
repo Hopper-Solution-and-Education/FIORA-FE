@@ -86,6 +86,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     //delete logics here
     setIsDeleteModalOpen(false);
   };
+  const isDeleteForbidden = (transaction: any): boolean => {
+    // Chỉ check isMarked hoặc isExpired
+    return transaction.isMarked || transaction.isExpired;
+  };
 
   return (
     <div className="container mx-auto px-4 pb-6 min-h-screen">
@@ -96,15 +100,26 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               Transaction Details
             </CardTitle>
             <div className="mb-6">
-              <CommonTooltip content="Delete Transaction">
+              <CommonTooltip
+                content={
+                  data.isMarked || data.isExpired
+                    ? "Can't delete marked or expired transactions"
+                    : 'Delete Transaction'
+                }
+              >
                 <Button
                   variant="secondary"
-                  className="px-3 py-2 hover:bg-red-200"
+                  className={`px-3 py-2 ${
+                    isDeleteForbidden(data) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'
+                  }`}
                   onClick={() => {
-                    handleOpenDeleteModal();
+                    if (!isDeleteForbidden(data)) {
+                      handleOpenDeleteModal();
+                    }
                   }}
+                  disabled={isDeleteForbidden(data)}
                 >
-                  <Trash size={18} color="red" />
+                  <Trash size={18} color={isDeleteForbidden(data) ? 'gray' : 'red'} />
                 </Button>
               </CommonTooltip>
             </div>
@@ -163,72 +178,77 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {/* From Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-md">From</h3>
-                {data.fromAccount && (
-                  <div className="w-full flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Account</div>
-                    <CommonTooltip content={data.fromAccount.name}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.fromAccount.icon && (
-                          <LucieIcon
-                            icon={data.fromAccount.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.fromAccount.name}
-                        </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {data.fromAccount && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Account</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.fromAccount.name}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.fromAccount.icon && (
+                              <LucieIcon
+                                icon={data.fromAccount.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromAccount.name}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {data.fromCategory && (
-                  <div className="w-full flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Category</div>
-                    <CommonTooltip content={data.fromCategory.name}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.fromCategory.icon && (
-                          <LucieIcon
-                            icon={data.fromCategory.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.fromCategory.name}
-                        </h3>
+                  {data.fromCategory && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Category</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.fromCategory.name}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.fromCategory.icon && (
+                              <LucieIcon
+                                icon={data.fromCategory.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromCategory.name}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {data.fromWallet && (
-                  <div className="w-full flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Wallet</div>
-                    <CommonTooltip content={data.fromWallet.type}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.fromWallet.icon && (
-                          <LucieIcon
-                            icon={data.fromWallet.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.fromWallet.type}
-                        </h3>
+                  {data.fromWallet && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Wallet</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.fromWallet.type}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.fromWallet.icon && (
+                              <LucieIcon
+                                icon={data.fromWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.fromWallet.type}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {!data.fromAccount && !data.fromCategory && !data.fromWallet && (
-                  <div className="w-full flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Source</div>
-                    <div className="text-gray-500 italic">Unknown</div>
-                  </div>
-                )}
+                  {!data.fromAccount && !data.fromCategory && !data.fromWallet && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Source</div>
+                      <div className="text-right text-gray-500 italic">Unknown</div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -236,72 +256,77 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {/* To Account/Category/Wallet */}
               <div className="space-y-2">
                 <h3 className="font-medium text-lg">To</h3>
-                {data.toAccount && (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Account</div>
-                    <CommonTooltip content={data.toAccount.name}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.toAccount.icon && (
-                          <LucieIcon
-                            icon={data.toAccount.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.toAccount.name}
-                        </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {data.toAccount && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Account</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.toAccount.name}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.toAccount.icon && (
+                              <LucieIcon
+                                icon={data.toAccount.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toAccount.name}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {data.toCategory && (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Category</div>
-                    <CommonTooltip content={data.toCategory.name}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.toCategory.icon && (
-                          <LucieIcon
-                            icon={data.toCategory.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.toCategory.name}
-                        </h3>
+                  {data.toCategory && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Category</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.toCategory.name}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.toCategory.icon && (
+                              <LucieIcon
+                                icon={data.toCategory.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toCategory.name}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {data.toWallet && (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Wallet</div>
-                    <CommonTooltip content={data.toWallet.type}>
-                      <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                        {data.toWallet.icon && (
-                          <LucieIcon
-                            icon={data.toWallet.icon}
-                            className="w-4 h-4 border-1 border-gray-500"
-                          />
-                        )}
-
-                        <h3 className="w-fit overflow-hidden whitespace-nowrap text-ellipsis">
-                          {data.toWallet.type}
-                        </h3>
+                  {data.toWallet && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Wallet</div>
+                      <div className="flex justify-end items-center gap-2">
+                        <CommonTooltip content={data.toWallet.type}>
+                          <div className="flex items-center gap-2 max-w-full">
+                            {data.toWallet.icon && (
+                              <LucieIcon
+                                icon={data.toWallet.icon}
+                                className="w-4 h-4 border-1 border-gray-500 flex-shrink-0"
+                              />
+                            )}
+                            <h3 className="overflow-hidden whitespace-nowrap text-ellipsis">
+                              {data.toWallet.type}
+                            </h3>
+                          </div>
+                        </CommonTooltip>
                       </div>
-                    </CommonTooltip>
-                  </div>
-                )}
+                    </>
+                  )}
 
-                {!data.toAccount && !data.toCategory && !data.toWallet && (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">Destination</div>
-                    <div className="text-gray-500 italic">Unknown</div>
-                  </div>
-                )}
+                  {!data.toAccount && !data.toCategory && !data.toWallet && (
+                    <>
+                      <div className="text-sm text-muted-foreground">Destination</div>
+                      <div className="text-right text-gray-500 italic">Unknown</div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -309,34 +334,37 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               {/* Partner Information */}
               <div className="space-y-2">
                 <h3 className="font-medium text-md">Partner</h3>
-                <div className="relative w-full flex justify-between items-center">
+                <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Name</div>
-                  <CommonTooltip content={data.partner?.name || 'Unknown'}>
-                    <div className="flex justify-end items-center gap-2 w-fit max-w-[60%]">
-                      {data.partner?.logo && (
-                        <Image
-                          src={data.partner.logo}
-                          alt={data.partner?.name || 'Unknown'}
-                          width={30}
-                          height={30}
-                          className="rounded-full"
-                        />
-                      )}
-                      <h3
-                        className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.name ? 'text-gray-500 italic' : ''}`}
-                      >
-                        {data.partner?.name || 'Unknown'}
-                      </h3>
-                    </div>
-                  </CommonTooltip>
-                </div>
-                <div className="relative w-full flex justify-between items-center">
+                  <div className="flex justify-end items-center gap-2">
+                    <CommonTooltip content={data.partner?.name || 'Unknown'}>
+                      <div className="flex items-center gap-2 max-w-full">
+                        {data.partner?.logo && (
+                          <Image
+                            src={data.partner.logo}
+                            alt={data.partner?.name || 'Unknown'}
+                            width={30}
+                            height={30}
+                            className="rounded-full flex-shrink-0"
+                          />
+                        )}
+                        <h3
+                          className={`overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.name ? 'text-gray-500 italic' : ''}`}
+                        >
+                          {data.partner?.name || 'Unknown'}
+                        </h3>
+                      </div>
+                    </CommonTooltip>
+                  </div>
+
                   <div className="text-sm text-muted-foreground">Type</div>
-                  <h3
-                    className={`w-fit overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.type ? 'text-gray-500 italic' : ''}`}
-                  >
-                    {data.partner?.type || 'Unknown'}
-                  </h3>
+                  <div className="text-right">
+                    <h3
+                      className={`overflow-hidden whitespace-nowrap text-ellipsis ${!data.partner?.type ? 'text-gray-500 italic' : ''}`}
+                    >
+                      {data.partner?.type || 'Unknown'}
+                    </h3>
+                  </div>
                 </div>
               </div>
 
