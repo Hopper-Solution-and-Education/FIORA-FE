@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import DialogIconInfo from '@public/icons/dialog-icon-info.svg';
 import clsx from 'clsx';
-import { Check, X } from 'lucide-react';
+import { AlertTriangle, Check, X } from 'lucide-react';
 import Image from 'next/image';
 import { ReactNode } from 'react';
 
@@ -21,7 +21,7 @@ type GlobalDialogProps = {
   onOpenChange: (open: boolean) => void;
   title?: string;
   heading?: string;
-  description?: string;
+  description?: string | ReactNode;
   confirmText?: string;
   cancelText?: string;
   iconCancel?: ReactNode;
@@ -99,7 +99,11 @@ export const GlobalDialog = ({
       case 'warning':
         return null;
       case 'danger':
-        return null;
+        return (
+          <div className="rounded-full bg-red-50 p-4 mx-auto">
+            <AlertTriangle className="h-8 w-8 text-red-600" />
+          </div>
+        );
       default:
         return null;
     }

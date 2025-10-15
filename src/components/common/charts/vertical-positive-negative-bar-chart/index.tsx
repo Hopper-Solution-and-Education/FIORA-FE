@@ -62,7 +62,10 @@ const VerticalPositiveNegativeBarChart = (props: VerticalPositiveNegativeBarChar
     [data, sortEnable, columns],
   );
 
-  const { maxValue, minValue } = useMemo(() => findMaxMinValues(sortedData, columns), [sortedData, columns]);
+  const { maxValue, minValue } = useMemo(
+    () => findMaxMinValues(sortedData, columns),
+    [sortedData, columns],
+  );
 
   const renderTooltipContent = useCallback(
     (props: TooltipProps) => {

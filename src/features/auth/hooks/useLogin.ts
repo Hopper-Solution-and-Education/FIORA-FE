@@ -1,5 +1,6 @@
 'use client';
 
+import { Messages } from '@/shared/constants/message';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -54,7 +55,11 @@ export function useLogin() {
         form.reset(); // Reset form fields
         router.push(callbackUrl || '/');
       } else {
-        setError('LoginID or Password is incorrect!');
+        if (response?.error === Messages.USER_BLOCKED_SIGNIN_ERROR) {
+          setError('Your account has been blocked. Please contact support for assistance.');
+        } else {
+          setError('LoginID or Password is incorrect!');
+        }
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');

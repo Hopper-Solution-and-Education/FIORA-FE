@@ -3,13 +3,22 @@ import UploadImageField from '@/components/common/forms/upload/UploadImageField'
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { KYC_TABS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
+import {
+  useAssignRoleMutation,
+  useBlockUserMutation,
+  useGetMyProfileQuery,
+} from '@/features/profile/store/api/profileApi';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter } from 'next/navigation';
-import { FC, useEffect, useMemo } from 'react';
+import { UserRole } from '@prisma/client';
+import { useSession } from 'next-auth/react';
+import { useParams, useRouter } from 'next/navigation';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
 import KYCSection from '../molecules/KYCSection';
 import PersonalInfoFields from '../molecules/PersonalInfoFields';
+import { UserManagementActions } from '../molecules/UserManagementActions';
 
 type ProfileTabProps = {
   profile: UserProfile | null | undefined;
@@ -18,6 +27,7 @@ type ProfileTabProps = {
   defaultLogoSrc: string;
   onSave: (values: PersonalInfo) => Promise<void>;
   eKycId?: string;
+  showUserManagement?: boolean;
 };
 
 const ProfileTab: FC<ProfileTabProps> = ({
@@ -27,8 +37,27 @@ const ProfileTab: FC<ProfileTabProps> = ({
   defaultLogoSrc,
   onSave,
   eKycId = '',
+  showUserManagement,
 }) => {
   const router = useRouter();
+  const params = useParams(); // Lấy dynamic parameters từ URL
+  const { data: session } = useSession(); // Lấy session của user đang đăng nhập
+  const [assignRole] = useAssignRoleMutation();
+  const [blockUser] = useBlockUserMutation();
+
+  // Lấy ID từ URL: /ekyc/[id]/profile
+  const userIdFromUrl = params?.userid as string;
+
+  showUserManagement = userIdFromUrl !== session?.user?.id;
+  // Lấy myProfile data từ API
+  const { data: myProfile } = useGetMyProfileQuery(profile?.id || '', {
+    skip: !profile?.id, // Chỉ gọi API khi có userId
+  });
+
+  // Check xem current user có phải Admin không
+  const isCurrentUserAdmin = session?.user?.role === UserRole.Admin;
+
+  const [isBlocked, setIsBlocked] = useState(myProfile?.isBlocked || false);
 
   const defaults = useMemo(
     () => ({
@@ -60,6 +89,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
     reset(defaults);
   }, [defaults, reset]);
 
+  // Update isBlocked state khi myProfile data thay đổi
+  useEffect(() => {
+    if (myProfile?.isBlocked !== undefined) {
+      setIsBlocked(myProfile.isBlocked);
+    }
+  }, [myProfile?.isBlocked]);
+
   const handleSubmitForm = async (values: PersonalInfo) => {
     await onSave(values);
   };
@@ -72,6 +108,31 @@ const ProfileTab: FC<ProfileTabProps> = ({
 
   const getEKYCStatus = (type: EKYCType) => {
     return profile?.eKYC?.find((item) => item.type === type)?.status;
+  };
+
+  // Handler for role updates
+  const handleRoleUpdate = async (userId: string, newRole: UserRole) => {
+    try {
+      await assignRole({ assignUserId: userId, role: newRole }).unwrap();
+      toast.success('User role updated successfully');
+    } catch (error: any) {
+      console.error('Error updating role:', error);
+      toast.error(error?.data?.message || 'Failed to update user role');
+      throw error;
+    }
+  };
+
+  // Handler for block user
+  const handleBlockUser = async (userId: string, reason?: string) => {
+    try {
+      const resulBlockUser = await blockUser({ blockUserId: userId, reason }).unwrap();
+      toast.success(resulBlockUser?.message);
+      setIsBlocked(resulBlockUser?.data?.isBlocked || false);
+    } catch (error: any) {
+      console.error('Error blocking user:', error);
+      toast.error(error?.data?.message);
+      throw error;
+    }
   };
 
   if (!profile) {
@@ -123,6 +184,20 @@ const ProfileTab: FC<ProfileTabProps> = ({
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
               eKycId={eKycId}
             />
+
+            {/* {showUserManagement && currentUserRole === UserRole.Admin && ( */}
+            {showUserManagement && isCurrentUserAdmin && (
+              <UserManagementActions
+                userId={profile?.id || ''}
+                userEmail={profile?.email || ''}
+                userName={profile?.name || ''}
+                currentRole={profile?.role}
+                currentUserRole={profile?.role || UserRole.User}
+                onRoleUpdate={handleRoleUpdate}
+                onBlockUser={handleBlockUser}
+                isBlocked={isBlocked}
+              />
+            )}
 
             <DefaultSubmitButton
               isSubmitting={isLoading || isSubmitting}

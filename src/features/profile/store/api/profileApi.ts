@@ -24,6 +24,8 @@ export const profileApi = createApi({
     'ProfileByUserId',
     'IdentificationDocumentByUserId',
     'BankAccountByUserId',
+    'UserManagement',
+    'MyProfile',
   ],
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
@@ -195,6 +197,39 @@ export const profileApi = createApi({
         'BankAccountByUserId',
       ],
     }),
+    // Block User
+    blockUser: builder.mutation<any, { blockUserId: string; reason?: string }>({
+      query: (body) => ({
+        url: '/api/profile/block',
+        method: 'PUT',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response,
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
+    }),
+
+    // Assign Role
+    assignRole: builder.mutation<any, { assignUserId: string; role: string }>({
+      query: (body) => ({
+        url: '/api/profile/assign-role',
+        method: 'PUT',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['UserManagement', 'ProfileByUserId', 'MyProfile'],
+    }),
+
+    // myprofile
+    getMyProfile: builder.query<any, string>({
+      query: (userId) => ({
+        url: `/api/profile/myprofile?userId=${userId}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      providesTags: ['MyProfile'],
+    }),
   }),
 });
 
@@ -216,4 +251,7 @@ export const {
   useGetProfileByUserIdQuery,
   useUpdateProfileByUserIdMutation,
   useDeleteEKYCMutation,
+  useBlockUserMutation,
+  useAssignRoleMutation,
+  useGetMyProfileQuery,
 } = profileApi;
