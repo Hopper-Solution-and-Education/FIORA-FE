@@ -86,6 +86,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
     //delete logics here
     setIsDeleteModalOpen(false);
   };
+  const isDeleteForbidden = (transaction: any): boolean => {
+    // Chỉ check isMarked hoặc isExpired
+    return transaction.isMarked || transaction.isExpired;
+  };
 
   return (
     <div className="container mx-auto px-4 pb-6 min-h-screen">
@@ -96,15 +100,26 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
               Transaction Details
             </CardTitle>
             <div className="mb-6">
-              <CommonTooltip content="Delete Transaction">
+              <CommonTooltip
+                content={
+                  data.isMarked || data.isExpired
+                    ? "Can't delete marked or expired transactions"
+                    : 'Delete Transaction'
+                }
+              >
                 <Button
                   variant="secondary"
-                  className="px-3 py-2 hover:bg-red-200"
+                  className={`px-3 py-2 ${
+                    isDeleteForbidden(data) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'
+                  }`}
                   onClick={() => {
-                    handleOpenDeleteModal();
+                    if (!isDeleteForbidden(data)) {
+                      handleOpenDeleteModal();
+                    }
                   }}
+                  disabled={isDeleteForbidden(data)}
                 >
-                  <Trash size={18} color="red" />
+                  <Trash size={18} color={isDeleteForbidden(data) ? 'gray' : 'red'} />
                 </Button>
               </CommonTooltip>
             </div>
