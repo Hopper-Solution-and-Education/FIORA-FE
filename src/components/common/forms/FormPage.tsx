@@ -17,7 +17,7 @@ export default function FormPage<T>({
   headerActions,
 }: FormPageProps<T>) {
   return (
-    <div className="container mx-auto px-4 py-6 min-h-screen">
+    <div className="px-4 py-6 min-h-screen">
       <div className="flex items-center justify-center">
         <Card className="w-full max-w-2xl shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between">

@@ -69,7 +69,7 @@ const ContactInformationVerifyForm: FC<ContactInformationVerifyFormProps> = ({
 
   return (
     <>
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto">
         <ContactInfoHeader status={eKYCData?.status} />
 
         <Card>

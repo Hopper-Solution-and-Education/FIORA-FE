@@ -95,7 +95,7 @@ const FaqsImportPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 space-y-6">
+    <div className="px-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-semibold">FAQs Import</h1>
         <Button variant="outline" onClick={downloadTemplate}>

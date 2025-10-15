@@ -114,7 +114,7 @@ const ReferralInviteDialog = ({
   };
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Invite friends to Fiora</DialogTitle>
