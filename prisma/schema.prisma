@@ -1122,6 +1122,7 @@ enum emailType {
   SENDING_SUCCESSFUL
   FLEXI_INTEREST
   MEMBERSHIP_CHANGE
+  WITHDRAW_OTP
 }
 
 enum CronJobStatus {
