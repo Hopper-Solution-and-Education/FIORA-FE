@@ -1,15 +1,11 @@
 'use client';
 
 import { BarLabel, ChartLegend, IconDisplay } from '@/components/common/atoms';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  TooltipContent,
-  TooltipProvider,
-  Tooltip as TooltipShadcn,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+
 import {
   BASE_BAR_HEIGHT,
   COLORS,
@@ -34,6 +30,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortByProperty, sortChartData } from '../utils/sortChartData';
 import { CustomBarItem, StackBarDisplay, StackedBarProps, TooltipProps } from './type';
 
 const largestKey = (item: CustomBarItem): string => {
@@ -72,6 +69,7 @@ const StackedBarChart = ({
   showButton,
   onClickButton,
   onClickTitle,
+  sortEnable = true,
 }: StackedBarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
@@ -80,7 +78,13 @@ const StackedBarChart = ({
   const isMobile = useIsMobile();
   const { formatCurrency } = useCurrencyFormatter();
 
-  const processedData = useMemo(() => calculateDisplayValues(data), [data]);
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, (d) => sortByProperty(d, 'B')),
+    [data, sortEnable],
+  );
+
+  const processedData = useMemo(() => calculateDisplayValues(sortedData), [sortedData]);
 
   const calculateRValue = (item: StackBarDisplay): number => {
     let R: number = 0;
@@ -258,16 +262,11 @@ const StackedBarChart = ({
 
       {showButton && (
         <div className="flex justify-end mt-4">
-          <TooltipProvider>
-            <TooltipShadcn>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleButtonClick}>
-                  {isExpanded ? <Icons.circleChevronDown /> : <Icons.circleChevronLeft />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{isExpanded ? <p>Collapse</p> : <p>Expand</p>}</TooltipContent>
-            </TooltipShadcn>
-          </TooltipProvider>
+          <CommonTooltip content={isExpanded ? 'Collapse' : 'Expand'}>
+            <Button variant="outline" size="icon" onClick={handleButtonClick}>
+              {isExpanded ? <Icons.circleChevronDown /> : <Icons.circleChevronLeft />}
+            </Button>
+          </CommonTooltip>
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icon';
-import { IconsOptions } from '@/shared/types/Common.types';
-import { GlobalNavItem } from '@/shared/types/GlobalNav.types';
+import { GlobalNavItem, IconsOptions } from '@/shared/types';
 
 export const globalNavItems: GlobalNavItem[] = [
   {

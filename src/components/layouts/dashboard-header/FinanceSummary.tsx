@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
 import { COLORS } from '@/shared/constants/chart';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
@@ -86,33 +86,31 @@ export default function FinanceSummary() {
   }, [wallets, frozenAmount, formatCurrency]);
 
   const isLoading = loading || !wallets || frozenAmount === null;
-  const total = totalBalance + totalDebt;
 
-  const balancePercent = total > 0 ? (totalBalance / total) * 100 : 0;
-  const debtPercent = total > 0 ? (totalDebt / total) * 100 : 0;
+  // Calculate percentages based on the larger value to ensure proper visualization
+  const maxValue = Math.max(Math.abs(totalBalance), Math.abs(totalDebt));
+  const balancePercent = maxValue > 0 ? (Math.abs(totalBalance) / maxValue) * 100 : 0;
+  const debtPercent = maxValue > 0 ? (Math.abs(totalDebt) / maxValue) * 100 : 0;
 
   return (
     <div
       className="flex flex-col gap-1 mt-2 w-full flex-grow md:flex-grow-0 cursor-pointer hover:opacity-90 transition-opacity"
       onClick={handleClick}
     >
-      <Tooltip>
-        <TooltipTrigger>
-          <Bar
-            label="FBalance"
-            value={isLoading ? 'Loading...' : FBalance}
-            percent={balancePercent}
-            color={COLORS.DEPS_SUCCESS.LEVEL_1}
-          />
-          <Bar
-            label="FDebt"
-            value={isLoading ? 'Loading...' : FDebt}
-            percent={debtPercent}
-            color={COLORS.DEPS_DANGER.LEVEL_1}
-          />
-        </TooltipTrigger>
-        <TooltipContent>Go to Wallet Dashboard</TooltipContent>
-      </Tooltip>
+      <CommonTooltip content="Go to Wallet Dashboard">
+        <Bar
+          label="FBalance"
+          value={isLoading ? 'Loading...' : FBalance}
+          percent={balancePercent}
+          color={COLORS.DEPS_SUCCESS.LEVEL_1}
+        />
+        <Bar
+          label="FDebt"
+          value={isLoading ? 'Loading...' : FDebt}
+          percent={debtPercent}
+          color={COLORS.DEPS_DANGER.LEVEL_1}
+        />
+      </CommonTooltip>
     </div>
   );
 }

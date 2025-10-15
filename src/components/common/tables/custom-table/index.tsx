@@ -1,5 +1,6 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PaginationV2 } from '@/components/ui/pagination-v2';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ImgEmpty } from '@/shared/icons';
 import { cn } from '@/shared/utils';
 import {
@@ -209,16 +209,9 @@ export function TableV2({
                 >
                   <span className="font-medium">{col.title}</span>
                   {col.helpContent && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs text-sm">
-                          {col.helpContent}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <CommonTooltip content={col.helpContent}>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </CommonTooltip>
                   )}
                   {col.sorter && (
                     <div className="flex flex-col ml-1">

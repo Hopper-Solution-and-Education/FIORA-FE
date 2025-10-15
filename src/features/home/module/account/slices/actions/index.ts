@@ -1,9 +1,8 @@
+import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
 import accountServices from '@/features/home/services/accountServices';
-import { Response } from '@/shared/types/Common.types';
+import { FilterCriteria, Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { Account, AccountFilterResponse } from '../types';
-import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
-import { FilterCriteria } from '@/shared/types';
 
 export const fetchAccounts = createAsyncThunk(
   'account/fetchAccounts',

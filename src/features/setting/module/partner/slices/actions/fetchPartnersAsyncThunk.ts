@@ -1,9 +1,9 @@
+import { Response } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { GetPartnerAPIRequestDTO } from '../../data/dto/request/GetPartnerAPIRequestDTO';
 import { partnerDIContainer } from '../../di/partnerDIContainer';
 import { TYPES } from '../../di/partnerDIContainer.type';
 import { IGetPartnerUseCase } from '../../domain/usecases/GetPartnerUsecase';
-import { GetPartnerAPIRequestDTO } from '../../data/dto/request/GetPartnerAPIRequestDTO';
-import { Response } from '@/shared/types/Common.types';
 import { PartnerResponse } from '../types';
 
 export const fetchPartners = createAsyncThunk<

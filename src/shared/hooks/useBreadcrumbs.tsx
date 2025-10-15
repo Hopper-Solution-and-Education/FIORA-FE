@@ -48,6 +48,14 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Profile', link: '/profile' },
     { title: 'eKYC', link: '/profile/ekyc' },
   ],
+  '/ekyc/[userId]/verify': [
+    { title: 'KYC', link: '/' },
+    { title: 'Verify', link: '/ekyc/[userId]/verify' },
+  ],
+  '/ekyc/[userId]/profile': [
+    { title: 'KYC', link: '/' },
+    { title: 'Profile', link: '/ekyc/[userId]/profile' },
+  ],
   '/transaction/create': [
     { title: 'Finance', link: '/finance/report' },
     { title: 'Transaction', link: '/transaction' },
@@ -200,7 +208,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Partner', link: '/setting/partner' },
     { title: 'Create', link: '/setting/partner/create' },
   ],
-  '/setting/wallet': [{ title: 'Deposit FX', link: '/setting/wallet' }],
+  '/setting/wallet': [{ title: 'FX Request', link: '/setting/wallet' }],
   '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
   '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
   '/setting/packagefx/create': [
@@ -214,6 +222,15 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/setting/cron-job/membership': [
     { title: 'Cron Job', link: '/setting/cron-job' },
     { title: 'Membership', link: '/setting/cron-job/membership' },
+  ],
+  '/setting/cron-job/flexi-interest': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Flexi Interest', link: '/setting/cron-job/flexi-interest' },
+  ],
+
+  '/setting/cron-job/referral': [
+    { title: 'Cron Job', link: '/setting/cron-job' },
+    { title: 'Referral', link: '/setting/cron-job/referral' },
   ],
 };
 

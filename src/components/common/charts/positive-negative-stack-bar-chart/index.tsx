@@ -8,6 +8,7 @@ import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/utils';
 import { useWindowSize } from '@/shared/utils/device';
+import { useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -20,6 +21,7 @@ import {
   YAxis,
 } from 'recharts';
 import { StackBarDisplay, TooltipProps } from '../stacked-bar-chart/type';
+import { sortByProperty, sortChartData } from '../utils/sortChartData';
 import { PositiveNegativeStackBarChartProps } from './type';
 import { processChartData } from './utils';
 
@@ -38,7 +40,14 @@ const PositiveNegativeStackBarChart = (props: PositiveNegativeStackBarChartProps
     tutorialText,
     legendItems,
     onClickTitle,
+    sortEnable = true,
   } = props;
+
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, (d) => sortByProperty(d, 'B')),
+    [data, sortEnable],
+  );
 
   // Process chart data using utility function
   const {
@@ -51,7 +60,7 @@ const PositiveNegativeStackBarChart = (props: PositiveNegativeStackBarChartProps
     negativeChartMargins,
     positiveChartMargins,
     calculateRValue,
-  } = processChartData(data, width, isMobile);
+  } = processChartData(sortedData, width, isMobile);
 
   const renderTooltipContent = (props: TooltipProps) => {
     let remaining = 0;

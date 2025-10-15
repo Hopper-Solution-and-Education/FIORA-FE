@@ -1,9 +1,9 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle, LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -66,11 +66,8 @@ const UploadedDocumentDisplay: React.FC<UploadedDocumentDisplayProps> = ({
           )}
           <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
           {requirements.length > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
+            <CommonTooltip
+              content={
                 <div className="space-y-1">
                   <p>Document Requirements:</p>
                   <ul className="text-xs space-y-1">
@@ -79,8 +76,10 @@ const UploadedDocumentDisplay: React.FC<UploadedDocumentDisplayProps> = ({
                     ))}
                   </ul>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+            >
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </CommonTooltip>
           )}
         </div>
       </CardHeader>
@@ -221,11 +220,8 @@ const ExistingDocumentDisplay: React.FC<ExistingDocumentDisplayProps> = ({
           )}
           <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
           {requirements.length > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
+            <CommonTooltip
+              content={
                 <div className="space-y-1">
                   <p>Document Requirements:</p>
                   <ul className="text-xs space-y-1">
@@ -234,8 +230,10 @@ const ExistingDocumentDisplay: React.FC<ExistingDocumentDisplayProps> = ({
                     ))}
                   </ul>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+            >
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </CommonTooltip>
           )}
         </div>
       </CardHeader>
@@ -364,11 +362,8 @@ const EmptyUploadState: React.FC<EmptyUploadStateProps> = ({
           )}
           <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
           {requirements.length > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
+            <CommonTooltip
+              content={
                 <div className="space-y-1">
                   <p>Document Requirements:</p>
                   <ul className="text-xs space-y-1">
@@ -377,8 +372,10 @@ const EmptyUploadState: React.FC<EmptyUploadStateProps> = ({
                     ))}
                   </ul>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+            >
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </CommonTooltip>
           )}
         </div>
       </CardHeader>
@@ -490,7 +487,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   existingFileType,
   existingFileSize,
 }) => {
-  console.log('🚀 ~ DocumentUpload ~ existingFileName:', existingFileName);
   const [internalError, setInternalError] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);

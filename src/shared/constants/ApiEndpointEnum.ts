@@ -14,7 +14,7 @@ export enum ApiEndpointEnum {
   WalletFrozenAmount = '/api/wallet/deposit/frozen-amount',
   WalletSetting = '/api/wallet/setting',
 
-  // Cronjob Dashboard
+  // Cronjob Dashboard Membership
   CronjobDashboard = '/api/dashboard',
   CronjobDashboardDefineType = '/api/dashboard/define-type',
   CronjobChart = '/api/dashboard/membership-chart',
@@ -23,6 +23,14 @@ export enum ApiEndpointEnum {
   // Membership
   MembershipTiers = '/api/memberships/benefit-tier',
   Users = '/api/users',
+
+  // Cronjob Dashboard Saving Interest
+  CronjobDashboardSavingInterest = '/api/dashboard/saving-interest',
+  CronjobChartSavingInterest = '/api/dashboard/saving-interest-chart',
+
+  // Cronjob Dashboard Referral
+  CronjobDashboardReferral = '/api/dashboard/referral',
+  CronjobChartReferral = '/api/dashboard/referral/referral-chart',
 
   // Notification
   Notification = '/api/notification',
@@ -54,4 +62,10 @@ export enum ApiEndpointEnum {
   IdentificationDocument = '/api/indentification-document',
   // Bank Account
   BankAccount = '/api/bank-account',
+
+  // Wallet Smart Saving
+  SavingOverview = '/api/wallet/smart-saving/{id}',
+  SavingTransactionHistory = '/api/wallet/smart-saving/transaction',
+  SavingTransfer = '/api/wallet/smart-saving/transfer',
+  SavingClaim = '/api/wallet/smart-saving/claims',
 }

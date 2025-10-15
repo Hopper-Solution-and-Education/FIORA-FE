@@ -1,7 +1,7 @@
 'use client';
 
 import useDataFetcher from '@/shared/hooks/useDataFetcher';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { useAppSelector } from '@/store';
 import {
   clearExchangeRateData,
@@ -10,7 +10,7 @@ import {
 import { CurrencyObjectType, CurrencyType } from '@/store/types/setting.type';
 import { Currency } from '@prisma/client';
 import { useSession } from 'next-auth/react';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { CACHE_KEY, EXCHANGE_RATE_STALE_TIME } from '../constants/exchangeRates';
@@ -66,6 +66,19 @@ type UseCurrencyFormatterReturn = {
   // Utilities
   getSupportedCurrencies: () => string[];
   getExchangeRate: (fromCurrency: string, toCurrency: string) => number | null;
+};
+
+// Suppress exchange rate refetches briefly after a logout-triggered clear to avoid duplicate calls
+const LOGOUT_FETCH_SUPPRESSION_WINDOW = 2000;
+
+type ExchangeRateRequestState = {
+  fetchPromise: Promise<boolean> | null;
+  skipRequestsUntil: number;
+};
+
+const exchangeRateRequestState: ExchangeRateRequestState = {
+  fetchPromise: null,
+  skipRequestsUntil: 0,
 };
 
 // Utility functions for cache management
@@ -326,9 +339,6 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     isEnabled: !!isAuthenticated,
   });
 
-  // Ref to track ongoing API requests and prevent concurrent calls
-  const fetchingRef = useRef<Promise<boolean> | null>(null);
-
   /**
    * Shared function to process API response and update store/cache
    */
@@ -356,7 +366,12 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     }
 
     // Clear any existing fetch promise to force a fresh request
-    fetchingRef.current = null;
+    exchangeRateRequestState.fetchPromise = null;
+
+    // Skip API call if we're within the logout suppression window
+    if (Date.now() < exchangeRateRequestState.skipRequestsUntil) {
+      return null;
+    }
 
     const response = await originalMutate();
 
@@ -379,8 +394,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
     }
 
     // Return existing promise if already fetching to prevent concurrent calls
-    if (fetchingRef.current) {
-      return fetchingRef.current;
+    if (exchangeRateRequestState.fetchPromise) {
+      return exchangeRateRequestState.fetchPromise;
     }
 
     // First, check localStorage cache as primary source
@@ -424,6 +439,11 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       return true;
     }
 
+    // Avoid unnecessary API calls right after logout is triggered
+    if (Date.now() < exchangeRateRequestState.skipRequestsUntil) {
+      return false;
+    }
+
     // Create a promise for the API call to prevent concurrent requests
     const fetchPromise = (async (): Promise<boolean> => {
       try {
@@ -448,14 +468,16 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
         }
 
         return false;
-      } finally {
-        // Clear the ref when done
-        fetchingRef.current = null;
       }
     })();
 
     // Store the promise to prevent concurrent calls
-    fetchingRef.current = fetchPromise;
+    exchangeRateRequestState.fetchPromise = fetchPromise;
+    fetchPromise.finally(() => {
+      if (exchangeRateRequestState.fetchPromise === fetchPromise) {
+        exchangeRateRequestState.fetchPromise = null;
+      }
+    });
     return fetchPromise;
   }, [
     isAuthenticated,
@@ -810,7 +832,12 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       }
 
       // Clear the ref to force a fresh fetch even if data exists
-      fetchingRef.current = null;
+      exchangeRateRequestState.fetchPromise = null;
+
+      // Skip API call if we're within the logout suppression window
+      if (Date.now() < exchangeRateRequestState.skipRequestsUntil) {
+        return;
+      }
 
       const response = await originalMutate();
 
@@ -871,7 +898,8 @@ const useCurrencyFormatter = (baseCurrency?: string): UseCurrencyFormatterReturn
       }
 
       // Clear any ongoing fetch promise to prevent conflicts
-      fetchingRef.current = null;
+      exchangeRateRequestState.fetchPromise = null;
+      exchangeRateRequestState.skipRequestsUntil = Date.now() + LOGOUT_FETCH_SUPPRESSION_WINDOW;
     } catch (error) {
       // Silently handle errors - this function should not fail
       console.warn('Error clearing exchange rate data:', error);

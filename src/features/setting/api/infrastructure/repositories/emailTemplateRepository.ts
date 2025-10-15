@@ -1,8 +1,14 @@
 import { prisma } from '@/config';
-import { EmailTemplate, EmailTemplateField, EmailTemplateType, Prisma } from '@prisma/client';
+import {
+  EmailTemplate,
+  EmailTemplateField,
+  EmailTemplateType,
+  Prisma,
+  emailType,
+} from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
-class EmailTemplateRepository implements IEmailTemplateRepository {
+export class EmailTemplateRepository implements IEmailTemplateRepository {
   async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
     return await prisma.emailTemplate.create({
       data: { ...data },
@@ -12,14 +18,31 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     });
   }
   async getEmailTemplate(): Promise<any[]> {
-    return await prisma.emailTemplate.findMany({
+    const emailTemplates = await prisma.emailTemplate.findMany({
       include: {
-        EmailTemplateType: true,
+        EmailTemplateType: {
+          select: { id: true, type: true },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+    const emailTemplateFields = await prisma.emailTemplateField.findMany({
+      orderBy: { type: 'asc' },
+      select: { type: true, id: true, name: true },
+    });
+    const result = emailTemplates.map((template) => {
+      const matchedFields = emailTemplateFields.filter(
+        (field) => field.type === template.EmailTemplateType.type,
+      );
+
+      return {
+        ...template,
+        fieldRequire: matchedFields,
+      };
+    });
+    return result;
   }
 
   async updateEmailTemplate(
@@ -158,6 +181,18 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     name: string,
   ): Promise<EmailTemplateField | null> {
     return await prisma.emailTemplateField.findFirst({ where: { type, name } });
+  }
+
+  async getEmailTemplateByType(type: emailType) {
+    const emailTemplate = await prisma.emailTemplate.findFirst({
+      where: {
+        EmailTemplateType: {
+          type: type,
+        },
+      },
+    });
+
+    return emailTemplate;
   }
 }
 

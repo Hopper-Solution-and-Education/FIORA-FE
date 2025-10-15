@@ -32,7 +32,7 @@ export const settingNavItems: NavItem[] = [
     isActive: false,
   },
   {
-    title: 'Deposit FX',
+    title: 'FX Request',
     url: '/setting/wallet',
     icon: 'coins',
     isActive: false,
@@ -53,11 +53,29 @@ export const settingNavItems: NavItem[] = [
     title: 'Cron Job',
     url: RouteEnum.CronjobMembership,
     icon: 'pickaxe',
+    isActive: false,
     items: [
       {
         title: 'Membership',
         url: RouteEnum.CronjobMembership,
         icon: 'users',
+        isActive: false,
+      },
+      {
+        title: 'Flexi Interest',
+        url: RouteEnum.FlexiInterest,
+        icon: 'moon',
+        isActive: false,
+      },
+      {
+        title: 'Referral',
+        url: RouteEnum.CronjobReferral,
+        icon: 'userPlus',
+      },
+      {
+        title: 'Saving Interest',
+        url: RouteEnum.CronjobSavingInterest,
+        icon: 'moonStar',
       },
     ],
   },

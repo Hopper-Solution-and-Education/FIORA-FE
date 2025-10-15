@@ -4,7 +4,7 @@ import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
 import { AmplitudeProvider, ReduxProvider, ThemeProvider } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
-import growthbook from '@/config/growthbook/growthbook';
+import growthbook, { initGrowthBook } from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
@@ -14,7 +14,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Inter } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'reflect-metadata';
 import { SWRConfig } from 'swr';
 import './globals.css';
@@ -30,6 +30,13 @@ export default function RootLayout({
 }>) {
   const { section } = useGetSection(SectionTypeEnum.HEADER);
 
+  useEffect(() => {
+    // Initialize GrowthBook when the component mounts
+    initGrowthBook().catch((error) => {
+      console.error('Failed to initialize GrowthBook:', error);
+    });
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -39,6 +46,7 @@ export default function RootLayout({
           className="rounded-full"
         />
       </head>
+
       <body className={inter.className}>
         <React.StrictMode>
           <SWRConfig value={swrOptions}>
@@ -54,7 +62,7 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                       >
-                        <SessionProvider>
+                        <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
                           <Toaster />
                           <Updater />
 

@@ -1,14 +1,20 @@
 'use client';
 
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
+import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TaxActionsProps {
   onSubmit?: () => void;
   isLoading?: boolean;
+  isRejected?: boolean;
 }
 
-const TaxActions: React.FC<TaxActionsProps> = ({ onSubmit, isLoading = false }) => {
+const TaxActions: React.FC<TaxActionsProps> = ({
+  onSubmit,
+  isLoading = false,
+  isRejected = false,
+}) => {
   const router = useRouter();
 
   return (
@@ -16,8 +22,9 @@ const TaxActions: React.FC<TaxActionsProps> = ({ onSubmit, isLoading = false }) 
       isSubmitting={isLoading}
       disabled={isLoading}
       onSubmit={onSubmit}
-      submitTooltip="Save & Continue"
+      submitTooltip={isRejected ? 'Re-submit KYC' : 'Save & Continue'}
       onBack={() => router.push(`/profile/`)}
+      submitIcon={isRejected ? <RefreshCcw className="h-5 w-5" /> : undefined}
     />
   );
 };

@@ -5,6 +5,9 @@ const referralTransactionSlice = createSlice({
   name: 'referralTransaction',
   initialState,
   reducers: {
+    triggerRefresh: (state) => {
+      state.refreshKey += 1;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -23,6 +26,6 @@ const referralTransactionSlice = createSlice({
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, clearFilter } =
+export const { triggerRefresh, setLoading, setError, setFilter, setSearch, clearFilter } =
   referralTransactionSlice.actions;
 export default referralTransactionSlice.reducer;

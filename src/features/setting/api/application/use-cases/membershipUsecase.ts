@@ -412,6 +412,32 @@ class MembershipSettingUseCase {
   }
 
   async createNewMembershipProgress(userId: string) {
+    const defaultMembership = await prisma.membershipTier.findFirst({
+      where: {
+        balanceMinThreshold: {
+          equals: 0,
+        },
+        spentMinThreshold: {
+          equals: 0,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (defaultMembership) {
+      return prisma.membershipProgress.create({
+        data: {
+          userId,
+          currentSpent: new Prisma.Decimal(0),
+          currentBalance: new Prisma.Decimal(0),
+          createdBy: userId,
+          tierId: defaultMembership.id,
+        },
+      });
+    }
+
     return prisma.membershipProgress.create({
       data: {
         userId,

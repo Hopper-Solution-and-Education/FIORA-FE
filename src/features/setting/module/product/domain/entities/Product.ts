@@ -1,5 +1,4 @@
-import { CreatedBy, FilterCriteria, UpdatedBy } from '@/shared/types';
-import { PaginationResponse } from '@/shared/types/Common.types';
+import { CreatedBy, FilterCriteria, PaginationResponse, UpdatedBy } from '@/shared/types';
 import { CategoryType, ProductType } from '@prisma/client';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 import { ProductFilterResponse } from '../../slices/types';

@@ -1,7 +1,7 @@
 import { CreateTransactionBody } from '@/features/home/module/transaction/types';
 import transactionServices from '@/features/home/services/transactionServices';
 import { Transaction } from '@/features/setting/module/product/domain/entities/Transaction';
-import { Response } from '@/shared/types/Common.types';
+import { Response } from '@/shared/types';
 import { Partner, Product, TransactionType } from '@prisma/client';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';

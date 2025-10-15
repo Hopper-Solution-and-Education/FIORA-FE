@@ -117,6 +117,7 @@ export enum Messages {
   // Transaction-related errors
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
   UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
 
@@ -205,6 +206,8 @@ export enum Messages {
   MEMBERSHIP_TIER_NOT_FOUND = 'Membership tier not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_NOT_FOUND = 'Membership benefit slug-name not found',
   MEMBERSHIP_TIER_BENEFIT_CREATE_FAILED = 'Failed to create membership tier benefit',
+  MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
+  MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   // Membership Tier Dashboard
   GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
@@ -234,6 +237,7 @@ export enum Messages {
   GET_DEPOSIT_REQUEST_SUCCESS = 'Get deposit requests successfully.',
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
+  USER_WALLET_NOT_FOUND = 'User wallet not found.',
 
   // WALLET FAID
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
@@ -371,6 +375,32 @@ export enum Messages {
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
 
+  // Smart Saving
+  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
+  GET_SMART_SAVING_SUCCESS_OPTIONS = 'Get smart saving filter options list successfully',
+  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
+  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
+  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
+  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
+  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
+  // Flexi Interest
+  GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
+  GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
+  GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
+
+  // Cronjob
+  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
+  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE_ALREADY_UPDATED = 'Referral cronjob failed to update since it has already been success',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update',
+  //Payment Wallet
+  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
+  GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
+  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
   //News
   GET_LISTNEW_SUCCESS = 'Get list news success',
   CREATE_NEWS_SUCCESS = 'Create news successfully',
@@ -393,4 +423,12 @@ export enum Messages {
 
   //User
   USER_NOT_FOUND = 'User not found',
+
+  //Saving Wallet
+  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
+  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
+  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
+
+  //Withdrawal Request
+  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
 }

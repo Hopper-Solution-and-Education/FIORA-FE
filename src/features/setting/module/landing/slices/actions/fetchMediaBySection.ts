@@ -1,4 +1,3 @@
-// src/features/admin/banner/actions/getMediaAction.ts
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { adminContainer } from '@/features/setting/module/landing/di/adminDIContainer';
 import { createAsyncThunk } from '@reduxjs/toolkit';

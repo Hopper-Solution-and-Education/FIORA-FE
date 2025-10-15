@@ -26,6 +26,8 @@ export interface TransactionGetPagination {
   sortBy?: Record<string, any>;
   searchParams?: string;
   userId: string;
+  isInfinityScroll?: boolean;
+  lastCursor?: string;
 }
 
 export interface Filter {

@@ -100,14 +100,31 @@ export const authOptions: NextAuthOptions = {
               },
             });
 
-            await prisma.membershipProgress.create({
-              data: {
-                userId: dbUser.id,
-                currentSpent: new Prisma.Decimal(0),
-                currentBalance: new Prisma.Decimal(0),
-                createdBy: dbUser.id,
+            const defaultMembership = await prisma.membershipTier.findFirst({
+              where: {
+                balanceMinThreshold: {
+                  equals: 0,
+                },
+                spentMinThreshold: {
+                  equals: 0,
+                },
+              },
+              select: {
+                id: true,
               },
             });
+
+            if (defaultMembership) {
+              await prisma.membershipProgress.create({
+                data: {
+                  userId: dbUser.id,
+                  currentSpent: new Prisma.Decimal(0),
+                  currentBalance: new Prisma.Decimal(0),
+                  createdBy: dbUser.id,
+                  tierId: defaultMembership.id,
+                },
+              });
+            }
 
             const categoriesCreated = await createDefaultCategories(dbUser.id);
             if (!categoriesCreated) {

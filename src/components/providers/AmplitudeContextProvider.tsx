@@ -26,7 +26,7 @@ const AmplitudeProvider: React.FC<AmplitudeProviderProps> = ({ children }) => {
 
     init(AMPLITUDE_API_KEY, undefined, {
       defaultTracking: {
-        sessions: true,
+        sessions: false, // true: enable session tracking, false: disable session tracking
       },
     });
   }, []);
