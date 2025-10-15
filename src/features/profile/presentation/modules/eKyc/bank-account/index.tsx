@@ -176,7 +176,7 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full mx-auto">
       <BankAccountHeader status={eKYCData?.status} />
 
       {isRejected && existingData?.remarks && (

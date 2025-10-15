@@ -92,7 +92,7 @@ const KYCPage = () => {
   if (isLoadingEKYCData) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="px-4 sm:px-6 lg:px-8">
           <Skeleton className="w-full h-full" />
         </div>
       </div>
@@ -101,7 +101,7 @@ const KYCPage = () => {
 
   return (
     <div className=" bg-background mb-4">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="px-4 sm:px-6 lg:px-8">
         <Tabs
           value={id}
           onValueChange={(value) => {
