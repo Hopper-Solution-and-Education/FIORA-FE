@@ -69,7 +69,7 @@ class EmailService implements IEmailService {
       }
 
       for (const key in variables) {
-        const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+        const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
         template = template.replace(regex, variables[key]);
       }
 

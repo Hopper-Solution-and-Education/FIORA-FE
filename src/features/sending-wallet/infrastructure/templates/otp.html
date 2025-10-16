@@ -32,18 +32,19 @@
                             <h2 style="font-size:22px;font-weight:600;margin:0 0 20px;color:#1a202c;">Verify Your
                                 Transfer</h2>
                             <p style="font-size:16px;line-height:1.6;margin:0 0 15px;color:#4a5568;">Hello
-                                <strong>${userName}</strong>,</p>
+                                <strong>{{userName}}</strong>,
+                            </p>
                             <p style="font-size:16px;line-height:1.6;margin:0 0 20px;color:#4a5568;">We received a
                                 request to send funds from your FIORA account with the following details:</p>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                                 style="background:#f7fafc;border-radius:8px;padding:20px;margin:0 0 25px;">
                                 <tr>
                                     <td style="font-size:14px;color:#4a5568;padding:8px 0;"><strong
-                                            style="color:#1a202c;">Receiver Email:</strong> ${emailReceiver}</td>
+                                            style="color:#1a202c;">Receiver Email:</strong> {{emailReceiver}}</td>
                                 </tr>
                                 <tr>
                                     <td style="font-size:14px;color:#4a5568;padding:8px 0;"><strong
-                                            style="color:#1a202c;">Amount:</strong> ${amount} FX</td>
+                                            style="color:#1a202c;">Amount:</strong> {{amount}} FX</td>
                                 </tr>
                             </table>
                             <div
@@ -53,7 +54,7 @@
                                     Your OTP Code</p>
                                 <div style="background:#ffffff;border-radius:8px;padding:20px;display:inline-block;">
                                     <span
-                                        style="font-size:36px;font-weight:700;letter-spacing:8px;color:#10b981;font-family:'Courier New',monospace;">${otp}</span>
+                                        style="font-size:36px;font-weight:700;letter-spacing:8px;color:#10b981;font-family:'Courier New',monospace;">{{otp}}</span>
                                 </div>
                             </div>
                             <p style="font-size:16px;line-height:1.6;margin:0 0 20px;color:#4a5568;">Please enter this
