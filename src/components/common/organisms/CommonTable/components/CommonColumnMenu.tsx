@@ -79,7 +79,6 @@ export default function CommonColumnMenu<T>({
     const current = config[key] ?? {
       isVisible: false,
       index: shown.length,
-      alignOverride: undefined,
     };
     const next: ColumnConfigMap = {
       ...config,
@@ -103,20 +102,25 @@ export default function CommonColumnMenu<T>({
           <div className="flex flex-col gap-1 mb-3">
             {shown.map((key) => {
               const column = columns.find((c) => c.key === key);
-              const title = column?.title || key;
+              const title = column?.titleText || column?.title || key;
 
               return (
                 <SortableItem key={key} id={key}>
                   <div
                     className={cn(
-                      'flex items-center justify-between rounded-md px-2 py-1 border transition text-sm font-medium bg-background border-transparent hover:bg-muted',
+                      'flex items-center justify-between rounded-md px-2 py-1 border transition text-sm font-medium bg-background border-transparent hover:bg-muted cursor-grab',
                     )}
                   >
-                    <span className="cursor-grab mr-2 flex items-center" style={{ minWidth: 20 }}>
-                      <Icons.gripVertical className="w-4 h-4 text-muted-foreground" />
+                    <span className="flex items-center gap-2 text-foreground flex-1 min-w-0">
+                      <Icons.gripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium truncate pointer-events-none">{title}</span>
                     </span>
-                    <span className="flex-1 truncate text-foreground">{title}</span>
-                    <Switch checked onCheckedChange={() => toggle(key)} className="z-10 scale-90" />
+
+                    <Switch
+                      checked
+                      onCheckedChange={() => toggle(key)}
+                      className="scale-90 flex-shrink-0 ml-2"
+                    />
                   </div>
                 </SortableItem>
               );
@@ -129,22 +133,22 @@ export default function CommonColumnMenu<T>({
         {hidden.length > 0 ? (
           hidden.map((key) => {
             const column = columns.find((c) => c.key === key);
-            const title = column?.title || key;
+            const title = column?.titleText || column?.title || key;
 
             return (
               <div
                 key={key}
                 className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-muted transition text-sm"
               >
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Icons.gripVertical className="w-4 h-4" />
-                  <span className="font-normal truncate">{title}</span>
+                <span className="flex items-center gap-2 text-muted-foreground opacity-90 flex-1 min-w-0">
+                  <Icons.gripVertical className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-normal truncate pointer-events-none">{title}</span>
                 </span>
 
                 <Switch
                   checked={false}
                   onCheckedChange={() => toggle(key)}
-                  className="z-10 scale-90"
+                  className="scale-90 flex-shrink-0 ml-2"
                 />
               </div>
             );
