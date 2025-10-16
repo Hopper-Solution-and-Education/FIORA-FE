@@ -1,19 +1,22 @@
 'use client';
 
-import { WalletDepositButton } from '../atoms';
-import { WalletSearch, WalletFilterMenu } from '../molecules';
-import { useAppSelector, useAppDispatch } from '@/store';
-import { setFilterCriteria } from '../../slices';
+import { WalletTransferButton } from '@/features/payment-wallet/presentation';
 import { FilterCriteria } from '@/shared/types';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setFilterCriteria } from '../../slices';
+import { WalletDepositButton } from '../atoms';
+import { WalletFilterMenu, WalletSearch } from '../molecules';
 
 interface WalletTopbarActionProps {
   enableDeposit?: boolean;
+  enableTranfer?: boolean;
   enableFilter?: boolean;
   searchType?: 'normal' | 'deposit';
 }
 
 const WalletTopbarAction = ({
   enableDeposit = true,
+  enableTranfer = true,
   enableFilter = true,
   searchType = 'normal',
 }: WalletTopbarActionProps) => {
@@ -40,7 +43,10 @@ const WalletTopbarAction = ({
           />
         )}
       </div>
-      {enableDeposit && <WalletDepositButton />}
+      <div className="flex justify-end gap-4">
+        {enableDeposit && <WalletDepositButton />}
+        {enableTranfer && <WalletTransferButton />}
+      </div>
     </div>
   );
 };

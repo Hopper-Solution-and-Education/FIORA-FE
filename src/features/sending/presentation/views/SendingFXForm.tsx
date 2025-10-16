@@ -6,10 +6,10 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Input } from '@/components/ui/input';
 import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import ProductSelectField from '@/features/home/module/transaction/components/ProductSelectField';
-import ReceiverSelectField from '@/features/home/module/transaction/components/ReceiverSelectField';
 import { setSendingFXFormClose } from '@/features/home/module/wallet';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { OtpState } from '../../types';
 import InputOtp from '../components/InputOtp';
 import SendOtpButton from '../components/SendOtpButton';
@@ -20,7 +20,6 @@ function SendingFXForm() {
 
   const [receiver, setReceiver] = useState('');
   const [categoryId, setCategoryId] = useState('');
-  const [accountId, setAccountId] = useState('');
   const [productId, setProductId] = useState('');
   const [amount, setAmount] = useState('');
   const [otp, setOtp] = useState('');
@@ -32,20 +31,32 @@ function SendingFXForm() {
     availableLimit: 0,
   });
 
+  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  // 🟨 Fetch limit
   const amountLimitData = async () => {
     try {
       const res = await fetch('/api/sending-wallet/amount-limit', { method: 'GET' });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to fetch amount limit: ${res.status} ${res.statusText}\n${text}`);
-      }
-      const data = await res.json();
-      return data;
+      if (!res.ok) throw new Error('Failed to fetch amount limit');
+      return await res.json();
     } catch (err) {
       console.error(err);
     }
   };
 
+  // 🟦 Fetch catalog
+  const catalogData = async () => {
+    try {
+      const res = await fetch('/api/sending-wallet/catalog', { method: 'GET' });
+      if (!res.ok) throw new Error('Failed to fetch catalog');
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // 🧩 Khi form mở, load limit & catalog
   useEffect(() => {
     if (isShowSendingFXForm) {
       amountLimitData().then((res) => {
@@ -59,9 +70,18 @@ function SendingFXForm() {
           });
         }
       });
+
+      catalogData().then((res) => {
+        if (res?.data) {
+          const d = res.data;
+          setCategories(d.categories || []);
+          setProducts(d.products || []);
+        }
+      });
     }
   }, [isShowSendingFXForm]);
 
+  // 🟥 Reset form khi đóng
   const handleClose = useCallback(() => {
     dispatch(setSendingFXFormClose());
     setReceiver('');
@@ -72,22 +92,68 @@ function SendingFXForm() {
     setOtpState('Get');
   }, [dispatch]);
 
+  // 📨 Gửi OTP
   const handleGetOtp = async () => {
-    if (otpState === 'Get') {
-      await fetch('/api/send-otp', { method: 'POST', body: JSON.stringify({ receiver }) });
-      setOtpState('Resend');
+    if (!receiver) return toast.error('Receiver email required');
+    if (!amount) return toast.error('Amount required');
+
+    try {
+      const res = await fetch('/api/sending-wallet/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Number(amount),
+          emailReceiver: receiver,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.status === 200) {
+        toast.error('OTP has been sent successfully. Please check your email!');
+        setOtpState('Resend');
+        // ⏳ Khóa resend trong 2 phút
+        setTimeout(() => setOtpState('Get'), 120000);
+      } else {
+        toast.error(data.message || 'Failed to send OTP');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while sending OTP');
     }
   };
 
+  // 💸 Gửi FX (API /api/sending-wallet/send-fx)
   const handleSubmit = async () => {
     if (!receiver) return alert('Receiver email required');
     if (!amount) return alert('Amount required');
-    if (otp.length !== 6) return alert('OTP must be 6 digits');
-    await fetch('/api/send-transaction', {
-      method: 'POST',
-      body: JSON.stringify({ receiver, categoryId, productId, amount, otp }),
-    });
-    handleClose();
+    if (!otp || otp.length !== 6) return alert('OTP must be 6 digits');
+
+    try {
+      const res = await fetch('/api/sending-wallet/send-fx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Number(amount),
+          otp,
+          emailReciever: receiver, // đúng key theo API doc
+          categoryId,
+          productIds: productId ? [productId] : [],
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.status === 200) {
+        toast.success('Sending FX successfully!');
+        handleClose();
+      } else {
+        toast.error(data.message || 'Failed to send FX');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while sending FX');
+    }
   };
 
   return (
@@ -129,11 +195,19 @@ function SendingFXForm() {
           {/* Receiver + Amount */}
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Receiver *</label>
-              <ReceiverSelectField name="receiver" value={accountId} onChange={setAccountId} />
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Receiver <span className="text-red-700">*</span>
+              </label>
+              <Input
+                placeholder="Enter receiver email"
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Amount *</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Amount <span className="text-red-700">*</span>
+              </label>
               <Input
                 placeholder="Enter amount to send"
                 value={amount}
@@ -146,11 +220,21 @@ function SendingFXForm() {
           <div className="grid grid-cols-2 gap-5">
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Category</label>
-              <CategorySelect value={categoryId} onChange={setCategoryId} name="" categories={[]} />
+              <CategorySelect
+                name="category"
+                value={categoryId}
+                onChange={setCategoryId}
+                categories={categories}
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1 block">Product</label>
-              <ProductSelectField name="product" value={productId} onChange={setProductId} />
+              <ProductSelectField
+                name="product"
+                value={productId}
+                onChange={setProductId}
+                products={products}
+              />
             </div>
           </div>
 
@@ -173,13 +257,13 @@ function SendingFXForm() {
             className="rounded-lg border-gray-300 px-8 text-gray-700 hover:bg-gray-100"
             onClick={handleClose}
           >
-            ← Cancel
+            ←
           </Button>
           <Button
             className="rounded-lg bg-blue-600 text-white px-8 font-semibold hover:bg-blue-700 transition"
             onClick={handleSubmit}
           >
-            ✓ Confirm
+            ✓
           </Button>
         </div>
       </DialogContent>

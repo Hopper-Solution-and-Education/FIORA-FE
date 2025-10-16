@@ -4,7 +4,6 @@ import MetricCard from '@/components/common/metric/MetricCard';
 import { CURRENCY } from '@/shared/constants';
 import { useMemo } from 'react';
 import { WalletDepositButton, WalletTransferButton, WalletWithdrawButton } from '../atoms';
-import WalletSendingButton from '../atoms/WalletSendingButton';
 import { usePaymentWalletDashboard } from '../hooks';
 import { PercentageMetricCard, SmallMetricCard } from '../molecules';
 import PaymentWalletOverviewSkeleton from './PaymentWalletOverviewSkeleton';
@@ -20,7 +19,6 @@ const PaymentWalletOverview = ({
   enableDeposit = true,
   enableWithdraw = true,
   enableTransfer = true,
-  enableSending = true,
 }: PaymentWalletOverviewProps) => {
   const { dashboardMetrics, dashboardLoading } = usePaymentWalletDashboard();
 
@@ -75,8 +73,6 @@ const PaymentWalletOverview = ({
         />
 
         <div className="flex justify-end gap-4">
-          {enableSending && <WalletSendingButton />}
-
           {enableDeposit && <WalletDepositButton />}
 
           {enableTransfer && <WalletTransferButton />}
