@@ -3,7 +3,7 @@ import { Session, useSession } from 'next-auth/react';
 import { useNewsData } from '../../hooks/useNewsData';
 import { useNewsUpsert } from '../../hooks/useNewsUpsert';
 import CardList from '../organisms/CardList';
-import Categories from '../organisms/Categories';
+import MostViewedNews from '../organisms/MostViewNews';
 import NewsPageHeader from '../organisms/NewsPageHeader';
 
 const NewsListPage = () => {
@@ -14,6 +14,7 @@ const NewsListPage = () => {
     isLoading,
     isFetchingPage,
     allNews,
+    mostViewNewsList,
     endOfNews,
     handleFilterChange,
   } = useNewsData();
@@ -46,11 +47,7 @@ const NewsListPage = () => {
 
             <div className="w-full lg:w-1/4 order-first lg:order-last">
               <aside className="sticky top-8">
-                <Categories
-                  activeFilters={activeFilters}
-                  categories={allCategoriesList}
-                  onFilterChange={handleFilterChange}
-                />
+                <MostViewedNews news={mostViewNewsList} />
               </aside>
             </div>
           </div>
