@@ -63,6 +63,10 @@ export enum ApiEndpointEnum {
   // Bank Account
   BankAccount = '/api/bank-account',
 
+  // Withdraw FX
+  walletWithdraw = '/api/wallet/withdraw',
+  getOtp = '/api/wallet/withdraw/sendOtp',
+
   // Wallet Smart Saving
   SavingOverview = '/api/wallet/smart-saving/{id}',
   SavingTransactionHistory = '/api/wallet/smart-saving/transaction',

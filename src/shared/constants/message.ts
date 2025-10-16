@@ -433,6 +433,13 @@ export enum Messages {
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
+  // Wallet Withdraw
+  GET_WALLET_WITHDRAW_SUCCESS = 'Get wallet withdraw successfully',
+  WITHDRAW_REQUEST_SUCCESS = 'Withdraw request successfully',
+  WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
+  INVALID_AMOUNT = 'no data',
+  SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
+
   //Saving Wallet
   DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
   WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',

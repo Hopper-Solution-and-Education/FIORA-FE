@@ -33,15 +33,15 @@ const UserManagementHeaderLeft: React.FC<UserManagementHeaderLeftProps> = ({
   );
 
   // Create email options - use EMAIL as both value and label
-const emailOptions = useMemo(() => {
-  // Remove duplicates based on email
-  const uniqueEmails = Array.from(new Set(users.map((user) => user.email)));
-  
-  return uniqueEmails.map((email) => ({
-    value: email, // Email for filtering
-    label: email, // Email for display
-  }));
-}, [users]);
+  const emailOptions = useMemo(() => {
+    // Remove duplicates based on email
+    const uniqueEmails = Array.from(new Set(users.map((user) => user.email)));
+
+    return uniqueEmails.map((email) => ({
+      value: email, // Email for filtering
+      label: email, // Email for display
+    }));
+  }, [users]);
 
   return (
     <div className="flex gap-4 items-center">
