@@ -243,7 +243,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
         if (!category) throw new NotFoundError('Category not found');
       }
 
-      if (productIds) {
+      if (productIds && productIds.length > 0) {
         products = await tx.product.findMany({
           where: {
             id: {
