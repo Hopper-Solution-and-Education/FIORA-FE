@@ -16,6 +16,23 @@ export interface CreateBoxNotificationInput {
   emails?: string[];
 }
 
+export interface CreateNotificationWithTemplateInput {
+  title: string;
+  type: string;
+  notifyTo: NotificationType;
+  attachmentId?: string;
+  deepLink?: string;
+  message: string;
+  emails?: string[];
+  emailTemplateId: string;
+  emailParts: Array<{
+    user_id: string;
+    recipient: string;
+    [key: string]: any;
+  }>;
+  subject?: string;
+}
+
 export interface INotificationRepository {
   getNotificationsPagination(
     skip: number,
