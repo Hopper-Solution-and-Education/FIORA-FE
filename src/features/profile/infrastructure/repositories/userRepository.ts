@@ -15,12 +15,9 @@ export class UserRepository implements IUserRepository {
     });
   }
   getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
-    return prisma.user.count({
+    return prisma.eKYC.count({
       where: {
-        eKYC: {
-          some: { status: eKycStatus },
-          none: { status: { not: KYCStatus.PENDING } },
-        },
+        status: eKycStatus,
       },
     });
   }

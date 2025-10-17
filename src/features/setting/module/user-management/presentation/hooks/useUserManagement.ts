@@ -265,8 +265,8 @@ export function useUserManagement() {
   // Update stats to use reducer data
   const stats = useMemo(() => {
     const rawUsers = state.data; // Use accumulated data
-    const totalActive = rawUsers.filter((u) => u.status === 'active').length;
-    const totalBlocked = rawUsers.filter((u) => u.status === 'blocked').length;
+    const totalActive = rawUsers.filter((u) => u.User?.isBlocked === false).length;
+    const totalBlocked = rawUsers.filter((u) => u.User?.isBlocked === true).length;
     return { totalActive, totalBlocked };
   }, [state.data]);
 

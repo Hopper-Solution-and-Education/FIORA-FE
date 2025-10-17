@@ -16,7 +16,7 @@ export const initialState: TableState = {
   data: [],
   pagination: {
     page: 1,
-    pageSize: 20,
+    pageSize: 10,
     total: 0,
   },
   hasMore: true,
