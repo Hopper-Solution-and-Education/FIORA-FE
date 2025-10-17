@@ -4,7 +4,7 @@ import { Icons } from '@/components/Icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { useRef, useState } from 'react';
 import { User } from '../../slices/type';
 interface UserAvatarProps {

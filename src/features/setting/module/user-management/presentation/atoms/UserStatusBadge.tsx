@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { CheckCircle, Clock, Shield, XCircle } from 'lucide-react';
 
 type UserStatus = 'Active' | 'Inactive' | 'Blocked' | 'Pending';

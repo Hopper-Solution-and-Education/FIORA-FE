@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
 import { ICON_SIZE } from '@/shared/constants/size';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import { format } from 'date-fns';
 import { Bell } from 'lucide-react';
 import Image from 'next/image';

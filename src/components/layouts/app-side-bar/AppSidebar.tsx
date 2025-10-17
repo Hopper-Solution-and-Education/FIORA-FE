@@ -2,7 +2,7 @@
 import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import {
   ChevronRight,
   ChevronsUpDown,

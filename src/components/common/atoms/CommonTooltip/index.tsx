@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { Fragment, ReactNode } from 'react';
 
 interface CommonTooltipProps {

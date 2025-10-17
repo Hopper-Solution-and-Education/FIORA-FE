@@ -4,7 +4,7 @@ import { GlobalLabel } from '@/components/common/atoms';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import {
   addDays,
   endOfMonth,
