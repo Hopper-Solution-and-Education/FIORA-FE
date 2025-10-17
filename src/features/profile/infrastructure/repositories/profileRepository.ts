@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { UserRole } from '@/shared/constants/userRole';
 import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
-import type { eKYC, UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
+import type { UpdateProfileRequest, UserProfile, eKYC } from '../../domain/entities/models/profile';
 import type { IProfileRepository } from '../../domain/repositories/profileRepository.interface';
 
 class ProfileRepository implements IProfileRepository {
@@ -19,6 +19,7 @@ class ProfileRepository implements IProfileRepository {
         address: true,
         role: true,
         eKYC: true,
+        referrer_code: true,
       },
     });
     let avatarUrl = null;
@@ -52,6 +53,7 @@ class ProfileRepository implements IProfileRepository {
       birthday: user.birthday ? user.birthday.toISOString() : null,
       role: user.role as UserRole,
       eKYC: user.eKYC as unknown as eKYC[],
+      referrer_code: user.referrer_code ?? null,
     };
   }
 
@@ -90,6 +92,7 @@ class ProfileRepository implements IProfileRepository {
         address: payload.address ?? undefined,
         birthday: payload.birthday ? new Date(payload.birthday) : undefined,
         updatedBy: updateBy ?? userId,
+        referrer_code: payload.referrer_code ?? undefined,
       },
       select: {
         id: true,
@@ -100,6 +103,7 @@ class ProfileRepository implements IProfileRepository {
         phone: true,
         address: true,
         birthday: true,
+        referrer_code: true,
       },
     });
     // Determine final URLs: prefer newly created ones; otherwise resolve existing attachments if any
@@ -117,6 +121,7 @@ class ProfileRepository implements IProfileRepository {
       phone: updated.phone ?? null,
       address: updated.address ?? null,
       birthday: updated.birthday ? updated.birthday.toISOString() : null,
+      referrer_code: updated.referrer_code ?? null,
     };
   }
 

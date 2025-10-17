@@ -13,6 +13,12 @@ export interface CommonTableColumn<T> {
   align?: TableAlign;
   headClassName?: string;
   render?: ColumnRenderer<T>;
+
+  /**
+   * A plain text representation of the column title.
+   * Useful for accessibility, tooltips, or text truncation when `title` is a complex ReactNode.
+   */
+  titleText?: string;
 }
 
 export interface ColumnVisibilityConfig {

@@ -12,11 +12,7 @@ interface UserStatusBadgeProps {
   showIcon?: boolean;
 }
 
-export function UserStatusBadge({ 
-  status, 
-  className, 
-  showIcon = false 
-}: UserStatusBadgeProps) {
+export function UserStatusBadge({ status, className, showIcon = false }: UserStatusBadgeProps) {
   const getStatusConfig = (status: UserStatus) => {
     switch (status) {
       case 'Active':
@@ -62,7 +58,7 @@ export function UserStatusBadge({
         'font-medium',
         config.className,
         showIcon && 'flex items-center gap-1',
-        className
+        className,
       )}
     >
       {showIcon && <Icon className="h-3 w-3" />}

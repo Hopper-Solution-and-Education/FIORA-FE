@@ -46,7 +46,7 @@ const UserManagementFilterMenu = ({
   const dispatch = useAppDispatch();
   const reduxFilter = useAppSelector((state) => state.userManagement.filters);
   const { data: session } = useSession();
-  const currentUserRole = session?.user.role; 
+  const currentUserRole = session?.user.role;
   const isCS = currentUserRole === UserRole.CS;
 
   const [localFilter, setLocalFilter] = useState<FilterState>(value || getInitialFilterState());
@@ -217,7 +217,6 @@ const UserManagementFilterMenu = ({
       column: FilterColumn.LEFT,
       order: isCS ? 0 : 2,
     });
-    
 
     // RIGHT COLUMN
     // KYC Date Range filter - Always show

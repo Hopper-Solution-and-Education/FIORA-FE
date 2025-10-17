@@ -11,6 +11,7 @@ export type UserProfile = {
   birthday?: string | null;
   role?: UserRole;
   eKYC?: eKYC[];
+  referrer_code?: string | null;
 };
 
 export type eKYC = {
@@ -34,6 +35,7 @@ export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & 
   birthday?: string | null;
   newAvatar?: File | null;
   newLogo?: File | null;
+  referrer_code?: string | null;
 };
 
 export enum EKYCStatus {

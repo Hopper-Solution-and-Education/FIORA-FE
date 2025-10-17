@@ -133,6 +133,7 @@ export function UserTable({
   const allColumns: CommonTableColumn<User>[] = [
     {
       key: 'profile',
+      titleText: 'Profile',
       title: (
         <div
           className="flex items-center justify-start gap-2 cursor-pointer"
@@ -163,6 +164,7 @@ export function UserTable({
     },
     {
       key: 'role',
+      titleText: 'Role',
       title: (
         <div
           className="flex items-center justify-center gap-2 cursor-pointer"
@@ -188,6 +190,7 @@ export function UserTable({
     },
     {
       key: 'registrationDate',
+      titleText: 'Registration Date',
       title: (
         <div
           className="flex items-center justify-center gap-2 cursor-pointer"
@@ -210,6 +213,7 @@ export function UserTable({
     },
     {
       key: 'kycSubmissionDate',
+      titleText: 'KYC Submission Date',
       title: (
         <div
           className="flex items-center justify-center gap-2 cursor-pointer"
@@ -250,6 +254,7 @@ export function UserTable({
     },
     {
       key: 'userStatus',
+      titleText: 'User Status',
       title: (
         <div
           className="flex items-center justify-center gap-2 cursor-pointer"

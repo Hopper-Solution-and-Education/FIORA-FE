@@ -152,7 +152,7 @@ export default function FinancialAccount({
   };
 
   return (
-    <div className="container mx-auto py-5">
+    <div className="py-5">
       <h1 className="text-2xl font-bold mb-6">My Accounts</h1>
       <div className="space-y-2">
         {parentAccounts.map((account) => (

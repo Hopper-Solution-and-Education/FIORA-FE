@@ -23,7 +23,7 @@ export interface FilterState {
   toDate: Date | null;
   emails: string[];
   userFromDate: Date | null;
-  userToDate: Date | null; 
+  userToDate: Date | null;
 }
 
 export interface UserManagementState {

@@ -92,7 +92,7 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
   };
 
   return (
-    <div className="container mx-auto px-4 pb-6 min-h-screen">
+    <div className="px-4 pb-6 min-h-screen">
       <div className="flex items-center justify-center">
         <Card className="relative w-full max-w-lg shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between">

@@ -1,14 +1,14 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { WalletState } from './types';
 import type { FilterCriteria } from '@/shared/types/filter.types';
-import {
-  getWalletByTypeAsyncThunk,
-  getWalletsAsyncThunk,
-  getPackageFXAsyncThunk,
-  fetchFrozenAmountAsyncThunk,
-} from './actions';
+import { createSlice } from '@reduxjs/toolkit';
 import type { PackageFX } from '../domain/entity/PackageFX';
 import type { AttachmentData } from '../presentation/types/attachment.type';
+import {
+  fetchFrozenAmountAsyncThunk,
+  getPackageFXAsyncThunk,
+  getWalletByTypeAsyncThunk,
+  getWalletsAsyncThunk,
+} from './actions';
+import type { WalletState } from './types';
 
 const initialState: WalletState = {
   wallets: null,
@@ -23,6 +23,7 @@ const initialState: WalletState = {
   attachmentData: null,
   depositSearch: null,
   frozenAmount: null,
+  isShowWithdrawFXForm: false,
 };
 
 const walletSlice = createSlice({
@@ -61,6 +62,12 @@ const walletSlice = createSlice({
     },
     setDepositSearch: (state, action) => {
       state.depositSearch = action.payload;
+    },
+    setWithdrawFXFormOpen: (state) => {
+      state.isShowWithdrawFXForm = true;
+    },
+    setWithdrawFXFormClose: (state) => {
+      state.isShowWithdrawFXForm = false;
     },
   },
   extraReducers: (builder) => {
@@ -143,5 +150,7 @@ export const {
   setLoading,
   setError,
   setDepositSearch,
+  setWithdrawFXFormOpen,
+  setWithdrawFXFormClose,
 } = walletSlice.actions;
 export default walletSlice.reducer;
