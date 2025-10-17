@@ -4,3 +4,4 @@ export * from './DeleteDialog';
 export { default as SearchBar } from './SearchBar';
 export { default as StackedBarChartSkeleton } from './StackedBarChartSkeleton';
 export { default as TableSkeleton } from './TableSkeleton';
+export { default as WalletAction } from './WalletAction';

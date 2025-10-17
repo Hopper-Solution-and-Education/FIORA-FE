@@ -21,8 +21,8 @@ interface TierRankProps {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
   return (
-    <div className="h-full max-h-[448px] overflow-y-auto overflow-x-auto relative">
-      <Table className="w-full min-w-[720px] table-fixed">
+    <div className="grid w-full min-h-[350px] [&>div]:max-h-[350px] [&>div]:border [&>div]:rounded">
+      <Table className="w-full min-w-[720px] table-fixed border">
         {/* Định nghĩa độ rộng cột */}
         <colgroup>
           {/* No. */}
@@ -33,20 +33,22 @@ const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
           <col className="w-auto sm:w-[25%]" />
         </colgroup>
 
-        <TableHeader>
-          <TableRow className="h-14">
-            <TableHead className="hidden sm:table-cell text-center py-3 sticky top-0 z-20 bg-white">
+        <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
+          <TableRow className="h-14 *:whitespace-nowrap sticky top-0 bg-background after:content-[''] after:inset-x-0 after:h-px after:bg-border after:absolute after:bottom-0">
+            <TableHead className="hidden sm:table-cell text-center py-3 font-semibold text-foreground">
               No.
             </TableHead>
-            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Benefit</TableHead>
-            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Value</TableHead>
-            <TableHead className="text-center py-3 sticky top-0 z-20 bg-white">Unit</TableHead>
+            <TableHead className="text-center py-3 font-semibold text-foreground">
+              Benefit
+            </TableHead>
+            <TableHead className="text-center py-3 font-semibold text-foreground">Value</TableHead>
+            <TableHead className="text-center py-3 font-semibold text-foreground">Unit</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {data.map((item, index) => (
-            <TableRow key={item.label} className="h-14">
+            <TableRow key={item.label} className="h-14 [&>td]:border-r last:border-r-0">
               <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
                 {index + 1}
               </TableCell>

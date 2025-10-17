@@ -2,7 +2,10 @@
 
 import { useBreadcrumbs } from '@/shared/hooks/useBreadcrumbs';
 import { Slash } from 'lucide-react';
+import { Session, useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { Fragment } from 'react';
+import WalletAction from './common/organisms/WalletAction';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,30 +15,40 @@ import {
   BreadcrumbSeparator,
 } from './ui/breadcrumb';
 
-export function Breadcrumbs() {
+export function Breadcrumbs({ showWalletAction = true }: { showWalletAction?: boolean }) {
+  const { status } = useSession() as { data: Session | null; status: string };
   const items = useBreadcrumbs();
+  const pathName = usePathname();
   if (items && items.length === 0) return null;
 
+  const isHiddenWalletAction = pathName?.includes('/wallet') || status === 'unauthenticated';
+
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        {items &&
-          items.map((item, index) => (
-            <Fragment key={item.title}>
-              {index !== items.length - 1 && (
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href={item.link}>{item.title}</BreadcrumbLink>
-                </BreadcrumbItem>
-              )}
-              {index < items.length - 1 && (
-                <BreadcrumbSeparator className="hidden md:block">
-                  <Slash />
-                </BreadcrumbSeparator>
-              )}
-              {index === items.length - 1 && <BreadcrumbPage>{item.title}</BreadcrumbPage>}
-            </Fragment>
-          ))}
-      </BreadcrumbList>
-    </Breadcrumb>
+    <div className="flex justify-between items-center w-full">
+      <Breadcrumb>
+        <BreadcrumbList>
+          {items &&
+            items.map((item, index) => (
+              <Fragment key={item.title}>
+                {index !== items.length - 1 && (
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href={item.link}>{item.title}</BreadcrumbLink>
+                  </BreadcrumbItem>
+                )}
+                {index < items.length - 1 && (
+                  <BreadcrumbSeparator className="hidden md:block">
+                    <Slash />
+                  </BreadcrumbSeparator>
+                )}
+                {index === items.length - 1 && <BreadcrumbPage>{item.title}</BreadcrumbPage>}
+              </Fragment>
+            ))}
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {!isHiddenWalletAction && showWalletAction && (
+        <WalletAction enableDeposit={true} enableTransfer={true} enableWithdraw={true} />
+      )}
+    </div>
   );
 }

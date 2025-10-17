@@ -172,9 +172,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
   ],
 
   // SETTING
-  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
-  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
-  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
+  // USER MODE
   '/setting/product': [{ title: 'Product', link: '/setting/product' }],
   '/setting/product/update/[id]': [
     { title: 'Product', link: '/setting/product' },
@@ -193,6 +191,12 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Partner', link: '/setting/partner' },
     { title: 'Create', link: '/setting/partner/create' },
   ],
+  '/setting/role-permission': [{ title: 'Role Permission', link: '/setting/role-permission' }],
+
+  // ADMIN MODE
+  '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
+  '/setting/exchange-rate': [{ title: 'Exchange Rate Setting', link: '/setting/exchange-rate' }],
+  '/setting/membership': [{ title: 'Membership Setting', link: '/setting/membership' }],
   '/setting/wallet': [{ title: 'FX Request', link: '/setting/wallet' }],
   '/setting/notification': [{ title: 'Notification', link: '/setting/notification' }],
   '/setting/packagefx': [{ title: 'Package FX', link: '/setting/packagefx' }],
