@@ -3,16 +3,20 @@
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { setWithdrawFXFormClose, setWithdrawFXFormOpen } from '@/features/home/module/wallet';
+import { useAppDispatch } from '@/store';
+import { useCallback, useEffect } from 'react';
 
 const WalletWithdrawButton = () => {
-  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const handleDeposit = useCallback(() => {
-    router.push(RouteEnum.WalletDeposit);
-  }, [router]);
+    dispatch(setWithdrawFXFormOpen());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(setWithdrawFXFormClose());
+  }, []);
 
   return (
     <CommonTooltip content="Withdraw">

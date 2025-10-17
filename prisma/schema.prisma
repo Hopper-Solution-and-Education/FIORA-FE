@@ -494,7 +494,6 @@ model DepositRequest {
   userId       String               @db.Uuid
   refCode      String               @unique
   packageFXId  String?              @db.Uuid
-  packageFXId  String?              @db.Uuid
   attachmentId String?              @unique @db.Uuid
   status       DepositRequestStatus
   remark       String?
@@ -530,6 +529,7 @@ model Notification {
   emailTemplateId   String?                 @db.Uuid
   notifyTo          NotificationType
   type              String
+  content           String?
   Attachment        Attachment[]
   emailLogs         EmailNotificationLogs[]
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
@@ -1117,6 +1117,13 @@ enum emailType {
   OTP
   DEPOPSIT_APPROVE
   DEPOPSIT_REJECT
+  WITHDRAW_APPROVE
+  WITHDRAW_REJECT
+  FLEXI_INTEREST
+  MEMBERSHIP_CHANGE
+  WITHDRAW_OTP
+  SENDING_OTP
+  SENDING_SUCCESSFUL
 }
 
 enum CronJobStatus {

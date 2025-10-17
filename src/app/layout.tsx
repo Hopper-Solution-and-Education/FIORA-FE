@@ -8,6 +8,7 @@ import growthbook, { initGrowthBook } from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
+import { ScrollToTop } from '@/features/landing/presentation/atoms';
 import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { SessionProvider } from 'next-auth/react';
@@ -67,6 +68,7 @@ export default function RootLayout({
                           <Updater />
 
                           <main>{children}</main>
+                          <ScrollToTop />
                           <SessionTimeoutModal />
                         </SessionProvider>
                       </ThemeProvider>

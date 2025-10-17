@@ -1,6 +1,7 @@
 'use client';
 
 import { SendingFXForm } from '@/features/sending/presentation/views';
+import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 import { PaymentWalletOverview, PaymentWalletTable } from '../organisms';
 
 const PaymentWalletPage = () => {
@@ -9,6 +10,7 @@ const PaymentWalletPage = () => {
       <PaymentWalletOverview />
       <PaymentWalletTable />
       <SendingFXForm />
+      <WithdrawFXForm />
     </div>
   );
 };

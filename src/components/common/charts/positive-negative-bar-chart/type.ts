@@ -1,3 +1,4 @@
+import { BaseChartProps } from '@/shared/types/chart.type';
 import { ContentType } from 'recharts/types/component/Tooltip';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
@@ -24,23 +25,15 @@ export type PositiveAndNegativeBarLevelConfig = {
   };
 };
 
-export type PositiveAndNegativeBarChartProps = {
-  data: BarItem[];
-  title?: string;
-  currency?: string;
-  locale?: string;
-  xAxisFormatter?: (value: number) => string;
+export interface PositiveAndNegativeBarChartProps
+  extends Omit<BaseChartProps<BarItem>, 'tooltipContent'> {
   tooltipContent?: ContentType<ValueType, NameType>;
-  legendItems?: { name: string; color: string }[];
   maxBarRatio?: number;
-  tutorialText?: string;
-  callback?: (item: any) => void;
   levelConfig?: PositiveAndNegativeBarLevelConfig;
-  height?: number;
   baseBarHeight?: number;
   expanded?: boolean;
   header?: React.ReactNode;
-};
+}
 
 export interface ChartConfig {
   processedData: BarItem[];

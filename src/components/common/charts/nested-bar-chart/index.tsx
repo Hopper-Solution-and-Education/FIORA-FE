@@ -26,6 +26,7 @@ import { Icons } from '@/components/Icon';
 import { cn } from '@/shared/utils';
 import { debounce } from 'lodash';
 import { CommonTooltip } from '../../atoms/CommonTooltip';
+import { sortByAbsoluteValue, sortChartData } from '../utils/sortChartData';
 import { BarItem, NestedBarChartProps } from './type';
 
 const NestedBarChart = ({
@@ -40,6 +41,7 @@ const NestedBarChart = ({
   callback,
   levelConfig,
   expanded = true,
+  sortEnable = true,
 }: NestedBarChartProps) => {
   // State to track whether to show all categories or just top 10
   const [showAll, setShowAll] = useState(false);
@@ -51,6 +53,12 @@ const NestedBarChart = ({
   const [chartHeight, setChartHeight] = useState(MIN_CHART_HEIGHT);
   // Get window width for responsive design
   const { width } = useWindowSize();
+
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, sortByAbsoluteValue),
+    [data, sortEnable],
+  );
 
   // Simulate initial loading
   useEffect(() => {
@@ -80,23 +88,23 @@ const NestedBarChart = ({
 
   // Prepare Initial Data: First 5 + Others
   const preparedData = useMemo(() => {
-    if (showAll) return data;
-    const first5 = data.slice(0, 5);
-    const othersSum = data.slice(5).reduce((sum, item) => sum + item.value, 0);
-    if (data.length > 5) {
+    if (showAll) return sortedData;
+    const first5 = sortedData.slice(0, 5);
+    const othersSum = sortedData.slice(5).reduce((sum, item) => sum + item.value, 0);
+    if (sortedData.length > 5) {
       const othersItem: BarItem = {
         id: undefined,
-        name: `Others (${data[0]?.type || 'unknown'})`,
+        name: `Others (${sortedData[0]?.type || 'unknown'})`,
         value: othersSum,
         color: levelConfig?.colors[0] || '#888888',
-        type: data[0]?.type || 'unknown',
+        type: sortedData[0]?.type || 'unknown',
         icon: 'expand',
         isOthers: true,
       };
       return [...first5, othersItem];
     }
     return first5;
-  }, [data, showAll, levelConfig]);
+  }, [sortedData, showAll, levelConfig]);
 
   // Calculate Total Bar
   const totalAmount = preparedData.reduce((sum, item) => sum + Math.abs(item.value), 0);
@@ -198,9 +206,9 @@ const NestedBarChart = ({
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {preparedData.length} of {data.length} items
+              Showing {preparedData.length} of {sortedData.length} items
             </span>
-            {data.length > 5 && (
+            {sortedData.length > 5 && (
               <CommonTooltip content={showAll ? 'Show Less' : 'View All'}>
                 <Button
                   variant="ghost"

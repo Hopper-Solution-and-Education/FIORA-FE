@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import { BaseChartProps } from '@/shared/types/chart.type';
+import { useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -11,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortByValue, sortChartData } from '../utils/sortChartData';
 
 interface SimpleBarItem {
   name: string;
@@ -18,12 +20,9 @@ interface SimpleBarItem {
   color: string;
 }
 
-interface HorizontalBarChartProps {
-  data: SimpleBarItem[];
-  height?: number;
-  xAxisFormatter?: (value: number) => string;
-  tooltipContent?: (props: any) => React.ReactNode;
+interface HorizontalBarChartProps extends Omit<BaseChartProps<SimpleBarItem>, 'tooltipContent'> {
   onBarClick?: (item: SimpleBarItem, index: number) => void;
+  tooltipContent?: (payload: any) => React.ReactNode;
 }
 
 const HorizontalBarChart = ({
@@ -32,8 +31,15 @@ const HorizontalBarChart = ({
   xAxisFormatter = (value) => value.toLocaleString(),
   tooltipContent,
   onBarClick,
+  sortEnable = true,
 }: HorizontalBarChartProps) => {
-  const maxValue = Math.max(...data.map((item) => item.value));
+  // Sort data if sortEnable is true (highest values first - top to bottom)
+  const sortedData = useMemo(
+    () => sortChartData(data, sortEnable, sortByValue),
+    [data, sortEnable],
+  );
+
+  const maxValue = Math.max(...sortedData.map((item) => item.value));
 
   // Custom Y-axis tick component to prevent text wrapping
   const CustomYAxisTick = (props: any) => {
@@ -57,7 +63,7 @@ const HorizontalBarChart = ({
     <div style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
-          data={data}
+          data={sortedData}
           layout="vertical"
           margin={{ top: 30, right: 40, left: 20, bottom: 30 }}
           barCategoryGap={15}
@@ -102,7 +108,7 @@ const HorizontalBarChart = ({
             }
           />
           <Bar radius={[0, 4, 4, 0]} dataKey="value" className="cursor-pointer">
-            {data.map((entry, index) => (
+            {sortedData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={entry.color}

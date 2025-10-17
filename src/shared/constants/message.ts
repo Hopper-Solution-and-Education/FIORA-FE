@@ -362,6 +362,18 @@ export enum Messages {
   KYC_NOT_FOUND = 'Kyc not found',
   KYC_CHECK = 'Kyc is used',
   KYC_NOT_MATCH = 'Kyc not match',
+  BLOCK_USER_SUCCESS = 'Block user successfully',
+  UNBLOCK_USER_SUCCESS = 'Unblock user successfully',
+  BLOCK_USER_FAILED = 'Block user failed',
+  ASSIGN_ROLE_SUCCESS = 'Assign role successfully',
+  ASSIGN_ROLE_FAILED = 'Assign role failed',
+  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked',
+  USER_NOT_FOUND = 'User not found',
+  GET_LIST_USER_ERROR = 'Failed to fetch users data',
+  GET_COUNT_USER_ERROR = 'Failed to fetch count users data',
+  GET_COUNT_USER_SUCCESS = 'Get count users successfully',
+  CANNOT_ASSIGN_ROLE_TO_YOURSELF = 'Cannot assign role to yourself',
+  CANNOT_BLOCK_YOURSELF = 'Cannot block yourself',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',
@@ -421,8 +433,12 @@ export enum Messages {
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
-  //User
-  USER_NOT_FOUND = 'User not found',
+  // Wallet Withdraw
+  GET_WALLET_WITHDRAW_SUCCESS = 'Get wallet withdraw successfully',
+  WITHDRAW_REQUEST_SUCCESS = 'Withdraw request successfully',
+  WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
+  INVALID_AMOUNT = 'no data',
+  SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
 
   //Saving Wallet
   DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',

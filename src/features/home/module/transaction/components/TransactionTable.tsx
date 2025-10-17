@@ -256,7 +256,10 @@ const TransactionTable = () => {
     dispatch(updateFilterCriteria(newFilter));
   };
 
-  const isDeleteForbidden = (date: string | Date): boolean => {
+  const isDeleteForbidden = (date: string | Date, transaction: IRelationalTransaction): boolean => {
+    if (transaction.isMarked || transaction.isExpired) {
+      return true;
+    }
     const transactionDate = new Date(date);
 
     const threeMonthsAgo = new Date();
@@ -511,6 +514,7 @@ const TransactionTable = () => {
                                   'cursor-default',
                                   transRecord.fromAccountId ||
                                     transRecord.fromCategoryId ||
+                                    transRecord.fromWalletId ||
                                     transRecord.membershipBenefitId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
@@ -522,13 +526,16 @@ const TransactionTable = () => {
                                     target:
                                       transRecord.type === 'Income'
                                         ? 'fromCategory'
-                                        : 'fromAccount',
-                                    subTarget: 'name',
+                                        : transRecord.fromAccountId
+                                          ? 'fromAccount'
+                                          : 'fromWallet',
+                                    subTarget: transRecord.fromWalletId ? 'type' : 'name',
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Income'
                                         ? (transRecord.fromCategory?.name ?? undefined)
                                         : (transRecord.fromAccount?.name ??
+                                          transRecord.fromWallet?.type ??
                                           transRecord.membershipBenefit?.name ??
                                           undefined),
                                   })
@@ -653,24 +660,28 @@ const TransactionTable = () => {
 
                                 <CommonTooltip
                                   content={
-                                    isDeleteForbidden(recordDate)
-                                      ? "Can't delete transactions older than 3 months"
-                                      : 'Delete Transaction'
+                                    transRecord.isMarked || transRecord.isExpired
+                                      ? "Can't delete marked or expired transactions"
+                                      : isDeleteForbidden(recordDate, transRecord)
+                                        ? "Can't delete transactions older than 3 months"
+                                        : 'Delete Transaction'
                                   }
                                 >
                                   <Button
                                     variant="ghost"
-                                    className={`px-3 py-2 ${isDeleteForbidden(recordDate) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                                    className={`px-3 py-2 ${isDeleteForbidden(recordDate, transRecord) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'}`}
                                     onClick={() => {
-                                      if (!isDeleteForbidden(recordDate)) {
+                                      if (!isDeleteForbidden(recordDate, transRecord)) {
                                         handleOpenDeleteModal(transRecord);
                                       }
                                     }}
-                                    disabled={isDeleteForbidden(recordDate)}
+                                    disabled={isDeleteForbidden(recordDate, transRecord)}
                                   >
                                     <Trash
                                       size={18}
-                                      color={isDeleteForbidden(recordDate) ? 'gray' : 'red'}
+                                      color={
+                                        isDeleteForbidden(recordDate, transRecord) ? 'gray' : 'red'
+                                      }
                                     />
                                   </Button>
                                 </CommonTooltip>

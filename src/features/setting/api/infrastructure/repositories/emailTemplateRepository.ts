@@ -1,8 +1,14 @@
 import { prisma } from '@/config';
-import { EmailTemplate, EmailTemplateField, EmailTemplateType, Prisma } from '@prisma/client';
+import {
+  EmailTemplate,
+  EmailTemplateField,
+  EmailTemplateType,
+  Prisma,
+  emailType,
+} from '@prisma/client';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';
 
-class EmailTemplateRepository implements IEmailTemplateRepository {
+export class EmailTemplateRepository implements IEmailTemplateRepository {
   async createEmailTemplate(data: Prisma.EmailTemplateCreateInput): Promise<EmailTemplate> {
     return await prisma.emailTemplate.create({
       data: { ...data },
@@ -175,6 +181,18 @@ class EmailTemplateRepository implements IEmailTemplateRepository {
     name: string,
   ): Promise<EmailTemplateField | null> {
     return await prisma.emailTemplateField.findFirst({ where: { type, name } });
+  }
+
+  async getEmailTemplateByType(type: emailType) {
+    const emailTemplate = await prisma.emailTemplate.findFirst({
+      where: {
+        EmailTemplateType: {
+          type: type,
+        },
+      },
+    });
+
+    return emailTemplate;
   }
 }
 

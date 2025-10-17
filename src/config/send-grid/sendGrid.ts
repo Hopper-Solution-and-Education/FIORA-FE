@@ -1,7 +1,10 @@
 'use server';
+import { emailTemplateRepository } from '@/features/setting/api/infrastructure/repositories/emailTemplateRepository';
+import { emailType } from '@prisma/client';
 import sgMail from '@sendgrid/mail';
 import { BadRequestError, InternalServerError } from '../../shared/lib/responseUtils/errors';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+console.log('SENDGRID_API_KEY prefix:', process.env.SENDGRID_API_KEY);
 
 export const sendEmail = async (to: string, otp: string, verificationLink: string) => {
   try {
@@ -27,6 +30,7 @@ export const sendOtp = async (to: string, otp: string) => {
       subject: 'Verify Your Email - Hopper',
       html: `<p>Your OTP to reset your password is: <strong>${otp}</strong></p>`,
     };
+    console.log('🚀 ~ sendOtp ~ sgMail:', sgMail);
 
     await sgMail.send(msg);
     return otp;
@@ -175,11 +179,19 @@ export const sendEmailCronJob = async (
   updated_at: string,
 ) => {
   try {
+    const emailTemplate = await emailTemplateRepository.getEmailTemplateByType(
+      emailType.MEMBERSHIP_CHANGE,
+    );
+    if (!emailTemplate) {
+      return false;
+    }
+    const rendered = renderTemplate(emailTemplate.content, { username, tier_name, updated_at });
+    const html = `\`${rendered}\``;
     const msg = {
       to,
       from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
       subject: 'Your FIORA Membership Tier Has Changed!',
-      html: emailTemplateMembershipChange(username, tier_name, updated_at),
+      html,
     };
 
     await sgMail.send(msg);
@@ -188,6 +200,12 @@ export const sendEmailCronJob = async (
     console.error('Failed to send email', error);
     return false;
   }
+};
+
+const renderTemplate = (content: string, data: Record<string, string>) => {
+  let out = content.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, k) => data[k] ?? '');
+  out = out.replace(/\$\{\s*(\w+)\s*\}/g, (_m, k) => data[k] ?? '');
+  return out;
 };
 
 // Placeholder for the HTML template (kept separate as per request)
@@ -241,70 +259,6 @@ const emailTemplate = (otp: string, verificationLink: string) =>
               <p style="margin: 8px 0 0;">
                 Need a guide? Reach us at <a href="mailto:support@hopper.com" style="color: #007bff; text-decoration: none; font-weight: 500;">support@hopper.com</a>
               </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-const emailTemplateMembershipChange = (username: string, tier_name: string, updated_at: string) =>
-  `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your FIORA Membership Tier Has Changed!</title>
-</head>
-<body style="margin:0; padding:0; font-family:'Helvetica Neue', Arial, sans-serif; background-color:#f0f4f8; color:#2d3748;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(135deg,#e6eef5 0%,#f0f4f8 100%); padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,50,100,0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="background:linear-gradient(90deg,#007bff,#00c4ff); padding:30px; text-align:center; position:relative; overflow:hidden;">
-              <h1 style="color:#ffffff; margin:0; font-size:28px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">FIORA</h1>
-              <p style="color:#e6f0ff; margin:8px 0 0; font-size:14px; font-style:italic;">Membership Tier Change Notification</p>
-              <div style="position:absolute; top:-50px; right:-50px; width:100px; height:100px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
-            </td>
-          </tr>
-          <!-- Content -->
-          <tr>
-            <td style="padding:40px; text-align:left;">
-              <h2 style="font-size:22px; font-weight:600; margin:0 0 20px; color:#1a202c;">Your FIORA Membership Tier Has Changed!</h2>
-              <p style="font-size:16px; line-height:1.6; margin:0 0 15px; color:#4a5568;">
-                Dear ${username},
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
-                We’re excited to inform you that your FIORA membership tier has been updated to ${tier_name} as of ${updated_at}!
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
-                This change brings you a fresh set of exclusive benefits designed to enhance your experience with FIORA. 
-                Dive into your account dashboard at <a href="https://fiora.com/dashboard" style="color:#007bff; text-decoration:none;">https://fiora.com/dashboard</a> 
-                to explore all the exciting features and perks now available to you.
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
-                Whether it’s unlocking new tools, enjoying enhanced rewards, or connecting with our vibrant community, there’s so much more for you to discover!
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin:0 0 20px; color:#4a5568;">
-                We can’t wait to see how you make the most of your updated membership. Stay engaged, explore your benefits, and let’s continue this journey together!
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin:0; color:#4a5568;">
-                Thank you for being a valued part of the FIORA community!
-              </p>
-              <p style="font-size:16px; line-height:1.6; margin-top:10px; color:#4a5568;">
-                Warm regards,<br><strong>The FIORA Team</strong>
-              </p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background:#f7fafc; padding:25px; text-align:center; font-size:12px; color:#718096; border-top:1px solid #e2e8f0;">
-              <p style="margin:0;">© 2025 FIORA. All rights reserved.</p>
             </td>
           </tr>
         </table>
