@@ -1,7 +1,7 @@
 import { ButtonCreation } from '@/components/common/atoms';
 import { SearchBar } from '@/components/common/organisms';
-import useDebounce from '@/shared/hooks/useDebounce';
 import { useAppDispatch } from '@/store';
+import { debounce } from 'lodash';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
@@ -73,7 +73,7 @@ const BudgetDashboardHeader = () => {
     }
   }, []);
 
-  const handleInputChange = useDebounce(handleSearch, 500);
+  const handleInputChange = debounce(handleSearch, 500);
 
   const handleClickButtonCreation = useCallback(() => {
     router.push('/budgets/create');

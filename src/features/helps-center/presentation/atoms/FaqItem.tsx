@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { useRouter } from 'next/navigation';
 import { Post } from '../../domain/entities/models/faqs';
 

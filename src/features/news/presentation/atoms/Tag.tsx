@@ -1,5 +1,5 @@
 // components/atoms/Tag.tsx
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 interface TagProps {
   children: React.ReactNode;

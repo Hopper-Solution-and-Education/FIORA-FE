@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import Image from 'next/image';
 
 interface WalletAttachmentPreviewModalProps {

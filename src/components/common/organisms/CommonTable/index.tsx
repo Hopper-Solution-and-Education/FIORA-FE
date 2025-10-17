@@ -9,11 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useCommonInfiniteScroll } from '@/shared/hooks/useCommonInfiniteScroll';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { useEffect, useMemo } from 'react';
 import CommonColumnMenu from './components/CommonColumnMenu';
 import CommonTableLoadingState from './components/CommonTableLoadingState';
+import { useCommonInfiniteScroll } from './hook';
 import { ColumnConfigMap, CommonTableProps } from './types';
 import { getAlignClass, loadColumnConfigFromStorage, saveColumnConfigToStorage } from './utils';
 

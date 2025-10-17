@@ -2,7 +2,7 @@
 
 import { STATUS_COLOR } from '@/features/profile/constant';
 import { EKYCStatus } from '@/features/profile/domain/entities/models/profile';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import { LucideIcon } from 'lucide-react';
 
 interface FormHeaderProps {

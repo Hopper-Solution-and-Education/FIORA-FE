@@ -1,8 +1,8 @@
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
 
 interface SmallMetricCardProps {
   title: string;

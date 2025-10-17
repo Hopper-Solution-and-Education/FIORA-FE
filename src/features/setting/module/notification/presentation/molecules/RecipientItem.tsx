@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { format } from 'date-fns';
 import { CheckCircle2, XCircle } from 'lucide-react';
 

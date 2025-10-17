@@ -1,8 +1,8 @@
 ﻿'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { useCurrencyFormatter } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import React from 'react';
 

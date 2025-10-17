@@ -1,6 +1,6 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FXRequestType } from '../../domain';

@@ -1,7 +1,7 @@
 'use client';
 
 import { type DeviceType, useDeviceDetect } from '@/shared/hooks/useIsMobile';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import RichTextEditor from 'reactjs-tiptap-editor';

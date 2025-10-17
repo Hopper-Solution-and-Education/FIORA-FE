@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { EKYCStatus } from '@/features/profile/domain/entities/models/profile';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 interface UserEKYCStatusBadgeProps {
   status?: EKYCStatus | string;
