@@ -1,5 +1,6 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/store';
@@ -20,15 +21,17 @@ const WalletWithdrawButton = () => {
   }, []);
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      aria-label="Deposit"
-      onClick={handleDeposit}
-      className="h-fit w-fit !px-4 !py-2"
-    >
-      <Icons.banknoteArrowDown className="!h-6 !w-6 text-red-600" />
-    </Button>
+    <CommonTooltip content="Withdraw Request">
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label="Deposit"
+        onClick={handleDeposit}
+        className="h-fit w-fit !px-4 !py-2"
+      >
+        <Icons.banknoteArrowDown className="!h-6 !w-6 text-red-600" />
+      </Button>
+    </CommonTooltip>
   );
 };
 

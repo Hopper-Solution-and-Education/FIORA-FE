@@ -213,7 +213,7 @@ function WithdrawFXForm() {
   if (isShowWithdrawFXForm && (isLoading || loading)) return <Loading />;
   return (
     <Dialog open={isShowWithdrawFXForm} onOpenChange={handleClose}>
-      <DialogContent className="sm:min-w-fit lg:min-w-[700px] flex flex-col items-center mx-4">
+      <DialogContent className="md:min-w-[700px] max-h-screen flex flex-col items-center rounded-md overflow-scroll">
         <DialogTitle className="text-3xl font-bold sm:block hidden">WITHDRAW FX</DialogTitle>
         <DialogDescription className="text-center sm:block hidden">
           Please be carefully when withdraw your FX, any mistaken will be responsible yourself.
