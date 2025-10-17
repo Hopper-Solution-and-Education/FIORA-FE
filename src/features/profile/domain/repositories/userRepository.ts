@@ -1,18 +1,18 @@
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserAssignedRole, UserBlocked, UserMyProfile } from '../entities/models/profile';
-import { UserSearchResult, UserSearchResultCS } from '../entities/models/user.types';
+import { EkycWithUser, EkycWithUserCS } from '../entities/models/user.types';
 
 export interface IUserRepository {
   getWithFilters(
-    whereClause: Prisma.UserWhereInput,
+    whereClause: Prisma.eKYCWhereInput,
     skip: number,
     limit: number,
-  ): Promise<UserSearchResult[]>;
+  ): Promise<EkycWithUser[]>;
   getWithFiltersCS(
-    whereClause: Prisma.UserWhereInput,
+    whereClause: Prisma.eKYCWhereInput,
     skip: number,
     limit: number,
-  ): Promise<UserSearchResultCS[]>;
+  ): Promise<EkycWithUserCS[]>;
   blockUser(blockUserId: string, userId: string): Promise<UserBlocked | null>;
   getUserIdById(id: string): Promise<string | null>;
   isUserBlocked(userId: string): Promise<boolean>;

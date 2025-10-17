@@ -52,3 +52,52 @@ export interface UserSearchResultCS {
     createdAt: Date;
   }[];
 }
+
+/**
+ * New types for eKYC-centric response
+ */
+export interface EkycWithUser {
+  // eKYC fields
+  id: string;
+  status: KYCStatus;
+  method: KYCMethod;
+  type: KYCType | null;
+  fieldName: string;
+  createdAt: Date;
+
+  // User info
+  User: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string;
+    isBlocked: boolean | null;
+    kyc_levels: string[];
+    createdAt: Date;
+    updatedAt: Date;
+    avatarId: string | null;
+    avatarUrl: string | null;
+  };
+}
+
+export interface EkycWithUserCS {
+  // eKYC fields
+  id: string;
+  status: KYCStatus;
+  method: KYCMethod;
+  type: KYCType | null;
+  fieldName: string;
+  createdAt: Date;
+
+  // User info (CS can't see role and isBlocked)
+  User: {
+    id: string;
+    name: string | null;
+    email: string;
+    kyc_levels: string[];
+    createdAt: Date;
+    updatedAt: Date;
+    avatarId: string | null;
+    avatarUrl: string | null;
+  };
+}

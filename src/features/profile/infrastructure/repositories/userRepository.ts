@@ -1,7 +1,7 @@
 import prisma from '@/config/prisma/prisma';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserAssignedRole, UserBlocked, UserMyProfile } from '../../domain/entities/models/profile';
-import { UserSearchResult, UserSearchResultCS } from '../../domain/entities/models/user.types';
+import { EkycWithUser, EkycWithUserCS } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 
 export class UserRepository implements IUserRepository {
@@ -15,12 +15,9 @@ export class UserRepository implements IUserRepository {
     });
   }
   getCountUserEkycByStatus(eKycStatus: KYCStatus): Promise<number> {
-    return prisma.user.count({
+    return prisma.eKYC.count({
       where: {
-        eKYC: {
-          some: { status: eKycStatus },
-          none: { status: { not: KYCStatus.PENDING } },
-        },
+        status: eKycStatus,
       },
     });
   }
@@ -98,30 +95,30 @@ export class UserRepository implements IUserRepository {
     return user?.isBlocked === true;
   }
   async getWithFilters(
-    whereClause: Prisma.UserWhereInput,
+    whereClause: Prisma.eKYCWhereInput,
     skip: number,
     limit: number,
-  ): Promise<UserSearchResult[]> {
-    const users = await prisma.user.findMany({
+  ): Promise<EkycWithUser[]> {
+    const ekycs = await prisma.eKYC.findMany({
       where: whereClause,
       select: {
         id: true,
-        name: true,
-        email: true,
-        role: true,
-        isBlocked: true,
-        kyc_levels: true,
+        status: true,
+        method: true,
+        type: true,
+        fieldName: true,
         createdAt: true,
-        updatedAt: true,
-        avatarId: true,
-        eKYC: {
+        User: {
           select: {
             id: true,
-            status: true,
-            method: true,
-            type: true,
-            fieldName: true,
+            name: true,
+            email: true,
+            role: true,
+            isBlocked: true,
+            kyc_levels: true,
             createdAt: true,
+            updatedAt: true,
+            avatarId: true,
           },
         },
       },
@@ -133,8 +130,8 @@ export class UserRepository implements IUserRepository {
     });
 
     // Get all unique avatarIds that are not null
-    const avatarIds = users
-      .map((user) => user.avatarId)
+    const avatarIds = ekycs
+      .map((ekyc) => ekyc.User?.avatarId)
       .filter((id): id is string => id !== null && id !== undefined);
 
     // Fetch avatars in one query if there are any avatarIds
@@ -157,35 +154,53 @@ export class UserRepository implements IUserRepository {
     const avatarMap = new Map(avatars.map((avatar) => [avatar.id, avatar.url]));
 
     // Merge avatar URLs with users
-    return users.map((user) => ({
-      ...user,
-      avatarUrl: user.avatarId ? avatarMap.get(user.avatarId) || null : null,
-    }));
+    return ekycs
+      .filter((ekyc) => ekyc.User) // Only include eKYCs with valid users
+      .map((ekyc) => ({
+        id: ekyc.id,
+        status: ekyc.status,
+        method: ekyc.method,
+        type: ekyc.type,
+        fieldName: ekyc.fieldName,
+        createdAt: ekyc.createdAt,
+        User: {
+          id: ekyc.User!.id,
+          name: ekyc.User!.name,
+          email: ekyc.User!.email,
+          role: ekyc.User!.role,
+          isBlocked: ekyc.User!.isBlocked,
+          kyc_levels: ekyc.User!.kyc_levels,
+          createdAt: ekyc.User!.createdAt,
+          updatedAt: ekyc.User!.updatedAt,
+          avatarId: ekyc.User!.avatarId,
+          avatarUrl: ekyc.User?.avatarId ? avatarMap.get(ekyc.User.avatarId) || null : null,
+        },
+      }));
   }
 
   async getWithFiltersCS(
-    whereClause: Prisma.UserWhereInput,
+    whereClause: Prisma.eKYCWhereInput,
     skip: number,
     limit: number,
-  ): Promise<UserSearchResultCS[]> {
-    const users = await prisma.user.findMany({
+  ): Promise<EkycWithUserCS[]> {
+    const ekycs = await prisma.eKYC.findMany({
       where: whereClause,
       select: {
         id: true,
-        name: true,
-        email: true,
-        kyc_levels: true,
+        status: true,
+        method: true,
+        type: true,
+        fieldName: true,
         createdAt: true,
-        updatedAt: true,
-        avatarId: true,
-        eKYC: {
+        User: {
           select: {
             id: true,
-            status: true,
-            method: true,
-            type: true,
-            fieldName: true,
+            name: true,
+            email: true,
+            kyc_levels: true,
             createdAt: true,
+            updatedAt: true,
+            avatarId: true,
           },
         },
       },
@@ -197,8 +212,8 @@ export class UserRepository implements IUserRepository {
     });
 
     // Get all unique avatarIds that are not null
-    const avatarIds = users
-      .map((user) => user.avatarId)
+    const avatarIds = ekycs
+      .map((ekyc) => ekyc.User?.avatarId)
       .filter((id): id is string => id !== null && id !== undefined);
 
     // Fetch avatars in one query if there are any avatarIds
@@ -221,10 +236,26 @@ export class UserRepository implements IUserRepository {
     const avatarMap = new Map(avatars.map((avatar) => [avatar.id, avatar.url]));
 
     // Merge avatar URLs with users
-    return users.map((user) => ({
-      ...user,
-      avatarUrl: user.avatarId ? avatarMap.get(user.avatarId) || null : null,
-    }));
+    return ekycs
+      .filter((ekyc) => ekyc.User) // Only include eKYCs with valid users
+      .map((ekyc) => ({
+        id: ekyc.id,
+        status: ekyc.status,
+        method: ekyc.method,
+        type: ekyc.type,
+        fieldName: ekyc.fieldName,
+        createdAt: ekyc.createdAt,
+        User: {
+          id: ekyc.User!.id,
+          name: ekyc.User!.name,
+          email: ekyc.User!.email,
+          kyc_levels: ekyc.User!.kyc_levels,
+          createdAt: ekyc.User!.createdAt,
+          updatedAt: ekyc.User!.updatedAt,
+          avatarId: ekyc.User!.avatarId,
+          avatarUrl: ekyc.User?.avatarId ? avatarMap.get(ekyc.User.avatarId) || null : null,
+        },
+      }));
   }
 }
 

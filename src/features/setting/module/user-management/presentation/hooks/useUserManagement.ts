@@ -2,8 +2,8 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { setLoading } from '../../slices';
-import { FilterState, User } from '../../slices/type';
-import { useGetCountUsersQuery, UserApiResponse, usersApi } from '../../store/api/userApi';
+import { EkycResponse, FilterState } from '../../slices/type';
+import { useGetCountUsersQuery, usersApi } from '../../store/api/userApi';
 import { initialState, tableReducer } from '../reducers/table-reducer.reducer';
 
 export function useUserManagement() {
@@ -133,25 +133,25 @@ export function useUserManagement() {
           // ...localFilter,
         }).unwrap();
 
-        const rows: UserApiResponse[] = response?.data || [];
+        const rows: EkycResponse[] = response?.data || [];
 
-        const transformedRows: User[] = rows.map(
-          (user: UserApiResponse): User => ({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.isBlocked ? 'blocked' : 'active',
-            registrationDate: new Date(user.createdAt).toLocaleDateString('en-GB'),
-            avatarUrl: user.avatarUrl || null,
-            eKYC: user.eKYC || [],
-          }),
-        );
+        // const transformedRows: User[] = rows.map(
+        //   (user: EkycResponse): User => ({
+        //     id: user.User?.id,
+        //     name: user.User?.name,
+        //     email: user.User?.email,
+        //     role: user.User?.role,
+        //     status: user.User?.isBlocked ? 'blocked' : 'active',
+        //     registrationDate: new Date(user.createdAt).toLocaleDateString('en-GB'),
+        //     avatarUrl: user.User?.avatarUrl || null,
+        //     eKYC: user.eKYC || [],
+        //   }),
+        // );
 
         if (isLoadMore) {
-          dispatchTable({ type: 'APPEND_DATA', payload: transformedRows });
+          dispatchTable({ type: 'APPEND_DATA', payload: rows });
         } else {
-          dispatchTable({ type: 'SET_DATA', payload: transformedRows });
+          dispatchTable({ type: 'SET_DATA', payload: rows });
         }
 
         dispatchTable({
@@ -187,7 +187,7 @@ export function useUserManagement() {
   }, [state.hasMore, state.isLoadingMore, state.pagination, fetchData]);
 
   // Update filteredUsers to use reducer state (accumulated data)
-  const filteredUsers: User[] = useMemo(() => {
+  const filteredUsers: EkycResponse[] = useMemo(() => {
     return state.data;
   }, [state.data]);
 
@@ -265,8 +265,8 @@ export function useUserManagement() {
   // Update stats to use reducer data
   const stats = useMemo(() => {
     const rawUsers = state.data; // Use accumulated data
-    const totalActive = rawUsers.filter((u) => u.status === 'active').length;
-    const totalBlocked = rawUsers.filter((u) => u.status === 'blocked').length;
+    const totalActive = rawUsers.filter((u) => u.User?.isBlocked === false).length;
+    const totalBlocked = rawUsers.filter((u) => u.User?.isBlocked === true).length;
     return { totalActive, totalBlocked };
   }, [state.data]);
 

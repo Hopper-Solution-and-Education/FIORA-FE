@@ -2,9 +2,9 @@ import { normalizeToArray } from '@/shared/utils/filterUtils';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserBlocked, UserMyProfile } from '../../domain/entities/models/profile';
 import {
+  EkycWithUser,
+  EkycWithUserCS,
   UserFilterParams,
-  UserSearchResult,
-  UserSearchResultCS,
 } from '../../domain/entities/models/user.types';
 import { IUserRepository } from '../../domain/repositories/userRepository';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
@@ -37,7 +37,7 @@ class UserUseCase {
   async getAllUserEkycPending(
     params: UserFilterParams,
     userRole: UserRole,
-  ): Promise<UserSearchResult[]> {
+  ): Promise<EkycWithUser[]> {
     const {
       search,
       status,
@@ -55,7 +55,7 @@ class UserUseCase {
     const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     // Build filters
-    const filters: Prisma.UserWhereInput = this.buildFilters(
+    const filters: Prisma.eKYCWhereInput = this.buildFilter(
       {
         search,
         status,
@@ -72,7 +72,7 @@ class UserUseCase {
     const skip = (pageNum - 1) * limitNum;
     // Get data
     try {
-      const result: UserSearchResult[] = await this.userRepository.getWithFilters(
+      const result: EkycWithUser[] = await this.userRepository.getWithFilters(
         filters,
         skip,
         limitNum,
@@ -89,10 +89,11 @@ class UserUseCase {
   async getAllUserEkycPendingCS(
     params: UserFilterParams,
     userRole: UserRole,
-  ): Promise<UserSearchResultCS[]> {
+  ): Promise<EkycWithUserCS[]> {
     const {
       search,
       status,
+      role,
       fromDate,
       toDate,
       userFromDate,
@@ -106,10 +107,11 @@ class UserUseCase {
     const limitNum = Math.min(100, Math.max(1, Number(pageSize)));
 
     // Build filters
-    const filters: Prisma.UserWhereInput = this.buildFilters(
+    const filters: Prisma.eKYCWhereInput = this.buildFilter(
       {
         search,
         status,
+        role,
         email,
         fromDate,
         toDate,
@@ -123,7 +125,7 @@ class UserUseCase {
 
     // Get data
     try {
-      const result: UserSearchResultCS[] = await this.userRepository.getWithFiltersCS(
+      const result: EkycWithUserCS[] = await this.userRepository.getWithFiltersCS(
         filters,
         skip,
         limitNum,
@@ -132,6 +134,7 @@ class UserUseCase {
       return result;
     } catch (error) {
       console.error('Error in getUsersUseCase:', error);
+      console.error('Filters:', JSON.stringify(filters, null, 2));
       throw error;
     }
   }
@@ -200,12 +203,16 @@ class UserUseCase {
       if (params.fromDate) {
         const fromDateObj = new Date(params.fromDate);
         if (!isNaN(fromDateObj.getTime())) {
+          // Set to start of day (00:00:00.000)
+          fromDateObj.setHours(0, 0, 0, 0);
           filters.eKYC.some.createdAt.gte = fromDateObj;
         }
       }
       if (params.toDate) {
         const toDateObj = new Date(params.toDate);
         if (!isNaN(toDateObj.getTime())) {
+          // Set to end of day (23:59:59.999)
+          toDateObj.setHours(23, 59, 59, 999);
           filters.eKYC.some.createdAt.lte = toDateObj;
         }
       }
@@ -217,12 +224,16 @@ class UserUseCase {
       if (params.userFromDate) {
         const userFromDateObj = new Date(params.userFromDate);
         if (!isNaN(userFromDateObj.getTime())) {
+          // Set to start of day (00:00:00.000)
+          userFromDateObj.setHours(0, 0, 0, 0);
           filters.createdAt.gte = userFromDateObj;
         }
       }
       if (params.userToDate) {
         const userToDateObj = new Date(params.userToDate);
         if (!isNaN(userToDateObj.getTime())) {
+          // Set to end of day (23:59:59.999)
+          userToDateObj.setHours(23, 59, 59, 999);
           filters.createdAt.lte = userToDateObj;
         }
       }
@@ -235,6 +246,111 @@ class UserUseCase {
         filters.isBlocked = { equals: false };
       }
     }
+    return filters;
+  }
+
+  buildFilter(params: UserFilterParams, role: UserRole): Prisma.eKYCWhereInput {
+    const filters: Prisma.eKYCWhereInput = {
+      status: KYCStatus.PENDING,
+      User: {} as Prisma.UserWhereInput,
+    };
+
+    // Search by name or email
+    if (params.search) {
+      filters.User!.OR = [
+        {
+          name: {
+            contains: params.search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          email: {
+            contains: params.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    // Filter by email
+    if (params.email) {
+      const emailArray = normalizeToArray(params.email as any);
+      filters.User!.email = { in: emailArray };
+    }
+
+    // Filter by role (Admin only)
+    if (params.role && role === UserRole.Admin) {
+      const roleArray = normalizeToArray(params.role as any) as UserRole[];
+      if (roleArray.length > 0) {
+        filters.User!.role = { in: roleArray };
+      }
+    }
+
+    // Filter by status (isBlocked) - Admin only
+    if (params.status && role === UserRole.Admin && !params.status.includes('all')) {
+      const statusArray = normalizeToArray(params.status as any);
+      const validStatuses = ['active', 'blocked'];
+      const filteredStatuses = statusArray.filter((s) => validStatuses.includes(s));
+
+      if (filteredStatuses.length > 0) {
+        if (filteredStatuses.includes('active') && filteredStatuses.includes('blocked')) {
+          // Include both active and blocked users - no filter needed
+        } else if (filteredStatuses.includes('active')) {
+          filters.User!.OR = [{ isBlocked: false }, { isBlocked: null }];
+        } else if (filteredStatuses.includes('blocked')) {
+          filters.User!.isBlocked = true;
+        }
+      }
+    }
+
+    // Filter by User registration date (userFromDate/userToDate)
+    if (params.userFromDate || params.userToDate) {
+      filters.User!.createdAt = {};
+      if (params.userFromDate) {
+        const userFromDateObj = new Date(params.userFromDate);
+        if (!isNaN(userFromDateObj.getTime())) {
+          // Set to start of day (00:00:00.000)
+          userFromDateObj.setHours(0, 0, 0, 0);
+          filters.User!.createdAt.gte = userFromDateObj;
+        }
+      }
+      if (params.userToDate) {
+        const userToDateObj = new Date(params.userToDate);
+        if (!isNaN(userToDateObj.getTime())) {
+          // Set to end of day (23:59:59.999)
+          userToDateObj.setHours(23, 59, 59, 999);
+          filters.User!.createdAt.lte = userToDateObj;
+        }
+      }
+    }
+
+    // Remove User filter if empty
+    if (Object.keys(filters.User!).length === 0) {
+      delete filters.User;
+    }
+
+    // Filter by eKYC submission date (fromDate/toDate)
+    if (params.fromDate || params.toDate) {
+      filters.createdAt = {};
+      if (params.fromDate) {
+        const fromDateObj = new Date(params.fromDate);
+        if (!isNaN(fromDateObj.getTime())) {
+          // Set to start of day (00:00:00.000)
+          fromDateObj.setHours(0, 0, 0, 0);
+          filters.createdAt.gte = fromDateObj;
+        }
+      }
+      if (params.toDate) {
+        const toDateObj = new Date(params.toDate);
+        if (!isNaN(toDateObj.getTime())) {
+          // Set to end of day (23:59:59.999)
+          toDateObj.setHours(23, 59, 59, 999);
+          filters.createdAt.lte = toDateObj;
+        }
+      }
+    }
+
     return filters;
   }
 }
