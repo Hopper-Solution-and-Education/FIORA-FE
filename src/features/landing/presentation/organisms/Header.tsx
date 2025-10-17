@@ -9,13 +9,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
-import HelpCenter from '@/components/layouts/dashboard-header/HelpCenter';
-import MarqueeAnnouncement from '@/components/layouts/dashboard-header/MarqueAnnouncement';
-import NewsCenter from '@/components/layouts/dashboard-header/NewsCenter';
+import HelpCenter from '@/components/layouts/dashboard-header/components/HelpCenter';
+import MarqueeAnnouncement from '@/components/layouts/dashboard-header/components/MarqueAnnouncement';
+import NewsCenter from '@/components/layouts/dashboard-header/components/NewsCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
-} from '@/components/layouts/dashboard-header/SettingCenter';
+} from '@/components/layouts/dashboard-header/components/SettingCenter';
 import { UserNav } from '@/components/layouts/user-nav/UserNav';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -33,8 +33,8 @@ export const menuSettingItems: MenuSettingItem[] = [
     url: '/setting/partner',
     featureFlags: FeatureFlags.PARTNER_FEATURE,
   },
-  { label: 'Users', icon: Icons.users, url: '#' },
-  { label: 'Role & Permission', icon: Icons.clipboardList, url: '#' },
+  { label: 'Users', icon: Icons.users, url: '/setting/user' },
+  { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting/role-permission' },
   { label: 'Global Setting', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
   {
     label: 'User Management',

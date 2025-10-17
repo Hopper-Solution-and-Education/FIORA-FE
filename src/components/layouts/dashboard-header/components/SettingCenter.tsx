@@ -15,18 +15,16 @@ import { Currency } from '@prisma/client';
 import usdIcon from '@public/icons/usd.svg';
 import { Settings } from 'lucide-react';
 import { Session, useSession } from 'next-auth/react';
-import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { filterMenuItems, MenuSettingItem, menuSettingItems } from './utils';
+import { filterMenuItems, MenuSettingItem, menuSettingItems } from '../utils';
 
 type SettingCenterProps = {
   isShowingText?: boolean;
 };
 
 export default function SettingCenter({ isShowingText = true }: SettingCenterProps) {
-  const { theme, setTheme } = useTheme();
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
   const gb = growthbook;
@@ -39,11 +37,6 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
   useEffect(() => {
     document.documentElement.lang = language;
   }, [currency, language]);
-
-  const toggleTheme = (e: any) => {
-    e.stopPropagation();
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   const handleOpenCurrencyDropdown = (e: any) => {
     e.stopPropagation();
@@ -69,12 +62,18 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
     <DropdownMenu modal={false}>
       <CommonTooltip content={<p>Settings</p>} side="top" delayDuration={0}>
         <DropdownMenuTrigger asChild>
-          <div className="flex flex-col gap-1 justify-center items-center">
-            <Settings
-              size={ICON_SIZE.MD}
-              className="transition-all duration-200 hover:scale-110 cursor-pointer"
-            />
-            {isShowingText && <span className="text-sm">Settings</span>}
+          <div className="flex flex-col gap-1 justify-center items-center group">
+            <div className="p-2 rounded-lg transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20">
+              <Settings
+                size={ICON_SIZE.MD}
+                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110 cursor-pointer"
+              />
+            </div>
+            {isShowingText && (
+              <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+                Settings
+              </span>
+            )}
           </div>
         </DropdownMenuTrigger>
       </CommonTooltip>
@@ -83,7 +82,7 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
         align="end"
         className={`${
           session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
-        } p-4 grid gap-4 border shadow-md`}
+        } p-4 grid gap-4 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm`}
       >
         {/* <CommonTooltip content={<span>Toggle Theme</span>} side="top" delayDuration={0}>
           <div
@@ -101,7 +100,7 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
         <CommonTooltip content={<span>Currency Display</span>} side="top" delayDuration={0}>
           <div
             onClick={handleOpenCurrencyDropdown}
-            className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105"
           >
             <Image src={usdIcon} alt="USD" width={20} height={20} className="dark:invert" />
           </div>
@@ -116,15 +115,18 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
               key={index}
             >
               <Link href={item.url} passHref>
-                <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
-                  <item.icon size={ICON_SIZE.MD} />
+                <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105">
+                  <item.icon
+                    size={ICON_SIZE.MD}
+                    className="text-foreground hover:text-primary transition-colors"
+                  />
                 </div>
               </Link>
             </CommonTooltip>
           ))}
 
         {showCurrencyDropdown && (
-          <div className="col-span-5 py-2 border-t-[1px] border-gray-200 dark:border-gray-700 grid grid-cols-5 gap-2">
+          <div className="col-span-5 py-2 border-t-[1px] border-border/60 grid grid-cols-5 gap-2">
             {getSupportedCurrencies().map((currency: string) => (
               <CommonTooltip
                 content={<span>{currency}</span>}
@@ -134,11 +136,15 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
               >
                 <div
                   onClick={(e) => handleToggleCurrency(e, currency)}
-                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${
-                    selectedCurrency === currency ? 'bg-gray-200 dark:bg-gray-700' : ''
+                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105 ${
+                    selectedCurrency === currency
+                      ? 'bg-primary/10 dark:bg-primary/20 border-primary/50'
+                      : ''
                   }`}
                 >
-                  <span className="text-md font-semibold">{exchangeRates[currency].suffix}</span>
+                  <span className="text-md font-semibold text-foreground">
+                    {exchangeRates[currency].suffix}
+                  </span>
                 </div>
               </CommonTooltip>
             ))}

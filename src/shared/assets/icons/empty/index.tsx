@@ -1,4 +1,4 @@
-import type { IconProps } from '@/shared/icons';
+import type { IconProps } from '@/shared/assets/icons';
 
 export default function ImgEmpty(props: IconProps) {
   const { color = '', width = 120, className = '' } = props;

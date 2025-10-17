@@ -98,18 +98,18 @@ export function NotificationContent({
     return (
       <div
         className={cn(
-          'flex items-center p-3 gap-4 rounded-lg shadow-sm shadow-gray-400 border border-gray-200 hover:bg-gray-100 cursor-pointer',
-          isRead && '!opacity-60',
+          'flex items-center p-3 gap-4 rounded-lg border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 hover:border-primary/50 hover:shadow-md',
+          isRead && 'opacity-60',
         )}
         onClick={onClick}
       >
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">{data.title}</p>
-          <p className="text-sm text-gray-600">{data.message}</p>
-          <p className="text-xs text-gray-500 mt-1">{format(data.createdAt, 'dd MMM yyyy')}</p>
+          <p className="font-semibold text-foreground">{data.title}</p>
+          <p className="text-sm text-foreground/80">{data.message}</p>
+          <p className="text-xs text-foreground/60 mt-1">{format(data.createdAt, 'dd MMM yyyy')}</p>
         </div>
         {data.imageUrl && (
-          <div className="w-16 h-16 flex-shrink-0 relative overflow-hidden rounded-md border border-gray-200">
+          <div className="w-16 h-16 flex-shrink-0 relative overflow-hidden rounded-md border border-border/60">
             <Image
               src={data.imageUrl}
               alt="Notification thumbnail"
@@ -127,23 +127,29 @@ export function NotificationContent({
     <DropdownMenu>
       <CommonTooltip content="Notifications">
         <DropdownMenuTrigger asChild>
-          <div className="flex flex-col gap-1 justify-center items-center">
-            <div className="relative">
+          <div className="flex flex-col gap-1 justify-center items-center group">
+            <div className="relative p-2 rounded-lg transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20">
               <Bell
                 size={ICON_SIZE.MD}
-                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110 cursor-pointer"
               />
               {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <span className="text-sm">Notifications</span>
+            <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+              Notifications
+            </span>
           </div>
         </DropdownMenuTrigger>
       </CommonTooltip>
-      <DropdownMenuContent className="w-80 md:w-96 p-0" align="end" forceMount>
+      <DropdownMenuContent
+        className="w-80 md:w-96 p-0 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm"
+        align="end"
+        forceMount
+      >
         <Card className="shadow-none border-0">
           <CardHeader className="flex flex-row items-center justify-end pb-2">
             <Link href="/notification" passHref>

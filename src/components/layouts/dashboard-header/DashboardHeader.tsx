@@ -1,29 +1,21 @@
 'use client';
 
-import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { ICON_SIZE } from '@/shared/constants/size';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { Gift } from 'lucide-react';
-import Link from 'next/link';
 import { Breadcrumbs } from '../../Breadcrumbs';
 import { Separator } from '../../ui/separator';
 import { UserNav } from '../user-nav/UserNav';
-import FinanceSummary from './FinanceSummary';
-import HelpCenter from './HelpCenter';
-import MarqueeAnnouncement from './MarqueAnnouncement';
-import NewsCenter from './NewsCenter';
-import { NotificationContent } from './NotificationContent';
-import SettingCenter from './SettingCenter';
+import FinanceSummary from './components/FinanceSummary';
+import HelpCenter from './components/HelpCenter';
+import MarqueeAnnouncement from './components/MarqueAnnouncement';
+import NewsCenter from './components/NewsCenter';
+import { NotificationContent } from './components/NotificationContent';
+import Rewards from './components/Rewards';
+import SettingCenter from './components/SettingCenter';
 
 export default function Header() {
   const isMobile = useIsMobile();
@@ -40,64 +32,42 @@ export default function Header() {
   };
 
   return (
-    <header className="transition-[width,height] ease-linear pt-2">
+    <header className="sticky top-0 z-40 transition-[width,height] ease-linear backdrop-blur-md bg-background/80 border-b border-border/40 shadow-sm mb-4">
       {/* Announcement */}
       {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
-        <div className="flex items-center justify-between w-full">
-          <MarqueeAnnouncement className="text-sm w-full text-red-700">
+        <div className="flex items-center justify-between w-full bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-b border-red-200 dark:border-red-800/50 px-4 py-2">
+          <MarqueeAnnouncement className="text-sm w-full text-red-700 dark:text-red-400 font-medium">
             {announcement?.data?.[0]?.content}
           </MarqueeAnnouncement>
-          <Button variant="ghost" size="icon" onClick={handleClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClose}
+            className="hover:bg-red-100 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 transition-colors"
+          >
             ✕
           </Button>
         </div>
       )}
 
       {/* FBalance, FDebt & Search */}
-      <section className="flex h-14 shrink-0 items-center justify-between gap-4 px-4">
+      <section className="flex h-16 shrink-0 items-center justify-between gap-6 px-6 py-3">
         {/* Tài chính */}
         <FinanceSummary />
 
         {/* Icon Buttons + User */}
-        <div className="hidden md:flex items-center gap-6">
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Bell
-                size={ICON_SIZE.MD}
-                className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>No new notifications</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu> */}
-
+        <div className="hidden md:flex items-center gap-4 pt-4">
           <NotificationContent
             data={notification?.data || []}
             onNotificationUpdate={handleNotificationUpdate}
           />
 
-          <DropdownMenu>
-            <CommonTooltip content="Rewards">
-              <DropdownMenuTrigger asChild>
-                <div className="flex flex-col gap-1 justify-center items-center">
-                  <Gift
-                    size={ICON_SIZE.MD}
-                    className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
-                  />
-                  <span className="text-sm">Rewards</span>
-                </div>
-              </DropdownMenuTrigger>
-            </CommonTooltip>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link href="/referral">Check your rewards</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Rewards />
 
           <NewsCenter />
+
           <HelpCenter />
+
           <SettingCenter />
 
           <UserNav />
@@ -105,10 +75,10 @@ export default function Header() {
       </section>
 
       {/* Breadcrumbs dưới */}
-      <div className="flex items-center justify-between gap-2 p-4">
-        <div className="flex items-center gap-4">
-          {isMobile && <SidebarTrigger />}
-          <Separator orientation="vertical" className="mr-2 h-4" />
+      <div className="flex items-center justify-between gap-2 p-4 pt-8">
+        <div className="flex items-center gap-4 w-full">
+          {isMobile && <SidebarTrigger className="hover:bg-accent transition-colors" />}
+          <Separator orientation="vertical" className="mr-2 h-5 bg-border/60" />
           <Breadcrumbs />
         </div>
       </div>
