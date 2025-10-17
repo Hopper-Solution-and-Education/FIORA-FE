@@ -1,6 +1,7 @@
 'use client';
 
 import { MetricCard } from '@/components/common/metric';
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { OtpState } from '../../types';
+import AmountSelect from '../components/AmountSelect'; // 🟩 nhớ import nếu file này tồn tại
 import InputOtp from '../components/InputOtp';
 import SendOtpButton from '../components/SendOtpButton';
 
@@ -30,9 +32,10 @@ function SendingFXForm() {
     movedAmount: 0,
     availableLimit: 0,
   });
-
+  const [packageFXs, setPackageFXs] = useState<number[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // 🟨 Fetch limit
   const amountLimitData = async () => {
@@ -68,6 +71,7 @@ function SendingFXForm() {
             movedAmount: d.movedAmount?.amount || 0,
             availableLimit: d.availableLimit?.amount || 0,
           });
+          setPackageFXs(d.packageFXs || []);
         }
       });
 
@@ -110,9 +114,8 @@ function SendingFXForm() {
       const data = await res.json();
 
       if (res.ok && data.status === 200) {
-        toast.error('OTP has been sent successfully. Please check your email!');
+        toast.success('OTP has been sent successfully. Please check your email!');
         setOtpState('Resend');
-        // ⏳ Khóa resend trong 2 phút
         setTimeout(() => setOtpState('Get'), 120000);
       } else {
         toast.error(data.message || 'Failed to send OTP');
@@ -123,11 +126,12 @@ function SendingFXForm() {
     }
   };
 
-  // 💸 Gửi FX (API /api/sending-wallet/send-fx)
   const handleSubmit = async () => {
     if (!receiver) return alert('Receiver email required');
     if (!amount) return alert('Amount required');
     if (!otp || otp.length !== 6) return alert('OTP must be 6 digits');
+
+    setLoading(true); // 🟡 bật loading trước khi fetch
 
     try {
       const res = await fetch('/api/sending-wallet/send-fx', {
@@ -136,7 +140,7 @@ function SendingFXForm() {
         body: JSON.stringify({
           amount: Number(amount),
           otp,
-          emailReciever: receiver, // đúng key theo API doc
+          emailReciever: receiver,
           categoryId,
           productIds: productId ? [productId] : [],
         }),
@@ -153,6 +157,8 @@ function SendingFXForm() {
     } catch (err) {
       console.error(err);
       toast.error('An error occurred while sending FX');
+    } finally {
+      setLoading(false); // 🟢 tắt loading sau khi xong
     }
   };
 
@@ -205,13 +211,13 @@ function SendingFXForm() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Amount <span className="text-red-700">*</span>
-              </label>
-              <Input
-                placeholder="Enter amount to send"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+              <AmountSelect
+                value={Number(amount) || undefined}
+                onChange={(v) => setAmount(v.toString())}
+                label="Amount"
+                currency="FX"
+                required
+                initialPackages={packageFXs}
               />
             </div>
           </div>
@@ -257,13 +263,23 @@ function SendingFXForm() {
             className="rounded-lg border-gray-300 px-8 text-gray-700 hover:bg-gray-100"
             onClick={handleClose}
           >
-            ←
+            <Icons.arrowLeft className="w-4 h-4" />
           </Button>
           <Button
-            className="rounded-lg bg-blue-600 text-white px-8 font-semibold hover:bg-blue-700 transition"
+            className="rounded-lg bg-blue-600 text-white px-8 font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
             onClick={handleSubmit}
+            disabled={loading} // 🟡 disable khi đang xử lý
           >
-            ✓
+            {loading ? (
+              <>
+                <Icons.spinner className="animate-spin w-4 h-4" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Icons.check className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
