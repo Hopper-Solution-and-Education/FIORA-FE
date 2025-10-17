@@ -10,7 +10,7 @@ import { useUserSession } from '@/features/profile/shared/hooks/useUserSession';
 import { UserRole } from '@prisma/client';
 import { ArrowDown, ArrowLeftRight, ArrowUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { FilterState, User } from '../../slices/type';
+import { EkycResponse, FilterState } from '../../slices/type';
 import UserAvatar from '../atoms/UserAvatar';
 import UserEKYCStatusBadge from '../atoms/UserEKYCStatusBadge';
 import { UserStatusBadge } from '../atoms/UserStatusBadge';
@@ -31,7 +31,7 @@ const SortArrowBtn = ({
 };
 
 interface UserTableProps {
-  users: User[];
+  users: EkycResponse[];
   onUserAction?: (userId: string) => void;
   searchQuery: string;
   filters: FilterState;
@@ -101,20 +101,20 @@ export function UserTable({
 
       switch (sortKey) {
         case 'profile':
-          aValue = (a.name || a.email || '').toLowerCase();
-          bValue = (b.name || b.email || '').toLowerCase();
+          aValue = (a.User?.name || a.User?.email || '').toLowerCase();
+          bValue = (b.User?.name || b.User?.email || '').toLowerCase();
           break;
         case 'role':
-          aValue = a.role.toLowerCase();
-          bValue = b.role.toLowerCase();
+          aValue = a.User?.role.toLowerCase();
+          bValue = b.User?.role.toLowerCase();
           break;
         case 'registrationDate':
-          aValue = a.registrationDate;
-          bValue = b.registrationDate;
+          aValue = a.User?.createdAt;
+          bValue = b.User?.createdAt;
           break;
         case 'kycSubmissionDate':
-          aValue = a.eKYC?.[0]?.createdAt || '';
-          bValue = b.eKYC?.[0]?.createdAt || '';
+          aValue = a.createdAt || '';
+          bValue = b.createdAt || '';
           break;
         case 'userStatus':
           aValue = a.status.toLowerCase();
@@ -130,7 +130,7 @@ export function UserTable({
     });
   }, [users, sortKey, sortDirection]);
 
-  const allColumns: CommonTableColumn<User>[] = [
+  const allColumns: CommonTableColumn<EkycResponse>[] = [
     {
       key: 'profile',
       titleText: 'Profile',
@@ -148,14 +148,14 @@ export function UserTable({
         </div>
       ),
       align: 'left',
-      width: '12%',
-      render: (user) => (
+      width: '24%',
+      render: (ekyc) => (
         <div className="pl-1 py-3 truncate items-center">
           <UserAvatar
-            src={user.avatarUrl ? String(user.avatarUrl) : null}
-            user={user}
-            name={user.name}
-            email={user.email}
+            src={ekyc.User?.avatarUrl ? String(ekyc.User?.avatarUrl) : null}
+            ekyc={ekyc}
+            name={ekyc.User?.name}
+            email={ekyc.User?.email}
             size="sm"
             showTooltip={true}
           />
@@ -180,11 +180,11 @@ export function UserTable({
       ),
       align: 'center',
       width: '8%',
-      render: (user) => (
+      render: (ekyc) => (
         <span
-          className={`px-2 py-1 rounded text-xs font-medium ${getRoleClass(user.role)} border-gray-200`}
+          className={`px-2 py-1 rounded text-xs font-medium ${getRoleClass(ekyc.User?.role)} border-gray-200`}
         >
-          {user.role}
+          {ekyc.User?.role}
         </span>
       ),
     },
@@ -208,8 +208,14 @@ export function UserTable({
         </div>
       ),
       align: 'center',
-      width: '15%',
-      render: (user) => <span className="text-gray-600">{user.registrationDate}</span>,
+      width: '16%',
+      render: (ekyc) => (
+        <span className="text-gray-600">
+          {ekyc.User?.createdAt
+            ? new Date(ekyc.User?.createdAt).toLocaleDateString('en-GB')
+            : 'N/A'}
+        </span>
+      ),
     },
     {
       key: 'kycSubmissionDate',
@@ -231,12 +237,10 @@ export function UserTable({
         </div>
       ),
       align: 'center',
-      width: '12%',
-      render: (user) => (
+      width: '18%',
+      render: (ekyc) => (
         <span className="text-gray-600">
-          {user.eKYC?.[0]?.createdAt
-            ? new Date(user.eKYC[0].createdAt).toLocaleDateString('en-GB')
-            : 'N/A'}
+          {ekyc.createdAt ? new Date(ekyc.createdAt).toLocaleDateString('en-GB') : 'N/A'}
         </span>
       ),
     },
@@ -245,9 +249,9 @@ export function UserTable({
       title: 'KYC Status',
       align: 'center',
       width: '12%',
-      render: (user) => {
-        const latestEKYCStatus = user.eKYC && user.eKYC.length > 0 ? user.eKYC[0].status : null;
-        const displayStatus = latestEKYCStatus || user.status;
+      render: (ekyc) => {
+        const latestEKYCStatus = ekyc.status;
+        const displayStatus = latestEKYCStatus || ekyc.status;
 
         return <UserEKYCStatusBadge status={displayStatus} />;
       },
@@ -270,17 +274,15 @@ export function UserTable({
       ),
       align: 'center',
       width: '12%',
-      render: (user) => (
-        <UserStatusBadge status={user.status === 'blocked' ? 'Blocked' : 'Active'} />
-      ),
+      render: (ekyc) => <UserStatusBadge status={ekyc.User?.isBlocked ? 'Blocked' : 'Active'} />,
     },
     {
       key: 'action',
       title: 'Action',
       align: 'center',
-      width: '10  %',
+      width: '10%',
       render: (user) => (
-        <Button variant="ghost" size="sm" onClick={() => onUserAction?.(user.id)}>
+        <Button variant="ghost" size="sm" onClick={() => onUserAction?.(user.User?.id)}>
           <ArrowLeftRight size={16} />
         </Button>
       ),
@@ -312,7 +314,7 @@ export function UserTable({
   const [columnConfig, setColumnConfig] = useState<ColumnConfigMap>(initialConfig);
 
   return (
-    <CommonTable<User>
+    <CommonTable<EkycResponse>
       data={sortedUsers}
       columns={columns}
       columnConfig={columnConfig}
@@ -329,7 +331,7 @@ export function UserTable({
           filters={filters}
           onSearchChange={onSearchChange}
           onFilterChange={onFilterChange}
-          users={sortedUsers}
+          users={sortedUsers.map((user) => user.User)}
         />
       }
       rightHeaderNode={

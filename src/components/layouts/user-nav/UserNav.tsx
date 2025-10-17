@@ -44,9 +44,9 @@ export function UserNav({ handleSignOut }: UserNavProps) {
   );
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
-    userId: user.id,
-    title: user.name || user.email || 'No Name',
-    image: user.avatarUrl,
+    userId: user.User?.id,
+    title: user.User?.name || user.User?.email || 'No Name',
+    image: user.User?.avatarUrl,
   }));
 
   useEffect(() => {

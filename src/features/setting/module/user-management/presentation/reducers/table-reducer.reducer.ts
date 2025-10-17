@@ -1,7 +1,7 @@
-import { User } from '../../slices/type';
+import { EkycResponse } from '../../slices/type';
 
 interface TableState {
-  data: User[];
+  data: EkycResponse[];
   pagination: {
     page: number;
     pageSize: number;
@@ -25,8 +25,8 @@ export const initialState: TableState = {
 };
 
 type TableAction =
-  | { type: 'SET_DATA'; payload: User[] }
-  | { type: 'APPEND_DATA'; payload: User[] }
+  | { type: 'SET_DATA'; payload: EkycResponse[] }
+  | { type: 'APPEND_DATA'; payload: EkycResponse[] }
   | { type: 'SET_PAGINATION'; payload: { page: number; pageSize: number; total: number } }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_HAS_MORE'; payload: boolean }
