@@ -47,7 +47,7 @@ const EditAboutUsPage: React.FC = () => {
 
   return (
     <main className="p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Page Header */}
         <div className="border-b pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Edit About Us</h1>

@@ -215,14 +215,14 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
   if (isLoadingData) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="px-4 sm:px-6 lg:px-8">
         <Skeleton className="w-full h-96" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full mx-auto">
       <IdentificationHeader status={eKYCData?.status} />
 
       {isRejected && identificationDocument?.remarks && (

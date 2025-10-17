@@ -2,7 +2,7 @@
 
 import Header from '@/features/landing/presentation/organisms/Header';
 import { motion } from 'framer-motion';
-import { PartnerLogo, ScrollToTop } from '../atoms';
+import { PartnerLogo } from '../atoms';
 import { Banner } from '../molecules/Banner';
 import { FioraSystem } from '../molecules/FioraSystem';
 import FeedbackSection from '../organisms/FeedbackSection';
@@ -108,8 +108,6 @@ const LandingPage = () => {
       >
         <Footer />
       </motion.div>
-
-      <ScrollToTop />
     </>
   );
 };
