@@ -140,7 +140,7 @@ export function UserTable({
           onMouseEnter={() => setHoveringColumn('profile')}
           onMouseLeave={() => setHoveringColumn(null)}
         >
-          <span className={sortKey === 'profile' ? 'text-blue-500' : ''}>Profile</span>
+          <span>Profile</span>
           {(hoveringColumn === 'profile' || sortKey === 'profile') && (
             <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'profile'} />
           )}
@@ -170,14 +170,14 @@ export function UserTable({
           onMouseEnter={() => setHoveringColumn('role')}
           onMouseLeave={() => setHoveringColumn(null)}
         >
-          <span className={sortKey === 'role' ? 'text-blue-500' : ''}>Role</span>
+          <span>Role</span>
           {(hoveringColumn === 'role' || sortKey === 'role') && (
             <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'role'} />
           )}
         </div>
       ),
       align: 'center',
-      width: '5%',
+      width: '8%',
       render: (user) => (
         <span
           className={`px-2 py-1 rounded text-xs font-medium ${getRoleClass(user.role)} border-gray-200`}
@@ -195,9 +195,7 @@ export function UserTable({
           onMouseEnter={() => setHoveringColumn('registrationDate')}
           onMouseLeave={() => setHoveringColumn(null)}
         >
-          <span className={sortKey === 'registrationDate' ? 'text-blue-500' : ''}>
-            Registration Date
-          </span>
+          <span>Registration Date</span>
           {(hoveringColumn === 'registrationDate' || sortKey === 'registrationDate') && (
             <SortArrowBtn
               sortDirection={sortDirection}
@@ -207,7 +205,7 @@ export function UserTable({
         </div>
       ),
       align: 'center',
-      width: '8%',
+      width: '15%',
       render: (user) => <span className="text-gray-600">{user.registrationDate}</span>,
     },
     {
@@ -219,9 +217,7 @@ export function UserTable({
           onMouseEnter={() => setHoveringColumn('kycSubmissionDate')}
           onMouseLeave={() => setHoveringColumn(null)}
         >
-          <span className={sortKey === 'kycSubmissionDate' ? 'text-blue-500' : ''}>
-            KYC Submission Date
-          </span>
+          <span>KYC Submission Date</span>
           {(hoveringColumn === 'kycSubmissionDate' || sortKey === 'kycSubmissionDate') && (
             <SortArrowBtn
               sortDirection={sortDirection}
@@ -231,7 +227,7 @@ export function UserTable({
         </div>
       ),
       align: 'center',
-      width: '10%',
+      width: '12%',
       render: (user) => (
         <span className="text-gray-600">
           {user.eKYC?.[0]?.createdAt
@@ -244,7 +240,7 @@ export function UserTable({
       key: 'status',
       title: 'KYC Status',
       align: 'center',
-      width: '5%',
+      width: '12%',
       render: (user) => {
         const latestEKYCStatus = user.eKYC && user.eKYC.length > 0 ? user.eKYC[0].status : null;
         const displayStatus = latestEKYCStatus || user.status;
@@ -261,14 +257,14 @@ export function UserTable({
           onMouseEnter={() => setHoveringColumn('userStatus')}
           onMouseLeave={() => setHoveringColumn(null)}
         >
-          <span className={sortKey === 'userStatus' ? 'text-blue-500' : ''}>User Status</span>
+          <span>User Status</span>
           {(hoveringColumn === 'userStatus' || sortKey === 'userStatus') && (
             <SortArrowBtn sortDirection={sortDirection} isActivated={sortKey === 'userStatus'} />
           )}
         </div>
       ),
       align: 'center',
-      width: '6%',
+      width: '12%',
       render: (user) => (
         <UserStatusBadge status={user.status === 'blocked' ? 'Blocked' : 'Active'} />
       ),
@@ -277,7 +273,7 @@ export function UserTable({
       key: 'action',
       title: 'Action',
       align: 'center',
-      width: '5%',
+      width: '10  %',
       render: (user) => (
         <Button variant="ghost" size="sm" onClick={() => onUserAction?.(user.id)}>
           <ArrowLeftRight size={16} />
