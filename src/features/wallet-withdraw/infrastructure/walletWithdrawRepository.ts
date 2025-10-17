@@ -299,20 +299,27 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       });
 
       if (createDepositRequest) {
-        const emails: string[] = [
-          ...(emailUser?.email ? [emailUser.email] : []),
-          ...emailAdmin.map((admin) => admin.email),
-        ];
+        const emails: string[] = [...emailAdmin.map((admin) => admin.email)];
         await notificationRepository.createBoxNotification({
-          title: 'WITHDRAW_REQUEST',
+          title: 'Withdrawal Request Created',
+          type: 'WITHDRAW_REQUEST',
+          notifyTo: 'PERSONAL',
+          attachmentId: '',
+          deepLink: '/wallet/payment',
+          emails: emailUser ? [emailUser.email] : [],
+          message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
+        });
+        await notificationRepository.createBoxNotification({
+          title: 'New Withdrawal Request from User',
           type: 'WITHDRAW_REQUEST',
           notifyTo: 'PERSONAL',
           attachmentId: '',
           deepLink: '/wallet/payment',
           emails,
-          message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
+          message: `A new withdrawal request has been submitted by ${emailUser?.email} for the amount of ${amount}.`,
         });
       }
+
       return {
         data: result,
       };
@@ -400,13 +407,16 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
     if (!WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID || !WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id) {
       throw new BadRequestError('WITHDRAWAL_OTP_EMAIL_TEMPLATE not found');
     }
-    await this._notificationUsecase.sendNotificationWithTemplate(
-      WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id,
-      [emailPart],
-      NotificationType.PERSONAL,
-      'WITHDRAW_OTP',
-      'Your OTP for withdrawal verification',
-    );
+    await this._notificationUsecase.createNotificationWithTemplate({
+      emailTemplateId: WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id,
+      emailParts: [emailPart],
+      notifyTo: NotificationType.PERSONAL,
+      type: 'WITHDRAW_OTP',
+      title: 'Your OTP for withdrawal verification',
+      message: `Your OTP for withdrawal verification is ${random6Digits}.`,
+      emails: [user.email],
+    });
+
     const data = await prisma.otp.create({
       data: {
         type: OtpType.WITHDRAW,
