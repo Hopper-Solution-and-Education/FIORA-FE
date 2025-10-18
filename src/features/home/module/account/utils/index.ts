@@ -41,20 +41,27 @@ const mapAccountToBarItem = (
   targetCurrency: string,
   getExchangeRate: (fromCurrency: string, toCurrency: string) => number | null,
 ): BarItem => {
-  // Recursively map children
-  const childrenItems =
-    account.children?.map((child) => mapAccountToBarItem(child, targetCurrency, getExchangeRate)) ||
-    [];
-  const childrenTotalBalance = childrenItems.reduce((sum, child) => sum + child.value, 0);
+  let childrenTotalBalance = 0;
+  const isChild = !!account.parentId;
+
+  // Is parent
+  if (!isChild) {
+    account.children?.forEach((child) => {
+      childrenTotalBalance += Number(child.baseAmount) || 0;
+    });
+  }
 
   // Calculate the total value: own balance + sum of children's values
   const ownBalance = Number(account.baseAmount) || 0;
   const totalValue = ownBalance + childrenTotalBalance;
-  const isChild = !!account.parentId;
 
   // Convert value based on currency
   const convertedValue =
     Number((getExchangeRate(account.baseCurrency, targetCurrency) || 1).toFixed(2)) * totalValue;
+
+  const childrenItems =
+    account.children?.map((child) => mapAccountToBarItem(child, targetCurrency, getExchangeRate)) ||
+    [];
 
   return {
     id: account.id,

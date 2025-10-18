@@ -9,7 +9,6 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useEffect } from 'react';
 import AccountDashboard from '../account/AccountDashboard';
 import RecentTransactions from './components/RecentTransactions';
-import Recommendations from './components/Recommendations';
 
 export default function HomePage() {
   const isAccountFeatureOn = useFeatureIsOn(FeatureFlags.ACCOUNT_FEATURE as any);
@@ -43,7 +42,6 @@ export default function HomePage() {
             {/* Right Section: Transactions & Recommendations */}
             <div className="col-span-1 md:col-span-2 lg:col-span-3 space-y-4">
               <RecentTransactions />
-              <Recommendations />
             </div>
           </div>
         </TabsContent>

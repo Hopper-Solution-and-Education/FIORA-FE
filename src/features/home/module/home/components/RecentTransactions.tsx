@@ -202,7 +202,7 @@ export default function RecentTransactions() {
   return (
     <>
       <div
-        className="h-[350px] md:h-[400px] lg:h-[500px] border rounded-md border-gray-100 dark:border-gray-800 pl-3 py-2 shadow-sm cursor-pointer relative"
+        className="border rounded-md border-gray-100 dark:border-gray-800 pl-3 py-2 shadow-sm cursor-pointer relative"
         role="region"
         aria-label="Recent Transactions"
         tabIndex={0}
