@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';
 import { IGetMembershipTiersUseCase } from '../../domain/usecase/GetMembershipTiersUseCase';
@@ -53,27 +54,30 @@ const MembershipActionButton = ({ id, status, className }: MembershipActionButto
 
     try {
       response = await useCase.execute(id, { tierId: selectedTier, reason });
-    } catch (error) {
+
+      if (response?.data) {
+        dispatchTable({
+          type: 'UPDATE_ROW',
+          payload: {
+            id,
+            updates: {
+              status: 'SUCCESSFUL',
+              toTier: selectedTierLabel,
+              reason,
+              updatedBy: {
+                id: response?.data?.updatedBy?.id || '',
+                email: response?.data?.updatedBy?.email || '',
+              },
+            },
+          },
+        });
+      }
+    } catch (error: any) {
       console.error(error);
+      toast.error('Update Membership failed');
     } finally {
       setIsLoading(false);
     }
-
-    dispatchTable({
-      type: 'UPDATE_ROW',
-      payload: {
-        id,
-        updates: {
-          status: 'SUCCESSFUL',
-          toTier: selectedTierLabel,
-          reason,
-          updatedBy: {
-            id: response?.data?.updatedBy?.id || '',
-            email: response?.data?.updatedBy?.email || '',
-          },
-        },
-      },
-    });
 
     setIsModalOpen(false);
     setSelectedTier('');
