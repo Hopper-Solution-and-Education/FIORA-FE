@@ -5,7 +5,7 @@ export interface IEmailService {
     amount: string,
     emailReceiver: string,
     userName: string,
-  ): Promise<string>;
+  ): Promise<void>;
 
   sendNotificationEmail(
     to: string,
@@ -15,5 +15,10 @@ export interface IEmailService {
       date: string;
       amount: string;
     },
-  ): Promise<string>;
+    isSendInBox?: boolean,
+    sendInBoxProps?: {
+      deepLink?: string;
+      attachmentId?: string;
+    },
+  ): Promise<void>;
 }

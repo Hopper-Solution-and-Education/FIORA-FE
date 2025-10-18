@@ -1,7 +1,6 @@
 import { prisma } from '@/config';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
-import { emailType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { sendingWalletRepository } from '../../infrastructure/repositories/sendingWalletRepository';
 import { emailService } from '../../infrastructure/services/emailService';
@@ -260,43 +259,38 @@ class SendingWalletUseCase {
 
     // send notification
     // To sender
-    await this._emailService.sendNotificationEmail(sender.email, {
-      userName: sender.name ?? sender.email,
-      amount: formattedAmount,
-      date: formattedDate.toString(),
-      emailReceiver: receiver.email,
-      isSender: true,
-      receiverName: receiver?.name ?? receiver?.email,
-    });
-
-    await this._sendingRepo.createNotificationInbox({
-      message: `You have successfully transferred ${formattedAmount} FX to ${receiver.email} on ${formattedDate}.`,
-      notifyTo: 'PERSONAL',
-      title: 'Transfer Completed Successfully',
-      type: emailType.SENDING_SUCCESSFUL,
-      emails: [sender.email],
-      deepLink: '/wallet/payment',
-    });
+    await this._emailService.sendNotificationEmail(
+      sender.email,
+      {
+        userName: sender.name ?? sender.email,
+        amount: formattedAmount,
+        date: formattedDate.toString(),
+        emailReceiver: receiver.email,
+        isSender: true,
+        receiverName: receiver?.name ?? receiver?.email,
+      },
+      true,
+      {
+        deepLink: '/wallet/payment',
+      },
+    );
 
     // to reciver
-    // To sender
-    await this._emailService.sendNotificationEmail(receiver.email, {
-      userName: sender.name ?? sender.email,
-      amount: formattedAmount,
-      date: formattedDateReceiver.toString(),
-      emailReceiver: receiver.email,
-      isSender: false,
-      receiverName: receiver?.name ?? receiver?.email,
-    });
-
-    await this._sendingRepo.createNotificationInbox({
-      message: `You have received ${formattedAmount} FX from ${sender.email} on ${formattedDateReceiver}.`,
-      notifyTo: 'PERSONAL',
-      title: 'Payment Received Successfully',
-      type: emailType.SENDING_SUCCESSFUL,
-      emails: [receiver.email],
-      deepLink: '/wallet/payment',
-    });
+    await this._emailService.sendNotificationEmail(
+      receiver.email,
+      {
+        userName: sender.name ?? sender.email,
+        amount: formattedAmount,
+        date: formattedDateReceiver.toString(),
+        emailReceiver: receiver.email,
+        isSender: false,
+        receiverName: receiver?.name ?? receiver?.email,
+      },
+      true,
+      {
+        deepLink: '/wallet/payment',
+      },
+    );
   }
 }
 

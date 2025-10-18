@@ -1,25 +1,24 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { InternalServerError, NotFoundError } from '@/shared/lib';
-import { ChannelType, emailType } from '@prisma/client';
+import { emailType } from '@prisma/client';
 import sgMail from '@sendgrid/mail';
 import * as fs from 'fs';
 import * as path from 'path';
 import { IEmailService } from '../../domain/interfaces/sendOTP.interface';
 
 class EmailService implements IEmailService {
-  constructor(private _repo = prisma) {
+  constructor(
+    private _repo = prisma,
+    private _notificationUsecase = notificationUseCase,
+  ) {
     if (!process.env.SENDGRID_API_KEY) {
       throw new InternalServerError('SENDGRID_API_KEY is not set');
     }
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   }
 
-  private async loadTemplate(
-    file: string,
-    variables: Record<string, string>,
-    type: emailType,
-    name: string,
-  ) {
+  private async loadEmailTemplate(file: string, type: emailType, name: string) {
     try {
       let templateEntity = await this._repo.emailTemplate.findFirst({
         where: {
@@ -68,12 +67,7 @@ class EmailService implements IEmailService {
         });
       }
 
-      for (const key in variables) {
-        const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
-        template = template.replace(regex, variables[key]);
-      }
-
-      return { htmlContent: template, templateEntity };
+      return templateEntity;
     } catch (err) {
       throw new InternalServerError(`Failed to load template: ${(err as Error).message}`);
     }
@@ -86,78 +80,35 @@ class EmailService implements IEmailService {
     emailReceiver: string,
     userName: string,
   ) {
-    const senderEmail = process.env.SENDER_EMAIL || 'noreply@fiora.com';
-
     try {
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
         select: { id: true, email: true },
       });
+
       if (!userReceiver) throw new NotFoundError('User receive email not found');
 
-      const { htmlContent, templateEntity } = await this.loadTemplate(
+      const variables = { otp, amount, emailReceiver, userName };
+
+      const templateEntity = await this.loadEmailTemplate(
         'otp.html',
-        { otp, amount, emailReceiver, userName },
         'SENDING_OTP',
         'Sending FX OTP',
       );
 
-      const notification = await this._repo.notification.create({
-        data: {
-          title: 'Confirm Your Transfer - FIORA',
-          message: htmlContent,
-          channel: ChannelType.EMAIL,
-          notifyTo: 'PERSONAL',
-          type: emailType.SENDING_OTP,
-          emails: [userReceiver.email],
-          emailTemplateId: templateEntity?.id || null,
-          createdBy: null,
-        },
-      });
-
-      await this._repo.userNotification.create({
-        data: {
-          userId: userReceiver.id,
-          notificationId: notification.id,
-          isRead: false,
-          createdBy: null,
-        },
-      });
-
-      const msg = {
-        to,
-        from: senderEmail,
-        subject: notification.title,
-        html: htmlContent,
-      };
-
-      try {
-        await sgMail.send(msg);
-
-        await this._repo.emailNotificationLogs.create({
-          data: {
-            notificationId: notification.id,
-            userId: userReceiver.id,
-            status: 'SENT',
-            errorMessage: null,
-            createdBy: null,
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        templateEntity?.id as string,
+        [
+          {
+            user_id: userReceiver.id,
+            recipient: userReceiver.email,
+            ...variables,
           },
-        });
-      } catch (emailErr) {
-        await this._repo.emailNotificationLogs.create({
-          data: {
-            notificationId: notification.id,
-            userId: userReceiver.id,
-            status: 'FAILED',
-            errorMessage: (emailErr as Error).message ?? 'OTP sending failed',
-            createdBy: null,
-          },
-        });
-
-        throw new InternalServerError('Failed to send email via SendGrid');
-      }
-
-      return htmlContent;
+        ],
+        'PERSONAL',
+        emailType.SENDING_OTP,
+        'Confirm Your Transfer - FIORA',
+      );
     } catch (err) {
       console.error('Send OTP email failed:', err);
       throw new InternalServerError(`Failed to send OTP email: ${(err as Error).message}`);
@@ -174,9 +125,12 @@ class EmailService implements IEmailService {
       amount: string;
       isSender: boolean; // true nếu là người gửi
     },
+    isSendInBox?: boolean,
+    sendInBoxProps?: {
+      deepLink?: string;
+      attachmentId?: string;
+    },
   ) {
-    const senderEmail = process.env.SENDER_EMAIL || 'noreply@fiora.com';
-
     try {
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
@@ -187,92 +141,83 @@ class EmailService implements IEmailService {
 
       const isSender = variables.isSender;
       const { userName, receiverName, emailReceiver, date, amount } = variables;
+      let newVariables: Record<string, string> = {
+        userName,
+        receiverName,
+        emailReceiver,
+        date,
+        amount,
+      };
 
-      const { htmlContent: html, templateEntity } = await this.loadTemplate(
+      if (isSender) {
+        newVariables = {
+          ...newVariables,
+          subject: 'Transfer Receipt',
+          alertMessage: 'Transaction Completed — Your transfer was successful!',
+          introMessage: `Dear ${userName}, your transfer has been successfully processed.`,
+          labelFrom: 'Sender',
+          labelTo: 'Receiver Email',
+          amountLabel: 'Total',
+          mainMessage: 'The amount has been securely transferred to the recipient’s account.',
+          noteMessage:
+            'Keep this receipt for your records. If you did not recognize this transaction, please contact',
+        };
+      } else {
+        newVariables = {
+          ...newVariables,
+          subject: 'Payment Notification',
+          alertMessage: 'You’ve received a new payment!',
+          introMessage: `Dear ${receiverName}, you’ve received a payment from ${userName}.`,
+          labelFrom: 'From',
+          labelTo: 'To (Your Account)',
+          amountLabel: 'Total',
+          mainMessage: 'The amount has been securely credited to your account.',
+          noteMessage: 'If you did not expect this payment, please contact',
+        };
+      }
+
+      const templateEntity = await this.loadEmailTemplate(
         'notification.html',
-        {
-          subject: isSender ? 'Transfer Receipt' : 'Payment Notification',
-          alertMessage: isSender
-            ? 'Transaction Completed — Your transfer was successful!'
-            : 'You’ve received a new payment!',
-          introMessage: isSender
-            ? `Dear ${userName}, your transfer has been successfully processed.`
-            : `Dear ${receiverName}, you’ve received a payment from ${userName}.`,
-          labelFrom: isSender ? 'Sender' : 'From',
-          labelTo: isSender ? 'Receiver Email' : 'To (Your Account)',
-          amountLabel: isSender ? 'Total Debited' : 'Total Credited',
-          mainMessage: isSender
-            ? 'The amount has been securely transferred to the recipient’s account.'
-            : 'The amount has been securely credited to your account.',
-          noteMessage: isSender
-            ? 'Keep this receipt for your records. If you did not recognize this transaction, please contact support@fiora.com.'
-            : 'If you did not expect this payment, please contact support@fiora.com immediately.',
-          userName,
-          receiverName,
-          emailReceiver,
-          date,
-          amount,
-        },
         'SENDING_SUCCESSFUL',
         'Sending successful',
       );
 
-      const notification = await this._repo.notification.create({
-        data: {
-          title: isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
-          message: html,
-          channel: ChannelType.EMAIL,
+      await this._notificationUsecase.sendNotificationWithTemplate(
+        templateEntity?.id as string,
+        [
+          {
+            user_id: userReceiver.id,
+            recipient: userReceiver.email,
+            ...newVariables,
+          },
+        ],
+        'PERSONAL',
+        emailType.SENDING_SUCCESSFUL,
+        isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
+      );
+
+      if (isSendInBox) {
+        await this._notificationUsecase.createNotificationWithTemplate({
+          emailParts: [
+            {
+              recipient: userReceiver.email,
+              user_id: userReceiver.id,
+              ...newVariables,
+            },
+          ],
+          emailTemplateId: templateEntity?.id as string,
           notifyTo: 'PERSONAL',
+          title: isSender ? 'Transfer Completed Successfully' : 'Payment Received Successfully',
           type: emailType.SENDING_SUCCESSFUL,
+          message: isSender
+            ? `Your transfer of ${amount} FX to ${receiverName} has been successfully completed.`
+            : `You have received ${amount} FX from ${userName}.`,
+          deepLink: sendInBoxProps?.deepLink,
+          attachmentId: sendInBoxProps?.attachmentId,
           emails: [userReceiver.email],
-          emailTemplateId: templateEntity?.id,
-          createdBy: null,
-        },
-      });
-
-      await this._repo.userNotification.create({
-        data: {
-          userId: userReceiver.id,
-          notificationId: notification.id,
-          isRead: false,
-          createdBy: null,
-        },
-      });
-
-      const msg = {
-        to,
-        from: senderEmail,
-        subject: isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
-        html,
-      };
-
-      try {
-        await sgMail.send(msg);
-
-        await this._repo.emailNotificationLogs.create({
-          data: {
-            notificationId: notification.id,
-            userId: userReceiver.id,
-            status: 'SENT',
-            errorMessage: null,
-            createdBy: null,
-          },
+          subject: isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
         });
-      } catch (emailErr) {
-        await this._repo.emailNotificationLogs.create({
-          data: {
-            notificationId: notification.id,
-            userId: userReceiver.id,
-            status: 'FAILED',
-            errorMessage: (emailErr as Error).message ?? 'Email sending failed',
-            createdBy: null,
-          },
-        });
-
-        throw new InternalServerError('Failed to send email via SendGrid');
       }
-
-      return html;
     } catch (err) {
       console.error('Send notification email failed:', err);
       throw new InternalServerError(`Failed to send notification email: ${(err as Error).message}`);
