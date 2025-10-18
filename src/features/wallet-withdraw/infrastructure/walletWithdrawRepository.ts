@@ -407,15 +407,13 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
     if (!WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID || !WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id) {
       throw new BadRequestError('WITHDRAWAL_OTP_EMAIL_TEMPLATE not found');
     }
-    await this._notificationUsecase.createNotificationWithTemplate({
-      emailTemplateId: WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id,
-      emailParts: [emailPart],
-      notifyTo: NotificationType.PERSONAL,
-      type: 'WITHDRAW_OTP',
-      title: 'Your OTP for withdrawal verification',
-      message: `Your OTP for withdrawal verification is ${random6Digits}.`,
-      emails: [user.email],
-    });
+    await this._notificationUsecase.sendNotificationWithTemplate(
+      WITHDRAWAL_OTP_EMAIL_TEMPLATE_ID.id,
+      [emailPart],
+      NotificationType.PERSONAL,
+      'WITHDRAW_OTP',
+      'Your OTP for withdrawal verification',
+    );
 
     const data = await prisma.otp.create({
       data: {
