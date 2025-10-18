@@ -163,7 +163,7 @@ export const GlobalDialog = ({
                 variant={VARIANT_BUTTON_MAP[variant]}
                 className={clsx(VARIANT_BUTTON_BG_MAP[variant])}
               >
-                {iconConfirm}
+                {isLoading ? <Icons.spinner className="animate-spin h-5 w-5" /> : iconConfirm}
               </Button>
             </CommonTooltip>
           ) : null}
