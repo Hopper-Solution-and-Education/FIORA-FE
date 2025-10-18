@@ -46,7 +46,7 @@ const NewsListPage = () => {
             </div>
 
             <div className="w-full lg:w-1/4 order-first lg:order-last">
-              <aside className="sticky top-8">
+              <aside className="sticky top-40">
                 <MostViewedNews news={mostViewNewsList} />
               </aside>
             </div>

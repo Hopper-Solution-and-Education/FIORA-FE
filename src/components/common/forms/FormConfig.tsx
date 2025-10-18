@@ -33,6 +33,7 @@ interface GlobalFormProps<T extends yup.AnyObject> {
   createdBy?: CreatedBy | null;
   updatedBy?: UpdatedBy | null;
   isShowSubmitButtonInstruction?: boolean;
+  showSubmitButton?: boolean;
 }
 
 // Generic GlobalForm component to manage and render forms
@@ -50,6 +51,7 @@ const FormConfig = <T extends yup.AnyObject>({
   createdBy,
   updatedBy,
   isShowSubmitButtonInstruction = false,
+  showSubmitButton = true,
 }: GlobalFormProps<T>): JSX.Element => {
   const router = useRouter();
   const { control, formState } = methods;
@@ -139,6 +141,11 @@ const FormConfig = <T extends yup.AnyObject>({
     return <>{fieldElements}</>;
   };
 
+  const renderFormSubmitButton = () => {
+    if (!showSubmitButton) return null;
+    return renderSubmitButton ? renderSubmitButton(formState) : renderSubmitButtonDefault();
+  };
+
   return (
     <>
       {/* Render fields with optional grid layout */}
@@ -167,7 +174,7 @@ const FormConfig = <T extends yup.AnyObject>({
         </div>
       )}
       {/* Conditionally render custom submit button or default button */}
-      {renderSubmitButton ? renderSubmitButton(formState) : renderSubmitButtonDefault()}
+      {renderFormSubmitButton()}
     </>
   );
 };

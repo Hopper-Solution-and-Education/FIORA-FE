@@ -192,6 +192,7 @@ export const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Create', link: '/setting/partner/create' },
   ],
   '/setting/role-permission': [{ title: 'Role Permission', link: '/setting/role-permission' }],
+  '/setting/user': [{ title: 'User', link: '/setting/user' }],
 
   // ADMIN MODE
   '/setting/landing': [{ title: 'Landing Setting', link: '/setting/landing' }],
