@@ -94,7 +94,7 @@ export default function FinanceSummary() {
 
   return (
     <div
-      className="flex flex-col gap-1 mt-2 w-full flex-grow md:flex-grow-0 cursor-pointer hover:opacity-90 transition-opacity"
+      className="flex flex-col gap-1 w-full flex-grow md:flex-grow-0 cursor-pointer hover:opacity-90 transition-opacity"
       onClick={handleClick}
     >
       <CommonTooltip content="Go to Wallet Dashboard">
