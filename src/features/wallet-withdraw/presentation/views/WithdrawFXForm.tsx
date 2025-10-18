@@ -1,15 +1,13 @@
 import { MetricCard } from '@/components/common/metric';
-import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 import { Loading } from '@/components/common/atoms';
+import { GlobalDialog } from '@/components/common/molecules';
 import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { httpClient } from '@/config';
 import { setWithdrawFXFormClose, Wallet } from '@/features/home/module/wallet';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
+import { WalletUpdater } from '@/features/home/module/wallet/presentation/organisms';
 import {
   fetchFrozenAmountAsyncThunk,
   getWalletsAsyncThunk,
@@ -20,7 +18,6 @@ import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -40,7 +37,6 @@ function WithdrawFXForm() {
   const [loading, setLoading] = useState<boolean>(false);
   const { isShowWithdrawFXForm } = useAppSelector((state) => state.wallet);
   const { currency } = useAppSelector((state) => state.settings);
-  const router = useRouter();
   const [bankAccountSelected, setBankAccountSelected] = useState<string>('');
   const [amountInput, setAmountInput] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
@@ -184,6 +180,87 @@ function WithdrawFXForm() {
     }
   };
 
+  const _renderContent = () => (
+    <Card className="w-full">
+      <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
+        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
+          <MetricCard
+            className="px-4 py-2 *:p-0"
+            title="Daily Moving Limit"
+            value={Number(overviewData?.data?.data?.daily_moving_limit)}
+            type="neutral"
+            icon="vault"
+          />
+          <MetricCard
+            className="px-4 py-2 *:p-0"
+            title="1-time Moving Limit"
+            value={Number(overviewData?.data?.data?.onetime_moving_limit)}
+            type="total"
+            icon="handCoins"
+          />
+        </div>
+        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
+          <MetricCard
+            className="px-4 py-2 *:p-0"
+            title="Moved Amount"
+            value={Number(overviewData?.data?.data?.moved_amount)}
+            type="expense"
+            icon="banknoteArrowDown"
+          />
+          <MetricCard
+            className="px-4 py-2 *:p-0"
+            title="Available Limit"
+            value={Number(overviewData?.data?.data?.available_limit)}
+            type="income"
+            icon="arrowLeftRight"
+          />
+        </div>
+
+        <Separator />
+
+        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
+          <BankAccountSelect
+            key="bank-account"
+            name={overviewData?.data?.data?.bankAccount?.accountName || ''}
+            value={overviewData?.data?.data?.bankAccount?.accountNumber || ''}
+            label="Bank Account"
+            onChange={setBankAccountSelected}
+            required
+            error={errorBankAccount}
+            className="mb-0"
+          />
+          <AmountSelect
+            key="amount"
+            name="amount"
+            currency={currency}
+            label="Amount"
+            required={true}
+            value={amountInput}
+            onChange={setAmountInput}
+            error={errorAmount}
+            className="mb-0"
+          />
+        </div>
+
+        <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
+          <InputOtp className="flex-1" value={otp} onChange={setOtp} error={errorOtp} />
+          <SendOtpButton
+            classNameBtn="mt-[25px]"
+            state={otpState}
+            callback={handleGetOtp}
+            countdown={120}
+            isStartCountdown={otpState !== 'Get'}
+          />
+        </div>
+
+        <CardDescription className="sm:block hidden">
+          By input OTP and click submit button, you confirm that this transaction is unsuspicious
+          and will be fully responsible yourself!
+        </CardDescription>
+      </CardContent>
+    </Card>
+  );
+
   useEffect(() => {
     if (!isShowWithdrawFXForm) return;
 
@@ -211,131 +288,24 @@ function WithdrawFXForm() {
   }, [isShowWithdrawFXForm]);
 
   if (isShowWithdrawFXForm && (isLoading || loading)) return <Loading />;
+
   return (
-    <Dialog open={isShowWithdrawFXForm} onOpenChange={handleClose}>
-      <DialogContent className="md:min-w-[700px] max-h-screen flex flex-col items-center rounded-md overflow-scroll">
-        <DialogTitle className="text-3xl font-bold sm:block hidden">WITHDRAW FX</DialogTitle>
-        <DialogDescription className="text-center sm:block hidden">
-          Please be carefully when withdraw your FX, any mistaken will be responsible yourself.
-        </DialogDescription>
-        <DialogDescription className="mt-[-1rem] sm:block hidden">
-          Only suspicious transactions will be FIORA and Insurance case.
-        </DialogDescription>
-
-        <Card className="w-full">
-          <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
-            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-              <MetricCard
-                className="px-4 py-2 *:p-0"
-                title="Daily Moving Limit"
-                value={Number(overviewData?.data?.data?.daily_moving_limit)}
-                type="neutral"
-                icon="vault"
-              />
-              <MetricCard
-                className="px-4 py-2 *:p-0"
-                title="1-time Moving Limit"
-                value={Number(overviewData?.data?.data?.onetime_moving_limit)}
-                type="total"
-                icon="handCoins"
-              />
-            </div>
-            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-              <MetricCard
-                className="px-4 py-2 *:p-0"
-                title="Moved Amount"
-                value={Number(overviewData?.data?.data?.moved_amount)}
-                type="expense"
-                icon="banknoteArrowDown"
-              />
-              <MetricCard
-                className="px-4 py-2 *:p-0"
-                title="Available Limit"
-                value={Number(overviewData?.data?.data?.available_limit)}
-                type="income"
-                icon="arrowLeftRight"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-              <BankAccountSelect
-                key="bank-account"
-                name={overviewData?.data?.data?.bankAccount?.accountName || ''}
-                value={overviewData?.data?.data?.bankAccount?.accountNumber || ''}
-                label="Bank Account"
-                onChange={setBankAccountSelected}
-                required
-                error={errorBankAccount}
-                className="mb-0"
-              />
-              <AmountSelect
-                key="amount"
-                name="amount"
-                currency={currency}
-                label="Amount"
-                required={true}
-                value={amountInput}
-                onChange={setAmountInput}
-                error={errorAmount}
-                className="mb-0"
-              />
-            </div>
-
-            <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
-              <InputOtp className="flex-1" value={otp} onChange={setOtp} error={errorOtp} />
-              <SendOtpButton
-                classNameBtn="mt-[25px]"
-                state={otpState}
-                callback={handleGetOtp}
-                countdown={120}
-                isStartCountdown={otpState !== 'Get'}
-              />
-            </div>
-
-            <CardDescription className="sm:block hidden">
-              By input OTP and click submit button, you confirm that this transaction is
-              unsuspicious and will be fully responsible yourself!
-            </CardDescription>
-          </CardContent>
-        </Card>
-
-        <TooltipProvider>
-          <div className="w-full flex items-center justify-between gap-4 mt-6">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => router.back()}
-                  className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
-                >
-                  <Icons.circleArrowLeft className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Cancel and go back</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  onClick={handleSubmitForm}
-                  className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  <Icons.check className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Submit</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
-      </DialogContent>
-    </Dialog>
+    <>
+      <WalletUpdater />
+      <GlobalDialog
+        open={isShowWithdrawFXForm}
+        onOpenChange={handleClose}
+        title="Withdraw FX"
+        heading="Please be carefully when withdraw your FX, any mistaken will be responsible yourself."
+        description="Only suspicious transactions will be FIORA and Insurance case."
+        renderContent={_renderContent}
+        className="md:min-w-[700px]"
+        onCancel={handleClose}
+        onConfirm={handleSubmitForm}
+        isLoading={isLoading}
+        type="info"
+      />
+    </>
   );
 }
 

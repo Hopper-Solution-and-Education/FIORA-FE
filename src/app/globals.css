@@ -3,8 +3,30 @@
 @tailwind utilities;
 
 @layer utilities {
+  /* SCROLLBAR */
+  *::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  *::-webkit-scrollbar-track {
+    @apply bg-background rounded;
+    background: hsl(var(--background));
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded;
+    background: hsl(var(--muted));
+    transition: background 0.2s ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-foreground/50;
+    background: hsl(var(--foreground) / 0.5);
+  }
+
   * {
     scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) hsl(var(--background));
   }
 
   .no-scrollbar {

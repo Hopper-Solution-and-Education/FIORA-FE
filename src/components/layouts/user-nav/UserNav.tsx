@@ -34,7 +34,6 @@ interface UserNavProps {
 
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
-  // const { data: session } = useSession();
   const { data: profile } = useGetProfileQuery();
   const { data: userData } = useGetUsersQuery({ pageSize: 3 });
   const { clearExchangeRateData } = useCurrencyFormatter();
@@ -42,6 +41,7 @@ export function UserNav({ handleSignOut }: UserNavProps) {
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
   );
+  const canViewSwitchProfile = profile?.role === UserRole.ADMIN || profile?.role === UserRole.CS;
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
     userId: user.User?.id,
@@ -140,34 +140,43 @@ export function UserNav({ handleSignOut }: UserNavProps) {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>{globalNavItems.map(renderNavItem)}</DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <div className="flex items-center gap-2 my-1 justify-between w-full px-2">
-              <div className="text-sm font-medium">Switch Profile</div>
-              <Link
-                href="/setting/user-management"
-                className="text-xs cursor-pointer text-blue-400 underline hover:text-blue-500"
-              >
-                Other
-              </Link>
-            </div>
-            <DropdownMenuGroup>
-              {switchProfile.map((item) => (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  key={item.title}
-                  onClick={() => router.push(`/ekyc/${encodeURIComponent(item.userId)}/profile`)}
-                >
-                  <div className="flex items-center justify-center gap-2 w-full">
-                    <UserAvatar src={item.image} name={item.title} size="sm" />
-                    <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">
-                      {item.title}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
 
+            {/* Switch Profile Zone */}
+            {canViewSwitchProfile && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="flex items-center gap-2 my-1 justify-between w-full px-2">
+                  <div className="text-sm font-medium">Switch Profile</div>
+                  <Link
+                    href="/setting/user-management"
+                    className="text-xs cursor-pointer text-blue-400 underline hover:text-blue-500"
+                  >
+                    Other
+                  </Link>
+                </div>
+                <DropdownMenuGroup>
+                  {switchProfile.map((item) => (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      key={item.title}
+                      onClick={() =>
+                        router.push(`/ekyc/${encodeURIComponent(item.userId)}/profile`)
+                      }
+                    >
+                      <div className="flex items-center justify-center gap-2 w-full">
+                        <UserAvatar src={item.image} name={item.title} size="sm" />
+                        <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">
+                          {item.title}
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
+
+            {/* Sign Out Zone */}
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
                 // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
