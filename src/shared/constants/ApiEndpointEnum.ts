@@ -72,4 +72,8 @@ export enum ApiEndpointEnum {
   SavingTransactionHistory = '/api/wallet/smart-saving/transaction',
   SavingTransfer = '/api/wallet/smart-saving/transfer',
   SavingClaim = '/api/wallet/smart-saving/claims',
+
+  // Auth
+  SendOtpForgotPassword = '/api/auth/send-otp',
+  ResetPassword = '/api/auth/forgot-password',
 }
