@@ -8,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import ProductSelectField from '@/features/home/module/transaction/components/ProductSelectField';
 import { setSendingFXFormClose } from '@/features/home/module/wallet';
+import { usePaymentWalletDashboard } from '@/features/payment-wallet/presentation/hooks/usePaymentWalletDashboard'; // ✅ import đúng dạng hook
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { OtpState } from '../../types';
-import AmountSelect from '../components/AmountSelect'; // 🟩 nhớ import nếu file này tồn tại
+import AmountSelect from '../components/AmountSelect';
 import InputOtp from '../components/InputOtp';
 import SendOtpButton from '../components/SendOtpButton';
 
@@ -36,30 +37,28 @@ function SendingFXForm() {
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { refreshDashboard } = usePaymentWalletDashboard();
 
-  // 🟨 Fetch limit
   const amountLimitData = async () => {
     try {
       const res = await fetch('/api/sending-wallet/amount-limit', { method: 'GET' });
       if (!res.ok) throw new Error('Failed to fetch amount limit');
       return await res.json();
     } catch (err) {
-      console.error(err);
+      toast.error(err instanceof Error ? err.message : String(err));
     }
   };
 
-  // 🟦 Fetch catalog
   const catalogData = async () => {
     try {
       const res = await fetch('/api/sending-wallet/catalog', { method: 'GET' });
       if (!res.ok) throw new Error('Failed to fetch catalog');
       return await res.json();
     } catch (err) {
-      console.error(err);
+      toast.error(err instanceof Error ? err.message : String(err));
     }
   };
 
-  // 🧩 Khi form mở, load limit & catalog
   useEffect(() => {
     if (isShowSendingFXForm) {
       amountLimitData().then((res) => {
@@ -85,7 +84,6 @@ function SendingFXForm() {
     }
   }, [isShowSendingFXForm]);
 
-  // 🟥 Reset form khi đóng
   const handleClose = useCallback(() => {
     dispatch(setSendingFXFormClose());
     setReceiver('');
@@ -127,11 +125,11 @@ function SendingFXForm() {
   };
 
   const handleSubmit = async () => {
-    if (!receiver) return alert('Receiver email required');
-    if (!amount) return alert('Amount required');
-    if (!otp || otp.length !== 6) return alert('OTP must be 6 digits');
+    if (!receiver) return toast.error('Receiver email required');
+    if (!amount) return toast.error('Amount required');
+    if (!otp || otp.length !== 6) return toast.error('OTP must be 6 digits');
 
-    setLoading(true); // 🟡 bật loading trước khi fetch
+    setLoading(true);
 
     try {
       const res = await fetch('/api/sending-wallet/send-fx', {
@@ -150,6 +148,7 @@ function SendingFXForm() {
 
       if (res.ok && data.status === 200) {
         toast.success('Sending FX successfully!');
+        await refreshDashboard();
         handleClose();
       } else {
         toast.error(data.message || 'Failed to send FX');
@@ -158,7 +157,7 @@ function SendingFXForm() {
       console.error(err);
       toast.error('An error occurred while sending FX');
     } finally {
-      setLoading(false); // 🟢 tắt loading sau khi xong
+      setLoading(false);
     }
   };
 

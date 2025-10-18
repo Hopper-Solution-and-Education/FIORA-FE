@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { FieldError } from 'react-hook-form';
 import InputDropdown from './InputDropdown';
 
-interface BankAccountSelectProps {
+interface AmountSelectProps {
   name?: string;
   value?: number;
   label?: string;
@@ -12,20 +12,25 @@ interface BankAccountSelectProps {
   required?: boolean;
   onChange?: (value: number) => void;
   error?: FieldError;
+  initialPackages?: number[]; // 👈 thêm prop này để truyền từ ngoài vào
   [key: string]: any;
 }
 
-const AmountSelect: React.FC<BankAccountSelectProps> = ({
+const AmountSelect: React.FC<AmountSelectProps> = ({
   value,
   label,
   currency,
   required,
   onChange = () => {},
   error,
+  initialPackages, // 👈 nhận từ props
 }) => {
+  // fallback: nếu không truyền vào thì dùng mặc định
   const amountPackages = useMemo(() => {
-    return [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-  }, []);
+    return initialPackages?.length
+      ? initialPackages
+      : [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+  }, [initialPackages]);
 
   return (
     <InputDropdown
