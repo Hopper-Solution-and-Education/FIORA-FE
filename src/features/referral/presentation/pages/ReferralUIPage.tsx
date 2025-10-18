@@ -96,6 +96,7 @@ const ReferralUIPage = () => {
           fetchReferees(DEFAULT_REFEREE_PARAMS);
         }
 
+        setInviteOpen(false);
         return { createdEmails: created, duplicateEmails: duplicates };
       } catch (error: any) {
         const message = error?.data?.message || error?.message || 'Failed to send invitations.';
