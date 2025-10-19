@@ -9,10 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { cn } from '@/shared/utils';
-import {
-  validateEmail,
-  validatePassword,
-} from '@/shared/validators/signUpValidation';
+import { validateEmail, validatePassword } from '@/shared/validators/signUpValidation';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';

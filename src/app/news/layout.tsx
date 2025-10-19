@@ -19,9 +19,9 @@ const NewsLayout = ({ children }: NewsLayoutProps) => {
   }
 
   return session ? (
-    <SessionSidebar children={children} />
+    <SessionSidebar>{children}</SessionSidebar>
   ) : (
-    <StandaloneLayout children={children} />
+    <StandaloneLayout>{children}</StandaloneLayout>
   );
 };
 
