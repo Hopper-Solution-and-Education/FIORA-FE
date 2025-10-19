@@ -6,6 +6,7 @@ import { notificationUseCase } from '@/features/notification/application/use-cas
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
+import { EmailTemplateEnum } from '@/shared/constants/EmailTemplateEnum';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { SavingWalletAction } from '@/shared/constants/savingWallet';
@@ -27,12 +28,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
-  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
-  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
-  WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
-  WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
 } from '../../../data/module/wallet/constants';
 import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -644,8 +641,8 @@ class WalletUseCase {
 
       await this._notificationUsecase.sendNotificationWithTemplate(
         depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
+          ? EmailTemplateEnum.DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
+          : EmailTemplateEnum.WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
         `${depositRequest.type}_APPROVED`,
@@ -672,8 +669,8 @@ class WalletUseCase {
 
       await this._notificationUsecase.sendNotificationWithTemplate(
         depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
+          ? EmailTemplateEnum.DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
+          : EmailTemplateEnum.WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
         `${depositRequest.type}_REJECTED`,
