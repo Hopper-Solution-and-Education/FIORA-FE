@@ -137,6 +137,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
       ),
     );
   } catch (error) {
+    console.error(error);
     return res
       .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
       .json(
