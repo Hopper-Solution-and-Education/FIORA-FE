@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react';
 
-type ScrollBehaviorType = 'auto' | 'smooth'
-const SCROLL_BEHAVIOR: ScrollBehaviorType = 'auto'
-const SCROLL_OFFSET = 100
+type ScrollBehaviorType = 'auto' | 'smooth';
+const SCROLL_BEHAVIOR: ScrollBehaviorType = 'auto';
+const SCROLL_OFFSET = 100;
 
 export enum ScrollType {
   ToSection = 'ToSection',
@@ -14,77 +14,84 @@ export enum ScrollType {
 }
 
 interface ScrollOptions {
-  type: ScrollType
-  sectionId?: string
-  offset?: number
-  position?: number
-  delta?: number
-  scrollBehavior?: ScrollBehaviorType
+  type: ScrollType;
+  sectionId?: string;
+  offset?: number;
+  position?: number;
+  delta?: number;
+  scrollBehavior?: ScrollBehaviorType;
 }
 
-const APP_LAYOUT_ID = 'app-content'
+const APP_LAYOUT_ID = 'app-content';
 
 export const useAppScroll = () => {
-  const nextElementRef = useRef<HTMLElement | null>(null)
+  const nextElementRef = useRef<HTMLElement | null>(null);
 
   const getNextElement = useCallback(() => {
     if (!nextElementRef.current) {
-      nextElementRef.current = document.getElementById(APP_LAYOUT_ID)
+      nextElementRef.current = document.getElementById(APP_LAYOUT_ID);
     }
 
-    return nextElementRef.current
-  }, [])
+    return nextElementRef.current;
+  }, []);
 
   const getCurrentScrollPosition = useCallback(() => {
-    const nextElement = getNextElement()
-    return nextElement?.scrollTop || 0
-  }, [getNextElement])
+    const nextElement = getNextElement();
+    return nextElement?.scrollTop || 0;
+  }, [getNextElement]);
 
   const scroll = useCallback(
-    ({ type, sectionId, offset = SCROLL_OFFSET, position, delta, scrollBehavior = SCROLL_BEHAVIOR }: ScrollOptions) => {
-      const nextElement = getNextElement()
+    ({
+      type,
+      sectionId,
+      offset = SCROLL_OFFSET,
+      position,
+      delta,
+      scrollBehavior = SCROLL_BEHAVIOR,
+    }: ScrollOptions) => {
+      const nextElement = getNextElement();
 
-      if (!nextElement) return
+      if (!nextElement) return;
 
-      let top = nextElement.scrollTop
+      let top = nextElement.scrollTop;
 
       switch (type) {
         case ScrollType.ToSection:
           if (sectionId) {
-            const targetSection = document.getElementById(sectionId)
+            const targetSection = document.getElementById(sectionId);
             if (targetSection) {
-              top = targetSection.offsetTop - offset
+              top = targetSection.offsetTop - offset;
             }
           }
-          break
+          break;
 
         case ScrollType.ToTop:
-          top = 0
-          break
+          top = 0;
+          break;
 
         case ScrollType.ToPosition:
           if (typeof position === 'number') {
-            top = position
+            top = position;
           }
-          break
+          break;
 
         case ScrollType.ByDelta:
           if (typeof delta === 'number') {
-            top = nextElement.scrollTop + delta
+            top = nextElement.scrollTop + delta;
           }
-          break
+          break;
 
         default:
-          return
+          return;
       }
 
       nextElement.scrollTo({
         top,
         behavior: scrollBehavior,
-      })
+      });
     },
     [getNextElement],
-  )
+  );
 
-  return { scroll, getCurrentScrollPosition }
-}
+  return { scroll, getCurrentScrollPosition };
+};
