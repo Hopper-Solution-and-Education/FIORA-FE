@@ -88,9 +88,6 @@ class HttpClient implements IHttpClient {
     this.interceptors = {};
   }
 
-  /**
-   * Trả về instance duy nhất của HttpClient.
-   */
   static getInstance(): HttpClient {
     if (!HttpClient.instance) {
       HttpClient.instance = new HttpClient();
@@ -116,7 +113,7 @@ class HttpClient implements IHttpClient {
   private async request<T>(url: string, options: RequestInit): Promise<T> {
     const fullUrl = `${this.baseURL}${url}`;
 
-    // Convert headers to plain object
+    // Chuẩn hóa headers
     const customHeaders =
       options.headers instanceof Headers
         ? Object.fromEntries(options.headers.entries())
@@ -126,7 +123,7 @@ class HttpClient implements IHttpClient {
 
     let config: RequestInit = { ...options };
 
-    // Nếu body là FormData thì KHÔNG merge defaultHeaders (để trình duyệt tự set Content-Type)
+    // Nếu body là FormData thì không thêm Content-Type
     if (options.body instanceof FormData) {
       config.headers = new Headers({ ...customHeaders });
     } else {
@@ -142,24 +139,26 @@ class HttpClient implements IHttpClient {
 
     try {
       const response = await fetch(fullUrl, config);
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
+      const data = isJson ? await response.json().catch(() => ({})) : await response.text();
+
       if (!response.ok) {
-        // If response status is 403 or 550, log out
         if (response.status === 403 || response.status === 550) {
           await signOut();
         }
-        // get response error from server
-        const errorText = await response.text();
-        throw new Error(errorText, { cause: 'Error' });
+
+        throw data;
       }
 
-      // Parse JSON dữ liệu
-      let data = (await response.json()) as T;
+      let result = data as T;
 
-      // Áp dụng Response Interceptor nếu có
       if (this.interceptors.response) {
-        data = await this.interceptors.response(data);
+        result = await this.interceptors.response(result);
       }
-      return data;
+
+      return result;
     } catch (error) {
       console.error('HTTP Request Failed:', error);
       throw error;

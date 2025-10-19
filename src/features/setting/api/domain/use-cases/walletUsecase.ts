@@ -279,12 +279,6 @@ class WalletUseCase {
     // Create notification for Admin role
     await this._notificationUsecase.createBoxNotification(depositBoxNotification);
 
-    // Create notification for CS role
-    await this._notificationUsecase.createBoxNotification({
-      ...depositBoxNotification,
-      notifyTo: NotificationType.ROLE_CS,
-    });
-
     return depositRequest;
   }
 
