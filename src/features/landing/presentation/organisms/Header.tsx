@@ -50,9 +50,7 @@ export default function Header() {
   };
 
   return (
-    <header
-      className={`fixed bg-background/100 top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out shadow-lg`}
-    >
+    <header className={`bg-background/100 shadow-lg relative z-[2]`}>
       <div className="flex items-center">
         {/* Logo */}
         <div className="flex items-center">

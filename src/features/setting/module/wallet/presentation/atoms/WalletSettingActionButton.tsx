@@ -87,7 +87,8 @@ const WalletSettingActionButton = ({
         description: 'Request approved, wallet updated',
       });
     } catch (e: any) {
-      console.error(e?.message);
+      // console.error(e?.message);
+      console.error(e);
       toast.error('Request Approved Failed', {
         description: e?.message || 'Failed. Try again or contact support.',
       });
