@@ -10,7 +10,6 @@ const NewsListPage = () => {
   const {
     activeFilters,
     handleLoadMoreNews,
-    allCategoriesList,
     isLoading,
     isFetchingPage,
     allNews,

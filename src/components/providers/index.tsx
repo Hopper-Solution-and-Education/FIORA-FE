@@ -15,6 +15,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
 import { AmplitudeProvider } from './AmplitudeContextProvider';
+import { AutoScrollTopProvider } from './AutoScrollTopProvider';
 import { ReduxProvider } from './ReduxProvider';
 
 const Providers = ({ children }: PropsWithChildren) => {
@@ -33,6 +34,7 @@ const Providers = ({ children }: PropsWithChildren) => {
                   disableTransitionOnChange
                 >
                   <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+                    <AutoScrollTopProvider />
                     <Toaster />
                     <Updater />
 
