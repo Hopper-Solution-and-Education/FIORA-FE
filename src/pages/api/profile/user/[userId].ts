@@ -1,24 +1,15 @@
 import { profileUseCase } from '@/features/profile/application/use-cases/profileUseCase';
+import { UserProfile } from '@/features/profile/domain/entities/models/profile';
+import { profileRepository } from '@/features/profile/infrastructure/repositories/profileRepository';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { UserRole } from '@/shared/constants/userRole';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
-import formidable from 'formidable';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'node:fs/promises';
-
-import { UserProfile } from '@/features/profile/domain/entities/models/profile';
-import { profileRepository } from '@/features/profile/infrastructure/repositories/profileRepository';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 const rolePermissions = {
   GET: [UserRole.ADMIN, UserRole.CS],
@@ -76,60 +67,20 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, sessionUser
       .json(createResponse(RESPONSE_CODE.BAD_REQUEST, 'User ID is required', null));
   }
 
-  const contentType = req.headers['content-type'] || '';
-  const isMultipart = contentType.includes('multipart/form-data');
+  const body = req.body as Partial<UserProfile> & {
+    avatarAttachmentId?: string;
+    logoAttachmentId?: string;
+  };
 
-  if (isMultipart) {
-    const form = formidable({ keepExtensions: true, maxFileSize: 5 * 1024 * 1024 });
-    const [fields, files] = await form.parse(req);
-
-    const toNodeFile = async (f: any): Promise<File | null> => {
-      if (!f) return null;
-      const one = Array.isArray(f) ? f[0] : f;
-      if (!one) return null;
-      const buffer = await fs.readFile(one.filepath);
-      const name = one.originalFilename || 'upload';
-      const type = one.mimetype || 'application/octet-stream';
-      return new File([buffer as Uint8Array<ArrayBuffer>], name, { type });
-    };
-
-    const newAvatar = await toNodeFile(files.newAvatar);
-    const newLogo = await toNodeFile(files.newLogo);
-
-    const getField = (key: string): string | undefined => {
-      const v = fields[key];
-      if (!v) return undefined;
-      return Array.isArray(v) ? (v[0] as string) : (v as string);
-    };
-
-    const updated = await profileUseCase.update(
-      userId as string,
-      {
-        name: getField('name'),
-        phone: getField('phone'),
-        address: getField('address'),
-        birthday: getField('birthday'),
-        newAvatar: newAvatar || undefined,
-        newLogo: newLogo || undefined,
-      },
-      sessionUserId,
-    );
-    return res
-      .status(RESPONSE_CODE.OK)
-      .json({ message: Messages.UPDATE_SUCCESS, data: updated, status: RESPONSE_CODE.OK });
-  }
-
-  // JSON fallback
-  const body = req.body as Partial<UserProfile>;
   const updated = await profileUseCase.update(
     userId as string,
     {
       name: body.name,
-      avatarUrl: body.avatarUrl,
-      logoUrl: body.logoUrl,
       phone: body.phone,
       address: body.address,
       birthday: body.birthday,
+      avatarAttachmentId: body.avatarAttachmentId,
+      logoAttachmentId: body.logoAttachmentId,
     },
     sessionUserId,
   );

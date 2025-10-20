@@ -347,6 +347,7 @@ export enum Messages {
   VERIFY_BANK_ACCOUNT_SUCCESS = 'Verify bank account successfully',
   GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
   BANK_ACCOUNT_NOT_FOUND = 'BankAccount not found',
+  UPDATE_BANK_ACCOUNT_SUCCESS = 'Update bank account successfully',
 
   //Identification
   IDENTIFICATION_ACCOUNT = 'Identification already exists',
@@ -354,6 +355,7 @@ export enum Messages {
   GET_IDENTIFICATION_SUCCESS = 'Get identification successfully',
   VERIFY_IDENTIFICATION_SUCCESS = 'Verify identification successfully',
   IDENTIFICATION_NOT_FOUND = 'Identification not found',
+  UPDATE_IDENTIFICATION_SUCCESS = 'Update identification successfully',
 
   //eKyc
   KYC_ACCOUNT = 'eKyc already exists',
@@ -374,6 +376,7 @@ export enum Messages {
   GET_COUNT_USER_SUCCESS = 'Get count users successfully',
   CANNOT_ASSIGN_ROLE_TO_YOURSELF = 'Cannot assign role to yourself',
   CANNOT_BLOCK_YOURSELF = 'Cannot block yourself',
+  USER_DELETED_SIGNIN_ERROR = 'Account has been deleted. Please contact support if this is a mistake.',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',

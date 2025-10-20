@@ -1,13 +1,16 @@
 'use client';
 import UploadImageField from '@/components/common/forms/upload/UploadImageField';
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import { KYC_TABS } from '@/features/profile/constant';
+import { KYC_ITEMS } from '@/features/profile/constant';
 import { EKYCType, UserProfile } from '@/features/profile/domain/entities/models/profile';
 import {
   useAssignRoleMutation,
   useBlockUserMutation,
   useGetMyProfileQuery,
+  useUploadAttachmentMutation,
+  useVerifyReferralCodeMutation,
 } from '@/features/profile/store/api/profileApi';
+import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { UserRole } from '@prisma/client';
 import { useSession } from 'next-auth/react';
@@ -16,16 +19,18 @@ import { FC, useEffect, useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PersonalInfo, personalInfoSchema } from '../../../schema/personalInfoSchema';
-import KYCSection from '../molecules/KYCSection';
 import PersonalInfoFields from '../molecules/PersonalInfoFields';
 import { UserManagementActions } from '../molecules/UserManagementActions';
+import KYCSection from './KYCSection';
 
 type ProfileTabProps = {
   profile: UserProfile | null | undefined;
   isLoading: boolean;
   isUpdating: boolean;
   defaultLogoSrc: string;
-  onSave: (values: PersonalInfo) => Promise<void>;
+  onSave: (
+    values: PersonalInfo & { avatarAttachmentId?: string; logoAttachmentId?: string },
+  ) => Promise<void>;
   eKycId?: string;
   showUserManagement?: boolean;
 };
@@ -58,6 +63,8 @@ const ProfileTab: FC<ProfileTabProps> = ({
   const isCurrentUserAdmin = session?.user?.role === UserRole.Admin;
 
   const [isBlocked, setIsBlocked] = useState(myProfile?.isBlocked || false);
+  const [uploadAttachmentMutation] = useUploadAttachmentMutation();
+  const [verifyReferralCode] = useVerifyReferralCodeMutation();
 
   const defaults = useMemo(
     () => ({
@@ -68,6 +75,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
       address: profile?.address ?? '',
       avatarUrl: profile?.avatarUrl ?? defaultLogoSrc,
       logoUrl: profile?.logoUrl ?? defaultLogoSrc,
+      referrer_code: profile?.referrer_code ?? '',
     }),
     [profile, defaultLogoSrc],
   );
@@ -83,6 +91,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
     reset,
     formState: { isSubmitting, isDirty },
     handleSubmit,
+    watch,
   } = form;
 
   useEffect(() => {
@@ -96,8 +105,108 @@ const ProfileTab: FC<ProfileTabProps> = ({
     }
   }, [myProfile?.isBlocked]);
 
+  const convertBlobUrlToFile = async (blobUrl: string, fileName: string): Promise<File> => {
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: blob.type });
+  };
+
+  const uploadFile = async (
+    file: File,
+    fileType: string,
+  ): Promise<{ url: string; fileName: string; attachmentId: string } | null> => {
+    try {
+      const fileName = `profile-${fileType}-${Date.now()}`;
+      const downloadURL = await uploadToFirebase({
+        file,
+        path: 'profile-images',
+        fileName,
+      });
+
+      // Create attachment
+      const attachmentResponse = await uploadAttachmentMutation({
+        url: downloadURL,
+        path: fileName,
+        type: 'image',
+      });
+
+      if (!attachmentResponse?.data?.id) {
+        throw new Error('Failed to create attachment');
+      }
+
+      return {
+        url: downloadURL,
+        fileName: fileName,
+        attachmentId: attachmentResponse.data.id,
+      };
+    } catch (error) {
+      console.error(`Error uploading ${fileType} file:`, error);
+      toast.error(`Failed to upload ${fileType}`);
+      return null;
+    }
+  };
+
   const handleSubmitForm = async (values: PersonalInfo) => {
-    await onSave(values);
+    try {
+      // Validate referral code if it's new (changed) and not empty
+      const currentReferrerCode = profile?.referrer_code?.trim() || '';
+      const newReferrerCode = values.referrer_code?.trim() || '';
+
+      if (newReferrerCode && newReferrerCode !== currentReferrerCode) {
+        // Call verify API using RTK Query
+        try {
+          const verifyResult = await verifyReferralCode({
+            referralCode: newReferrerCode,
+          }).unwrap();
+
+          toast.success(
+            `Referral code verified! Referred by ${verifyResult.referrerName || 'user'}`,
+          );
+        } catch (error: any) {
+          toast.error(error?.data?.message || 'Invalid referral code');
+          return;
+        }
+      }
+
+      const avatarValue = watch('avatarUrl');
+      const logoValue = watch('logoUrl');
+
+      let avatarAttachmentId: string | undefined;
+      let logoAttachmentId: string | undefined;
+
+      // Upload avatar if it's a blob URL (new file)
+      if (avatarValue && avatarValue.startsWith('blob:')) {
+        const avatarFile = await convertBlobUrlToFile(avatarValue, 'avatar.jpg');
+        const avatarResult = await uploadFile(avatarFile, 'avatar');
+        if (avatarResult) {
+          avatarAttachmentId = avatarResult.attachmentId;
+        }
+      }
+
+      // Upload logo if it's a blob URL (new file)
+      if (logoValue && logoValue.startsWith('blob:')) {
+        const logoFile = await convertBlobUrlToFile(logoValue, 'logo.jpg');
+        const logoResult = await uploadFile(logoFile, 'logo');
+        if (logoResult) {
+          logoAttachmentId = logoResult.attachmentId;
+        }
+      }
+
+      // Prepare payload with attachment IDs
+      const payload = {
+        ...values,
+        avatarAttachmentId,
+        logoAttachmentId,
+        // Remove avatarUrl and logoUrl if we have attachment IDs
+        avatarUrl: avatarAttachmentId ? undefined : values.avatarUrl,
+        logoUrl: logoAttachmentId ? undefined : values.logoUrl,
+      };
+
+      await onSave(payload);
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      toast.error(error?.message || 'Failed to update profile');
+    }
   };
 
   const handleNavigateToKYC = (id: string) => {
@@ -152,17 +261,20 @@ const ProfileTab: FC<ProfileTabProps> = ({
               title="Personal Information"
               description="Update your personal details"
               kycType={EKYCType.CONTACT_INFORMATION}
-              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.CONTACT_INFORMATION)}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_ITEMS.CONTACT_INFORMATION.route)}
               status={getEKYCStatus(EKYCType.CONTACT_INFORMATION)}
             />
 
-            <PersonalInfoFields control={control} />
+            <PersonalInfoFields
+              control={control}
+              hasReferrerCode={!!profile?.referrer_code && profile.referrer_code.trim().length > 0}
+            />
 
             <KYCSection
               title="Identification Document"
               description="Verify your identity with government-issued documents to unlock full account features and ensure security"
               kycType={EKYCType.IDENTIFICATION_DOCUMENT}
-              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.IDENTIFICATION_DOCUMENT)}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_ITEMS.IDENTIFICATION_DOCUMENT.route)}
               status={getEKYCStatus(EKYCType.IDENTIFICATION_DOCUMENT)}
               eKycId={eKycId}
             />
@@ -171,7 +283,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               title="Tax Information"
               description="Provide your tax details for compliance and to receive proper tax reporting for your transactions"
               kycType={EKYCType.TAX_INFORMATION}
-              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.TAX_INFORMATION)}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_ITEMS.TAX_INFORMATION.route)}
               status={getEKYCStatus(EKYCType.TAX_INFORMATION)}
               eKycId={eKycId}
             />
@@ -180,7 +292,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
               title="Bank Account"
               description="Connect your bank account for secure transactions, instant transfers, and seamless financial management"
               kycType={EKYCType.BANK_ACCOUNT}
-              onNavigateToKYC={() => handleNavigateToKYC(KYC_TABS.BANK_ACCOUNT)}
+              onNavigateToKYC={() => handleNavigateToKYC(KYC_ITEMS.BANK_ACCOUNT.route)}
               status={getEKYCStatus(EKYCType.BANK_ACCOUNT)}
               eKycId={eKycId}
             />
