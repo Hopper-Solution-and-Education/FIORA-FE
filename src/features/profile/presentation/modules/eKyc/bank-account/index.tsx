@@ -6,21 +6,18 @@ import {
   useDeleteEKYCMutation,
   useGetBankAccountQuery,
   useSubmitBankAccountMutation,
+  useUpdateBankAccountMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { Building2 } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { BankAccount } from '../../../schema/personalInfoSchema';
-import { ResubmitConfirmModal } from '../components';
-import { RejectedRemarksField } from '../shared/components';
-import {
-  BankAccountActions,
-  BankAccountDetailsForm,
-  BankAccountHeader,
-  BankStatementUpload,
-} from './components';
+import { EditApprovedModal, ResubmitConfirmModal } from '../components';
+import { EKYCTabActions, FormHeader, RejectedRemarksField } from '../shared/components';
+import { BankAccountDetailsForm, BankStatementUpload } from './components';
 
 type Props = {
   eKYCData: eKYC;
@@ -32,11 +29,16 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
   });
 
   const [submitBankAccount] = useSubmitBankAccountMutation();
+  const [updateBankAccount] = useUpdateBankAccountMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
   const [deleteEKYC, { isLoading: isDeleting }] = useDeleteEKYCMutation();
 
   const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [showEditApprovedModal, setShowEditApprovedModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
+  const isPending = eKYCData?.status === EKYCStatus.PENDING;
+  const isApproved = eKYCData?.status === EKYCStatus.APPROVAL;
 
   const defaults = useMemo(
     () => ({
@@ -66,6 +68,9 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
 
   // Populate form with existing data when loaded
   useEffect(() => {
+    // Don't populate form with existing data when editing
+    if (isEditing) return;
+
     if (existingData && eKYCData) {
       reset({
         accountNumber: existingData.accountNumber || '',
@@ -81,7 +86,7 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
       return;
     }
     reset(defaults);
-  }, [existingData, eKYCData, reset, defaults]);
+  }, [existingData, eKYCData, reset, defaults, isEditing]);
 
   const uploadFile = async (
     file: File,
@@ -114,7 +119,8 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
 
       await deleteEKYC(eKYCData.id).unwrap();
       setShowResubmitModal(false);
-      reset(defaults);
+      setIsEditing(false); // Reset editing state
+      reset(defaults); // Reset form to defaults
       toast.success('Previous submission deleted. You can now submit new documents.');
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
@@ -130,12 +136,44 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
     }
   };
 
+  const handleEditClick = () => {
+    if (isApproved) {
+      setShowEditApprovedModal(true);
+    } else if (isPending) {
+      setIsEditing(true); // Enable editing for pending status
+    }
+  };
+
+  const handleEditApprovedConfirm = async () => {
+    try {
+      if (!eKYCData?.id) {
+        toast.error('eKYC data not found');
+        return;
+      }
+
+      await deleteEKYC(eKYCData.id).unwrap();
+      setShowEditApprovedModal(false);
+      reset(defaults); // Reset form to defaults for new submission
+      toast.success(
+        'Previous submission deleted. You can now submit new bank account information.',
+      );
+    } catch (error: any) {
+      console.error('Error deleting eKYC:', error);
+      toast.error(error?.message || 'Failed to delete previous submission');
+    }
+  };
+
   const handleSubmitForm = async (data: BankAccount) => {
     try {
       let documentId = '';
 
-      // Upload file if exists
-      if (data.bankStatement) {
+      if (!isEditing) {
+        // New submission - require file
+        if (!data.bankStatement) {
+          toast.error('Please upload a bank statement.');
+          return;
+        }
+
         const fileUrl = await uploadFile(data.bankStatement);
         if (fileUrl) {
           const type = fileUrl.type === 'application/pdf' ? 'pdf' : 'image';
@@ -147,6 +185,25 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
           });
           documentId = attachmentResult?.data?.id;
         }
+      } else {
+        // Edit existing submission - use existing file if no new file uploaded
+        if (data.bankStatement) {
+          // Upload new file
+          const fileUrl = await uploadFile(data.bankStatement);
+          if (fileUrl) {
+            const type = fileUrl.type === 'application/pdf' ? 'pdf' : 'image';
+            const attachmentResult = await uploadAttachmentMutation({
+              url: fileUrl.url,
+              path: fileUrl.fileName,
+              type: type,
+              size: fileUrl.size,
+            });
+            documentId = attachmentResult?.data?.id;
+          }
+        } else if (existingData?.Attachment?.id) {
+          // Use existing attachment
+          documentId = existingData.Attachment.id;
+        }
       }
 
       const payload = {
@@ -157,19 +214,32 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
         paymentRefId: documentId,
       };
 
-      await submitBankAccount(payload).unwrap();
-      toast.success(
-        isRejected
-          ? 'Bank account re-submitted successfully'
-          : 'Bank account information submitted successfully',
-      );
+      // Use update or submit based on whether we're editing an existing document
+      if (isEditing) {
+        await updateBankAccount({
+          ...payload,
+          id: existingData?.id,
+          ekycId: eKYCData?.id,
+        } as any).unwrap();
+        toast.success('Bank account information updated successfully');
+      } else {
+        await submitBankAccount(payload).unwrap();
+        toast.success('Bank account information submitted successfully');
+      }
+      setIsEditing(false); // Reset editing state after successful submit
     } catch (error: any) {
       console.error('Error submitting bank account information:', error);
       toast.error(error?.message || 'Failed to submit bank account information');
     }
   };
 
-  const isDisabledSubmit = !!eKYCData && !isRejected;
+  // Enhanced disabled logic based on status and editing state
+  const isDisabled = (() => {
+    if (!eKYCData) return false; // No data - allow input
+    if (isRejected) return true; // Rejected - keep disabled
+    if (isPending || isApproved) return !isEditing; // Pending/Approved - disabled unless editing
+    return false; // Fallback
+  })();
 
   if (isLoadingData) {
     return <Skeleton className="w-full h-96" />;
@@ -177,7 +247,13 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
 
   return (
     <div className="w-full mx-auto">
-      <BankAccountHeader status={eKYCData?.status} />
+      <FormHeader
+        icon={Building2}
+        title="Bank Account Information"
+        description="Add your bank account details for secure transactions"
+        iconColor="text-blue-600"
+        status={eKYCData?.status}
+      />
 
       {isRejected && existingData?.remarks && (
         <RejectedRemarksField remarks={existingData.remarks} />
@@ -192,14 +268,16 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
           noValidate
           className="space-y-4 sm:space-y-6"
         >
-          <BankAccountDetailsForm form={form} isLoadingData={isLoadingData} disabled={!!eKYCData} />
+          <BankAccountDetailsForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-          <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={!!eKYCData} />
+          <BankStatementUpload form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-          <BankAccountActions
+          <EKYCTabActions
             isLoading={isSubmitting || isDeleting}
-            onSubmit={isDisabledSubmit ? undefined : handleSubmitClick}
-            isRejected={isRejected}
+            onSubmit={handleSubmitClick}
+            onEdit={handleEditClick}
+            status={eKYCData?.status}
+            isEditing={isEditing}
           />
         </form>
       </FormProvider>
@@ -208,6 +286,14 @@ const BankAccountForm: FC<Props> = ({ eKYCData }) => {
         open={showResubmitModal}
         onOpenChange={setShowResubmitModal}
         onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="bank"
+      />
+
+      <EditApprovedModal
+        open={showEditApprovedModal}
+        onOpenChange={setShowEditApprovedModal}
+        onConfirm={handleEditApprovedConfirm}
         isLoading={isDeleting}
         type="bank"
       />

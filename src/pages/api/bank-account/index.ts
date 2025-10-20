@@ -20,6 +20,8 @@ export default sessionWrapper(
         switch (request.method) {
           case 'POST':
             return POST(request, response, user);
+          case 'PUT':
+            return PUT(request, response, user);
           case 'GET':
             return GET(response, userId);
           default:
@@ -39,6 +41,74 @@ export async function GET(res: NextApiResponse, userId: string) {
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_BANK_ACCOUNT_SUCCESS, bankAccounts));
+}
+
+export async function PUT(req: NextApiRequest, res: NextApiResponse, user: SessionUser) {
+  const { error } = validateBody(bankAccountSchema, req.body);
+  if (error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+  }
+
+  const { id, ekycId, ...updateData } = req.body;
+
+  if (!id || !ekycId) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.BAD_REQUEST,
+          'Bank account ID and eKYC ID are required for update',
+        ),
+      );
+  }
+
+  // Check if bank account exists and belongs to user
+  const existingAccount = await bankAccountRepository.getById(id);
+  if (!existingAccount) {
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.BANK_ACCOUNT_NOT_FOUND));
+  }
+
+  if (existingAccount.userId !== user.id) {
+    return res
+      .status(RESPONSE_CODE.FORBIDDEN)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.FORBIDDEN,
+          'You do not have permission to update this bank account',
+        ),
+      );
+  }
+
+  // Check if new data conflicts with existing accounts (excluding current account)
+  if (existingAccount.accountNumber !== updateData.accountNumber) {
+    const existingTemplate = await bankAccountRepository.checkBankAccount(updateData);
+    if (existingTemplate) {
+      return res
+        .status(RESPONSE_CODE.CONFLICT)
+        .json(createErrorResponse(RESPONSE_CODE.CONFLICT, Messages.EXIT_BANK_ACCOUNT));
+    }
+  }
+
+  const updatedBankAccount = await bankAccountRepository.update(
+    id,
+    ekycId,
+    {
+      ...updateData,
+      status: KYCStatus.PENDING,
+      updatedAt: new Date(),
+    },
+    user,
+  );
+
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(RESPONSE_CODE.OK, Messages.UPDATE_BANK_ACCOUNT_SUCCESS, updatedBankAccount),
+    );
 }
 
 export async function POST(req: NextApiRequest, res: NextApiResponse, user: SessionUser) {
