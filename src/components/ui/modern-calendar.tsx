@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, buttonVariants } from '@/components/modern-ui/button';
+import { Button, buttonVariants } from '@/components/ui/modern-button';
 import { cn } from '@/shared/utils';
 import { differenceInCalendarDays } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';

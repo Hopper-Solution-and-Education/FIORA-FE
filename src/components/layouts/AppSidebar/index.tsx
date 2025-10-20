@@ -49,7 +49,7 @@ import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import HopperLogo from '@public/images/logo.jpg';
-import { helpItems, menuSettingItems } from '../dashboard-header/utils';
+import { helpItems, menuSettingItems } from '../DashboardHeader/utils';
 import { filterNavItems as filterNavItemsUtil, isItemActive as isItemActiveUtil } from './utils';
 
 type AppSideBarProps = {
@@ -126,7 +126,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
   return (
     !isLoadingProfile && (
-      <div className="relative h-full">
+      <div id="app-sidebar" className="app-bar h-full">
         <Sidebar collapsible="icon">
           <SidebarHeader className="flex flex-col">
             <div

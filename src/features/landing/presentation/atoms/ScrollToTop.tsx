@@ -1,43 +1,48 @@
 'use client';
+
 import { Button } from '@/components/ui/button';
 import { ArrowUpToLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const ScrollToTop = () => {
-  const [showTopBtn, setShowTopBtn] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 400) {
-        setShowTopBtn(true);
+    const container = document.getElementById('app-content');
+    if (!container) return;
+
+    const toggleVisibility = () => {
+      if (container.scrollTop > 400) {
+        setIsVisible(true);
       } else {
-        setShowTopBtn(false);
+        setIsVisible(false);
       }
-    });
+    };
+
+    // Gọi 1 lần khi mount
+    toggleVisibility();
+
+    container.addEventListener('scroll', toggleVisibility, { passive: true });
+    return () => container.removeEventListener('scroll', toggleVisibility);
   }, []);
 
-  const goToTop = () => {
-    if (!window) return;
-
-    window.scroll({
-      top: 0,
-      left: 0,
-      behavior: 'smooth',
-    });
+  const scrollToTop = () => {
+    const container = document.getElementById('app-content');
+    if (!container) return;
+    container.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (!isVisible) return null;
+
   return (
-    <>
-      {showTopBtn && (
-        <Button
-          onClick={goToTop}
-          className="fixed bottom-4 right-4 opacity-90 shadow-md"
-          size="icon"
-        >
-          <ArrowUpToLine className="h-4 w-4" />
-        </Button>
-      )}
-    </>
+    <Button
+      onClick={scrollToTop}
+      className="fixed bottom-4 right-4 rounded-full p-3 shadow-md opacity-90 z-50"
+      size="icon"
+      aria-label="Scroll to top"
+    >
+      <ArrowUpToLine className="h-4 w-4" />
+    </Button>
   );
 };
 

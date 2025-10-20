@@ -1,4 +1,4 @@
-import DatePicker from '@/components/modern-ui/date-picker';
+import DatePicker from '@/components/ui/modern-date-picker';
 import { cn } from '@/shared/utils';
 import { DateRangeFromToPickerProps } from './types';
 

@@ -4,9 +4,6 @@
 
 @layer utilities {
   /* SCROLLBAR */
-  *::-webkit-scrollbar {
-    @apply w-2;
-  }
 
   *::-webkit-scrollbar-track {
     @apply bg-background rounded;
@@ -15,7 +12,7 @@
 
   *::-webkit-scrollbar-thumb {
     @apply bg-muted rounded;
-    background: hsl(var(--card));
+    background: hsl(var(--foreground) / 0.2);
     transition: background 0.2s ease;
   }
 
@@ -26,7 +23,7 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) hsl(var(--background));
+    /* scrollbar-color: hsl(var(--muted)) hsl(var(--background)); */
   }
 
   .no-scrollbar {
@@ -171,14 +168,11 @@
 
   html,
   body {
+    @apply bg-background text-foreground;
     height: 100%;
     overflow: hidden;
     padding: 0;
     margin: 0;
-  }
-
-  body {
-    @apply bg-background text-foreground;
   }
 
   #app-layout {
@@ -194,6 +188,11 @@
     min-height: 0;
     position: relative;
     z-index: 1;
+  }
+
+  .app-bar {
+    position: relative;
+    z-index: 2;
   }
 }
 

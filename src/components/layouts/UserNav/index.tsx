@@ -32,7 +32,7 @@ interface UserNavProps {
   handleSignOut?: () => void;
 }
 
-export function UserNav({ handleSignOut }: UserNavProps) {
+function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
   const { data: profile } = useGetProfileQuery();
   const { data: userData } = useGetUsersQuery({ pageSize: 3 });
@@ -199,3 +199,5 @@ export function UserNav({ handleSignOut }: UserNavProps) {
     </DropdownMenu>
   );
 }
+
+export default UserNav;
