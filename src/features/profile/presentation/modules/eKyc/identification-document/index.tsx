@@ -10,40 +10,40 @@ import {
   useDeleteEKYCMutation,
   useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
+  useUpdateIdentificationDocumentMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
-import { useRouter } from 'next/navigation';
+import { User } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { IdentificationDocument } from '../../../schema/personalInfoSchema';
-import { ResubmitConfirmModal } from '../components';
-import { RejectedRemarksField } from '../shared/components';
-import {
-  DocumentImagesForm,
-  DocumentInfoForm,
-  IdentificationActions,
-  IdentificationHeader,
-} from './components';
+import { EditApprovedModal, ResubmitConfirmModal } from '../components';
+import { EKYCTabActions, FormHeader, RejectedRemarksField } from '../shared/components';
+import { DocumentImagesForm, DocumentInfoForm } from './components';
 
 interface IdentificationDocumentProps {
   eKYCData: eKYC;
 }
 
 const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData }) => {
-  const router = useRouter();
   const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
     undefined,
     { skip: !eKYCData },
   );
 
   const [submitDocument] = useSubmitIdentificationDocumentMutation();
+  const [updateDocument] = useUpdateIdentificationDocumentMutation();
   const [uploadAttachmentMutation] = useUploadAttachmentMutation();
   const [deleteEKYC, { isLoading: isDeleting }] = useDeleteEKYCMutation();
 
   const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [showEditApprovedModal, setShowEditApprovedModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
+  const isPending = eKYCData?.status === EKYCStatus.PENDING;
+  const isApproved = eKYCData?.status === EKYCStatus.APPROVAL;
 
   const defaults = useMemo(
     () => ({
@@ -81,6 +81,9 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
   // Populate form with existing data when loaded, or use defaults
   useEffect(() => {
+    // Don't populate form with existing data when editing
+    if (isEditing) return;
+
     if (identificationDocument && eKYCData) {
       const formData = {
         idNumber: identificationDocument.idNumber || '',
@@ -103,7 +106,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     }
     // If no existing data, reset to defaults
     reset(defaults);
-  }, [identificationDocument, eKYCData, reset, defaults]);
+  }, [identificationDocument, eKYCData, reset, defaults, isEditing]);
 
   const uploadFile = async (
     file: File,
@@ -135,9 +138,10 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
       await deleteEKYC(eKYCData.id).unwrap();
       setShowResubmitModal(false);
-      reset(defaults);
+      setIsEditing(false); // Reset editing state
+      reset(defaults); // Reset form to defaults
       toast.success('Previous submission deleted. You can now submit new documents.');
-      router.refresh();
+      // Note: Removed window.location.reload() as reset() should handle form state
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
       toast.error(error?.message || 'Failed to delete previous submission');
@@ -152,43 +156,129 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     }
   };
 
-  const handleSubmitForm = async (data: IdentificationDocument) => {
-    // Validate required files (handled by schema now)
-    if (!data.frontImage || !data.backImage || !data.facePhoto) {
-      toast.error('Please upload all required files.');
-      return;
+  const handleEditClick = () => {
+    if (isApproved) {
+      setShowEditApprovedModal(true);
+    } else if (isPending) {
+      setIsEditing(true); // Enable editing for pending status
     }
-    try {
-      // Upload all files
-      const [frontUrl, backUrl, photoUrl] = await Promise.all([
-        uploadFile(data.frontImage, 'front'),
-        uploadFile(data.backImage, 'back'),
-        uploadFile(data.facePhoto, 'face'),
-      ]);
+  };
 
-      if (!frontUrl || !backUrl || !photoUrl) {
-        toast.error('Failed to upload some files. Please try again.');
+  const handleEditApprovedConfirm = async () => {
+    try {
+      if (!eKYCData?.id) {
+        toast.error('eKYC data not found');
         return;
       }
 
-      // Create attachments
-      const [attachmentFront, attachmentBack, attachmentPhoto] = await Promise.all([
-        uploadAttachmentMutation({
-          url: frontUrl.url,
-          path: frontUrl.fileName,
-          type: 'image',
-        }),
-        uploadAttachmentMutation({
-          url: backUrl.url,
-          path: backUrl.fileName,
-          type: 'image',
-        }),
-        uploadAttachmentMutation({
-          url: photoUrl.url,
-          path: photoUrl.fileName,
-          type: 'image',
-        }),
-      ]);
+      await deleteEKYC(eKYCData.id).unwrap();
+      setShowEditApprovedModal(false);
+      toast.success('Previous submission deleted. You can now submit new documents.');
+      window.location.reload();
+      // Note: Form is now enabled for user to enter new data and submit
+    } catch (error: any) {
+      console.error('Error deleting eKYC:', error);
+      toast.error(error?.message || 'Failed to delete previous submission');
+    }
+  };
+
+  const handleSubmitForm = async (data: IdentificationDocument) => {
+    try {
+      let frontUrl = null,
+        backUrl = null,
+        photoUrl = null;
+      let attachmentFront = null,
+        attachmentBack = null,
+        attachmentPhoto = null;
+
+      // For new submissions, require all files
+      // For edits, allow using existing files if no new files uploaded
+      if (!isEditing) {
+        // New submission - require all files
+        if (!data.frontImage || !data.backImage || !data.facePhoto) {
+          toast.error('Please upload all required files.');
+          return;
+        }
+
+        // Upload all files for new submission
+        const uploadResults = await Promise.all([
+          uploadFile(data.frontImage, 'front'),
+          uploadFile(data.backImage, 'back'),
+          uploadFile(data.facePhoto, 'face'),
+        ]);
+
+        [frontUrl, backUrl, photoUrl] = uploadResults;
+
+        if (!frontUrl || !backUrl || !photoUrl) {
+          toast.error('Failed to upload some files. Please try again.');
+          return;
+        }
+
+        // Create new attachments
+        const attachmentResults = await Promise.all([
+          uploadAttachmentMutation({
+            url: frontUrl.url,
+            path: frontUrl.fileName,
+            type: 'image',
+          }),
+          uploadAttachmentMutation({
+            url: backUrl.url,
+            path: backUrl.fileName,
+            type: 'image',
+          }),
+          uploadAttachmentMutation({
+            url: photoUrl.url,
+            path: photoUrl.fileName,
+            type: 'image',
+          }),
+        ]);
+
+        [attachmentFront, attachmentBack, attachmentPhoto] = attachmentResults;
+      } else {
+        // Edit existing submission - use existing files if no new files uploaded
+        // Upload new files if provided
+        if (data.frontImage) {
+          frontUrl = await uploadFile(data.frontImage, 'front');
+          if (frontUrl) {
+            attachmentFront = await uploadAttachmentMutation({
+              url: frontUrl.url,
+              path: frontUrl.fileName,
+              type: 'image',
+            });
+          }
+        } else if (identificationDocument?.fileFront?.id) {
+          // Use existing front image
+          attachmentFront = { data: { id: identificationDocument.fileFront.id } };
+        }
+
+        if (data.backImage) {
+          backUrl = await uploadFile(data.backImage, 'back');
+          if (backUrl) {
+            attachmentBack = await uploadAttachmentMutation({
+              url: backUrl.url,
+              path: backUrl.fileName,
+              type: 'image',
+            });
+          }
+        } else if (identificationDocument?.fileBack?.id) {
+          // Use existing back image
+          attachmentBack = { data: { id: identificationDocument.fileBack.id } };
+        }
+
+        if (data.facePhoto) {
+          photoUrl = await uploadFile(data.facePhoto, 'face');
+          if (photoUrl) {
+            attachmentPhoto = await uploadAttachmentMutation({
+              url: photoUrl.url,
+              path: photoUrl.fileName,
+              type: 'image',
+            });
+          }
+        } else if (identificationDocument?.filePhoto?.id) {
+          // Use existing photo
+          attachmentPhoto = { data: { id: identificationDocument.filePhoto.id } };
+        }
+      }
 
       const payload = {
         fileFrontId: attachmentFront?.data?.id,
@@ -201,17 +291,34 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
         issuedPlace: data.issuedPlace,
       };
 
-      await submitDocument(payload).unwrap();
-      toast.success(
-        isRejected ? 'Document re-submitted successfully' : 'Document submitted successfully',
-      );
+      // Use update or submit based on whether we're editing an existing document
+      if (isEditing) {
+        await updateDocument({
+          ...payload,
+          id: existingData?.id,
+          ekycId: eKYCData?.id,
+        } as any).unwrap();
+        toast.success('Document updated successfully');
+      } else {
+        await submitDocument(payload).unwrap();
+        toast.success(
+          isRejected ? 'Document re-submitted successfully' : 'Document submitted successfully',
+        );
+      }
+      setIsEditing(false); // Reset editing state after successful submit
     } catch (error: any) {
       console.error('Error submitting document:', error);
       toast.error(error?.message || 'Failed to submit document');
     }
   };
 
-  const isDisabled = !!eKYCData;
+  // Enhanced disabled logic based on status and editing state
+  const isDisabled = (() => {
+    if (!eKYCData) return false; // No data - allow input
+    if (isRejected) return true; // Rejected - keep disabled
+    if (isPending || isApproved) return !isEditing; // Pending/Approved - disabled unless editing
+    return false; // Fallback
+  })();
 
   if (isLoadingData) {
     return (
@@ -223,7 +330,13 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
   return (
     <div className="w-full mx-auto">
-      <IdentificationHeader status={eKYCData?.status} />
+      <FormHeader
+        icon={User}
+        title="Identity Verification"
+        description="Upload your identification documents for account verification"
+        iconColor="text-purple-600"
+        status={eKYCData?.status}
+      />
 
       {isRejected && identificationDocument?.remarks && (
         <RejectedRemarksField remarks={identificationDocument.remarks} />
@@ -242,10 +355,12 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
           <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-          <IdentificationActions
+          <EKYCTabActions
             isLoading={isSubmitting || isDeleting}
             onSubmit={handleSubmitClick}
-            isRejected={isRejected}
+            onEdit={handleEditClick}
+            status={eKYCData?.status}
+            isEditing={isEditing}
           />
         </form>
       </FormProvider>
@@ -254,6 +369,14 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
         open={showResubmitModal}
         onOpenChange={setShowResubmitModal}
         onConfirm={handleResubmitConfirm}
+        isLoading={isDeleting}
+        type="identification"
+      />
+
+      <EditApprovedModal
+        open={showEditApprovedModal}
+        onOpenChange={setShowEditApprovedModal}
+        onConfirm={handleEditApprovedConfirm}
         isLoading={isDeleting}
         type="identification"
       />

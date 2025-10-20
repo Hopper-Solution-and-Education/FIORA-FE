@@ -34,6 +34,7 @@ export const authOptions: NextAuthOptions = {
             password: true,
             role: true,
             isBlocked: true,
+            isDeleted: true,
           },
         });
 
@@ -41,6 +42,11 @@ export const authOptions: NextAuthOptions = {
           // Check if user is blocked
           if (user.isBlocked) {
             throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+          }
+
+          // Check if user is deleted
+          if (user.isDeleted) {
+            throw new Error(Messages.USER_DELETED_SIGNIN_ERROR);
           }
 
           return {
@@ -76,6 +82,7 @@ export const authOptions: NextAuthOptions = {
               image: true,
               role: true,
               isBlocked: true,
+              isDeleted: true,
             },
           });
 
@@ -86,6 +93,8 @@ export const authOptions: NextAuthOptions = {
                 name: profile.name || 'Google User',
                 image: profile.image || user.image,
                 role: 'User', // Default role for Google users
+                isDeleted: false,
+                isBlocked: false,
               },
               select: {
                 id: true,
@@ -94,6 +103,7 @@ export const authOptions: NextAuthOptions = {
                 image: true,
                 role: true,
                 isBlocked: true,
+                isDeleted: true,
               },
             });
 
@@ -142,6 +152,10 @@ export const authOptions: NextAuthOptions = {
           } else {
             if (dbUser.isBlocked) {
               throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+            }
+
+            if (dbUser.isDeleted) {
+              throw new Error(Messages.USER_DELETED_SIGNIN_ERROR);
             }
 
             await prisma.user.update({

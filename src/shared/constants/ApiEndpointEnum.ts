@@ -51,18 +51,36 @@ export enum ApiEndpointEnum {
 
   // Profile
   Profile = '/api/profile',
+  ProfileByUserId = '/api/profile/user',
+  ProfileChangeEmail = '/api/profile/change-email',
+  ProfileChangePhone = '/api/profile/change-phone',
+  ProfileChangePassword = '/api/profile/change-password',
+  ProfileDelete = '/api/profile/delete',
+  ProfileSendOTP = '/api/profile/send-otp',
+  ProfileVerifyReferralCode = '/api/profile/verify-referral-code',
+
+  // eKYC
   eKYC = '/api/eKyc',
-  verifyOTP = '/api/eKyc/contact-information/verify',
-  sendOTP = '/api/eKyc/contact-information/send-otp',
+  eKYCByUserId = '/api/eKyc/user',
+  eKYCVerify = '/api/eKyc/verify',
+  eKYCContactVerifyOTP = '/api/eKyc/contact-information/verify',
+  eKYCSendOTP = '/api/eKyc/contact-information/send-otp',
+
+  // Identification Document
+  IdentificationDocument = '/api/indentification-document',
+  IdentificationDocumentByUserId = '/api/indentification-document/user',
+
+  // Bank Account
+  BankAccount = '/api/bank-account',
+  BankAccountByUserId = '/api/bank-account/user',
+
+  // Attachment
+  Attachment = '/api/attachment',
 
   // News
   News = '/api/news',
   NewsCategories = '/api/news/categories?type=NEWS',
   NewsReaction = '/api/news/react',
-  // Identification Document
-  IdentificationDocument = '/api/indentification-document',
-  // Bank Account
-  BankAccount = '/api/bank-account',
 
   // Withdraw FX
   walletWithdraw = '/api/wallet/withdraw',

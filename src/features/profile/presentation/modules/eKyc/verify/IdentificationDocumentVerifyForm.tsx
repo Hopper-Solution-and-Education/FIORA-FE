@@ -9,41 +9,35 @@ import {
   EKYCStatus,
   IdentificationDocumentType,
 } from '@/features/profile/domain/entities/models/profile';
-import {
-  useGetIdentificationDocumentByUserIdQuery,
-  useVerifyEKYCMutation,
-} from '@/features/profile/store/api/profileApi';
+import { useGetIdentificationDocumentByUserIdQuery } from '@/features/profile/store/api/profileApi';
+import { User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { IdentificationDocument } from '../../../schema/personalInfoSchema';
-import {
-  DocumentImagesForm,
-  DocumentInfoForm,
-  IdentificationHeader,
-} from '../identification-document/components';
-import { RejectedRemarksField } from '../shared/components';
-import { VerifyConfirmModal } from './components';
+import { DocumentImagesForm, DocumentInfoForm } from '../identification-document/components';
+import { FormHeader, RejectedRemarksField } from '../shared/components';
 
 interface IdentificationDocumentVerifyFormProps {
   eKYCData: eKYC;
   userId: string;
+  onApprove: () => void;
+  onReject: () => void;
+  isVerifying: boolean;
 }
 
 const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps> = ({
   eKYCData,
   userId,
+  onApprove,
+  onReject,
+  isVerifying,
 }) => {
   const router = useRouter();
   const { data: existingData, isLoading: isLoadingData } =
     useGetIdentificationDocumentByUserIdQuery(userId, {
       skip: !eKYCData || !userId,
     });
-  const [verifyEKYC, { isLoading: isVerifying }] = useVerifyEKYCMutation();
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'approve' | 'reject'>('approve');
 
   const defaults = useMemo(
     () => ({
@@ -100,40 +94,6 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
     reset(defaults);
   }, [identificationDocument, eKYCData, reset, defaults]);
 
-  const handleOpenApprove = () => {
-    setModalType('approve');
-    setModalOpen(true);
-  };
-
-  const handleOpenReject = () => {
-    setModalType('reject');
-    setModalOpen(true);
-  };
-
-  const handleVerify = async (remarks?: string) => {
-    if (!eKYCData?.id) {
-      toast.error('eKYC data not found');
-      return;
-    }
-
-    try {
-      const status = modalType === 'approve' ? EKYCStatus.APPROVAL : EKYCStatus.REJECTED;
-      await verifyEKYC({
-        kycId: eKYCData.id,
-        status,
-        remarks: remarks || '',
-      }).unwrap();
-
-      toast.success(
-        modalType === 'approve' ? 'eKYC approved successfully' : 'eKYC rejected successfully',
-      );
-      setModalOpen(false);
-    } catch (error: any) {
-      console.error('Error verifying eKYC:', error);
-      toast.error(error?.message || 'Failed to verify eKYC');
-    }
-  };
-
   const isDisabled = true; // Always disabled for admin view
   const isPending = eKYCData?.status === EKYCStatus.PENDING;
   const isRejected = eKYCData?.status === EKYCStatus.REJECTED;
@@ -148,81 +108,51 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
         <DefaultSubmitButton
           isSubmitting={isVerifying}
           disabled={isVerifying}
-          onSubmit={handleOpenApprove}
+          onSubmit={onApprove}
           submitTooltip="Approve eKYC"
           customButton={{
-            onClick: handleOpenReject,
+            onClick: onReject,
             tooltip: 'Reject eKYC',
             icon: <Icons.close className="h-5 w-5" />,
             variant: 'destructive',
             disabled: isVerifying,
           }}
-          onBack={() => {
-            router.back();
-          }}
+          onBack={() => router.back()}
         />
       );
     }
 
-    // if (isRejected) {
-    //   return (
-    //     <DefaultSubmitButton
-    //       isSubmitting={isVerifying}
-    //       disabled={isVerifying}
-    //       onSubmit={handleOpenReject}
-    //       submitTooltip="Re-submit eKYC"
-    //       onBack={() => {
-    //         router.back();
-    //       }}
-    //     />
-    //   );
-    // }
-
-    return (
-      <DefaultSubmitButton
-        onBack={() => {
-          router.back();
-        }}
-      />
-    );
+    return <DefaultSubmitButton onBack={() => router.back()} />;
   };
 
   return (
-    <>
-      <div className="w-full mx-auto mb-4">
-        <IdentificationHeader status={eKYCData?.status} />
-
-        {isRejected && identificationDocument?.remarks && (
-          <RejectedRemarksField remarks={identificationDocument.remarks} />
-        )}
-
-        <Card>
-          <CardContent className="p-6">
-            <FormProvider {...form}>
-              <form noValidate className="space-y-4 sm:space-y-6">
-                <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
-
-                <DocumentImagesForm
-                  form={form}
-                  isLoadingData={isLoadingData}
-                  disabled={isDisabled}
-                />
-
-                {renderSubmitButton()}
-              </form>
-            </FormProvider>
-          </CardContent>
-        </Card>
-      </div>
-
-      <VerifyConfirmModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        type={modalType}
-        onConfirm={handleVerify}
-        isLoading={isVerifying}
+    <div className="w-full max-w-5xl mx-auto mb-4">
+      <FormHeader
+        icon={User}
+        title="Identity Verification"
+        description="Upload your identification documents for account verification"
+        iconColor="text-purple-600"
+        status={eKYCData?.status}
       />
-    </>
+
+      {isRejected && identificationDocument?.remarks && (
+        <RejectedRemarksField remarks={identificationDocument.remarks} />
+      )}
+
+      <Card>
+        <CardContent className="p-6">
+          <FormProvider {...form}>
+            <form noValidate className="space-y-4 sm:space-y-6">
+              <DocumentInfoForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+
+              <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
+
+              {renderSubmitButton()}
+            </form>
+          </FormProvider>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

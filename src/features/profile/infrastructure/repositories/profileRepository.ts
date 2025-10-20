@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { UserRole } from '@/shared/constants/userRole';
-import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
-import type { UpdateProfileRequest, UserProfile, eKYC } from '../../domain/entities/models/profile';
+import { removeFromFirebase } from '@/shared/lib';
+import type { eKYC, UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
 import type { IProfileRepository } from '../../domain/repositories/profileRepository.interface';
 
 class ProfileRepository implements IProfileRepository {
@@ -68,19 +68,39 @@ class ProfileRepository implements IProfileRepository {
       select: { avatarId: true, logoId: true, id: true },
     });
 
-    const avatarResult = await this.applyImageUpdate({
-      currentAttachmentId: currentUser?.avatarId ?? null,
-      newFile: payload.newAvatar ?? null,
-      newUrl: payload.avatarUrl ?? null,
-      path: 'users/avatar',
-    });
+    // Handle avatar update
+    let avatarResult: { id: string; url: string } | null = null;
+    if (payload.avatarAttachmentId) {
+      // FE already uploaded and created attachment, just use the ID
+      const attachment = await prisma.attachment.findUnique({
+        where: { id: payload.avatarAttachmentId },
+        select: { id: true, url: true },
+      });
+      if (attachment) {
+        avatarResult = attachment;
+        // Delete old attachment if exists
+        if (currentUser?.avatarId && currentUser.avatarId !== payload.avatarAttachmentId) {
+          await this.deleteAttachmentById(currentUser.avatarId);
+        }
+      }
+    }
 
-    const logoResult = await this.applyImageUpdate({
-      currentAttachmentId: currentUser?.logoId ?? null,
-      newFile: payload.newLogo ?? null,
-      newUrl: payload.logoUrl ?? null,
-      path: 'users/logo',
-    });
+    // Handle logo update
+    let logoResult: { id: string; url: string } | null = null;
+    if (payload.logoAttachmentId) {
+      // FE already uploaded and created attachment, just use the ID
+      const attachment = await prisma.attachment.findUnique({
+        where: { id: payload.logoAttachmentId },
+        select: { id: true, url: true },
+      });
+      if (attachment) {
+        logoResult = attachment;
+        // Delete old attachment if exists
+        if (currentUser?.logoId && currentUser.logoId !== payload.logoAttachmentId) {
+          await this.deleteAttachmentById(currentUser.logoId);
+        }
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id: userId },
@@ -106,6 +126,7 @@ class ProfileRepository implements IProfileRepository {
         referrer_code: true,
       },
     });
+
     // Determine final URLs: prefer newly created ones; otherwise resolve existing attachments if any
     const finalAvatarUrl: string | null =
       avatarResult?.url ?? (await this.resolveAttachmentUrl(updated.avatarId));
@@ -125,26 +146,6 @@ class ProfileRepository implements IProfileRepository {
     };
   }
 
-  private async uploadNewImage(file: File, path: string): Promise<{ id: string; url: string }> {
-    const url = await uploadToFirebase({ file, path });
-    const created = await prisma.attachment.create({
-      data: { url, path, type: 'image' },
-      select: { id: true, url: true },
-    });
-    return created;
-  }
-
-  private async createAttachmentFromUrl(
-    url: string,
-    path: string,
-  ): Promise<{ id: string; url: string }> {
-    const created = await prisma.attachment.create({
-      data: { url, path, type: 'image' },
-      select: { id: true, url: true },
-    });
-    return created;
-  }
-
   private async deleteAttachmentById(attachmentId: string): Promise<void> {
     const existing = await prisma.attachment.findUnique({ where: { id: attachmentId } });
     if (!existing) return;
@@ -158,23 +159,112 @@ class ProfileRepository implements IProfileRepository {
     return attachment?.url ?? null;
   }
 
-  private async applyImageUpdate(args: {
-    currentAttachmentId: string | null;
-    newFile: File | null;
-    newUrl: string | null;
-    path: string;
-  }): Promise<{ id: string; url: string } | null> {
-    const { currentAttachmentId, newFile, newUrl, path } = args;
-    if (!newFile && !newUrl) return null;
+  async getByEmail(email: string): Promise<UserProfile | null> {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarId: true,
+        birthday: true,
+        phone: true,
+        logoId: true,
+        address: true,
+        role: true,
+        eKYC: true,
+      },
+    });
 
-    const created = newFile
-      ? await this.uploadNewImage(newFile, path)
-      : await this.createAttachmentFromUrl(newUrl as string, path);
+    if (!user) return null;
 
-    if (currentAttachmentId) {
-      await this.deleteAttachmentById(currentAttachmentId);
-    }
-    return created;
+    const avatarUrl = await this.resolveAttachmentUrl(user.avatarId);
+    const logoUrl = await this.resolveAttachmentUrl(user.logoId);
+
+    return {
+      id: user.id,
+      name: user.name ?? null,
+      email: user.email,
+      avatarUrl,
+      logoUrl,
+      phone: user.phone ?? null,
+      address: user.address ?? null,
+      birthday: user.birthday ? user.birthday.toISOString() : null,
+      role: user.role as UserRole,
+      eKYC: user.eKYC as unknown as eKYC[],
+    };
+  }
+
+  async getByIdWithPassword(userId: string): Promise<any> {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+  }
+
+  async updateEmail(userId: string, email: string): Promise<UserProfile> {
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { email, updatedBy: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarId: true,
+        logoId: true,
+        phone: true,
+        address: true,
+        birthday: true,
+        role: true,
+        eKYC: true,
+      },
+    });
+
+    const avatarUrl = await this.resolveAttachmentUrl(updated.avatarId);
+    const logoUrl = await this.resolveAttachmentUrl(updated.logoId);
+
+    return {
+      id: updated.id,
+      name: updated.name ?? null,
+      email: updated.email,
+      avatarUrl,
+      logoUrl,
+      phone: updated.phone ?? null,
+      address: updated.address ?? null,
+      birthday: updated.birthday ? updated.birthday.toISOString() : null,
+      role: updated.role as UserRole,
+      eKYC: updated.eKYC as unknown as eKYC[],
+    };
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword, updatedBy: userId },
+    });
+  }
+
+  async softDelete(userId: string): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all user sessions (logout from all devices)
+      await tx.session.deleteMany({
+        where: { userId },
+      });
+
+      // 2. Soft delete user account
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          deletedAt: new Date(),
+          updatedBy: userId,
+          isDeleted: true,
+        },
+      });
+    });
   }
 }
 

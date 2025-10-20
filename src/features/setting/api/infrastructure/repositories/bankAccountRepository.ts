@@ -135,6 +135,31 @@ class BankAccountRepository {
     }
   }
 
+  async update(id: string, ekycId: string, data: any, user: SessionUser) {
+    try {
+      return prisma.$transaction(async (tx) => {
+        const updatedBankAccount = await tx.bankAccount.update({
+          where: { id },
+          data: {
+            ...data,
+            updatedBy: user.id,
+          },
+        });
+
+        // Update related eKYC status to pending
+        await tx.eKYC.update({
+          where: { id: ekycId },
+          data: { status: KYCStatus.PENDING, updatedAt: new Date(), updatedBy: user.id },
+        });
+
+        return updatedBankAccount;
+      });
+    } catch (error) {
+      console.log(error);
+      return error as unknown;
+    }
+  }
+
   async delete(id: string) {
     try {
       return prisma.$transaction(async (tx) => {
