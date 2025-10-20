@@ -14,7 +14,6 @@ import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
-import { AmplitudeProvider } from './AmplitudeContextProvider';
 import { AutoScrollTopProvider } from './AutoScrollTopProvider';
 import { ReduxProvider } from './ReduxProvider';
 
@@ -24,28 +23,26 @@ const Providers = ({ children }: PropsWithChildren) => {
       <NextTopLoader showSpinner={false} />
       <NuqsAdapter>
         <KBar>
-          <AmplitudeProvider>
-            <ReduxProvider>
-              <GrowthBookProvider growthbook={growthbook}>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="light"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-                    <AutoScrollTopProvider />
-                    <Toaster />
-                    <Updater />
+          <ReduxProvider>
+            <GrowthBookProvider growthbook={growthbook}>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+                  <AutoScrollTopProvider />
+                  <Toaster />
+                  <Updater />
 
-                    {children}
-                    <ScrollToTop />
-                    <SessionTimeoutModal />
-                  </SessionProvider>
-                </ThemeProvider>
-              </GrowthBookProvider>
-            </ReduxProvider>
-          </AmplitudeProvider>
+                  {children}
+                  <ScrollToTop />
+                  <SessionTimeoutModal />
+                </SessionProvider>
+              </ThemeProvider>
+            </GrowthBookProvider>
+          </ReduxProvider>
         </KBar>
       </NuqsAdapter>
     </SWRConfig>

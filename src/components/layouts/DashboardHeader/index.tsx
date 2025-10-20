@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
-import { UserNav } from '../user-nav/UserNav';
+import UserNav from '../UserNav';
 import FinanceSummary from './components/FinanceSummary';
 import HelpCenter from './components/HelpCenter';
 import MarqueeAnnouncement from './components/MarqueAnnouncement';
@@ -27,7 +27,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-background/80 border-b border-border/40 shadow-sm">
+      <header
+        id="app-header"
+        className="app-bar bg-background/80 border-b border-border/40 shadow-sm"
+      >
         {/* Announcement */}
         {showAnnouncement && announcement?.data?.[0]?.content && !isLoading && (
           <div className="flex items-center justify-between w-full bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-b border-red-200 dark:border-red-800/50 px-4 py-2">

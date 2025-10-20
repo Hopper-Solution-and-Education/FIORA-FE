@@ -4,9 +4,9 @@ import { format } from 'date-fns';
 import * as React from 'react';
 import { DateRange } from 'react-day-picker';
 
-import { Button } from '@/components/modern-ui/button';
-import { Calendar } from '@/components/modern-ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/modern-ui/popover';
+import { Button } from '@/components/ui/modern-button';
+import { Calendar } from '@/components/ui/modern-calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/modern-popover';
 import { cn } from '@/shared/utils';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 

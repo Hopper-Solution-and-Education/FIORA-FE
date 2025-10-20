@@ -1,6 +1,6 @@
 'use client';
 
-import Header from '@/components/layouts/dashboard-header/DashboardHeader';
+import { AppSidebar, Header, MainContent } from '@/components/layouts';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { expandNavItems, shrinkNavItems } from '@/features/home/constants/data';
 import { NavItem } from '@/features/home/types/Nav.types';
@@ -9,8 +9,6 @@ import { Session } from 'next-auth/core/types';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Breadcrumbs } from '../Breadcrumbs';
-import { MainContent } from '../layouts';
-import AppSidebar from '../layouts/app-side-bar/AppSidebar';
 import { Separator } from '../ui/separator';
 
 const SIDEBAR_STATE_KEY = 'sidebar-open-state';
@@ -51,7 +49,13 @@ const SessionSidebar = ({
   const currentNavItems = navItems || (open ? expandNavItems : shrinkNavItems);
 
   return (
-    <SidebarProvider className="h-full" defaultOpen={open} open={open} onOpenChange={setOpen}>
+    <SidebarProvider
+      id="app-sidebar"
+      className="app-bar h-full"
+      defaultOpen={open}
+      open={open}
+      onOpenChange={setOpen}
+    >
       <AppSidebar appLabel={appLabel} navItems={currentNavItems} />
       <SidebarInset className="h-full">
         <Header />
