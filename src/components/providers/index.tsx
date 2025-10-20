@@ -5,7 +5,6 @@ import KBar from '@/components/kbar';
 import { Toaster } from '@/components/ui/sonner';
 import growthbook from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
-import { ScrollToTop } from '@/features/landing/presentation/atoms';
 import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { SessionProvider } from 'next-auth/react';
@@ -14,6 +13,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
+import { TooltipProvider } from '../ui/tooltip';
 import { AutoScrollTopProvider } from './AutoScrollTopProvider';
 import { ReduxProvider } from './ReduxProvider';
 
@@ -32,13 +32,14 @@ const Providers = ({ children }: PropsWithChildren) => {
                 disableTransitionOnChange
               >
                 <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-                  <AutoScrollTopProvider />
-                  <Toaster />
-                  <Updater />
+                  <TooltipProvider>
+                    <AutoScrollTopProvider />
+                    <Toaster />
+                    <Updater />
 
-                  {children}
-                  <ScrollToTop />
-                  <SessionTimeoutModal />
+                    {children}
+                    <SessionTimeoutModal />
+                  </TooltipProvider>
                 </SessionProvider>
               </ThemeProvider>
             </GrowthBookProvider>

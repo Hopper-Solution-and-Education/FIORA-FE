@@ -1,5 +1,5 @@
 import { Icons } from '@/components/Icon';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -59,47 +59,45 @@ const OrbitalCategoryLabel = ({
   const Icon = Icons[iconSrc as keyof typeof Icons] || Icons.dashboard;
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <motion.div
-        key={label}
-        className="absolute z-40"
-        style={{
-          left: '50%',
-          top: '50%',
-          x: x,
-          y: y,
-        }}
-      >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="bg-green-800 rounded-full shadow-xl -translate-x-1/2 -translate-y-1/2 relative flex items-center justify-center overflow-hidden"
-              style={{
-                width: `${scaledCategoryDotSize}px`,
-                height: `${scaledCategoryDotSize}px`,
-                cursor: 'pointer',
-              }}
-            >
-              {iconSrc &&
-                (iconSrc.startsWith('http') ? (
-                  <Image
-                    src={iconSrc}
-                    alt={label}
-                    width={scaledCategoryDotSize}
-                    height={scaledCategoryDotSize}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Icon className="w-[60%] h-[60%] text-white" />
-                ))}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="bg-gray-800 text-white px-3 py-1 rounded-md text-sm font-bold shadow-lg z-50 max-w-[200px]">
-            <div className="line-clamp-4 break-words whitespace-normal">{label}</div>
-          </TooltipContent>
-        </Tooltip>
-      </motion.div>
-    </TooltipProvider>
+    <motion.div
+      key={label}
+      className="absolute z-40"
+      style={{
+        left: '50%',
+        top: '50%',
+        x: x,
+        y: y,
+      }}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="bg-green-800 rounded-full shadow-xl -translate-x-1/2 -translate-y-1/2 relative flex items-center justify-center overflow-hidden"
+            style={{
+              width: `${scaledCategoryDotSize}px`,
+              height: `${scaledCategoryDotSize}px`,
+              cursor: 'pointer',
+            }}
+          >
+            {iconSrc &&
+              (iconSrc.startsWith('http') ? (
+                <Image
+                  src={iconSrc}
+                  alt={label}
+                  width={scaledCategoryDotSize}
+                  height={scaledCategoryDotSize}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <Icon className="w-[60%] h-[60%] text-white" />
+              ))}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent className="bg-gray-800 text-white px-3 py-1 rounded-md text-sm font-bold shadow-lg z-50 max-w-[200px]">
+          <div className="line-clamp-4 break-words whitespace-normal">{label}</div>
+        </TooltipContent>
+      </Tooltip>
+    </motion.div>
   );
 };
 

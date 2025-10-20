@@ -1,8 +1,5 @@
 'use client';
 
-import { useVariableLoadedListener } from '@/shared/hooks/useVariableLoadedListener';
-import { useEffect, useRef } from 'react';
-
 type ScrollBehaviorType = 'auto' | 'smooth';
 const DEFAULT_BEHAVIOR: ScrollBehaviorType = 'auto';
 const DEFAULT_OFFSET = 100;
@@ -26,17 +23,8 @@ interface ScrollOptions {
 const APP_LAYOUT_ID = 'app-content';
 
 export const useAppScroll = () => {
-  const appContent = useVariableLoadedListener(() => document.getElementById(APP_LAYOUT_ID), []);
-
-  const elementRef = useRef<HTMLElement | null>(null);
-  elementRef.current = appContent || document.documentElement;
-
-  useEffect(() => {
-    elementRef.current = appContent || document.documentElement;
-  }, [appContent]);
-
   const getElement = () => {
-    return elementRef.current || document.documentElement;
+    return document.getElementById(APP_LAYOUT_ID) || document.documentElement;
   };
 
   const getScrollPosition = () => {
@@ -87,7 +75,6 @@ export const useAppScroll = () => {
   return {
     scroll,
     getScrollPosition,
-    isReady: !!appContent,
     getElement,
   };
 };

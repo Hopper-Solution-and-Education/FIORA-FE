@@ -1,42 +1,39 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { ScrollType, useAppScroll } from '@/shared/hooks/useAppScroll';
 import { ArrowUpToLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+const SCROLL_THRESHOLD = 400;
+
 const ScrollToTop = () => {
+  const { scroll, getElement, getScrollPosition } = useAppScroll();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const container = document.getElementById('app-content');
+    const container = getElement();
     if (!container) return;
 
-    const toggleVisibility = () => {
-      if (container.scrollTop > 400) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+    const handleScroll = () => {
+      setIsVisible(getScrollPosition() > SCROLL_THRESHOLD);
     };
 
-    // Gọi 1 lần khi mount
-    toggleVisibility();
+    handleScroll();
 
-    container.addEventListener('scroll', toggleVisibility, { passive: true });
-    return () => container.removeEventListener('scroll', toggleVisibility);
-  }, []);
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [getElement, getScrollPosition]);
 
-  const scrollToTop = () => {
-    const container = document.getElementById('app-content');
-    if (!container) return;
-    container.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleClick = () => {
+    scroll({ type: ScrollType.ToTop, scrollBehavior: 'smooth' });
   };
 
   if (!isVisible) return null;
 
   return (
     <Button
-      onClick={scrollToTop}
+      onClick={handleClick}
       className="fixed bottom-4 right-4 rounded-full p-3 shadow-md opacity-90 z-50"
       size="icon"
       aria-label="Scroll to top"
