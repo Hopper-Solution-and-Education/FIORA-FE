@@ -17,7 +17,8 @@ class SendingWalletUseCase {
 
     const movedAmount = await this._sendingRepo.getMovedAmount(userId);
 
-    const availableLimit = Math.min(dailyMovingLimit.amount - movedAmount);
+    const availableLimit =
+      dailyMovingLimit.amount - movedAmount > 0 ? dailyMovingLimit.amount - movedAmount : 0;
 
     const packageFXs = await this._sendingRepo.getPackageFX({
       availableLimit,

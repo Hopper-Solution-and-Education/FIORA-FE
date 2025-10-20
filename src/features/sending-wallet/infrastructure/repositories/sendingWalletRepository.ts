@@ -1,11 +1,8 @@
 import { prisma } from '@/config';
 import { BadRequestError, NotFoundError } from '@/shared/lib';
-import { ChannelType, Currency, Otp, UserRole } from '@prisma/client';
+import { Currency, Otp } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import {
-  CreateNotificationInbox,
-  ISendingWalletRepository,
-} from '../../domain/interfaces/sendingWallet.interface';
+import { ISendingWalletRepository } from '../../domain/interfaces/sendingWallet.interface';
 import {
   ArgCreateOTP,
   ArgCreateTransactionSendingType,
@@ -93,6 +90,10 @@ class SendingWalletRepository implements ISendingWalletRepository {
         fromWalletId: paymentWallet.id,
         partnerId: { not: null },
         type: { in: ['Expense', 'Transfer'] },
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)), // từ đầu ngày
+          lte: new Date(new Date().setHours(23, 59, 59, 999)), // đến cuối ngày
+        },
       },
       _sum: { amount: true },
     });
@@ -368,6 +369,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
               createdBy: sender.id,
             })),
           },
+          isMarked: true,
         },
       });
 
@@ -379,6 +381,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
           userId: receiver.id,
           toWalletId: receiverWallet.id,
           currency: Currency.FX,
+          isMarked: true,
         },
       });
 
@@ -417,77 +420,6 @@ class SendingWalletRepository implements ISendingWalletRepository {
       },
       orderBy: { name: 'asc' },
     });
-  }
-
-  async createNotificationInbox(input: CreateNotificationInbox): Promise<any> {
-    const { title, type, attachmentId, deepLink, message, emails, notifyTo } = input;
-
-    const roleMap: Record<string, UserRole | undefined> = {
-      ROLE_ADMIN: UserRole.Admin,
-      ROLE_CS: UserRole.CS,
-      ROLE_USER: UserRole.User,
-    };
-
-    let users: { id: string; email: string }[] = [];
-
-    if (notifyTo === 'ALL') {
-      users = await prisma.user.findMany({
-        where: { isDeleted: false },
-        select: { id: true, email: true },
-      });
-    } else if (notifyTo in roleMap) {
-      users = await prisma.user.findMany({
-        where: { isDeleted: false, role: roleMap[notifyTo]! },
-        select: { id: true, email: true },
-      });
-    } else if (notifyTo === 'PERSONAL') {
-      if (!emails?.length) {
-        console.warn('No email provided for PERSONAL notification');
-        return;
-      }
-      users = await prisma.user.findMany({
-        where: { isDeleted: false, email: { in: emails } },
-        select: { id: true, email: true },
-      });
-    }
-
-    if (!users.length) {
-      console.warn('No user found for this role or email');
-      return;
-    }
-
-    return await prisma.$transaction(async (tx) => {
-      const notification = await tx.notification.create({
-        data: {
-          notifyTo,
-          emails: users.map((u) => u.email),
-          emailTemplateId: null,
-          attachmentId: attachmentId || null,
-          title,
-          message,
-          type,
-          deepLink: deepLink || null,
-          channel: ChannelType.BOX,
-          createdAt: new Date(),
-        },
-      });
-
-      await tx.userNotification.createMany({
-        data: users.map((u) => ({
-          userId: u.id,
-          notificationId: notification.id,
-          isRead: false,
-        })),
-        skipDuplicates: true,
-      });
-
-      return notification;
-    });
-  }
-
-  async createNotificationEmail(): Promise<any> {
-    // TODO: Implement gửi email sau
-    return;
   }
 }
 

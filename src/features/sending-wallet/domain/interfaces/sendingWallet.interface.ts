@@ -41,8 +41,4 @@ export interface ISendingWalletRepository {
   getCategories(userId: string): Promise<CategoryItemType[]>;
 
   getProductions(userId: string): Promise<ProductType[]>;
-
-  createNotificationInbox(input: CreateNotificationInbox): Promise<any>;
-
-  createNotificationEmail(): Promise<any>;
 }
