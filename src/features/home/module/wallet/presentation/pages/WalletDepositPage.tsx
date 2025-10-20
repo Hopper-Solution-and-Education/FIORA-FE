@@ -152,7 +152,13 @@ const WalletDepositPage = () => {
     <div id="wallet-deposit">
       <div className="mx-auto flex justify-center pb-6">
         <div className="flex flex-col gap-6 w-full">
-          <WalletTopbarAction enableDeposit={false} enableFilter={false} searchType="deposit" />
+          <WalletTopbarAction
+            enableDeposit={false}
+            enableTransfer={false}
+            enableWithdraw={false}
+            enableFilter={false}
+            searchType="deposit"
+          />
 
           <div className="flex w-full gap-6">
             <WalletPackageList

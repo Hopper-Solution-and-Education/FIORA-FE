@@ -1,10 +1,10 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -358,29 +358,22 @@ const ExchangeRateItem = (props: ExchangeRateItemProps) => {
                 </Button>
 
                 {rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX' ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <Button
-                            type="button"
-                            onClick={handleDeleteClick}
-                            variant="outline"
-                            size="sm"
-                            className="p-2 text-red-500 hover:text-red-700"
-                            disabled={
-                              disabled || rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX'
-                            }
-                          >
-                            <Icons.close className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Currency is already used for transactions</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <CommonTooltip content="Currency is already used for transactions">
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={handleDeleteClick}
+                        variant="outline"
+                        size="sm"
+                        className="p-2 text-red-500 hover:text-red-700"
+                        disabled={
+                          disabled || rate?.toCurrency === 'VND' || rate?.toCurrency === 'FX'
+                        }
+                      >
+                        <Icons.close className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CommonTooltip>
                 ) : (
                   <Button
                     type="button"

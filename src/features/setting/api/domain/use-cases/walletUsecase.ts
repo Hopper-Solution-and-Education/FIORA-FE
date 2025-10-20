@@ -6,6 +6,7 @@ import { notificationUseCase } from '@/features/notification/application/use-cas
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
+import { EmailTemplateEnum } from '@/shared/constants/EmailTemplateEnum';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { SavingWalletAction } from '@/shared/constants/savingWallet';
@@ -27,12 +28,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
-  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
-  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
-  WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
-  WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
 } from '../../../data/module/wallet/constants';
 import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -282,12 +279,6 @@ class WalletUseCase {
     // Create notification for Admin role
     await this._notificationUsecase.createBoxNotification(depositBoxNotification);
 
-    // Create notification for CS role
-    await this._notificationUsecase.createBoxNotification({
-      ...depositBoxNotification,
-      notifyTo: NotificationType.ROLE_CS,
-    });
-
     return depositRequest;
   }
 
@@ -344,7 +335,12 @@ class WalletUseCase {
   ) {
     const depositRequest = await this._walletRepository.findDepositRequestById(id);
 
-    if (!depositRequest || !depositRequest?.packageFXId || !depositRequest?.userId) return null;
+    if (
+      !depositRequest ||
+      (!depositRequest?.packageFXId && !depositRequest.amount) ||
+      !depositRequest?.userId
+    )
+      return null;
 
     // Precompute values during Approve branch to avoid duplicate queries later (notifications)
     let precomputedFxAmount: number | undefined;
@@ -558,10 +554,7 @@ class WalletUseCase {
             where: { id: depositRequest.id },
             data: { attachmentId: attachment.id, updatedBy: userId },
           });
-        } else {
-          throw new BadRequestError(Messages.ATTACHMENT_REQUIRED);
         }
-
         await this._transactionRepository.createTransaction({
           userId,
           fromWalletId: paymentWalletId,
@@ -595,7 +588,12 @@ class WalletUseCase {
 
   // Notify user via in-app + email template (reuses precomputed FX amount when available)
   private async notifyDepositStatus(
-    depositRequest: { userId: string; packageFXId: string; type: FxRequestType; amount: Decimal },
+    depositRequest: {
+      userId: string;
+      packageFXId?: string | null;
+      type: FxRequestType;
+      amount: Decimal;
+    },
     newStatus: DepositRequestStatus,
     remark?: string,
     precomputedFxAmount?: number,
@@ -637,8 +635,8 @@ class WalletUseCase {
 
       await this._notificationUsecase.sendNotificationWithTemplate(
         depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
+          ? EmailTemplateEnum.DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
+          : EmailTemplateEnum.WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
         `${depositRequest.type}_APPROVED`,
@@ -665,8 +663,8 @@ class WalletUseCase {
 
       await this._notificationUsecase.sendNotificationWithTemplate(
         depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
+          ? EmailTemplateEnum.DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
+          : EmailTemplateEnum.WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
         [emailPart],
         NotificationType.PERSONAL,
         `${depositRequest.type}_REJECTED`,

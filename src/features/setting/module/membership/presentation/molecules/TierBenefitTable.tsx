@@ -37,14 +37,14 @@ const TierBenefitTable = ({
         </colgroup>
 
         <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
-          <TableRow className="h-14 *:whitespace-nowrap sticky top-0 bg-background after:content-[''] after:inset-x-0 after:h-px after:bg-border after:absolute after:bottom-0">
+          <TableRow className="h-14 *:whitespace-nowrap sticky top-0 bg-background after:content-[''] after:inset-x-0 after:h-px after:absolute after:bottom-0">
             <TableHead className="hidden sm:table-cell text-center py-3 font-semibold text-foreground">
               No.
             </TableHead>
             <TableHead className="text-left py-3 font-semibold text-foreground">Benefit</TableHead>
             <TableHead className="text-right py-3 font-semibold text-foreground">Value</TableHead>
             <TableHead className="text-left py-3 font-semibold text-foreground">Unit</TableHead>
-            <TableHead className="text-center py-3 font-semibold text-foreground sticky right-0 z-30">
+            <TableHead className="text-center py-3 font-semibold text-foreground bg-background sticky right-0 z-30">
               Action
             </TableHead>
           </TableRow>

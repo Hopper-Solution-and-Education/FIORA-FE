@@ -1,3 +1,4 @@
+import { prisma } from '@/config';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
@@ -24,6 +25,24 @@ export function sessionWrapper(handler: HandlerWithUser): any {
     const userId = session.user.id;
 
     try {
+      // Check if user is blocked or deleted
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isBlocked: true, isDeleted: true },
+      });
+
+      if (user?.isBlocked) {
+        res.status(550).json({ message: Messages.USER_BLOCKED_SIGNIN_ERROR });
+        return;
+      }
+
+      if (user?.isDeleted) {
+        res.status(RESPONSE_CODE.FORBIDDEN).json({
+          message: Messages.USER_DELETED_SIGNIN_ERROR,
+        });
+        return;
+      }
+
       await handler(req, res, userId, session.user as SessionUser);
     } catch (error: any) {
       console.error('Error in sessionWrapper:', error);

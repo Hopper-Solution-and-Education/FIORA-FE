@@ -1,6 +1,6 @@
+import { cn } from '@/shared/utils';
+import { AlertCircle, AlertTriangle, CheckCircle, RefreshCw, Upload } from 'lucide-react';
 import React from 'react';
-import { CheckCircle, AlertCircle, AlertTriangle, Upload, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export type IconType = 'success' | 'error' | 'warning' | 'upload' | 'refresh';
 

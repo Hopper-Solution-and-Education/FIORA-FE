@@ -10,14 +10,6 @@ export const globalNavItems: GlobalNavItem[] = [
     isActive: false,
     shortcut: ['d', 'd'],
   },
-  {
-    title: 'Subscription',
-    url: '#subscription',
-    icon: 'billing',
-    props: { size: 20, strokeWidth: 1 },
-    isActive: false,
-    shortcut: ['d', 'd'],
-  },
 ];
 
 export const notSignInNavItems: GlobalNavItem[] = [

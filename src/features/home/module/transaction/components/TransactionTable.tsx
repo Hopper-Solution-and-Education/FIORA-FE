@@ -2,11 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { editFilter } from '@/components/common/filters';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   deleteTransaction as deleteTransactionThunk,
   fetchTransactions,
@@ -256,7 +256,10 @@ const TransactionTable = () => {
     dispatch(updateFilterCriteria(newFilter));
   };
 
-  const isDeleteForbidden = (date: string | Date): boolean => {
+  const isDeleteForbidden = (date: string | Date, transaction: IRelationalTransaction): boolean => {
+    if (transaction.isMarked || transaction.isExpired) {
+      return true;
+    }
     const transactionDate = new Date(date);
 
     const threeMonthsAgo = new Date();
@@ -365,35 +368,27 @@ const TransactionTable = () => {
                   </Label>
                 </div>
                 <div className="flex gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={handleCreateTransaction}
-                          className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
-                        >
-                          <svg
-                            width="15"
-                            height="15"
-                            viewBox="0 0 15 15"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
-                              fill="#000000"
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                            ></path>
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Create Transaction</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
+                  <CommonTooltip content="Create Transaction">
+                    <Button
+                      onClick={handleCreateTransaction}
+                      className="px-3 py-2 bg-green-200 hover:bg-green-500 border-green-600"
+                    >
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
+                          fill="#000000"
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </Button>
+                  </CommonTooltip>
                   <SettingsMenu />
                 </div>
               </div>
@@ -519,6 +514,7 @@ const TransactionTable = () => {
                                   'cursor-default',
                                   transRecord.fromAccountId ||
                                     transRecord.fromCategoryId ||
+                                    transRecord.fromWalletId ||
                                     transRecord.membershipBenefitId
                                     ? 'underline cursor-pointer'
                                     : 'text-gray-500',
@@ -530,13 +526,16 @@ const TransactionTable = () => {
                                     target:
                                       transRecord.type === 'Income'
                                         ? 'fromCategory'
-                                        : 'fromAccount',
-                                    subTarget: 'name',
+                                        : transRecord.fromAccountId
+                                          ? 'fromAccount'
+                                          : 'fromWallet',
+                                    subTarget: transRecord.fromWalletId ? 'type' : 'name',
                                     comparator: 'AND',
                                     value:
                                       transRecord.type === 'Income'
                                         ? (transRecord.fromCategory?.name ?? undefined)
                                         : (transRecord.fromAccount?.name ??
+                                          transRecord.fromWallet?.type ??
                                           transRecord.membershipBenefit?.name ??
                                           undefined),
                                   })
@@ -620,94 +619,72 @@ const TransactionTable = () => {
                           case 'Actions':
                             return (
                               <TableCell key={columnKey} className="flex justify-center gap-2">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        className="px-3 py-2 hover:bg-gray-200 "
-                                        onClick={() =>
-                                          router.push(`/transaction/details/${transRecord.id}`)
-                                        }
-                                      >
-                                        <FileText size={18} color="#595959" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Details</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                <CommonTooltip content="Details">
+                                  <Button
+                                    variant="ghost"
+                                    className="px-3 py-2 hover:bg-gray-200 "
+                                    onClick={() =>
+                                      router.push(`/transaction/details/${transRecord.id}`)
+                                    }
+                                  >
+                                    <FileText size={18} color="#595959" />
+                                  </Button>
+                                </CommonTooltip>
 
                                 {/* Edit Button - Only show for transactions within 30 days */}
                                 {/* Logic: Edit button is only enabled for transactions within the last 30 days */}
                                 {isEditAllowed(recordDate, transRecord) ? (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          className="hover:bg-blue-200 px-3 py-2"
-                                          onClick={() =>
-                                            router.push(`/transaction/edit/${transRecord.id}`)
-                                          }
-                                        >
-                                          <Edit size={18} color="#2563eb" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Edit Transaction</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
+                                  <CommonTooltip content="Edit Transaction">
+                                    <Button
+                                      variant="ghost"
+                                      className="hover:bg-blue-200 px-3 py-2"
+                                      onClick={() =>
+                                        router.push(`/transaction/edit/${transRecord.id}`)
+                                      }
+                                    >
+                                      <Edit size={18} color="#2563eb" />
+                                    </Button>
+                                  </CommonTooltip>
                                 ) : (
                                   // Show disabled edit button with tooltip for older transactions
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          className="opacity-50 cursor-not-allowed px-3 py-2"
-                                          disabled
-                                        >
-                                          <Edit size={18} color="#9ca3af" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Can&apos;t edit transactions older than 30 days</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
+                                  <CommonTooltip content="Can't edit transactions older than 30 days">
+                                    <Button
+                                      variant="ghost"
+                                      className="opacity-50 cursor-not-allowed px-3 py-2"
+                                      disabled
+                                    >
+                                      <Edit size={18} color="#9ca3af" />
+                                    </Button>
+                                  </CommonTooltip>
                                 )}
 
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        className={`px-3 py-2 ${isDeleteForbidden(recordDate) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'}`}
-                                        onClick={() => {
-                                          if (!isDeleteForbidden(recordDate)) {
-                                            handleOpenDeleteModal(transRecord);
-                                          }
-                                        }}
-                                        disabled={isDeleteForbidden(recordDate)}
-                                      >
-                                        <Trash
-                                          size={18}
-                                          color={isDeleteForbidden(recordDate) ? 'gray' : 'red'}
-                                        />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>
-                                        {isDeleteForbidden(recordDate)
-                                          ? "Can't delete transactions older than 3 months"
-                                          : 'Delete Transaction'}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                <CommonTooltip
+                                  content={
+                                    transRecord.isMarked || transRecord.isExpired
+                                      ? "Can't delete marked or expired transactions"
+                                      : isDeleteForbidden(recordDate, transRecord)
+                                        ? "Can't delete transactions older than 3 months"
+                                        : 'Delete Transaction'
+                                  }
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    className={`px-3 py-2 ${isDeleteForbidden(recordDate, transRecord) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-200'}`}
+                                    onClick={() => {
+                                      if (!isDeleteForbidden(recordDate, transRecord)) {
+                                        handleOpenDeleteModal(transRecord);
+                                      }
+                                    }}
+                                    disabled={isDeleteForbidden(recordDate, transRecord)}
+                                  >
+                                    <Trash
+                                      size={18}
+                                      color={
+                                        isDeleteForbidden(recordDate, transRecord) ? 'gray' : 'red'
+                                      }
+                                    />
+                                  </Button>
+                                </CommonTooltip>
                               </TableCell>
                             );
                           default:

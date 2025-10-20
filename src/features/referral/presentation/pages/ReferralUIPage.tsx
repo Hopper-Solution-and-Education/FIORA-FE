@@ -96,6 +96,7 @@ const ReferralUIPage = () => {
           fetchReferees(DEFAULT_REFEREE_PARAMS);
         }
 
+        setInviteOpen(false);
         return { createdEmails: created, duplicateEmails: duplicates };
       } catch (error: any) {
         const message = error?.data?.message || error?.message || 'Failed to send invitations.';
@@ -166,7 +167,7 @@ const ReferralUIPage = () => {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-6">
+    <div className="mx-auto space-y-8 px-6">
       <ReferralCodeCard
         referralCode={earnings?.referralCode ?? null}
         onInviteClick={() => setInviteOpen(true)}

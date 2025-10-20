@@ -1,5 +1,6 @@
 'use client';
 
+import { MainContent } from '@/components/layouts';
 import Footer from '@/features/landing/presentation/organisms/Footer';
 import Header from '@/features/landing/presentation/organisms/Header';
 import React from 'react';
@@ -10,11 +11,15 @@ interface AuthUILayoutProps {
 
 const AuthUILayout = ({ children }: AuthUILayoutProps) => {
   return (
-    <div className="bg-background">
+    <>
       <Header />
-      {children}
-      <Footer />
-    </div>
+
+      <MainContent>
+        {children}
+
+        <Footer />
+      </MainContent>
+    </>
   );
 };
 

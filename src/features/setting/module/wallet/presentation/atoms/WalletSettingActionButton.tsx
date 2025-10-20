@@ -1,8 +1,8 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { ATTACHMENT_CONSTANTS } from '@/features/setting/data/module/attachment/constants/attachmentConstants';
-import { cn } from '@/lib/utils';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toast } from 'sonner';
 import { DepositRequestStatus, FXRequestType } from '../../domain';
@@ -87,7 +87,8 @@ const WalletSettingActionButton = ({
         description: 'Request approved, wallet updated',
       });
     } catch (e: any) {
-      console.error(e?.message);
+      // console.error(e?.message);
+      console.error(e);
       toast.error('Request Approved Failed', {
         description: e?.message || 'Failed. Try again or contact support.',
       });

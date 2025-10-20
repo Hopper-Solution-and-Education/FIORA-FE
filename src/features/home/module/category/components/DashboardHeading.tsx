@@ -1,18 +1,15 @@
+import { ButtonCreation } from '@/components/common/atoms';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
-import { useAppDispatch } from '@/store';
-import { useAppSelector } from '@/store';
+import { FilterCriteria } from '@/shared/types';
+import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { fetchCategories } from '../slices/actions';
-import { TooltipContent } from '@/components/ui/tooltip';
-import { FilterCriteria } from '@/shared/types';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import FilterMenu from './FilterMenu';
-import { ButtonCreation } from '@/components/common/atoms';
-import { useRouter } from 'next/navigation';
 
 const DashboardHeading = () => {
   const { filterCriteria } = useAppSelector((state) => state.category);
@@ -65,18 +62,11 @@ const DashboardHeading = () => {
           />
           <Search size={15} className="absolute top-[50%] right-2 -translate-y-[50%] opacity-50" />
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Filters</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <CommonTooltip content="Filters">
+          <div>
+            <FilterMenu onFilterChange={handleFilterChange} filterCriteria={filterCriteria} />
+          </div>
+        </CommonTooltip>
       </div>
       <ButtonCreation
         action={handleCreateCategory}

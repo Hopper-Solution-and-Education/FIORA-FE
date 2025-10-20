@@ -1,6 +1,11 @@
 import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
+import { userRepository } from '@/features/setting/api/infrastructure/repositories/userRepository';
+import {
+  sendKYCApprovedEmail,
+  sendKYCRejectedEmail,
+} from '@/features/profile/infrastructure/services/kycEmailService';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { UserRole } from '@/shared/constants/userRole';
@@ -104,15 +109,51 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, sessionUs
         );
         break;
 
-      case KYCType.CONTACT:
-        // Contact information doesn't have a refId, just update eKYC status
-        result = await eKycRepository.updateStatus(kycId, status as KYCStatus, sessionUserId);
-        break;
-
       default:
         return res
           .status(RESPONSE_CODE.BAD_REQUEST)
           .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'Invalid eKYC type'));
+    }
+
+    // Send email notification to user
+    try {
+      if (eKYCRecord.User?.email) {
+        const verifierUser = await userRepository.findUserById(sessionUserId);
+        const verifierName = verifierUser?.name || verifierUser?.email || 'FIORA Admin';
+
+        const emailData = {
+          user_name: eKYCRecord.User.name || eKYCRecord.User.email,
+          user_email: eKYCRecord.User.email,
+          field_name: eKYCRecord.fieldName,
+          kyc_status: status,
+          kyc_id: kycId,
+          created_at: new Date(eKYCRecord.createdAt).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          updated_at: new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          verified_by: verifierName,
+          remarks: remarks || '',
+        };
+
+        if (status === KYCStatus.APPROVAL) {
+          await sendKYCApprovedEmail(emailData);
+        } else if (status === KYCStatus.REJECTED) {
+          await sendKYCRejectedEmail(emailData);
+        }
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the verification process
+      console.error('Failed to send KYC notification email:', emailError);
     }
 
     return res

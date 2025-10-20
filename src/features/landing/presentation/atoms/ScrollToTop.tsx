@@ -17,6 +17,8 @@ const ScrollToTop = () => {
   }, []);
 
   const goToTop = () => {
+    if (!window) return;
+
     window.scroll({
       top: 0,
       left: 0,

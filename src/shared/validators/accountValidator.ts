@@ -1,4 +1,4 @@
-import { AccountType } from '@prisma/client';
+import { AccountType, UserRole } from '@prisma/client';
 import Joi from 'joi';
 import { excludeEmojiPattern } from '../constants';
 
@@ -58,4 +58,31 @@ export const accountUpdateBody = Joi.object({
     'string.empty': 'Account icon url is invalid',
     'string.pattern.base': 'Account icon url is invalid',
   }),
+});
+
+export const validateBlockUserId = Joi.object({
+  blockUserId: Joi.string().uuid().required().messages({
+    'string.empty': 'blockUserId id is required',
+    'string.uuid': 'blockUserId id must be a valid UUID',
+    'any.required': 'blockUserId id is required',
+  }),
+});
+
+export const validateAssignRequest = Joi.object({
+  assignUserId: Joi.string().uuid().required().messages({
+    'string.empty': 'AssignUserId id is required',
+    'string.uuid': 'AssignUserId id must be a valid UUID',
+    'any.required': 'AssignUserId id is required',
+  }),
+  role: Joi.string().valid(UserRole.Admin, UserRole.User, UserRole.CS).required().messages({
+    'any.only': 'Role is invalid',
+    'string.empty': 'Role is required',
+    'any.required': 'Role is required',
+  }),
+});
+
+export const ValidatedUserId = Joi.string().uuid().required().messages({
+  'string.empty': 'UserId id is required',
+  'string.uuid': 'UserId id must be a valid UUID',
+  'any.required': 'UserId id is required',
 });

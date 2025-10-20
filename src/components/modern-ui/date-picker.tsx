@@ -7,7 +7,7 @@ import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/modern-ui/button';
 import { Calendar } from '@/components/modern-ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/modern-ui/popover';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface DatePickerProps {

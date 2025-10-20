@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
-import { cn } from '@/lib/utils';
-import { isImageUrl } from '@/shared/utils';
+import { cn, isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
 

@@ -162,6 +162,31 @@ class IdentificationRepository {
     }
   }
 
+  async update(id: string, ekycId: string, userId: string, data: any) {
+    try {
+      return prisma.$transaction(async (tx) => {
+        const updatedIdentification = await tx.identificationDocument.update({
+          where: { id },
+          data: {
+            ...data,
+            updatedBy: userId,
+          },
+        });
+
+        // Update related eKYC status to pending
+        await tx.eKYC.update({
+          where: { id: ekycId },
+          data: { status: KYCStatus.PENDING, updatedBy: userId, updatedAt: new Date() },
+        });
+
+        return updatedIdentification;
+      });
+    } catch (error) {
+      console.log(error);
+      return error as unknown;
+    }
+  }
+
   async delete(id: string) {
     try {
       return prisma.$transaction(async (tx) => {

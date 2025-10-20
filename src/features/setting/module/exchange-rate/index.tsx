@@ -120,7 +120,7 @@ const ExchangeRateSettingPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="p-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-bold">Exchange Rate Setting</CardTitle>

@@ -5,6 +5,7 @@ import { BadRequestError } from '@/shared/lib';
 import { ChannelType, NotificationType } from '@prisma/client';
 import type {
   CreateBoxNotificationInput,
+  CreateNotificationWithTemplateInput,
   INotificationRepository,
 } from '../../domain/repositories/notificationRepository.interface';
 import { notificationRepository } from '../../infrastructure/repositories/notificationRepository';
@@ -177,6 +178,150 @@ class NotificationUseCase {
     return this.notificationRepository.createBoxNotification(input);
   }
 
+  async createNotificationWithTemplate(input: CreateNotificationWithTemplateInput): Promise<{
+    notification: any;
+    emailResult: SendNotificationResult;
+  }> {
+    try {
+      // 1. Validate email template
+      const emailTemplate = await this.validateEmailTemplate(input.emailTemplateId);
+
+      // 2. Validate emailParts
+      this.validateEmailParts(input.emailParts);
+
+      // 3. Tạo notification và cập nhật với emailTemplateId
+      const notification = await this.createNotificationWithEmailTemplate(input);
+
+      // 4. Gửi email cho tất cả emailParts
+      const emailResult = await this.sendEmailsWithTemplate(
+        input.emailParts,
+        emailTemplate,
+        notification.id,
+        input.subject,
+      );
+
+      console.log(
+        `Notification with template sent: ${emailResult.successCount} success, ${emailResult.failedCount} failed`,
+      );
+
+      return {
+        notification,
+        emailResult,
+      };
+    } catch (error) {
+      console.error('createNotificationWithTemplate failed:', error);
+      throw new BadRequestError(
+        `Failed to create notification with template: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  private async validateEmailTemplate(emailTemplateId: string) {
+    const emailTemplate = await prisma.emailTemplate.findUnique({
+      where: { id: emailTemplateId },
+    });
+
+    if (!emailTemplate) {
+      throw new BadRequestError(`Email template with ID ${emailTemplateId} not found`);
+    }
+
+    if (!emailTemplate.isActive) {
+      throw new BadRequestError(`Email template ${emailTemplate.name} is not active`);
+    }
+
+    return emailTemplate;
+  }
+
+  private validateEmailParts(emailParts: any[]) {
+    if (!emailParts || emailParts.length === 0) {
+      throw new BadRequestError('Email parts cannot be empty');
+    }
+  }
+
+  private async createNotificationWithEmailTemplate(input: CreateNotificationWithTemplateInput) {
+    // Tạo notification record
+    const notification = await this.notificationRepository.createBoxNotification({
+      title: input.title,
+      type: input.type,
+      notifyTo: input.notifyTo,
+      attachmentId: input.attachmentId,
+      deepLink: input.deepLink,
+      message: input.message,
+      emails: input.emails,
+    });
+
+    // Cập nhật notification với emailTemplateId
+    const updatedNotification = await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        emailTemplateId: input.emailTemplateId,
+      },
+    });
+
+    return updatedNotification;
+  }
+
+  private async sendEmailsWithTemplate(
+    emailParts: Array<{ user_id: string; recipient: string; [key: string]: any }>,
+    emailTemplate: any,
+    notificationId: string,
+    subject?: string,
+  ): Promise<SendNotificationResult> {
+    const emailResult: SendNotificationResult = {
+      notificationId,
+      totalProcessed: 0,
+      successCount: 0,
+      failedCount: 0,
+      details: [],
+    };
+
+    for (const emailPart of emailParts) {
+      await this.processEmailPart(emailPart, emailTemplate, notificationId, subject, emailResult);
+    }
+
+    return emailResult;
+  }
+
+  private async processEmailPart(
+    emailPart: { user_id: string; recipient: string; [key: string]: any },
+    emailTemplate: any,
+    notificationId: string,
+    subject: string | undefined,
+    emailResult: SendNotificationResult,
+  ) {
+    // Validate emailPart
+    if (!emailPart.recipient || !emailPart.user_id) {
+      console.error('Invalid emailPart:', emailPart);
+      emailResult.failedCount++;
+      emailResult.details.push({
+        emails: [emailPart.recipient || 'unknown'],
+        success: false,
+        error: 'Missing recipient or user_id',
+      });
+      return;
+    }
+
+    // Render template với variables từ emailPart
+    const renderedContent = renderEmailTemplate(emailTemplate.content, emailPart);
+
+    await prisma.notification.update({
+      where: { id: notificationId },
+      data: {
+        content: renderedContent,
+      },
+    });
+
+    // Tạo UserNotification record
+    await prisma.userNotification.create({
+      data: {
+        userId: emailPart.user_id,
+        notificationId: notificationId,
+        isRead: false,
+        createdBy: null,
+      },
+    });
+  }
+
   async getNotificationById(id: string) {
     return this.notificationRepository.getNotificationById(id);
   }
@@ -337,6 +482,15 @@ class NotificationUseCase {
       );
       return result;
     } catch (error) {
+      await prisma.emailNotificationLogs.create({
+        data: {
+          notificationId: emailTemplateId,
+          userId: 'unknown',
+          status: 'FAILED',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          createdBy: null,
+        },
+      });
       console.error('sendNotificationWithTemplate failed:', error);
       throw new BadRequestError(
         `Failed to send notification: ${error instanceof Error ? error.message : 'Unknown error'}`,

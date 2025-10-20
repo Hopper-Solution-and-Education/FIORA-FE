@@ -1,12 +1,6 @@
 'use client';
-import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { GlobalDialog } from '@/components/common/molecules';
+
 import { Textarea } from '@/components/ui/textarea';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -114,14 +108,17 @@ const ReferralInviteDialog = ({
   };
 
   return (
-    <Dialog open={open}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Invite friends to Fiora</DialogTitle>
-          <DialogDescription>
-            Enter one or more email addresses. Separate multiple emails with commas or new lines.
-          </DialogDescription>
-        </DialogHeader>
+    <GlobalDialog
+      onCancel={handleClose}
+      onConfirm={handleSubmit}
+      isLoading={isSubmitting}
+      type="info"
+      disabled={isSubmitting || !value.trim()}
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Invite friends to Fiora"
+      description="Enter one or more email addresses. Separate multiple emails with commas or new lines."
+      renderContent={() => (
         <form onSubmit={handleSubmit} className="space-y-4">
           <Textarea
             value={value}
@@ -130,16 +127,9 @@ const ReferralInviteDialog = ({
             minLength={3}
             rows={5}
           />
-
-          <DefaultSubmitButton
-            isSubmitting={isSubmitting}
-            disabled={isSubmitting || !value.trim()}
-            onSubmit={() => handleSubmit()}
-            onBack={handleClose}
-          />
         </form>
-      </DialogContent>
-    </Dialog>
+      )}
+    />
   );
 };
 export default ReferralInviteDialog;

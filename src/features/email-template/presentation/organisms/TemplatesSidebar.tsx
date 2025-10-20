@@ -1,12 +1,12 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search } from 'lucide-react';
 import { EMAIL_TEMPLATES } from '../../constants';
 
@@ -20,18 +20,11 @@ export default function TemplatesSidebar() {
             <Icons.mail className="h-4 w-4" />
             Templates (8)
           </h3>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <Icons.send className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Send email</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CommonTooltip content="Send email">
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <Icons.send className="h-4 w-4" />
+            </Button>
+          </CommonTooltip>
         </div>
       </div>
 

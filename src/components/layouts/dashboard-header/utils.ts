@@ -17,7 +17,7 @@ export type MenuSettingItem = {
   icon: any;
   url: string;
   featureFlags?: FeatureFlags;
-  role?: string;
+  role?: string | string[];
 };
 
 export const menuSettingItems: MenuSettingItem[] = [
@@ -33,9 +33,15 @@ export const menuSettingItems: MenuSettingItem[] = [
     url: '/setting/partner',
     featureFlags: FeatureFlags.PARTNER_FEATURE,
   },
-  { label: 'Users', icon: Icons.users, url: '#' },
-  { label: 'Role & Permission', icon: Icons.clipboardList, url: '#' },
+  { label: 'Users', icon: Icons.users, url: '/setting/user' },
+  { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting/role-permission' },
   { label: 'Global Setting', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
+  {
+    label: 'User Management',
+    icon: Icons.shieldCheck,
+    url: '/setting/user-management',
+    role: ['Admin', 'CS'],
+  },
 ];
 
 export const helpItems = [
@@ -59,7 +65,11 @@ export const filterMenuItems = (
 ): MenuSettingItem[] => {
   return items.filter((item: MenuSettingItem) => {
     const hasFeatureFlag = !item.featureFlags || gb.isOn(item.featureFlags);
-    const hasRoleAccess = !item.role || userRole === item.role;
+
+    // Check role access: handle both string and array
+    const hasRoleAccess =
+      !item.role ||
+      (Array.isArray(item.role) ? item.role.includes(userRole || '') : userRole === item.role);
 
     if (hasFeatureFlag && hasRoleAccess) {
       return item;

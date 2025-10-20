@@ -63,6 +63,7 @@ const ChartByDate = ({ title }: ChartByDateProps) => {
           ]}
           lines={[{ key: 'line', name: 'Profit', color: COLORS.DEPS_INFO.LEVEL_2 }]}
           currency={currency}
+          sortEnable={false}
         />
       )}
     </div>

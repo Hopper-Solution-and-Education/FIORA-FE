@@ -1,19 +1,23 @@
 'use client';
 
-import { WalletDepositButton } from '../atoms';
-import { WalletSearch, WalletFilterMenu } from '../molecules';
-import { useAppSelector, useAppDispatch } from '@/store';
-import { setFilterCriteria } from '../../slices';
+import { WalletAction } from '@/components/common/organisms';
 import { FilterCriteria } from '@/shared/types';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setFilterCriteria } from '../../slices';
+import { WalletFilterMenu, WalletSearch } from '../molecules';
 
 interface WalletTopbarActionProps {
   enableDeposit?: boolean;
+  enableTransfer?: boolean;
+  enableWithdraw?: boolean;
   enableFilter?: boolean;
   searchType?: 'normal' | 'deposit';
 }
 
 const WalletTopbarAction = ({
   enableDeposit = true,
+  enableTransfer = true,
+  enableWithdraw = true,
   enableFilter = true,
   searchType = 'normal',
 }: WalletTopbarActionProps) => {
@@ -40,7 +44,11 @@ const WalletTopbarAction = ({
           />
         )}
       </div>
-      {enableDeposit && <WalletDepositButton />}
+      <WalletAction
+        enableDeposit={enableDeposit}
+        enableTransfer={enableTransfer}
+        enableWithdraw={enableWithdraw}
+      />
     </div>
   );
 };

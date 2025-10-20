@@ -3,6 +3,8 @@
 import { SegmentProgressBar } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
+import UserAvatar from '@/features/setting/module/user-management/presentation/atoms/UserAvatar';
+import { useGetUsersQuery } from '@/features/setting/module/user-management/store/api/userApi';
 import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
 import { ICON_SIZE } from '@/shared/constants/size';
@@ -30,30 +32,22 @@ interface UserNavProps {
   handleSignOut?: () => void;
 }
 
-const switchProfile = [
-  {
-    title: 'User 1',
-    image: 'https://picsum.photos/200',
-  },
-  {
-    title: 'User 2',
-    image: 'https://picsum.photos/200',
-  },
-  {
-    title: 'User 3',
-    image: 'https://picsum.photos/200',
-  },
-];
-
 export function UserNav({ handleSignOut }: UserNavProps) {
   const router = useRouter();
-  // const { data: session } = useSession();
   const { data: profile } = useGetProfileQuery();
+  const { data: userData } = useGetUsersQuery({ pageSize: 3 });
   const { clearExchangeRateData } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
   );
+  const canViewSwitchProfile = profile?.role === UserRole.ADMIN || profile?.role === UserRole.CS;
+
+  const switchProfile = (userData?.data ?? []).map((user) => ({
+    userId: user.User?.id,
+    title: user.User?.name || user.User?.email || 'No Name',
+    image: user.User?.avatarUrl,
+  }));
 
   useEffect(() => {
     if (!isLoadingUserTier) {
@@ -146,33 +140,43 @@ export function UserNav({ handleSignOut }: UserNavProps) {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>{globalNavItems.map(renderNavItem)}</DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <div className="flex items-center gap-2 my-1 justify-between w-full px-2">
-              <div className="text-sm font-medium">Switch Profile</div>
-              <div className="text-xs cursor-pointer text-blue-400 underline hover:text-blue-500">
-                Other
-              </div>
-            </div>
-            <DropdownMenuGroup>
-              {switchProfile.map((item) => (
-                <DropdownMenuItem className="cursor-pointer " key={item.title}>
-                  <div className="flex items-center justify-center gap-2 w-full">
-                    <Image
-                      width={24}
-                      height={24}
-                      src={item.image}
-                      className="object-cover rounded-full"
-                      alt="avatar"
-                    />
-                    <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">
-                      {item.title}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
 
+            {/* Switch Profile Zone */}
+            {canViewSwitchProfile && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="flex items-center gap-2 my-1 justify-between w-full px-2">
+                  <div className="text-sm font-medium">Switch Profile</div>
+                  <Link
+                    href="/setting/user-management"
+                    className="text-xs cursor-pointer text-blue-400 underline hover:text-blue-500"
+                  >
+                    Other
+                  </Link>
+                </div>
+                <DropdownMenuGroup>
+                  {switchProfile.map((item) => (
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      key={item.title}
+                      onClick={() =>
+                        router.push(`/ekyc/${encodeURIComponent(item.userId)}/profile`)
+                      }
+                    >
+                      <div className="flex items-center justify-center gap-2 w-full">
+                        <UserAvatar src={item.image} name={item.title} size="sm" />
+                        <div className="text-blue-400 underline hover:text-blue-500 w-full truncate whitespace-nowrap">
+                          {item.title}
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
+
+            {/* Sign Out Zone */}
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
                 // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active

@@ -1,9 +1,9 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FileText, HelpCircle } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { TaxInformation } from '../../../../schema/personalInfoSchema';
@@ -29,17 +29,9 @@ const TaxDetailsForm: React.FC<TaxDetailsFormProps> = ({
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-orange-600" />
           <CardTitle className="text-base sm:text-lg">Tax Details</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                Tax information is required for regulatory compliance and may affect your account
-                features and limits.
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          <CommonTooltip content="Tax information is required for regulatory compliance and may affect your account features and limits.">
+            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+          </CommonTooltip>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

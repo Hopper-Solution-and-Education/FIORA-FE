@@ -2,7 +2,7 @@
 import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
 import { ICON_SIZE } from '@/shared/constants/size';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -150,7 +150,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     ${open ? 'w-full h-35 ' : 'w-full h-14 md:h-18'}`}
                 >
                   <Image
-                    src={section?.medias[0]?.media_url || profile?.logoUrl || HopperLogo}
+                    src={profile?.logoUrl || section?.medias[0]?.media_url || HopperLogo}
                     alt="FIORA"
                     width={250}
                     height={250}

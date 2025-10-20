@@ -16,6 +16,7 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
+    "build:prisma": "npx prisma db pull && npx prisma generate && next build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -82,6 +83,7 @@
     "@sendgrid/mail": "^8.1.4",
     "@sentry/nextjs": "^9.2.0",
     "@tanstack/react-table": "^8.21.3",
+    "@tiptap/react": "^3.6.6",
     "@types/busboy": "^1.5.4",
     "adm-zip": "^0.5.16",
     "bcrypt": "^5.1.1",

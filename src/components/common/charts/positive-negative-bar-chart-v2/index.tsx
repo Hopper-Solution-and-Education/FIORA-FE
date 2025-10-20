@@ -10,12 +10,8 @@ import { PositiveAndNegativeBarChartV2Props } from '@/components/common/charts/p
 import { ChartSkeleton } from '@/components/common/organisms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import {
-  TooltipContent,
-  TooltipProvider,
-  Tooltip as TooltipShadcn,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import {
   BASE_BAR_HEIGHT,
   DEFAULT_CURRENCY,
@@ -39,6 +35,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { sortChartData } from '../utils/sortChartData';
 import {
   buildProcessedData,
   calculateChartDomains,
@@ -67,7 +64,21 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
     expanded = true,
     header,
     labelFormatter,
+    sortEnable = true,
   } = props;
+
+  // Sort data if sortEnable is true (highest values first - top to bottom for horizontal chart)
+  const sortedData = useMemo(
+    () =>
+      sortChartData(data, sortEnable, (d) =>
+        [...d].sort((a, b) => {
+          const aTotal = Math.abs(a.positiveValue) + Math.abs(a.negativeValue);
+          const bTotal = Math.abs(b.positiveValue) + Math.abs(b.negativeValue);
+          return bTotal - aTotal;
+        }),
+      ),
+    [data, sortEnable],
+  );
 
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
   const [chartHeight, setChartHeight] = useState(height);
@@ -97,13 +108,13 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
   }, []);
 
   const preparedData = useMemo(
-    () => prepareChartData(data, showAll, showTotal, totalName, levelConfig),
-    [data, showAll, showTotal, totalName, levelConfig],
+    () => prepareChartData(sortedData, showAll, showTotal, totalName, levelConfig),
+    [sortedData, showAll, showTotal, totalName, levelConfig],
   );
 
   const mainBarCount = useMemo(
-    () => calculateMainBarCount(data.length, showAll),
-    [data.length, showAll],
+    () => calculateMainBarCount(sortedData.length, showAll),
+    [sortedData.length, showAll],
   );
 
   useEffect(() => {
@@ -180,39 +191,31 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
               </span>
 
               {data.length > 5 && (
-                <TooltipProvider>
-                  <TooltipShadcn>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleToggleShowAll}
-                        className="h-8 w-8 hover:bg-primary/10 relative"
-                        disabled={isLoadingViewAll}
-                      >
-                        {isLoadingViewAll ? (
-                          <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
-                        ) : showAll ? (
-                          <Icons.shrink
-                            className={cn(
-                              'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
-                            )}
-                          />
-                        ) : (
-                          <Icons.expand
-                            className={cn(
-                              'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
-                            )}
-                          />
+                <CommonTooltip content={showAll ? 'Show Less' : 'View All'}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleToggleShowAll}
+                    className="h-8 w-8 hover:bg-primary/10 relative"
+                    disabled={isLoadingViewAll}
+                  >
+                    {isLoadingViewAll ? (
+                      <Icons.spinner className="h-5 w-5 text-primary animate-spin" />
+                    ) : showAll ? (
+                      <Icons.shrink
+                        className={cn(
+                          'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
                         )}
-                      </Button>
-                    </TooltipTrigger>
-
-                    <TooltipContent>
-                      <span>{showAll ? 'Show Less' : 'View All'}</span>
-                    </TooltipContent>
-                  </TooltipShadcn>
-                </TooltipProvider>
+                      />
+                    ) : (
+                      <Icons.expand
+                        className={cn(
+                          'h-5 w-5 transition-colors duration-200 text-primary dark:text-gray-400',
+                        )}
+                      />
+                    )}
+                  </Button>
+                </CommonTooltip>
               )}
             </div>
           </>

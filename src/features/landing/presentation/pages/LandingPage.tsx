@@ -1,8 +1,8 @@
 'use client';
 
+import { MainContent } from '@/components/layouts';
 import Header from '@/features/landing/presentation/organisms/Header';
-import { motion } from 'framer-motion';
-import { PartnerLogo, ScrollToTop } from '../atoms';
+import { PartnerLogo } from '../atoms';
 import { Banner } from '../molecules/Banner';
 import { FioraSystem } from '../molecules/FioraSystem';
 import FeedbackSection from '../organisms/FeedbackSection';
@@ -10,106 +10,20 @@ import Footer from '../organisms/Footer';
 import KPSSection from '../organisms/KSPSection';
 import VisionMission from '../organisms/VisionMission';
 
-const staggerContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-    },
-  },
-};
-
 const LandingPage = () => {
   return (
     <>
       <Header />
 
-      {/* Banner */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0, y: 60 },
-          visible: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.8, ease: ['easeOut'] },
-          },
-        }}
-      >
+      <MainContent>
         <Banner />
-      </motion.div>
-
-      {/* Sections with stagger animation */}
-      <motion.div variants={staggerContainer} initial="hidden" whileInView="visible">
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 60 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.8, ease: ['easeOut'] },
-            },
-          }}
-        >
-          <VisionMission />
-        </motion.div>
-
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 60 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.8, ease: ['easeOut'] },
-            },
-          }}
-        >
-          <FioraSystem />
-        </motion.div>
-
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 60 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.8, ease: ['easeOut'] },
-            },
-          }}
-        >
-          <KPSSection />
-        </motion.div>
-
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 60 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.8, ease: ['easeOut'] },
-            },
-          }}
-        >
-          <FeedbackSection />
-        </motion.div>
-      </motion.div>
-
-      {/* Partner logo - zoom effect */}
-      <PartnerLogo />
-
-      {/* Footer - subtle fade in */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-        viewport={{ once: true, amount: 0.2 }}
-      >
+        <VisionMission />
+        <FioraSystem />
+        <KPSSection />
+        <FeedbackSection />
+        <PartnerLogo />
         <Footer />
-      </motion.div>
-
-      <ScrollToTop />
+      </MainContent>
     </>
   );
 };

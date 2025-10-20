@@ -7,4 +7,5 @@ export interface SessionUser {
   email: string;
   image: string | null;
   role: UserRole;
+  isBlocked?: boolean;
 }
