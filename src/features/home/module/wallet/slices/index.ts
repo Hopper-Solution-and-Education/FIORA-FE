@@ -64,7 +64,6 @@ const walletSlice = createSlice({
     setDepositSearch: (state, action) => {
       state.depositSearch = action.payload;
     },
-    // Show/Hide Sending FX Form
     setSendingFXFormOpen: (state) => {
       state.isShowSendingFXForm = true;
     },
