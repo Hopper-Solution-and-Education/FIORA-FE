@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppScroll } from '@/shared/hooks/useAppScroll';
+import { ScrollType, useAppScroll } from '@/shared/hooks/useAppScroll';
 import { useEffect } from 'react';
 
 export const AutoScrollTopProvider = (): React.JSX.Element | null => {
@@ -8,7 +8,8 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
 
   useEffect(() => {
     const scrollToTop = () => {
-      document.getElementById('app-content')?.scrollTo(0, 0);
+      // document.getElementById('app-content')?.scrollTo(0, 0);
+      scroll({ type: ScrollType.ToTop });
     };
 
     /**
@@ -71,7 +72,8 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
 
         // Nếu là cùng route (kể cả query khác), vẫn scroll
         requestAnimationFrame(scrollToTop);
-      } catch (_) {
+      } catch (error) {
+        console.error(error);
         requestAnimationFrame(scrollToTop);
       }
     };
