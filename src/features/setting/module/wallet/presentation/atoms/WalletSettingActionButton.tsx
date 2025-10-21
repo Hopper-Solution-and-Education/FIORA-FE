@@ -28,7 +28,7 @@ const WalletSettingActionButton = ({
   const isUpdating = useAppSelector((state) => state.walletSetting.updatingItems.includes(id));
   const isDisabled = !isRequested || isUpdating;
 
-  const { dispatchTable, reloadData } = useDispatchTableContext();
+  const { dispatchTable } = useDispatchTableContext();
   const { table } = useTableContext();
   const dispatch = useAppDispatch();
 
@@ -78,8 +78,11 @@ const WalletSettingActionButton = ({
         ).unwrap();
       }
 
-      // Reload table data to reflect the updated status
-      await reloadData();
+      // Update local state instead of reloading data
+      dispatchTable({
+        type: 'UPDATE_ITEM_STATUS',
+        payload: { id, status: DepositRequestStatus.Approved },
+      });
 
       handleToggleApproveModal();
 
@@ -101,8 +104,11 @@ const WalletSettingActionButton = ({
         updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Rejected, remark }),
       ).unwrap();
 
-      // Reload table data to reflect the updated status
-      await reloadData();
+      // Update local state instead of reloading data
+      dispatchTable({
+        type: 'UPDATE_ITEM_STATUS',
+        payload: { id, status: DepositRequestStatus.Rejected, remark },
+      });
 
       handleToggleRejectModal();
 
