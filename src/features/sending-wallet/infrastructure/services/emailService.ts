@@ -2,24 +2,24 @@ import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { InternalServerError, NotFoundError } from '@/shared/lib';
 import { emailType } from '@prisma/client';
-import sgMail from '@sendgrid/mail';
 import * as fs from 'fs';
 import * as path from 'path';
 import { IEmailService } from '../../domain/interfaces/sendOTP.interface';
 
 class EmailService implements IEmailService {
   constructor(
-    private _repo = prisma,
-    private _notificationUsecase = notificationUseCase,
-  ) {
-    if (!process.env.SENDGRID_API_KEY) {
-      throw new InternalServerError('SENDGRID_API_KEY is not set');
-    }
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  }
+    private _repo = prisma, // Prisma ORM instance
+    private _notificationUsecase = notificationUseCase, // Use case gửi thông báo
+  ) {}
 
+  /**
+   * Hàm loadEmailTemplate
+   * - Lấy template email từ DB; nếu chưa có thì đọc từ file .html trong local rồi lưu vào DB.
+   * - Giúp đảm bảo lần đầu chạy hệ thống vẫn có template mặc định để gửi.
+   */
   private async loadEmailTemplate(file: string, type: emailType, name: string) {
     try {
+      // Tìm template trong DB dựa theo loại email (type)
       let templateEntity = await this._repo.emailTemplate.findFirst({
         where: {
           EmailTemplateType: { type },
@@ -27,8 +27,10 @@ class EmailService implements IEmailService {
         include: { EmailTemplateType: true },
       });
 
+      // Nếu đã có template --> lấy nội dung ra
       let template = templateEntity?.content;
 
+      // Nếu chưa có template trong DB --> đọc từ file local
       if (!template) {
         const filePath = path.join(
           process.cwd(),
@@ -36,12 +38,15 @@ class EmailService implements IEmailService {
           file,
         );
 
+        // Kiểm tra file có tồn tại không
         if (!fs.existsSync(filePath)) {
           throw new Error(`Template file not found: ${filePath}`);
         }
 
+        // Đọc nội dung file HTML
         template = fs.readFileSync(filePath, 'utf8');
 
+        // Tìm hoặc tạo mới emailTemplateType (bảng loại template)
         let templateType = await this._repo.emailTemplateType.findFirst({
           where: { type },
         });
@@ -55,6 +60,7 @@ class EmailService implements IEmailService {
           });
         }
 
+        // Lưu template mới vào DB
         templateEntity = await this._repo.emailTemplate.create({
           data: {
             name,
@@ -69,10 +75,19 @@ class EmailService implements IEmailService {
 
       return templateEntity;
     } catch (err) {
+      // Ném lỗi nếu có bất kỳ bước nào thất bại
       throw new InternalServerError(`Failed to load template: ${(err as Error).message}`);
     }
   }
 
+  /**
+   * Gửi email OTP khi người dùng xác nhận giao dịch
+   * - `to`: email người nhận OTP
+   * - `otp`: mã OTP
+   * - `amount`: số tiền gửi
+   * - `emailReceiver`: email người nhận tiền (hiển thị trong email)
+   * - `userName`: tên người gửi
+   */
   async sendOtpEmail(
     to: string,
     otp: string,
@@ -81,6 +96,7 @@ class EmailService implements IEmailService {
     userName: string,
   ) {
     try {
+      // Tìm người nhận email trong DB
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
         select: { id: true, email: true },
@@ -88,14 +104,17 @@ class EmailService implements IEmailService {
 
       if (!userReceiver) throw new NotFoundError('User receive email not found');
 
+      // Dữ liệu truyền vào template
       const variables = { otp, amount, emailReceiver, userName };
 
+      // Load template HTML tương ứng loại email SENDING_OTP
       const templateEntity = await this.loadEmailTemplate(
         'otp.html',
         'SENDING_OTP',
         'Sending FX OTP',
       );
 
+      // Gọi usecase để gửi email qua hệ thống notification
       await this._notificationUsecase.sendNotificationWithTemplate(
         templateEntity?.id as string,
         [
@@ -107,7 +126,7 @@ class EmailService implements IEmailService {
         ],
         'PERSONAL',
         emailType.SENDING_OTP,
-        'Confirm Your Transfer - FIORA',
+        'Confirm Your Sending FX Transaction', // tiêu đề email
       );
     } catch (err) {
       console.error('Send OTP email failed:', err);
@@ -115,23 +134,28 @@ class EmailService implements IEmailService {
     }
   }
 
+  /**
+   * Gửi email thông báo khi giao dịch thành công (người gửi hoặc người nhận)
+   * - Hỗ trợ cả gửi email và tạo notification trong hệ thống (isSendInBox)
+   */
   async sendNotificationEmail(
     to: string,
     variables: {
       userName: string; // người gửi
-      receiverName: string; // người nhận (hiển thị trên email)
+      receiverName: string; // người nhận (hiển thị trong email)
       emailReceiver: string; // email người nhận
       date: string;
       amount: string;
       isSender: boolean; // true nếu là người gửi
     },
-    isSendInBox?: boolean,
+    isSendInBox?: boolean, // nếu true, sẽ tạo thêm notification trong hệ thống
     sendInBoxProps?: {
-      deepLink?: string;
-      attachmentId?: string;
+      deepLink?: string; // đường dẫn mở nhanh từ app
+      attachmentId?: string; // file đính kèm nếu có
     },
   ) {
     try {
+      // Lấy thông tin người nhận email
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
         select: { id: true, email: true },
@@ -139,8 +163,11 @@ class EmailService implements IEmailService {
 
       if (!userReceiver) throw new NotFoundError('User receive email not found');
 
+      // Giải cấu trúc biến đầu vào
       const isSender = variables.isSender;
       const { userName, receiverName, emailReceiver, date, amount } = variables;
+
+      // Dữ liệu cơ bản truyền vào template
       let newVariables: Record<string, string> = {
         userName,
         receiverName,
@@ -149,12 +176,13 @@ class EmailService implements IEmailService {
         amount,
       };
 
+      // Nếu là người gửi
       if (isSender) {
         newVariables = {
           ...newVariables,
-          subject: 'Transfer Receipt',
-          alertMessage: 'Transaction Completed — Your transfer was successful!',
-          introMessage: `Dear ${userName}, your transfer has been successfully processed.`,
+          subject: 'Sending Receipt',
+          alertMessage: 'Transaction Completed — Your sending was successful!',
+          introMessage: `Dear ${userName}, your sending has been successfully processed.`,
           labelFrom: 'Sender',
           labelTo: 'Receiver Email',
           amountLabel: 'Total',
@@ -163,6 +191,7 @@ class EmailService implements IEmailService {
             'Keep this receipt for your records. If you did not recognize this transaction, please contact',
         };
       } else {
+        // Nếu là người nhận
         newVariables = {
           ...newVariables,
           subject: 'Payment Notification',
@@ -176,12 +205,14 @@ class EmailService implements IEmailService {
         };
       }
 
+      // Load template email thông báo thành công
       const templateEntity = await this.loadEmailTemplate(
         'notification.html',
         'SENDING_SUCCESSFUL',
         'Sending successful',
       );
 
+      // Gửi email thông báo qua notification usecase
       await this._notificationUsecase.sendNotificationWithTemplate(
         templateEntity?.id as string,
         [
@@ -193,9 +224,10 @@ class EmailService implements IEmailService {
         ],
         'PERSONAL',
         emailType.SENDING_SUCCESSFUL,
-        isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
+        isSender ? 'Sending Receipt' : 'Payment Notification',
       );
 
+      // Nếu bật chế độ gửi vào hộp thư trong hệ thống (inbox)
       if (isSendInBox) {
         await this._notificationUsecase.createNotificationWithTemplate({
           emailParts: [
@@ -207,15 +239,15 @@ class EmailService implements IEmailService {
           ],
           emailTemplateId: templateEntity?.id as string,
           notifyTo: 'PERSONAL',
-          title: isSender ? 'Transfer Completed Successfully' : 'Payment Received Successfully',
+          title: isSender ? 'Sending Completed Successfully' : 'Payment Received Successfully',
           type: emailType.SENDING_SUCCESSFUL,
           message: isSender
-            ? `Your transfer of ${amount} FX to ${receiverName} has been successfully completed.`
+            ? `Your sending of ${amount} FX to ${receiverName} has been successfully completed.`
             : `You have received ${amount} FX from ${userName}.`,
           deepLink: sendInBoxProps?.deepLink,
           attachmentId: sendInBoxProps?.attachmentId,
           emails: [userReceiver.email],
-          subject: isSender ? 'Transfer Receipt - FIORA' : 'Payment Notification - FIORA',
+          subject: isSender ? 'Sending Receipt' : 'Payment Notification',
         });
       }
     } catch (err) {
@@ -225,4 +257,5 @@ class EmailService implements IEmailService {
   }
 }
 
+// Export instance của service để dùng ở các module khác
 export const emailService = new EmailService();
