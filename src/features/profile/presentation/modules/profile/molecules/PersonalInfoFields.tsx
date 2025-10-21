@@ -139,7 +139,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
                   </span>
                   <span>
                     {hasReferrerCode
-                      ? 'Referral code already applied and cannot be changed'
+                      ? ''
                       : 'Enter your referral code to earn rewards and get exclusive benefits when you invite friends'}
                   </span>
                 </p>

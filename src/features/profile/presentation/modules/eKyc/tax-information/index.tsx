@@ -174,9 +174,8 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
 
       // For new submissions, require file
       // For edits, allow using existing file if no new file uploaded
-      const isNewSubmission = !eKYCData || isEditing;
 
-      if (isNewSubmission) {
+      if (!isEditing) {
         // New submission - require file
         if (!data.taxDocument) {
           toast.error('Please upload a tax document.');
@@ -224,15 +223,18 @@ const TaxInformationForm: FC<Props> = ({ eKYCData }) => {
       }
 
       const payload = {
-        ...(isNewSubmission ? {} : { id: taxDocument?.id }), // Include document ID for update
         type: IdentificationDocumentType.TAX,
         idNumber: data.taxId,
         filePhotoId: documentId || '',
       };
 
       // Use update or submit based on whether we're editing an existing document
-      if (payload.id) {
-        await updateDocument(payload as any).unwrap();
+      if (isEditing) {
+        await updateDocument({
+          ...payload,
+          id: taxDocument?.id,
+          ekycId: eKYCData?.id,
+        } as any).unwrap();
         toast.success('Tax information updated successfully');
       } else {
         await submitDocument(payload).unwrap();
