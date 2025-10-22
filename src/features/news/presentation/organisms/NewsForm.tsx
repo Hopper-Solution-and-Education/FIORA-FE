@@ -45,8 +45,12 @@ type NewsFormProps = {
 
 const schema: ObjectSchema<NewsFormValues, AnyObject> = yup
   .object({
-    title: yup.string().trim().required('Title is required'),
-    description: yup.string().optional(),
+    title: yup
+      .string()
+      .trim()
+      .required('Title is required')
+      .max(255, 'Title cannot exceed 255 characters.'),
+    description: yup.string().optional().max(255, 'Description cannot exceed 255 characters.'),
     content: yup.string().trim().required('Content is required'),
     categoryId: yup.string().trim().required('Category is required'),
     thumbnail: yup.string().optional(),
@@ -84,7 +88,19 @@ const NewsForm = ({
   }, [isDirty, onDirtyChange]);
 
   const handleSubmit = async (values: NewsFormValues) => {
-    if (values.content === '<p></p>') {
+    const content = values.content
+      // Xóa các thẻ line break
+      .replace(/<br\s*\/?>/gi, '')
+      // Xóa các comment HTML
+      .replace(/<!--[\s\S]*?-->/g, '')
+      // Xóa các entity đặc biệt như &nbsp; &ZeroWidthSpace;
+      .replace(/&nbsp;|&#160;|&#8203;/gi, '')
+      // Xóa các thẻ HTML
+      .replace(/<[^>]*>/g, '')
+      // Xóa khoảng trắng, tab, xuống dòng
+      .replace(/\s+/g, '')
+      .trim();
+    if (content === '') {
       toast.error('Content is required');
       return;
     }

@@ -114,7 +114,7 @@ const CreateNewsPage = () => {
   }
 
   return (
-    <main className="px-8">
+    <main className="px-8 pb-8">
       <div className="mx-auto space-y-8">
         <div className="border-b pb-4">
           <h1 className="text-2xl font-bold text-foreground">Create News</h1>
