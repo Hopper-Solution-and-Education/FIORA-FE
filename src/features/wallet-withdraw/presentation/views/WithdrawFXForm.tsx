@@ -12,6 +12,7 @@ import {
   fetchFrozenAmountAsyncThunk,
   getWalletsAsyncThunk,
 } from '@/features/home/module/wallet/slices/actions';
+import { fetchPaymentWalletDashboardAsyncThunk } from '@/features/payment-wallet/slices/actions';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
@@ -163,15 +164,20 @@ function WithdrawFXForm() {
         otp,
       });
 
-      setLoading(false);
-
       if (response.status === RESPONSE_CODE.CREATED) {
-        dispatch(getWalletsAsyncThunk());
-        dispatch(fetchFrozenAmountAsyncThunk());
         toast.success(response.message);
-        refetchOverview();
+
+        await Promise.all([
+          dispatch(getWalletsAsyncThunk()),
+          dispatch(fetchFrozenAmountAsyncThunk()),
+          dispatch(fetchPaymentWalletDashboardAsyncThunk()),
+          refetchOverview(),
+        ]);
+
+        setLoading(false);
         handleClose();
       } else {
+        setLoading(false);
         toast.error(response.message || 'Something went wrong!');
       }
     } catch (error: unknown) {
@@ -302,7 +308,7 @@ function WithdrawFXForm() {
         className="md:min-w-[700px]"
         onCancel={handleClose}
         onConfirm={handleSubmitForm}
-        isLoading={isLoading}
+        isLoading={loading || isLoading}
         type="info"
       />
     </>

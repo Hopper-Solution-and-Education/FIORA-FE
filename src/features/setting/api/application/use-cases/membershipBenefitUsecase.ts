@@ -1,6 +1,5 @@
 import { prisma } from '@/config';
 import { Messages } from '@/shared/constants/message';
-import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
@@ -9,6 +8,7 @@ import {
 import { v4 as uuid } from 'uuid';
 import { membershipBenefitRepository } from '../../infrastructure/repositories/memBenefitRepository';
 import { tierBenefitRepository } from '../../infrastructure/repositories/tierBenefitRepository';
+import { BadRequestError } from '@/shared/lib';
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {
@@ -468,6 +468,7 @@ class MembershipBenefitService {
         throw new BadRequestError(Messages.MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS);
       }
     }
+
     switch (mode) {
       case 'create':
         return await this.createMembershipBenefit(payload, userId);

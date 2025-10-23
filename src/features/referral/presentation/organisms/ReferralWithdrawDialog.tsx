@@ -2,15 +2,8 @@
 
 import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Icons } from '@/components/Icon';
-import { Card } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { RadioGroup } from '@/components/ui/radio-group';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -43,20 +36,18 @@ const ReferralPackageCard = ({
   return (
     <Card
       className={cn(
-        'flex items-center justify-center gap-3 p-3 cursor-pointer border-2 transition-all',
-        selected ? 'border-blue-500 shadow-lg' : 'border-border hover:border-primary/60',
+        'w-fit flex items-center gap-4 px-4 py-2 cursor-pointer border-2 transition-all',
+        selected
+          ? 'border-blue-500 bg-blue-500 shadow-lg'
+          : 'border-border hover:border-primary/60',
         disabled && 'opacity-50 cursor-not-allowed',
       )}
       onClick={() => !disabled && onSelect?.(packageFX.id)}
     >
-      <Icons.walletPackageCard className="w-8 h-8" />
+      <Icons.walletPackageCard className="size-8" />
 
       <div className="flex items-center gap-2">
-        <span className="font-semibold">{packageFX.fxAmount.toLocaleString()} FX</span>
-      </div>
-
-      <div className="w-4 h-4 rounded-full border-2 border-primary">
-        {selected && <div className="w-full h-full bg-primary rounded-full" />}
+        <span className="font-semibold text-base">{packageFX.fxAmount.toLocaleString()} FX</span>
       </div>
     </Card>
   );
@@ -115,7 +106,6 @@ const ReferralWithdrawDialog = ({
   }, [selectedPackageId, fxPackages]);
 
   const selectedAmount = useMemo(() => selectedPackage?.fxAmount || 0, [selectedPackage]);
-  const formattedBalance = useMemo(() => availableBalance.toLocaleString(), [availableBalance]);
 
   const insufficientBalance = selectedAmount > 0 && selectedAmount > availableBalance;
   const belowThreshold = availableBalance < minimumThreshold;
@@ -145,54 +135,78 @@ const ReferralWithdrawDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-center">CLAIM</DialogTitle>
-          <DialogDescription className="text-center text-base">
-            CLAIM TO PAYMENT WALLET
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Package Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">CHOOSE AMOUNT</label>
-                <span className="text-sm text-muted-foreground font-medium  ">
-                  Available balance: {formattedBalance} FX
-                </span>
-              </div>
-
-              <div className="max-h-[50vh] overflow-y-auto space-y-3">
-                <RadioGroup
-                  value={selectedPackageId ?? ''}
-                  onValueChange={setSelectedPackageId}
-                  className="grid grid-cols-3 gap-3"
-                >
-                  {fxPackages.map((pkg) => (
-                    <ReferralPackageCard
-                      key={pkg.id}
-                      packageFX={pkg}
-                      selected={selectedPackageId === pkg.id}
-                      onSelect={setSelectedPackageId}
-                      disabled={pkg.fxAmount > availableBalance}
-                    />
-                  ))}
-                </RadioGroup>
-              </div>
+      <DialogContent className="min-w-fit mx-auto">
+        <DialogTitle className="text-3xl text-center font-extrabold text-gray-900 dark:text-gray-100">
+          CLAIM
+        </DialogTitle>
+        <DialogDescription className="text-center mb-2">CLAIM TO PAYMENT WALLET</DialogDescription>
+        <Card className="w-max">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+              <Icons.walletPackageCard height={48} width={48} />
+              <span>CHOOSE AMOUNT</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="w-fit grid grid-cols-1 sm:grid-cols-3 gap-4 place-items-center *:w-full">
+              {fxPackages
+                .filter((pkg) => pkg.fxAmount >= 100)
+                .sort((a, b) => a.fxAmount - b.fxAmount)
+                .map((pkg) => (
+                  <ReferralPackageCard
+                    key={pkg.id}
+                    packageFX={pkg}
+                    selected={selectedPackageId === pkg.id}
+                    onSelect={setSelectedPackageId}
+                    disabled={pkg.fxAmount > availableBalance}
+                  />
+                ))}
             </div>
-
-            <DefaultSubmitButton
-              isSubmitting={isSubmitting}
+            <div className="text-lg flex items-center justify-start gap-1 mt-8">
+              <span>From wallet</span>
+              <span className="text-red-600 dark:text-red-400">*</span>
+            </div>
+            <div className="w-fit flex gap-2 mt-2">
+              <label className="flex items-center gap-2 cursor-pointer border px-4 py-2 rounded-lg shadow">
+                <input
+                  type="radio"
+                  name="referral-wallet"
+                  value="referral"
+                  checked={true}
+                  className="cursor-pointer"
+                  readOnly
+                />
+                <span className="text-sm font-medium">Referral</span>
+              </label>
+            </div>
+          </CardContent>
+        </Card>
+        {/* <div className="flex items-center justify-between gap-4 mt-4">
+          <CommonTooltip content="Cancel and go back">
+            <Button variant="outline" className="w-32 h-14" onClick={() => handleOpenChange(false)}>
+              <CircleArrowLeft />
+            </Button>
+          </CommonTooltip>
+          <CommonTooltip content="Withdraw">
+            <Button
+              variant="default"
+              className="w-32 h-14 bg-blue-600 dark:bg-blue-400"
+              onClick={handleSubmit}
               disabled={isSubmitting || belowThreshold || !selectedPackageId || insufficientBalance}
-              onSubmit={handleSubmit}
-              onBack={() => handleOpenChange(false)}
-              backTooltip="Cancel"
-              submitTooltip="Withdraw"
-            />
-          </form>
-        </div>
+            >
+              <Check />
+            </Button>
+          </CommonTooltip>
+        </div> */}
+
+        <DefaultSubmitButton
+          isSubmitting={isSubmitting}
+          disabled={isSubmitting || belowThreshold || !selectedPackageId || insufficientBalance}
+          onSubmit={handleSubmit}
+          onBack={() => handleOpenChange(false)}
+          backTooltip="Cancel"
+          submitTooltip="Withdraw"
+        />
       </DialogContent>
     </Dialog>
   );

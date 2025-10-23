@@ -1,7 +1,7 @@
 import { membershipBenefitService } from '@/features/setting/api/application/use-cases/membershipBenefitUsecase';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { createErrorResponse } from '@/shared/lib';
+import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { MembershipBenefitCreatePayload } from '@/shared/types/membership-benefit';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
@@ -14,20 +14,26 @@ export const maxDuration = 30;
 export default withAuthorization({
   POST: ['Admin'],
   DELETE: ['Admin'],
-})(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
-  switch (req.method) {
-    case 'POST':
-      return processMembershipBenefit(req, res, userId);
-    case 'DELETE':
-      return deleteMembershipBenefit(req, res);
-    default:
-      return res.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({
-        error: Messages.METHOD_NOT_ALLOWED,
-      });
-  }
-});
+})(async (req: NextApiRequest, res: NextApiResponse, userId: string) =>
+  errorHandler(
+    async (request, response) => {
+      switch (request.method) {
+        case 'POST':
+          return POST(request, response, userId);
+        case 'DELETE':
+          return DELETE(request, response);
+        default:
+          return response
+            .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
+            .json({ error: Messages.METHOD_NOT_ALLOWED });
+      }
+    },
+    req,
+    res,
+  ),
+);
 
-async function processMembershipBenefit(req: NextApiRequest, res: NextApiResponse, userId: string) {
+async function POST(req: NextApiRequest, res: NextApiResponse, userId: string) {
   const payload = req.body as MembershipBenefitCreatePayload;
   const { error } = validateBody(membershipBenefitCreateSchema, req.body);
   if (error) {
@@ -42,7 +48,7 @@ async function processMembershipBenefit(req: NextApiRequest, res: NextApiRespons
     .json(createResponse(RESPONSE_CODE.CREATED, newBenefit.message, newBenefit.data));
 }
 
-async function deleteMembershipBenefit(req: NextApiRequest, res: NextApiResponse) {
+async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
 
   if (!id || typeof id !== 'string') {

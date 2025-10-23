@@ -1,7 +1,6 @@
-import DatePicker from '@/components/modern-ui/date-picker';
+import DatePicker from '@/components/ui/modern-date-picker';
 import { cn } from '@/shared/utils';
-import { useFormContext, FieldError } from 'react-hook-form';
-import React from 'react';
+import { FieldError, useFormContext } from 'react-hook-form';
 
 interface DateRangeFromToPickerRHFProps {
   name: string; // This will not be used directly but is required by FormConfig

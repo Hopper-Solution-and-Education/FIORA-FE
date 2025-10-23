@@ -1,7 +1,7 @@
 'use client';
-import DatePicker from '@/components/modern-ui/date-picker';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import DatePicker from '@/components/ui/modern-date-picker';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Control } from 'react-hook-form';
 
@@ -139,7 +139,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
                   </span>
                   <span>
                     {hasReferrerCode
-                      ? 'Referral code already applied and cannot be changed'
+                      ? ''
                       : 'Enter your referral code to earn rewards and get exclusive benefits when you invite friends'}
                   </span>
                 </p>
