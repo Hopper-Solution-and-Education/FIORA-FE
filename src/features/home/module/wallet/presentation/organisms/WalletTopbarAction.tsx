@@ -8,7 +8,7 @@ import { WalletFilterMenu, WalletSearch } from '../molecules';
 
 interface WalletTopbarActionProps {
   enableDeposit?: boolean;
-  enableTranfer?: boolean;
+  enableTransfer?: boolean;
   enableWithdraw?: boolean;
   enableFilter?: boolean;
   searchType?: 'normal' | 'deposit';
@@ -16,7 +16,7 @@ interface WalletTopbarActionProps {
 
 const WalletTopbarAction = ({
   enableDeposit = true,
-  enableTranfer = true,
+  enableTransfer = true,
   enableWithdraw = true,
   enableFilter = true,
   searchType = 'normal',
@@ -46,7 +46,7 @@ const WalletTopbarAction = ({
       </div>
       <WalletAction
         enableDeposit={enableDeposit}
-        enableTransfer={enableTranfer}
+        enableTransfer={enableTransfer}
         enableWithdraw={enableWithdraw}
       />
     </div>
