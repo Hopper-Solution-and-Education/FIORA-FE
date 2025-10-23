@@ -25,16 +25,13 @@ export type eKYC = {
   updatedAt: string;
 };
 
-export type UpdateProfileRequest = Partial<Omit<UserProfile, 'id' | 'email'>> & {
-  // Restrict updatable fields; email/id immutable here
+export type UpdateProfileRequest = {
   name?: string | null;
-  avatarUrl?: string | null;
-  logoUrl?: string | null;
   phone?: string | null;
   address?: string | null;
   birthday?: string | null;
-  newAvatar?: File | null;
-  newLogo?: File | null;
+  avatarAttachmentId?: string | null;
+  logoAttachmentId?: string | null;
   referrer_code?: string | null;
 };
 

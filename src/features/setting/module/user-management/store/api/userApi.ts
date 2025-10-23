@@ -1,24 +1,29 @@
+import { KYCMethod, KYCStatus, KYCType } from '@prisma/client';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { EkycResponse } from '../../slices/type';
 
 export interface UserApiResponse {
+  // eKYC fields
   id: string;
-  name: string;
-  email: string;
-  role: string;
-  isBlocked: boolean;
-  kyc_levels: string[];
+  status: KYCStatus;
+  method: KYCMethod;
+  type: KYCType | null;
+  fieldName: string;
   createdAt: string;
-  updatedAt: string;
-  avatarId?: string | null;
-  avatarUrl?: string | null;
-  eKYC?: {
+
+  // User info
+  User: {
     id: string;
-    status: string;
-    method: string;
-    type: string;
-    fieldName: string;
+    name: string | null;
+    email: string;
+    role: string;
+    isBlocked: boolean | null;
+    kyc_levels: string[];
     createdAt: string;
-  }[];
+    updatedAt: string;
+    avatarId: string | null;
+    avatarUrl: string | null;
+  };
 }
 
 export interface GetUsersParams {
@@ -35,7 +40,7 @@ export interface GetUsersParams {
 }
 
 export interface GetUsersResponse {
-  data: UserApiResponse[];
+  data: EkycResponse[];
   total: number;
   hasMore: boolean;
 }

@@ -2,8 +2,7 @@
 
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/shared/lib/utils';
-import { isImageUrl } from '@/shared/utils';
+import { cn, isImageUrl } from '@/shared/utils';
 import { AlertTriangle, Circle, Image as ImageIcon, Square, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import type React from 'react';

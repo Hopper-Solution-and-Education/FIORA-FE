@@ -3,8 +3,9 @@
 // Remove Avatar imports
 // import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatDateTime } from '@/shared/lib';
+import { formatDateTime } from '@/shared/lib';
 import { CreatedBy, UpdatedBy } from '@/shared/types';
+import { cn } from '@/shared/utils';
 import Image from 'next/image'; // Import Next.js Image component
 import React, { useMemo } from 'react';
 

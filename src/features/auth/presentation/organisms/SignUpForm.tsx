@@ -9,11 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { cn } from '@/shared/utils';
-import {
-  validateConfirmPassword,
-  validateEmail,
-  validatePassword,
-} from '@/shared/validators/signUpValidation';
+import { validateEmail, validatePassword } from '@/shared/validators/signUpValidation';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
@@ -26,9 +22,6 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isVerificationStep, setIsVerificationStep] = useState(false); // Toggle between registration and verification
   const [isTermAccepted, setIsTermAccepted] = useState<boolean>(false);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null); // State for error messages
@@ -36,27 +29,22 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
   const [fieldErrors, setFieldErrors] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     otp: '',
   });
 
-  // Add states for password visibility
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateForm = () => {
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
-    const confirmPasswordError = validateConfirmPassword(confirmPassword, password);
 
     setFieldErrors({
       ...fieldErrors,
       email: emailError,
       password: passwordError,
-      confirmPassword: confirmPasswordError,
     });
 
-    return !emailError && !passwordError && !confirmPasswordError;
+    return !emailError && !passwordError;
   };
 
   const handleFieldChange = (field: string, value: string) => {
@@ -68,13 +56,6 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
       case 'password':
         setPassword(value);
         setFieldErrors((prev) => ({ ...prev, password: validatePassword(value) }));
-        break;
-      case 'confirmPassword':
-        setConfirmPassword(value);
-        setFieldErrors((prev) => ({
-          ...prev,
-          confirmPassword: validateConfirmPassword(value, password),
-        }));
         break;
     }
     setError(null);
@@ -120,7 +101,6 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
         'signupMsg',
         'Congratulation! You have registered an account successfully.',
       );
-      // setIsVerificationStep(true); // Switch to OTP verification step
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -133,11 +113,9 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
     isRegistering ||
     !(email.length > 0) ||
     !(password.length > 0) ||
-    !(confirmPassword.length > 0) ||
     !!error || // Explicitly check if error is truthy
     fieldErrors.email.length > 0 ||
-    fieldErrors.password.length > 0 ||
-    fieldErrors.confirmPassword.length > 0;
+    fieldErrors.password.length > 0;
 
   return (
     <div
@@ -147,9 +125,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
       <Card className="w-full max-w-xl border-0 shadow-none px-[10%]">
         <CardContent className="grid p-0">
           <div className="flex flex-col items-center text-center gap-2">
-            <h1 className="text-2xl font-bold mt-3">
-              {isVerificationStep ? 'Verify Your Email' : 'SIGN UP'}
-            </h1>
+            <h1 className="text-2xl font-bold mt-3">SIGN UP</h1>
           </div>
           <div className="p-6 md:p-8">
             {error && (
@@ -157,180 +133,126 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <AlertDescription className="text-center">{error}</AlertDescription>
               </Alert>
             )}
-            {
-              !isVerificationStep && (
-                <form
-                  onSubmit={handleRegister}
-                  className="flex flex-col gap-3 overflow-visible"
-                  data-test="register-form"
+            <form
+              onSubmit={handleRegister}
+              className="flex flex-col gap-3 overflow-visible"
+              data-test="register-form"
+            >
+              <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2">
+                <Label
+                  htmlFor="email"
+                  className="block sm:absolute sm:top-[50%] sm:-left-4 sm:-translate-y-[50%] sm:-translate-x-[100%] text-sm text-right text-gray-700 dark:text-gray-300 sm:w-1/4"
                 >
-                  <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2">
-                    <Label
-                      htmlFor="email"
-                      className="block sm:absolute sm:top-[50%] sm:-left-4 sm:-translate-y-[50%] sm:-translate-x-[100%] text-sm text-right text-gray-700 dark:text-gray-300 sm:w-1/4"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      inputMode="email"
-                      disabled={isRegistering} // Disable during register period
-                      value={email}
-                      onChange={(e) => handleFieldChange('email', e.target.value)}
-                      // onBlur={validateExistedEmail} // Validate khi người dùng rời khỏi trường input
-                      placeholder="example@gmail.com"
-                      required
-                      className={cn(
-                        'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2',
-                        fieldErrors.email ? 'border-red-500' : 'border-none',
-                      )}
-                      data-test="email-input"
-                    />
-                  </div>
-                  {fieldErrors.email && (
-                    <p className="w-full  text-red-500 text-sm break-words">{fieldErrors.email}</p>
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  inputMode="email"
+                  disabled={isRegistering} // Disable during register period
+                  value={email}
+                  onChange={(e) => handleFieldChange('email', e.target.value)}
+                  // onBlur={validateExistedEmail} // Validate khi người dùng rời khỏi trường input
+                  placeholder="example@gmail.com"
+                  required
+                  className={cn(
+                    'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2',
+                    fieldErrors.email ? 'border-red-500' : 'border-none',
                   )}
-                  <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
-                    <Label
-                      htmlFor="password"
-                      className="block sm:absolute sm:top-[50%] sm:-left-4 sm:-translate-y-[50%] sm:-translate-x-[100%] text-sm text-right text-gray-700 dark:text-gray-300 sm:w-1/4"
-                    >
-                      Password
-                    </Label>
-                    <div className="relative flex-1">
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        disabled={isRegistering}
-                        value={password}
-                        onChange={(e) => handleFieldChange('password', e.target.value)}
-                        required
-                        className={cn(
-                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
-                          fieldErrors.password ? 'border-red-500' : 'border-none',
-                        )}
-                        data-test="password-input"
-                      />
-                      {password && (
-                        <button
-                          data-test="show-password-button"
-                          type="button"
-                          className="absolute inset-y-0 right-0 flex items-center pr-3"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          ) : (
-                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {fieldErrors.password && (
-                    <p className="w-full text-red-500 text-sm mt-1">{fieldErrors.password}</p>
-                  )}
-
-                  <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
-                    <Label
-                      htmlFor="confirm-password"
-                      className="block sm:absolute sm:top-[50%] sm:-left-4 sm:-translate-y-[50%] sm:-translate-x-[100%] text-sm text-right text-gray-700 dark:text-gray-300 sm:w-1/4"
-                    >
-                      Confirm Password
-                    </Label>
-                    <div className="relative flex-1">
-                      <Input
-                        id="confirm-password"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        disabled={isRegistering}
-                        value={confirmPassword}
-                        onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
-                        required
-                        className={cn(
-                          'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
-                          fieldErrors.confirmPassword ? 'border-red-500' : 'border-none',
-                        )}
-                        data-test="confirm-password-input"
-                      />
-                      {confirmPassword && (
-                        <button
-                          data-test="show-confirm-password"
-                          type="button"
-                          className="absolute inset-y-0 right-0 flex items-center pr-3"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          ) : (
-                            <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {fieldErrors.confirmPassword && (
-                    <p className="w-full text-red-500 text-sm mt-1 break-all">
-                      {fieldErrors.confirmPassword}
-                    </p>
-                  )}
-                  <TermCondition
-                    isTermAccepted={isTermAccepted}
-                    setIsTermAccepted={setIsTermAccepted}
-                    isEditAlowed={!isRegistering}
+                  data-test="email-input"
+                />
+              </div>
+              {fieldErrors.email && (
+                <p className="w-full  text-red-500 text-sm break-words">{fieldErrors.email}</p>
+              )}
+              <div className="relative flex flex-col sm:flex-row justify-start items-start sm:items-center gap-2 mt-2">
+                <Label
+                  htmlFor="password"
+                  className="block sm:absolute sm:top-[50%] sm:-left-4 sm:-translate-y-[50%] sm:-translate-x-[100%] text-sm text-right text-gray-700 dark:text-gray-300 sm:w-1/4"
+                >
+                  Password
+                </Label>
+                <div className="relative flex-1">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    disabled={isRegistering}
+                    value={password}
+                    onChange={(e) => handleFieldChange('password', e.target.value)}
+                    required
+                    className={cn(
+                      'flex-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 pr-10',
+                      fieldErrors.password ? 'border-red-500' : 'border-none',
+                    )}
+                    data-test="password-input"
                   />
-                  <div className="w-full h-fit my-4 flex justify-center">
-                    <Button
-                      type="submit"
-                      className={cn(
-                        'text-lg font-semibold w-48 py-6 bg-blue-500  hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
-                        isRegistering && 'cursor-not-allowed',
-                      )}
-                      disabled={isSignUpNotAvailable}
-                      data-test="register-button"
+                  {password && (
+                    <button
+                      data-test="show-password-button"
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      onClick={() => setShowPassword(!showPassword)}
                     >
-                      {!isRegistering ? (
-                        <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 !h-[23px] !w-[23px]" />
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       ) : (
-                        <LoadingIndicator className="w-4 h-4" color="white" />
+                        <Eye className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       )}
-                    </Button>
-                  </div>
-                  <div className="text-center text-sm mt-4">
-                    Already have an account?{' '}
-                    <Link
-                      href="/auth/sign-in"
-                      className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
-                    >
-                      Login
-                    </Link>
-                  </div>
-                </form>
-              )
-              // : (
-              //   <VerifyOTPForm
-              //     email={email}
-              //     setError={setError}
-              //     setSuccessMessage={setSuccessMessage}
-              //   />
-              // )
-            }
-            {!isVerificationStep && (
-              <div className="w-full h-fit flex flex-col pt-6 gap-6">
-                <Separator orientation="horizontal" />
-
-                <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <span className="relative z-10 px-2">Or Sign in with</span>
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="flex items-center justify-center w-8 h-8 cursor-pointer"
-                    data-test="register-google-button"
-                  >
-                    <GoogleIcon />
-                  </button>
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
+              {fieldErrors.password && (
+                <p className="w-full text-red-500 text-sm mt-1">{fieldErrors.password}</p>
+              )}
+
+              <TermCondition
+                isTermAccepted={isTermAccepted}
+                setIsTermAccepted={setIsTermAccepted}
+                isEditAlowed={!isRegistering}
+              />
+              <div className="w-full h-fit my-4 flex justify-center">
+                <Button
+                  type="submit"
+                  className={cn(
+                    'text-lg font-semibold w-48 py-6 bg-blue-500  hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
+                    isRegistering && 'cursor-not-allowed',
+                  )}
+                  disabled={isSignUpNotAvailable}
+                  data-test="register-button"
+                >
+                  {!isRegistering ? (
+                    <Check className="block text-green-300 stroke-[4] transform transition-transform duration-200 drop-shadow-sm hover:text-green-100 !h-[23px] !w-[23px]" />
+                  ) : (
+                    <LoadingIndicator className="w-4 h-4" color="white" />
+                  )}
+                </Button>
+              </div>
+              <div className="text-center text-sm mt-4">
+                Already have an account?{' '}
+                <Link
+                  href="/auth/sign-in"
+                  className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
+                >
+                  Login
+                </Link>
+              </div>
+            </form>
+
+            <div className="w-full h-fit flex flex-col pt-6 gap-6">
+              <Separator orientation="horizontal" />
+
+              <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <span className="relative z-10 px-2">Or Sign in with</span>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="flex items-center justify-center w-8 h-8 cursor-pointer"
+                  data-test="register-google-button"
+                >
+                  <GoogleIcon />
+                </button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

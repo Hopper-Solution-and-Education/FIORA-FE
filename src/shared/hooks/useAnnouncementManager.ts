@@ -1,3 +1,5 @@
+'use client';
+
 import { useGetAnnouncement } from '@/features/landing/hooks/useGetAnnouncement';
 import { useEffect, useMemo, useState } from 'react';
 

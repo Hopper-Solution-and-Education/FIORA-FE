@@ -1,8 +1,8 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { ATTACHMENT_CONSTANTS } from '@/features/setting/data/module/attachment/constants/attachmentConstants';
-import { cn } from '@/lib/utils';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
+import { cn } from '@/shared/utils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toast } from 'sonner';
 import { DepositRequestStatus, FXRequestType } from '../../domain';
@@ -28,7 +28,7 @@ const WalletSettingActionButton = ({
   const isUpdating = useAppSelector((state) => state.walletSetting.updatingItems.includes(id));
   const isDisabled = !isRequested || isUpdating;
 
-  const { dispatchTable, reloadData } = useDispatchTableContext();
+  const { dispatchTable } = useDispatchTableContext();
   const { table } = useTableContext();
   const dispatch = useAppDispatch();
 
@@ -78,8 +78,11 @@ const WalletSettingActionButton = ({
         ).unwrap();
       }
 
-      // Reload table data to reflect the updated status
-      await reloadData();
+      // Update local state instead of reloading data
+      dispatchTable({
+        type: 'UPDATE_ITEM_STATUS',
+        payload: { id, status: DepositRequestStatus.Approved },
+      });
 
       handleToggleApproveModal();
 
@@ -87,7 +90,8 @@ const WalletSettingActionButton = ({
         description: 'Request approved, wallet updated',
       });
     } catch (e: any) {
-      console.error(e?.message);
+      // console.error(e?.message);
+      console.error(e);
       toast.error('Request Approved Failed', {
         description: e?.message || 'Failed. Try again or contact support.',
       });
@@ -100,8 +104,11 @@ const WalletSettingActionButton = ({
         updateDepositRequestStatusAsyncThunk({ id, status: DepositRequestStatus.Rejected, remark }),
       ).unwrap();
 
-      // Reload table data to reflect the updated status
-      await reloadData();
+      // Update local state instead of reloading data
+      dispatchTable({
+        type: 'UPDATE_ITEM_STATUS',
+        payload: { id, status: DepositRequestStatus.Rejected, remark },
+      });
 
       handleToggleRejectModal();
 

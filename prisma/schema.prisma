@@ -1152,6 +1152,8 @@ enum OtpType {
   CONTACT
   SENDING_FX
   WITHDRAW
+  EMAIL
+  DELETE
 }
 
 enum ReferralStatus {

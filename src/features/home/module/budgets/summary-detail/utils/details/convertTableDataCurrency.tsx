@@ -1,5 +1,5 @@
 import { DataSourceItemProps } from '@/components/common/tables/custom-table/types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Currency, ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { isArray } from 'lodash';
 import { TableData } from '../../presentation/types/table.type';
@@ -23,59 +23,57 @@ export const convertTableDataCurrency = (
     isFullCurrencyDisplay?: boolean,
     activeTab?: string,
   ) => (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <p className="cursor-pointer px-3 py-2">
-            {formatCurrency(
-              activeTab === 'EXPENSE'
-                ? bottomUpValue - actualSumUpValue
-                : actualSumUpValue - bottomUpValue,
-              userCurrency,
-              { shouldShortened: isFullCurrencyDisplay },
-            )}
-          </p>
-        </TooltipTrigger>
-        <TooltipContent
-          className="whitespace-pre-line bg-white text-black dark:bg-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700"
-          style={{ zIndex: 70 }}
-        >
-          <div>
-            {activeTab === 'EXPENSE' ? (
-              <span>
-                Remaining = Bottom Up - Actual Sum Up{'\n'}
-                {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}{' '}
-                ={' '}
-                {formatCurrency(bottomUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}{' '}
-                -{' '}
-                {formatCurrency(actualSumUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}
-              </span>
-            ) : (
-              <span>
-                Remaining = Actual Sum Up - Bottom Up{'\n'}
-                {formatCurrency(actualSumUpValue - bottomUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}{' '}
-                ={' '}
-                {formatCurrency(actualSumUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}{' '}
-                -{' '}
-                {formatCurrency(bottomUpValue, userCurrency, {
-                  shouldShortened: isFullCurrencyDisplay,
-                })}
-              </span>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <p className="cursor-pointer px-3 py-2">
+          {formatCurrency(
+            activeTab === 'EXPENSE'
+              ? bottomUpValue - actualSumUpValue
+              : actualSumUpValue - bottomUpValue,
+            userCurrency,
+            { shouldShortened: isFullCurrencyDisplay },
+          )}
+        </p>
+      </TooltipTrigger>
+      <TooltipContent
+        className="whitespace-pre-line bg-white text-black dark:bg-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700"
+        style={{ zIndex: 70 }}
+      >
+        <div>
+          {activeTab === 'EXPENSE' ? (
+            <span>
+              Remaining = Bottom Up - Actual Sum Up{'\n'}
+              {formatCurrency(bottomUpValue - actualSumUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              ={' '}
+              {formatCurrency(bottomUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              -{' '}
+              {formatCurrency(actualSumUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}
+            </span>
+          ) : (
+            <span>
+              Remaining = Actual Sum Up - Bottom Up{'\n'}
+              {formatCurrency(actualSumUpValue - bottomUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              ={' '}
+              {formatCurrency(actualSumUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}{' '}
+              -{' '}
+              {formatCurrency(bottomUpValue, userCurrency, {
+                shouldShortened: isFullCurrencyDisplay,
+              })}
+            </span>
+          )}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 
   const transformItem = (

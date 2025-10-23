@@ -18,7 +18,7 @@ import type { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import type { FieldError } from 'react-hook-form';
 
 type DateRangePickerProps = {

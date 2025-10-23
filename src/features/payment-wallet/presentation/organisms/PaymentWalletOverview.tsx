@@ -1,9 +1,9 @@
 'use client';
 
 import MetricCard from '@/components/common/metric/MetricCard';
+import { WalletAction } from '@/components/common/organisms';
 import { CURRENCY } from '@/shared/constants';
 import { useMemo } from 'react';
-import { WalletDepositButton, WalletTransferButton, WalletWithdrawButton } from '../atoms';
 import { usePaymentWalletDashboard } from '../hooks';
 import { PercentageMetricCard, SmallMetricCard } from '../molecules';
 import PaymentWalletOverviewSkeleton from './PaymentWalletOverviewSkeleton';
@@ -72,12 +72,12 @@ const PaymentWalletOverview = ({
           type="income"
         />
 
-        <div className="flex justify-end gap-4">
-          {enableDeposit && <WalletDepositButton />}
-
-          {enableTransfer && <WalletTransferButton />}
-
-          {enableWithdraw && <WalletWithdrawButton />}
+        <div className="w-full flex justify-end">
+          <WalletAction
+            enableDeposit={enableDeposit}
+            enableTransfer={enableTransfer}
+            enableWithdraw={enableWithdraw}
+          />
         </div>
       </div>
 

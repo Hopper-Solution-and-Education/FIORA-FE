@@ -1,10 +1,26 @@
-import { EKYCStatus } from '../domain/entities/models/profile';
+import { EKYCStatus, EKYCType } from '../domain/entities/models/profile';
 
-export const KYC_TABS = {
-  BANK_ACCOUNT: 'bank-account',
-  CONTACT_INFORMATION: 'contact-information',
-  IDENTIFICATION_DOCUMENT: 'identification-document',
-  TAX_INFORMATION: 'tax-information',
+export const KYC_ITEMS = {
+  IDENTIFICATION_DOCUMENT: {
+    type: EKYCType.IDENTIFICATION_DOCUMENT,
+    label: 'Identification Document',
+    route: 'identification-document',
+  },
+  CONTACT_INFORMATION: {
+    type: EKYCType.CONTACT_INFORMATION,
+    label: 'Contact Information',
+    route: 'contact-information',
+  },
+  TAX_INFORMATION: {
+    type: EKYCType.TAX_INFORMATION,
+    label: 'Tax Information',
+    route: 'tax-information',
+  },
+  BANK_ACCOUNT: {
+    type: EKYCType.BANK_ACCOUNT,
+    label: 'Bank Accounts',
+    route: 'bank-account',
+  },
 };
 
 export const STATUS_COLOR = {

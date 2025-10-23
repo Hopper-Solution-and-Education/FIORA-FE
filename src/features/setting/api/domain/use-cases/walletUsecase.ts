@@ -6,6 +6,7 @@ import { notificationUseCase } from '@/features/notification/application/use-cas
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
+import { EmailTemplateEnum } from '@/shared/constants/EmailTemplateEnum';
 import { Messages } from '@/shared/constants/message';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { SavingWalletAction } from '@/shared/constants/savingWallet';
@@ -27,12 +28,8 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { ATTACHMENT_CONSTANTS } from '../../../data/module/attachment/constants/attachmentConstants';
 import {
   DEFAULT_WALLET_FIELDS,
-  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID,
-  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID,
   MAX_REF_CODE_ATTEMPTS,
   WALLET_TYPE_ICONS,
-  WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
-  WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
 } from '../../../data/module/wallet/constants';
 import { WalletApproveEmailPart, WalletRejectEmailPart } from '../../../data/module/wallet/types';
 import { attachmentRepository } from '../../infrastructure/repositories/attachmentRepository';
@@ -282,12 +279,6 @@ class WalletUseCase {
     // Create notification for Admin role
     await this._notificationUsecase.createBoxNotification(depositBoxNotification);
 
-    // Create notification for CS role
-    await this._notificationUsecase.createBoxNotification({
-      ...depositBoxNotification,
-      notifyTo: NotificationType.ROLE_CS,
-    });
-
     return depositRequest;
   }
 
@@ -390,17 +381,24 @@ class WalletUseCase {
       remark,
     );
 
-    await this.notifyDepositStatus(
-      {
-        userId: depositRequest.userId,
-        packageFXId: depositRequest.packageFXId,
-        type: depositRequest.type,
-        amount: depositRequest.amount,
-      },
-      newStatus,
-      remark,
-      precomputedFxAmount,
-    );
+    // Try to send notification but don't fail the main operation if notification fails
+    try {
+      await this.notifyDepositStatus(
+        {
+          userId: depositRequest.userId,
+          packageFXId: depositRequest.packageFXId,
+          type: depositRequest.type,
+          amount: depositRequest.amount,
+        },
+        newStatus,
+        remark,
+        precomputedFxAmount,
+      );
+    } catch (notificationError) {
+      // Log notification error but don't fail the main operation
+      console.error('Notification failed for deposit request:', id, notificationError);
+      // Could also send to error tracking service or queue for retry
+    }
 
     return updatedDepositRequest;
   }
@@ -625,60 +623,80 @@ class WalletUseCase {
       );
 
     if (newStatus === DepositRequestStatus.Approved) {
-      await this._notificationUsecase.createBoxNotification({
-        title: `${type} Request Approved`,
-        type: `${depositRequest.type}_APPROVED`,
-        notifyTo: NotificationType.PERSONAL,
-        message: `Your ${type.toLowerCase()} request has been approved successfully.`,
-        deepLink: RouteEnum.WalletDashboard,
-        emails: [userInfo.email],
-      });
+      // Try to create in-app notification
+      try {
+        await this._notificationUsecase.createBoxNotification({
+          title: `${type} Request Approved`,
+          type: `${depositRequest.type}_APPROVED`,
+          notifyTo: NotificationType.PERSONAL,
+          message: `Your ${type.toLowerCase()} request has been approved successfully.`,
+          deepLink: RouteEnum.WalletDashboard,
+          emails: [userInfo.email],
+        });
+      } catch (boxNotificationError) {
+        console.error('Box notification failed:', boxNotificationError);
+      }
 
-      const emailPart: WalletApproveEmailPart = {
-        user_id: depositRequest.userId,
-        recipient,
-        user_name: displayName,
-        user_email: userEmail,
-        fx_amount: fxAmount,
-      };
+      // Try to send email notification
+      try {
+        const emailPart: WalletApproveEmailPart = {
+          user_id: depositRequest.userId,
+          recipient,
+          user_name: displayName,
+          user_email: userEmail,
+          fx_amount: fxAmount,
+        };
 
-      await this._notificationUsecase.sendNotificationWithTemplate(
-        depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
-        [emailPart],
-        NotificationType.PERSONAL,
-        `${depositRequest.type}_APPROVED`,
-        `${type} Request Approved`,
-      );
+        await this._notificationUsecase.sendNotificationWithTemplate(
+          depositRequest.type === FxRequestType.DEPOSIT
+            ? EmailTemplateEnum.DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID
+            : EmailTemplateEnum.WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID,
+          [emailPart],
+          NotificationType.PERSONAL,
+          `${depositRequest.type}_APPROVED`,
+          `${type} Request Approved`,
+        );
+      } catch (emailNotificationError) {
+        console.error('Email notification failed:', emailNotificationError);
+      }
     } else if (newStatus === DepositRequestStatus.Rejected) {
-      await this._notificationUsecase.createBoxNotification({
-        title: `${type} Request Rejected`,
-        type: `${depositRequest.type}_REJECTED`,
-        notifyTo: NotificationType.PERSONAL,
-        message: `Your ${type.toLowerCase()} request has been rejected. ${remark ? `Reason: ${remark}` : ''}`,
-        deepLink: RouteEnum.WalletDashboard,
-        emails: [userInfo.email],
-      });
+      // Try to create in-app notification
+      try {
+        await this._notificationUsecase.createBoxNotification({
+          title: `${type} Request Rejected`,
+          type: `${depositRequest.type}_REJECTED`,
+          notifyTo: NotificationType.PERSONAL,
+          message: `Your ${type.toLowerCase()} request has been rejected. ${remark ? `Reason: ${remark}` : ''}`,
+          deepLink: RouteEnum.WalletDashboard,
+          emails: [userInfo.email],
+        });
+      } catch (boxNotificationError) {
+        console.error('Box notification failed:', boxNotificationError);
+      }
 
-      const emailPart: WalletRejectEmailPart = {
-        user_id: depositRequest.userId,
-        recipient,
-        user_name: displayName,
-        user_email: userEmail,
-        fx_amount: fxAmount,
-        rejection_reason: remark || 'No reason provided',
-      };
+      // Try to send email notification
+      try {
+        const emailPart: WalletRejectEmailPart = {
+          user_id: depositRequest.userId,
+          recipient,
+          user_name: displayName,
+          user_email: userEmail,
+          fx_amount: fxAmount,
+          rejection_reason: remark || 'No reason provided',
+        };
 
-      await this._notificationUsecase.sendNotificationWithTemplate(
-        depositRequest.type === FxRequestType.DEPOSIT
-          ? DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
-          : WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
-        [emailPart],
-        NotificationType.PERSONAL,
-        `${depositRequest.type}_REJECTED`,
-        `${type} Request Rejected`,
-      );
+        await this._notificationUsecase.sendNotificationWithTemplate(
+          depositRequest.type === FxRequestType.DEPOSIT
+            ? EmailTemplateEnum.DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID
+            : EmailTemplateEnum.WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID,
+          [emailPart],
+          NotificationType.PERSONAL,
+          `${depositRequest.type}_REJECTED`,
+          `${type} Request Rejected`,
+        );
+      } catch (emailNotificationError) {
+        console.error('Email notification failed:', emailNotificationError);
+      }
     }
   }
   async claimsFromSavingWallet(userId: string, packageFXId: string, toWalletType: WalletType) {

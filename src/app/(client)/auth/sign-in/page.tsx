@@ -1,14 +1,8 @@
 'use client';
-import Loading from '@/components/common/atoms/Loading';
-import dynamic from 'next/dynamic';
+import SignInPage from '@/features/auth/presentation/SignInPage';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-
-const SignInPage = dynamic(() => import('@/features/auth/presentation/SignInPage'), {
-  loading: () => <Loading />,
-  ssr: false,
-});
 
 const SignIn = () => {
   const router = useRouter();

@@ -1,7 +1,9 @@
-export * from './app-side-bar/AppSidebar';
-export { default as Header } from './dashboard-header/DashboardHeader';
-export { default as HelperCenter } from './dashboard-header/HelpCenter';
-export { default as SettingCenter } from './dashboard-header/SettingCenter';
-export * from './loading-progress/LoadingProgress';
-export { default as PageContainer } from './page-container/PageContainer';
-export * from './user-nav/UserNav';
+export { default as AppSidebar } from './AppSidebar';
+export { default as Header } from './DashboardHeader';
+export { default as HelperCenter } from './DashboardHeader/components/HelpCenter';
+export { default as SettingCenter } from './DashboardHeader/components/SettingCenter';
+export { default as MainContent } from './MainContent';
+export { default as MainLayout } from './MainLayout';
+export { default as Page } from './Page';
+export { default as StandaloneLayout } from './StandaloneLayout';
+export { default as UserNav } from './UserNav';

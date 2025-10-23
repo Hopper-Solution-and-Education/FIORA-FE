@@ -49,7 +49,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
       result = await userUseCase.getAllUserEkycPendingCS(
         {
           search,
-          role: roleFilter, // Truyền role từ query để filter
+          role: roleFilter,
           status,
           fromDate,
           toDate,
@@ -60,23 +60,23 @@ export async function GET(req: NextApiRequest, res: NextApiResponse, userId: str
           pageSize: Number(pageSize),
         },
         currentUserRole,
-      ); // Truyền role của user để check permission
+      );
     } else {
       result = await userUseCase.getAllUserEkycPending(
         {
           search,
-          role: roleFilter, // Truyền role từ query để filter
+          role: roleFilter,
           status,
           fromDate,
-          email,
           toDate,
+          email,
           userFromDate,
           userToDate,
           page: Number(page),
           pageSize: Number(pageSize),
         },
         currentUserRole,
-      ); // Truyền role của user để check permission
+      );
     }
 
     return res

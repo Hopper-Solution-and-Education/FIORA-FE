@@ -1,8 +1,8 @@
 'use client';
-import DatePicker from '@/components/modern-ui/date-picker';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { AlertCircle } from 'lucide-react';
+import DatePicker from '@/components/ui/modern-date-picker';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Control } from 'react-hook-form';
 
 export type PersonalInfo = {
@@ -11,13 +11,18 @@ export type PersonalInfo = {
   phone?: string;
   birthday?: string;
   address?: string;
+  referrer_code?: string;
 };
 
 type PersonalInfoFieldsProps = {
   control: Control<PersonalInfo>;
+  hasReferrerCode?: boolean;
 };
 
-export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ control }) => {
+export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
+  control,
+  hasReferrerCode = false,
+}) => {
   return (
     <div className="mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -99,15 +104,49 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ control 
         </div>
 
         <div className="col-span-1 md:col-span-2">
-          <FormLabel htmlFor="referralCode">Referral Code</FormLabel>
-          <Input id="referralCode" />
-          <p className="text-xs text-gray-500 my-2 flex items-center">
-            <span className="text-yellow-400 mr-2" aria-hidden>
-              <AlertCircle />
-            </span>
-            Enter your referral code to earn rewards and get exclusive benefits when you invite
-            friends
-          </p>
+          <FormField
+            control={control}
+            name="referrer_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="referrer_code">Referral Code</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      id="referrer_code"
+                      {...field}
+                      value={field.value ?? ''}
+                      disabled={hasReferrerCode}
+                      placeholder={hasReferrerCode ? 'Already applied' : 'Enter referral code'}
+                      className={hasReferrerCode ? 'bg-gray-50' : ''}
+                    />
+                    {hasReferrerCode && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                <p className="text-xs text-gray-500 mt-2 flex items-start gap-2">
+                  <span
+                    className={hasReferrerCode ? 'text-green-600 mt-0.5' : 'text-amber-600 mt-0.5'}
+                  >
+                    {hasReferrerCode ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4" />
+                    )}
+                  </span>
+                  <span>
+                    {hasReferrerCode
+                      ? ''
+                      : 'Enter your referral code to earn rewards and get exclusive benefits when you invite friends'}
+                  </span>
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </div>
     </div>

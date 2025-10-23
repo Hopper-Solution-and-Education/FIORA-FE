@@ -66,7 +66,7 @@ export function UserManagementActions({
       <InfoActionRow
         label="Roles"
         iconColor={ICON_COLOR_BLUE}
-        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+        description="Assign a role to control user permissions and access levels"
         actions={
           <>
             <button

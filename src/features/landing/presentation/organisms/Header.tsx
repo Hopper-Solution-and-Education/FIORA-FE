@@ -9,14 +9,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
-import HelpCenter from '@/components/layouts/dashboard-header/HelpCenter';
-import MarqueeAnnouncement from '@/components/layouts/dashboard-header/MarqueAnnouncement';
-import NewsCenter from '@/components/layouts/dashboard-header/NewsCenter';
+import { UserNav } from '@/components/layouts';
+import HelpCenter from '@/components/layouts/DashboardHeader/components/HelpCenter';
+import MarqueeAnnouncement from '@/components/layouts/DashboardHeader/components/MarqueAnnouncement';
+import NewsCenter from '@/components/layouts/DashboardHeader/components/NewsCenter';
 import {
   default as SettingCenter,
   default as ThemeToggle,
-} from '@/components/layouts/dashboard-header/SettingCenter';
-import { UserNav } from '@/components/layouts/user-nav/UserNav';
+} from '@/components/layouts/DashboardHeader/components/SettingCenter';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ICON_SIZE } from '@/shared/constants/size';
@@ -50,9 +50,7 @@ export default function Header() {
   };
 
   return (
-    <header
-      className={`fixed bg-background/100 top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out shadow-lg`}
-    >
+    <header id="app-header" className={`app-bar bg-background/100 shadow-lg relative`}>
       <div className="flex items-center">
         {/* Logo */}
         <div className="flex items-center">

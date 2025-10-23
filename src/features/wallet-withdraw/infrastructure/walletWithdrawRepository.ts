@@ -299,20 +299,27 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       });
 
       if (createDepositRequest) {
-        const emails: string[] = [
-          ...(emailUser?.email ? [emailUser.email] : []),
-          ...emailAdmin.map((admin) => admin.email),
-        ];
+        const emails: string[] = [...emailAdmin.map((admin) => admin.email)];
         await notificationRepository.createBoxNotification({
-          title: 'WITHDRAW_REQUEST',
+          title: 'Withdrawal Request Created',
+          type: 'WITHDRAW_REQUEST',
+          notifyTo: 'PERSONAL',
+          attachmentId: '',
+          deepLink: '/wallet/payment',
+          emails: emailUser ? [emailUser.email] : [],
+          message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
+        });
+        await notificationRepository.createBoxNotification({
+          title: 'New Withdrawal Request from User',
           type: 'WITHDRAW_REQUEST',
           notifyTo: 'PERSONAL',
           attachmentId: '',
           deepLink: '/wallet/payment',
           emails,
-          message: `You have made a withdrawal request for the amount of ${amount} to your bank account.`,
+          message: `A new withdrawal request has been submitted by ${emailUser?.email} for the amount of ${amount}.`,
         });
       }
+
       return {
         data: result,
       };
@@ -407,6 +414,7 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
       'WITHDRAW_OTP',
       'Your OTP for withdrawal verification',
     );
+
     const data = await prisma.otp.create({
       data: {
         type: OtpType.WITHDRAW,

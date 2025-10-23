@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { FormLabel, useFormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/utils';
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   hasIssue?: boolean;
