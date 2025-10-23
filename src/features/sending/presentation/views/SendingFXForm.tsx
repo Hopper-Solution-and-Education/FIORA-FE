@@ -4,7 +4,7 @@ import { Loading } from '@/components/common/atoms';
 import { MetricCard } from '@/components/common/metric';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -415,6 +415,10 @@ function SendingFXForm() {
                         isStartCountdown={otpState !== 'Get'}
                       />
                     </div>
+                    <CardDescription className="sm:block hidden">
+                      By input OTP and click submit button, you confirm that this transaction is
+                      unsuspicious and will be fully responsible yourself!
+                    </CardDescription>
                   </div>
                 </>
               )}
