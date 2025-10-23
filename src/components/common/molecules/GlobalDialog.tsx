@@ -61,10 +61,17 @@ const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
 const VARIANT_BUTTON_BG_MAP: Record<DialogVariant, string> = {
   default:
     'w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200',
-  info: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  success: 'bg-green-100 text-green-800 hover:bg-green-200',
-  warning: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
-  danger: 'bg-red-100 text-red-800 hover:bg-red-200',
+
+  info: 'w-32 h-12 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors duration-200',
+
+  success:
+    'w-32 h-12 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white disabled:bg-green-400 disabled:cursor-not-allowed transition-colors duration-200',
+
+  warning:
+    'w-32 h-12 flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white disabled:bg-yellow-300 disabled:cursor-not-allowed transition-colors duration-200',
+
+  danger:
+    'w-32 h-12 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white disabled:bg-red-400 disabled:cursor-not-allowed transition-colors duration-200',
 };
 
 const VARIANT_BUTTON_MAP: Record<DialogVariant, 'default' | 'destructive' | 'secondary' | 'ghost'> =
