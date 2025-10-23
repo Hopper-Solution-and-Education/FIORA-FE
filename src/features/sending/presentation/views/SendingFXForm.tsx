@@ -82,6 +82,9 @@ function SendingFXForm() {
     availableLimit: 0,
     currency: currency,
   });
+
+  const [packages, setPackages] = useState<number[]>([]);
+
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
@@ -100,6 +103,7 @@ function SendingFXForm() {
         availableLimit: d.availableLimit?.amount || 0,
         currency: d.currency || currency,
       });
+      setPackages(d.packageFXs || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
     } finally {
@@ -359,6 +363,7 @@ function SendingFXForm() {
                             onChange={setAmountInput}
                             error={errors.amount}
                             max={getCurrentBalance()}
+                            initialPackages={packages}
                           />
                         )}
                       </div>

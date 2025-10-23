@@ -19,7 +19,7 @@ const WalletTransferButton = () => {
   }, []);
 
   return (
-    <CommonTooltip content="Transfer">
+    <CommonTooltip content="Sending">
       <Button
         variant="outline"
         size="icon"
