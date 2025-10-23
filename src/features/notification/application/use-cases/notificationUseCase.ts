@@ -69,7 +69,7 @@ const renderEmailTemplate = (templateContent: string, variables: Record<string, 
 };
 
 class NotificationUseCase {
-  constructor(private notificationRepository: INotificationRepository) {}
+  constructor(private notificationRepository: INotificationRepository) { }
 
   async getNotificationsPagination({
     page = 1,
@@ -262,7 +262,7 @@ class NotificationUseCase {
   }
 
   private async sendEmailsWithTemplate(
-    emailParts: Array<{ user_id: string; recipient: string; [key: string]: any }>,
+    emailParts: Array<{ user_id: string; recipient: string;[key: string]: any }>,
     emailTemplate: any,
     notificationId: string,
     subject?: string,
@@ -283,7 +283,7 @@ class NotificationUseCase {
   }
 
   private async processEmailPart(
-    emailPart: { user_id: string; recipient: string; [key: string]: any },
+    emailPart: { user_id: string; recipient: string;[key: string]: any },
     emailTemplate: any,
     notificationId: string,
     subject: string | undefined,
@@ -304,13 +304,6 @@ class NotificationUseCase {
     // Render template với variables từ emailPart
     const renderedContent = renderEmailTemplate(emailTemplate.content, emailPart);
 
-    await prisma.notification.update({
-      where: { id: notificationId },
-      data: {
-        content: renderedContent,
-      },
-    });
-
     // Tạo UserNotification record
     await prisma.userNotification.create({
       data: {
@@ -318,6 +311,7 @@ class NotificationUseCase {
         notificationId: notificationId,
         isRead: false,
         createdBy: null,
+        content: renderedContent,
       },
     });
   }
