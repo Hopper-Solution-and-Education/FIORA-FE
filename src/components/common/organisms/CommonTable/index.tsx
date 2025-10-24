@@ -119,7 +119,7 @@ export default function CommonTable<T>({
     <div className="flex items-center justify-between">
       {leftHeaderNode && <div className="text-sm text-muted-foreground">{leftHeaderNode}</div>}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto">
         {rightHeaderNode}
 
         {onColumnConfigChange && (
@@ -163,8 +163,11 @@ export default function CommonTable<T>({
       {renderHeader()}
 
       <div
-        ref={containerRef}
+        ref={(el) => {
+          containerRef.current = el;
+        }}
         className="common-table-wrapper rounded-md border max-h-[600px] min-w-[400px] overflow-auto relative"
+        style={{ minHeight: '400px' }}
       >
         <Table className="min-w-[400px] table-fixed w-full">
           <TableHeader className="sticky top-0 bg-background">
@@ -238,7 +241,11 @@ export default function CommonTable<T>({
                 {(hasMore || isLoadingMore) && (
                   <TableRow>
                     <TableCell colSpan={shownColumns.length}>
-                      <div ref={sentinelRef} />
+                      <div
+                        ref={sentinelRef}
+                        style={{ height: '20px', backgroundColor: 'transparent' }}
+                        data-testid="infinite-scroll-sentinel"
+                      />
                     </TableCell>
                   </TableRow>
                 )}

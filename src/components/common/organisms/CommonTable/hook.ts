@@ -11,7 +11,7 @@ export function useCommonInfiniteScroll({
   onLoadMore,
   hasMore = false,
   isLoadingMore = false,
-  rootMargin = '200px',
+  rootMargin = '600px',
 }: UseCommonInfiniteScrollParams) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -32,7 +32,7 @@ export function useCommonInfiniteScroll({
 
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, onLoadMore, rootMargin]);
+  }, [hasMore, isLoadingMore, onLoadMore, rootMargin, sentinelRef.current]);
 
   return { containerRef, sentinelRef } as const;
 }
