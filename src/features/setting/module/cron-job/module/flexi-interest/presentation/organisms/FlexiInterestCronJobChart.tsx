@@ -145,7 +145,7 @@ const FlexiInterestCronJobChart: FC<FlexiInterestCronJobChartProps> = (props) =>
     );
   }
 
-  if (!isLoading && chartData.length === 0) {
+  if (!isLoading && chartData && chartData?.length === 0) {
     return (
       <Card>
         <CardContent>
