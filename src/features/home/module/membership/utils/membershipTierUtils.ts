@@ -70,6 +70,7 @@ export const createCombinedTierIcons = (
   memberships: Membership[],
   onTierClick: (balanceTier: Tier, spentTier: Tier, membership?: Membership) => void,
   currentSpent: number,
+  currentUserTier: any,
   currentBalance: number,
 ): Record<string, any> => {
   const icons: Record<string, any> = {};
@@ -98,17 +99,34 @@ export const createCombinedTierIcons = (
 
       const selectedMembership = matchingMembership || fallbackMembership;
 
+      // A tier is considered passed if it's the current tier or any tier before it in both dimensions
+      const isCurrentTier = currentUserTier?.data?.currentTier?.id === selectedMembership?.id;
+
+      // For balance tiers, find all tiers with min <= currentBalance
+      const balanceTierIndex = balanceTiers.findIndex((t) => t.min === balanceTier.min);
+      const currentBalanceTierIndex = balanceTiers.findLastIndex((t) => t.min <= currentBalance);
+      const isBalancePassed = balanceTierIndex <= currentBalanceTierIndex;
+
+      // For spent tiers, find all tiers with min <= currentSpent
+      const spentTierIndex = spentTiers.findIndex((t) => t.min === spentTier.min);
+      const currentSpentTierIndex = spentTiers.findLastIndex((t) => t.min <= currentSpent);
+      const isSpentPassed = spentTierIndex <= currentSpentTierIndex;
+
+      const isPassed = isCurrentTier || (isBalancePassed && isSpentPassed);
+
       icons[key] = {
         icon: selectedMembership?.themeIconUrl || balanceTier.icon,
         inActiveIcon: selectedMembership?.inactiveIconUrl || balanceTier.icon,
         passedIcon: selectedMembership?.passedIconUrl || balanceTier.icon,
         mainIcon: selectedMembership?.mainIconUrl || balanceTier.icon,
         onClick: onTierClick,
-        isPassed: currentSpent >= spentTier.min && currentBalance >= balanceTier.min,
-        selectedMembership: selectedMembership || null,
-        balanceTier,
-        spentTier,
+        isPassed,
         item: selectedMembership || null,
+        tierName: selectedMembership?.tierName || '',
+        balanceMin: balanceTier.min,
+        balanceMax: balanceTier.max,
+        spentMin: spentTier.min,
+        spentMax: spentTier.max,
       };
     });
   });
