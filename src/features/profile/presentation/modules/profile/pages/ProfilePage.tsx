@@ -24,6 +24,7 @@ const ProfilePage = () => {
         phone: values.phone,
         address: values.address,
         birthday: values.birthday,
+        referrer_code: values.referrer_code,
       };
 
       // Add attachment IDs if provided
