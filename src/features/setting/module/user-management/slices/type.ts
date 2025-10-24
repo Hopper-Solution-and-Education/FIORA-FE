@@ -1,19 +1,38 @@
-export interface User {
+// export interface User {
+//   id: string;
+//   name: string | null;
+//   email: string;
+//   role: string;
+//   status: string;
+//   registrationDate: string;
+//   avatarUrl?: string | null;
+//   eKYC?: {
+//     id: string;
+//     status: string;
+//     method: string;
+//     type: string | null;
+//     fieldName: string;
+//     createdAt: string;
+//   }[];
+// }
+
+export interface EkycResponse {
   id: string;
-  name: string;
-  email: string;
-  role: string;
   status: string;
-  registrationDate: string;
-  avatarUrl?: string | null;
-  eKYC?: {
+  method: string;
+  type: string | null;
+  fieldName: string;
+  createdAt: string;
+  User: {
     id: string;
+    name: string | null;
+    email: string;
+    role: string;
     status: string;
-    method: string;
-    type: string;
-    fieldName: string;
+    isBlocked: boolean | null;
     createdAt: string;
-  }[];
+    avatarUrl?: string | null;
+  };
 }
 
 export interface FilterState {

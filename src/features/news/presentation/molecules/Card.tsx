@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { NewsResponse } from '../../api/types/newsDTO'; // Giả sử DTO của bạn ở đây

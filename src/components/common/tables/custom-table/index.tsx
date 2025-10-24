@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ImgEmpty } from '@/shared/icons';
+import { ImgEmpty } from '@/shared/assets/icons';
 import { cn } from '@/shared/utils';
 import {
   Cell,

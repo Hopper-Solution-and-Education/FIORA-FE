@@ -14,6 +14,10 @@ export const personalInfoSchema = Yup.object({
   address: Yup.string().max(255, 'Address too long').optional(),
   avatarUrl: Yup.string().optional(),
   logoUrl: Yup.string().optional(),
+  referrer_code: Yup.string()
+    .optional()
+    .trim()
+    .max(15, 'Referral code must be at most 15 characters'),
 });
 
 export const identificationDocumentSchema = Yup.object({
@@ -75,6 +79,7 @@ export type PersonalInfo = {
   address?: string;
   avatarUrl?: string;
   logoUrl?: string;
+  referrer_code?: string;
 };
 
 export type IdentificationDocument = {

@@ -1,16 +1,5 @@
 'use client';
-import Loading from '@/components/common/atoms/Loading';
-import dynamic from 'next/dynamic';
 
-const AboutUsPageRender = dynamic(
-  () => import('@/features/helps-center/presentation/pages/AboutUsPage'),
-  {
-    loading: () => <Loading />,
-  },
-);
-
-const AboutUsPage = () => {
-  return <AboutUsPageRender />;
-};
+import AboutUsPage from '@/features/helps-center/presentation/pages/AboutUsPage';
 
 export default AboutUsPage;

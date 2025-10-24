@@ -37,10 +37,18 @@ const WalletBarChart = () => {
   }
 
   const handlePaymentWalletClick = (item: TwoSideBarItem) => {
-    if (item.type === WalletType.Payment) {
-      router.push('/wallet/payment');
-    } else if (item.type === WalletType.Saving) {
-      router.push('/wallet/saving');
+    switch (item.type) {
+      case WalletType.Payment:
+        router.push('/wallet/payment');
+        break;
+      case WalletType.Saving:
+        router.push('/wallet/saving');
+        break;
+      case WalletType.Referral:
+        router.push('/wallet/referral');
+        break;
+      default:
+        break;
     }
   };
 

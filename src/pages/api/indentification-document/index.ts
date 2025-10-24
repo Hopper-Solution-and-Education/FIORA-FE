@@ -8,7 +8,10 @@ import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { SessionUser } from '@/shared/types/session';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
-import { identificationDocumentSchema } from '@/shared/validators/identificationValidator';
+import {
+  identificationDocumentSchema,
+  updateIdentificationDocumentSchema,
+} from '@/shared/validators/identificationValidator';
 import { KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -21,6 +24,8 @@ export default sessionWrapper(
         switch (request.method) {
           case 'POST':
             return POST(request, response, userId, user);
+          case 'PUT':
+            return PUT(request, response, userId);
           case 'GET':
             return GET(response, userId);
           default:
@@ -45,6 +50,94 @@ export async function GET(res: NextApiResponse, userId: string) {
   return res
     .status(RESPONSE_CODE.OK)
     .json(createResponse(RESPONSE_CODE.OK, Messages.GET_IDENTIFICATION_SUCCESS, identification));
+}
+
+export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const { error, value } = validateBody(updateIdentificationDocumentSchema, req.body);
+  const {
+    fileFrontId,
+    fileBackId,
+    idAddress,
+    issuedDate,
+    type,
+    idNumber,
+    filePhotoId,
+    issuedPlace,
+    fileLocationId,
+    ekycId,
+  } = value;
+
+  if (error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+  }
+
+  // Check if identification document exists and belongs to user
+  const existingDoc = await identificationRepository.getByType(userId, type);
+  if (!existingDoc) {
+    return res
+      .status(RESPONSE_CODE.NOT_FOUND)
+      .json(createErrorResponse(RESPONSE_CODE.NOT_FOUND, Messages.IDENTIFICATION_NOT_FOUND));
+  }
+
+  if (existingDoc.userId !== userId) {
+    return res
+      .status(RESPONSE_CODE.FORBIDDEN)
+      .json(
+        createErrorResponse(
+          RESPONSE_CODE.FORBIDDEN,
+          'You do not have permission to update this document',
+        ),
+      );
+  }
+
+  // Validate attachment IDs if provided
+  const attachmentIdsToValidate = [filePhotoId, fileBackId, fileFrontId, fileLocationId].filter(
+    Boolean,
+  ) as string[];
+  if (attachmentIdsToValidate.length > 0) {
+    const found = await prisma.attachment.findMany({
+      where: { id: { in: attachmentIdsToValidate } },
+    });
+    const foundIds = new Set(found.map((a) => a.id));
+    const missing = attachmentIdsToValidate.filter((attachmentId) => !foundIds.has(attachmentId));
+    if (missing.length > 0) {
+      return res
+        .status(RESPONSE_CODE.BAD_REQUEST)
+        .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, 'Invalid attachment id(s)'));
+    }
+  }
+
+  // Update identification document
+  const updatedIdentification = await identificationRepository.update(
+    existingDoc.id,
+    ekycId,
+    userId,
+    {
+      filePhoto: filePhotoId ? { connect: { id: filePhotoId } } : undefined,
+      fileBack: fileBackId ? { connect: { id: fileBackId } } : undefined,
+      fileFront: fileFrontId ? { connect: { id: fileFrontId } } : undefined,
+      fileLocation: fileLocationId ? { connect: { id: fileLocationId } } : undefined,
+      idNumber: idNumber,
+      type: type,
+      idAddress: idAddress || '',
+      issuedDate: issuedDate || null,
+      issuedPlace: issuedPlace || '',
+      status: KYCStatus.PENDING,
+      updatedAt: new Date(),
+    },
+  );
+
+  return res
+    .status(RESPONSE_CODE.OK)
+    .json(
+      createResponse(
+        RESPONSE_CODE.OK,
+        Messages.UPDATE_IDENTIFICATION_SUCCESS,
+        updatedIdentification,
+      ),
+    );
 }
 
 export async function POST(

@@ -1,15 +1,14 @@
 'use client';
 
-import { WalletTransferButton } from '@/features/payment-wallet/presentation';
+import { WalletAction } from '@/components/common/organisms';
 import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setFilterCriteria } from '../../slices';
-import { WalletDepositButton, WalletWithdrawButton } from '../atoms';
 import { WalletFilterMenu, WalletSearch } from '../molecules';
 
 interface WalletTopbarActionProps {
   enableDeposit?: boolean;
-  enableTranfer?: boolean;
+  enableTransfer?: boolean;
   enableWithdraw?: boolean;
   enableFilter?: boolean;
   searchType?: 'normal' | 'deposit';
@@ -17,7 +16,7 @@ interface WalletTopbarActionProps {
 
 const WalletTopbarAction = ({
   enableDeposit = true,
-  enableTranfer = true,
+  enableTransfer = true,
   enableWithdraw = true,
   enableFilter = true,
   searchType = 'normal',
@@ -45,11 +44,11 @@ const WalletTopbarAction = ({
           />
         )}
       </div>
-      <div className="flex justify-end gap-4">
-        {enableDeposit && <WalletDepositButton />}
-        {enableTranfer && <WalletTransferButton />}
-        {enableWithdraw && <WalletWithdrawButton />}
-      </div>
+      <WalletAction
+        enableDeposit={enableDeposit}
+        enableTransfer={enableTransfer}
+        enableWithdraw={enableWithdraw}
+      />
     </div>
   );
 };

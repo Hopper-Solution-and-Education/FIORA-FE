@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
-import { IDepositRequestRepository } from '../../repositories/depositRequestRepository.interface';
 import { DepositRequest, Prisma } from '@prisma/client';
+import { IDepositRequestRepository } from '../../repositories/depositRequestRepository.interface';
 
 export class DepositRequestRepository implements IDepositRequestRepository {
   async findDepositRequestById(id: string): Promise<DepositRequest | null> {
@@ -9,6 +9,10 @@ export class DepositRequestRepository implements IDepositRequestRepository {
 
   async findDepositRequest(where: Prisma.DepositRequestWhereInput): Promise<DepositRequest | null> {
     return prisma.depositRequest.findFirst({ where });
+  }
+
+  async aggregate(aggregate: Prisma.DepositRequestAggregateArgs): Promise<any> {
+    return prisma.depositRequest.aggregate(aggregate);
   }
 }
 

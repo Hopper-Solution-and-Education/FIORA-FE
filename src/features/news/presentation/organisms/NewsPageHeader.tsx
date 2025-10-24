@@ -49,8 +49,6 @@ const NewsPageHeader = ({
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-center">Trending News</h2>
-
       {/* Header with Filter and Import */}
       <div className="flex justify-between items-center">
         <div className="flex gap-4">

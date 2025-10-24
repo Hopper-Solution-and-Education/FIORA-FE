@@ -1,7 +1,9 @@
+import { depositRequestRepository } from '@/features/setting/api/infrastructure/repositories/depositRequestRepository';
 import { membershipBenefitRepository } from '@/features/setting/api/infrastructure/repositories/memBenefitRepository';
 import { tierBenefitRepository } from '@/features/setting/api/infrastructure/repositories/tierBenefitRepository';
 import { membershipProgressRepository } from '@/features/setting/api/infrastructure/repositories/TierMembershipRepository';
 import { walletRepository } from '@/features/setting/api/infrastructure/repositories/walletRepository';
+import { IDepositRequestRepository } from '@/features/setting/api/repositories/depositRequestRepository.interface';
 import { IMembershipBenefitRepository } from '@/features/setting/api/repositories/memBenefitRepository.interface';
 import { IMembershipProgressRepository } from '@/features/setting/api/repositories/membershipProgress.interface';
 import { ITierBenefitRepository } from '@/features/setting/api/repositories/tierBenefitRepository.interface';
@@ -11,7 +13,7 @@ import { ITransactionRepository } from '@/features/transaction/domain/repositori
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
 import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
-import { Prisma, WalletType } from '@prisma/client';
+import { DepositRequestStatus, FxRequestType, Prisma, WalletType } from '@prisma/client';
 import { FetchPaymentWalletParams } from '../../infrastructure/types/paymentWallet.types';
 
 const transactionUseCaseImported = transactionUseCase;
@@ -23,6 +25,7 @@ class PaymentWalletUseCase {
     private walletRepository: IWalletRepository,
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
+    private depositRequestRepository: IDepositRequestRepository,
   ) {}
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
@@ -213,10 +216,24 @@ class PaymentWalletUseCase {
     const annualFlexInterest = Number(flexInterestTierBenefitAwaited.value) || 0;
 
     // TODO: get total withdrawal amount
-    const totalWithdrawalAmount = 0;
+    const totalWithdrawalAmountRequest = await this.depositRequestRepository.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: {
+        userId: userId,
+        type: FxRequestType.WITHDRAW,
+        status: DepositRequestStatus.Requested,
+      },
+    });
 
-    const totalAvailableBalance = Number(foundUserWallet.frBalanceActive) - totalWithdrawalAmount;
-    const totalFrozen = Number(foundUserWallet.frBalanceFrozen) + totalWithdrawalAmount;
+    const numberTotalWithdrawalAmountRequest =
+      Number(totalWithdrawalAmountRequest['_sum']['amount'] ?? 0) || 0;
+
+    const totalAvailableBalance =
+      Number(foundUserWallet.frBalanceActive) - numberTotalWithdrawalAmountRequest;
+    const totalFrozen =
+      Number(foundUserWallet.frBalanceFrozen) + numberTotalWithdrawalAmountRequest;
 
     const totalBalance = totalAvailableBalance + totalFrozen;
     const accumulatedEarn = Number(foundUserWallet.accumulatedEarn) || 0;
@@ -287,4 +304,5 @@ export const paymentWalletUseCase = new PaymentWalletUseCase(
   walletRepository,
   membershipBenefitRepository,
   tierBenefitRepository,
+  depositRequestRepository,
 );

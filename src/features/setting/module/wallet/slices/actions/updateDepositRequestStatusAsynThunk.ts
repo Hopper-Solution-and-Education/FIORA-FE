@@ -20,7 +20,7 @@ export const updateDepositRequestStatusAsyncThunk = createAsyncThunk<
       const result = await usecase.execute(id, status, remark, attachmentData);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error?.message || 'Update deposit request status failed');
+      return rejectWithValue(error);
     }
   },
 );

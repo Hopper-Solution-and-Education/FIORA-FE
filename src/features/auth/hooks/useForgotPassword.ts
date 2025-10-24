@@ -1,8 +1,8 @@
 // useForgotPassword.ts
 'use client';
 
-import { sendOtp } from '@/config/send-grid/sendGrid';
-import { generateOtp } from '@/shared/utils';
+import { httpClient } from '@/config/http-client/HttpClient';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -87,15 +87,30 @@ export const useForgotPassword = () => {
     // Execute the function only if the email is valid
     setIsLoading(true);
     try {
-      const generatedOtp = generateOtp();
-      await sendOtp(email, generatedOtp);
-      setOtp(generatedOtp);
+      const data = await httpClient.post<{ message: string; otp: string; notificationId: string }>(
+        ApiEndpointEnum.SendOtpForgotPassword,
+        { email },
+      );
+
+      setOtp(data.otp); // Store OTP from backend response
       setIsOtpSent(true);
       setCountdown(60);
       toast.success('OTP sent to your email');
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.message ?? 'Failed to send OTP');
+      let errorMessage = 'Failed to send OTP';
+
+      // Try to parse error message from JSON response
+      if (error?.message) {
+        try {
+          const errorData = JSON.parse(error.message);
+          errorMessage = errorData.error || errorData.message || error.message;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -121,26 +136,27 @@ export const useForgotPassword = () => {
   }) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: emailOtpForm.getValues('email'),
-          newPassword: data.newPassword,
-        }),
+      await httpClient.post<{ message: string; user: any }>(ApiEndpointEnum.ResetPassword, {
+        email: emailOtpForm.getValues('email'),
+        newPassword: data.newPassword,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to reset password');
-      }
 
       localStorage.setItem('resetPasswordSuccess', 'true');
       router.push('/auth/sign-in?reset=success');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reset password');
+      let errorMessage = 'Failed to reset password';
+
+      // Try to parse error message from JSON response
+      if (error?.message) {
+        try {
+          const errorData = JSON.parse(error.message);
+          errorMessage = errorData.error || errorData.message || error.message;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

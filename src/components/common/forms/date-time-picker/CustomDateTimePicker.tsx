@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight, ClockIcon } from 'lucide-react';
 import { forwardRef, useEffect, useState } from 'react';

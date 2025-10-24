@@ -1,6 +1,7 @@
 import { FormConfig } from '@/components/common/forms';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
+import { RefObject } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 import { setIsShowDialogEditBenefitTier } from '../../slices';
@@ -8,21 +9,23 @@ import { addUpdateNewBenefitAsyncThunk, getListMembershipAsyncThunk } from '../.
 import useEditTierBenefitFieldConfig from '../config/EditTierBenefitFieldConfig';
 import { EditTierBenefitFormValues } from '../schema';
 
-const EditTierBenefitForm = () => {
+interface EditTierBenefitFormProps {
+  formRef: RefObject<HTMLFormElement>;
+}
+
+const EditTierBenefitForm = ({ formRef }: EditTierBenefitFormProps) => {
   const methods = useFormContext<EditTierBenefitFormValues>();
   const fields = useEditTierBenefitFieldConfig();
   const dispatch = useAppDispatch();
   const { data: session } = useSession();
 
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
-
   const benefitTierToEdit = useAppSelector(
     (state) => state.memberShipSettings.editBenefitTier.benefitTierToEdit,
   );
   const idTierToEdit = useAppSelector(
     (state) => state.memberShipSettings.editBenefitTier.idTierToEdit,
   );
-
   const isLoadingAddUpdateBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.isLoadingAddUpdateBenefitTier,
   );
@@ -63,7 +66,7 @@ const EditTierBenefitForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form ref={formRef} onSubmit={handleSubmit(onSubmit)}>
       <FormConfig
         fields={fields}
         methods={methods}
@@ -72,6 +75,7 @@ const EditTierBenefitForm = () => {
         gridGap="gap-4"
         isLoading={isLoadingAddUpdateBenefitTier}
         isShowSubmitButtonInstruction={true}
+        showSubmitButton={false}
       />
     </form>
   );

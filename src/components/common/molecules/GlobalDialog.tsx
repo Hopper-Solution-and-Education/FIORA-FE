@@ -1,5 +1,6 @@
 'use client';
 
+import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,35 +11,43 @@ import {
 } from '@/components/ui/dialog';
 import DialogIconInfo from '@public/icons/dialog-icon-info.svg';
 import clsx from 'clsx';
-import { AlertTriangle, Check, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { ReactNode } from 'react';
+import { CommonTooltip } from '../atoms/CommonTooltip';
 
 type DialogVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
 
 type GlobalDialogProps = {
+  // DIALOG PROPS
   open: boolean;
+  type?: 'default' | 'info' | 'success' | 'warning' | 'danger';
   onOpenChange: (open: boolean) => void;
+  variant?: DialogVariant;
+  className?: string;
+  children?: ReactNode;
+  disabled?: boolean;
+  isLoading?: boolean;
+
+  // CONTENT PROPS
   title?: string;
   heading?: string;
   description?: string | ReactNode;
+  renderContent?: () => ReactNode;
+
+  // FOOTER PROPS
+  showFooter?: boolean;
+  footer?: ReactNode;
   confirmText?: string;
-  cancelText?: string;
-  iconCancel?: ReactNode;
   iconConfirm?: ReactNode;
   onConfirm?: () => void;
+  hideConfirm?: boolean;
+  cancelText?: string;
+  iconCancel?: ReactNode;
   onCancel?: () => void;
   hideCancel?: boolean;
-  hideConfirm?: boolean;
-  children?: ReactNode;
-  footer?: ReactNode;
-  className?: string;
-  variant?: DialogVariant;
-  customLeftButton?: ReactNode;
   customRightButton?: ReactNode;
-  isLoading?: boolean;
-  renderContent?: () => ReactNode;
-  type?: 'default' | 'info' | 'success' | 'warning' | 'danger';
+  customLeftButton?: ReactNode;
 };
 
 const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
@@ -50,11 +59,19 @@ const VARIANT_BORDER_MAP: Record<DialogVariant, string> = {
 };
 
 const VARIANT_BUTTON_BG_MAP: Record<DialogVariant, string> = {
-  default: '',
-  info: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  success: 'bg-green-100 text-green-800 hover:bg-green-200',
-  warning: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
-  danger: 'bg-red-100 text-red-800 hover:bg-red-200',
+  default:
+    'w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200',
+
+  info: 'w-32 h-12 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors duration-200',
+
+  success:
+    'w-32 h-12 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white disabled:bg-green-400 disabled:cursor-not-allowed transition-colors duration-200',
+
+  warning:
+    'w-32 h-12 flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white disabled:bg-yellow-300 disabled:cursor-not-allowed transition-colors duration-200',
+
+  danger:
+    'w-32 h-12 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white disabled:bg-red-400 disabled:cursor-not-allowed transition-colors duration-200',
 };
 
 const VARIANT_BUTTON_MAP: Record<DialogVariant, 'default' | 'destructive' | 'secondary' | 'ghost'> =
@@ -67,28 +84,35 @@ const VARIANT_BUTTON_MAP: Record<DialogVariant, 'default' | 'destructive' | 'sec
   };
 
 export const GlobalDialog = ({
+  // DIALOG PROPS
   open,
+  type = 'default',
   onOpenChange,
+  variant = 'default',
+  className = '',
+  children,
+  disabled = false,
+  isLoading = false,
+
+  // CONTENT PROPS
   title,
   heading,
   description,
+  renderContent,
+
+  // FOOTER PROPS
+  showFooter = true,
+  footer,
   confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  iconCancel = <X />,
-  iconConfirm = <Check />,
+  iconConfirm = <Icons.check className="h-5 w-5" />,
   onConfirm,
+  hideConfirm = false,
+  cancelText = 'Cancel and go back',
+  iconCancel = <Icons.circleArrowLeft className="h-5 w-5" />,
   onCancel,
   hideCancel = false,
-  hideConfirm = false,
-  children,
-  footer,
-  className = '',
-  variant = 'default',
   customLeftButton,
   customRightButton,
-  isLoading,
-  renderContent,
-  type = 'default',
 }: GlobalDialogProps) => {
   const Icon = () => {
     switch (type) {
@@ -109,15 +133,65 @@ export const GlobalDialog = ({
     }
   };
 
+  const _renderFooter = () => {
+    if (footer) return footer;
+    return (
+      <div className="w-full mt-auto shrink-0">
+        <div className="flex justify-between">
+          {/* Left Button */}
+          {customLeftButton ? (
+            customLeftButton
+          ) : !hideCancel ? (
+            <CommonTooltip content={cancelText}>
+              <Button
+                disabled={disabled || isLoading}
+                variant="outline"
+                type="button"
+                onClick={() => (onCancel ? onCancel() : onOpenChange(false))}
+                className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
+                data-test="form-cancel-button"
+              >
+                {iconCancel}
+              </Button>
+            </CommonTooltip>
+          ) : (
+            <div />
+          )}
+
+          {/* Right Button */}
+          {customRightButton ? (
+            customRightButton
+          ) : !hideConfirm ? (
+            <CommonTooltip content={confirmText}>
+              <Button
+                disabled={disabled || isLoading}
+                type="button"
+                onClick={() => (onConfirm ? onConfirm() : onOpenChange(false))}
+                variant={VARIANT_BUTTON_MAP[variant]}
+                className={clsx(VARIANT_BUTTON_BG_MAP[variant])}
+              >
+                {isLoading ? <Icons.spinner className="animate-spin h-5 w-5" /> : iconConfirm}
+              </Button>
+            </CommonTooltip>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Dialog
       open={open}
       onOpenChange={isLoading ? (isLoading ? undefined : onOpenChange) : onOpenChange}
     >
       <DialogContent
-        className={clsx('sm:max-w-lg flex flex-col', VARIANT_BORDER_MAP[variant], className)}
+        className={clsx(
+          'sm:max-w-lg flex flex-col max-h-[90vh]',
+          VARIANT_BORDER_MAP[variant],
+          className,
+        )}
       >
-        <DialogHeader className="flex items-center">
+        <DialogHeader className="flex items-center shrink-0">
           <div className="text-center">
             <div className="flex items-center justify-center">
               <div className="w-16">
@@ -132,50 +206,11 @@ export const GlobalDialog = ({
           </div>
         </DialogHeader>
 
-        {renderContent ? renderContent() : <div className="mt-4">{children}</div>}
+        <div className="flex-1 overflow-y-auto mt-4 px-4">
+          {renderContent ? renderContent() : <div>{children}</div>}
+        </div>
 
-        {footer ? (
-          footer
-        ) : (
-          <div className="w-full flex justify-between mt-auto pt-4">
-            {/* Left Button */}
-            {customLeftButton ? (
-              customLeftButton
-            ) : !hideCancel ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  onCancel?.();
-                  onOpenChange(false);
-                }}
-              >
-                {iconCancel}
-                <span className="ml-2">{cancelText}</span>
-              </Button>
-            ) : (
-              <div />
-            )}
-
-            {/* Right Button */}
-            {customRightButton ? (
-              customRightButton
-            ) : !hideConfirm ? (
-              <Button
-                type="button"
-                onClick={() => {
-                  onConfirm?.();
-                  onOpenChange(false);
-                }}
-                variant={VARIANT_BUTTON_MAP[variant]}
-                className={clsx(VARIANT_BUTTON_BG_MAP[variant])}
-              >
-                {iconConfirm}
-                <span className="ml-2">{confirmText}</span>
-              </Button>
-            ) : null}
-          </div>
-        )}
+        {showFooter && _renderFooter()}
       </DialogContent>
     </Dialog>
   );

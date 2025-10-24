@@ -47,7 +47,7 @@ import { DayPicker, Matcher, TZDate } from 'react-day-picker';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/shared/utils';
 
 export type CalendarProps = Omit<React.ComponentProps<typeof DayPicker>, 'mode'>;
 

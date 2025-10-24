@@ -37,17 +37,57 @@ export const profileApi = createApi({
       UserProfile,
       FormData | Partial<Pick<UserProfile, 'name' | 'phone' | 'address' | 'birthday'>>
     >({
-      query: (body) =>
-        body instanceof FormData
-          ? { url: ApiEndpointEnum.Profile, method: 'PUT', body }
-          : {
-              url: ApiEndpointEnum.Profile,
-              method: 'PUT',
-              body,
-              headers: { 'Content-Type': 'application/json' },
-            },
+      query: (body) => ({ url: ApiEndpointEnum.Profile, method: 'PUT', body }),
       transformResponse: (response: Response<UserProfile>) => response.data,
       invalidatesTags: ['Profile'],
+    }),
+
+    // Profile Settings Actions
+    sendProfileOTP: builder.mutation<any, { type: 'email' | 'phone' | 'delete' }>({
+      query: (body) => ({
+        url: ApiEndpointEnum.ProfileSendOTP,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+    }),
+
+    changeEmail: builder.mutation<any, { newEmail: string; otp: string }>({
+      query: (body) => ({
+        url: ApiEndpointEnum.ProfileChangeEmail,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['Profile'],
+    }),
+
+    changePassword: builder.mutation<any, { currentPassword: string; newPassword: string }>({
+      query: (body) => ({
+        url: ApiEndpointEnum.ProfileChangePassword,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+    }),
+
+    deleteAccount: builder.mutation<any, { otp: string }>({
+      query: (body) => ({
+        url: ApiEndpointEnum.ProfileDelete,
+        method: 'DELETE',
+        body,
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['Profile'],
+    }),
+
+    verifyReferralCode: builder.mutation<{ referrerName: string }, { referralCode: string }>({
+      query: (body) => ({
+        url: ApiEndpointEnum.ProfileVerifyReferralCode,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: Response<{ referrerName: string }>) => response.data,
     }),
 
     // eKYC api
@@ -58,11 +98,12 @@ export const profileApi = createApi({
     }),
     // eKYC contact verify
     sendOTP: builder.mutation<any, void>({
-      query: () => ({ url: ApiEndpointEnum.sendOTP, method: 'POST' }),
+      query: () => ({ url: ApiEndpointEnum.eKYCSendOTP, method: 'POST' }),
     }),
     verifyOTP: builder.mutation<any, { otp: string }>({
-      query: (body) => ({ url: ApiEndpointEnum.verifyOTP, method: 'POST', body }),
+      query: (body) => ({ url: ApiEndpointEnum.eKYCContactVerifyOTP, method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['eKYC', 'Profile'],
     }),
 
     // Identification Document API
@@ -77,7 +118,19 @@ export const profileApi = createApi({
         url: ApiEndpointEnum.IdentificationDocument,
         method: 'POST',
         body,
-        headers: { 'Content-Type': 'application/json' },
+      }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['IdentificationDocument', 'eKYC'],
+    }),
+
+    updateIdentificationDocument: builder.mutation<
+      any,
+      IdentificationDocumentPayload & { id: string }
+    >({
+      query: (body) => ({
+        url: ApiEndpointEnum.IdentificationDocument,
+        method: 'PUT',
+        body,
       }),
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: ['IdentificationDocument', 'eKYC'],
@@ -88,11 +141,7 @@ export const profileApi = createApi({
       any,
       { url: string; path: string; type: string; size?: number }
     >({
-      query: (body) => ({
-        url: '/api/attachment',
-        method: 'POST',
-        body,
-      }),
+      query: (body) => ({ url: '/api/attachment', method: 'POST', body }),
       transformResponse: (response: Response<any>) => response.data,
     }),
 
@@ -104,11 +153,16 @@ export const profileApi = createApi({
     }),
 
     submitBankAccount: builder.mutation<any, BankAccountFormData>({
+      query: (body) => ({ url: ApiEndpointEnum.BankAccount, method: 'POST', body }),
+      transformResponse: (response: Response<any>) => response.data,
+      invalidatesTags: ['BankAccount', 'eKYC'],
+    }),
+
+    updateBankAccount: builder.mutation<any, BankAccountFormData & { id: string }>({
       query: (body) => ({
         url: ApiEndpointEnum.BankAccount,
-        method: 'POST',
+        method: 'PUT',
         body,
-        headers: { 'Content-Type': 'application/json' },
       }),
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: ['BankAccount', 'eKYC'],
@@ -116,7 +170,7 @@ export const profileApi = createApi({
 
     // Admin/CS: Get eKYC by userId
     getEKYCByUserId: builder.query<eKYC[], string>({
-      query: (userId) => ({ url: `/api/eKyc/user/${userId}`, method: 'GET' }),
+      query: (userId) => ({ url: `${ApiEndpointEnum.eKYCByUserId}/${userId}`, method: 'GET' }),
       transformResponse: (response: Response<eKYC[]>) => response.data,
       providesTags: ['eKYCByUserId'],
     }),
@@ -124,7 +178,7 @@ export const profileApi = createApi({
     // Admin/CS: Get Identification Document by userId
     getIdentificationDocumentByUserId: builder.query<any, string>({
       query: (userId) => ({
-        url: `/api/indentification-document/user/${userId}`,
+        url: `${ApiEndpointEnum.IdentificationDocumentByUserId}/${userId}`,
         method: 'GET',
       }),
       transformResponse: (response: Response<any>) => response.data,
@@ -133,14 +187,20 @@ export const profileApi = createApi({
 
     // Admin/CS: Get Bank Account by userId
     getBankAccountByUserId: builder.query<any, string>({
-      query: (userId) => ({ url: `/api/bank-account/user/${userId}`, method: 'GET' }),
+      query: (userId) => ({
+        url: `${ApiEndpointEnum.BankAccountByUserId}/${userId}`,
+        method: 'GET',
+      }),
       transformResponse: (response: Response<any>) => response.data,
       providesTags: ['BankAccountByUserId'],
     }),
 
     // Admin/CS: Get Profile by userId
     getProfileByUserId: builder.query<UserProfile, string>({
-      query: (userId) => ({ url: `/api/profile/user/${userId}`, method: 'GET' }),
+      query: (userId) => ({
+        url: `${ApiEndpointEnum.ProfileByUserId}/${userId}`,
+        method: 'GET',
+      }),
       transformResponse: (response: Response<UserProfile>) => response.data,
       providesTags: ['ProfileByUserId'],
     }),
@@ -150,19 +210,11 @@ export const profileApi = createApi({
       UserProfile,
       { userId: string; payload: UpdateProfileRequest }
     >({
-      query: ({ userId, payload }) =>
-        payload instanceof FormData
-          ? {
-              url: `/api/profile/user/${userId}`,
-              method: 'PUT',
-              body: payload,
-            }
-          : {
-              url: `/api/profile/user/${userId}`,
-              method: 'PUT',
-              body: payload,
-              headers: { 'Content-Type': 'application/json' },
-            },
+      query: ({ userId, payload }) => ({
+        url: `${ApiEndpointEnum.ProfileByUserId}/${userId}`,
+        method: 'PUT',
+        body: payload,
+      }),
       transformResponse: (response: Response<UserProfile>) => response.data,
       invalidatesTags: ['ProfileByUserId'],
     }),
@@ -170,28 +222,29 @@ export const profileApi = createApi({
     // Admin/CS: Verify eKYC (approve/reject)
     verifyEKYC: builder.mutation<any, { kycId: string; status: string; remarks?: string }>({
       query: ({ kycId, ...body }) => ({
-        url: `/api/eKyc/verify/${kycId}`,
+        url: `${ApiEndpointEnum.eKYCVerify}/${kycId}`,
         method: 'PATCH',
         body,
       }),
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: [
-        'eKYCByUserId',
         'eKYC',
+        'eKYCByUserId',
+        'ProfileByUserId',
         'IdentificationDocumentByUserId',
         'BankAccountByUserId',
-        'ProfileByUserId',
       ],
     }),
 
     // Delete eKYC for re-submit
     deleteEKYC: builder.mutation<any, string>({
-      query: (kycId) => ({ url: `/api/eKyc/${kycId}`, method: 'DELETE' }),
+      query: (kycId) => ({ url: `${ApiEndpointEnum.eKYC}/${kycId}`, method: 'DELETE' }),
       transformResponse: (response: Response<any>) => response.data,
       invalidatesTags: [
         'eKYC',
         'IdentificationDocument',
         'BankAccount',
+        'ProfileByUserId',
         'eKYCByUserId',
         'IdentificationDocumentByUserId',
         'BankAccountByUserId',
@@ -236,14 +289,21 @@ export const profileApi = createApi({
 export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
+  useSendProfileOTPMutation,
+  useChangeEmailMutation,
+  useChangePasswordMutation,
+  useDeleteAccountMutation,
+  useVerifyReferralCodeMutation,
   useGetEKYCQuery,
   useVerifyOTPMutation,
   useSendOTPMutation,
   useGetIdentificationDocumentQuery,
   useSubmitIdentificationDocumentMutation,
+  useUpdateIdentificationDocumentMutation,
   useUploadAttachmentMutation,
   useGetBankAccountQuery,
   useSubmitBankAccountMutation,
+  useUpdateBankAccountMutation,
   useGetEKYCByUserIdQuery,
   useVerifyEKYCMutation,
   useGetIdentificationDocumentByUserIdQuery,

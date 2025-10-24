@@ -57,6 +57,56 @@ export const sendOtpVerify = async (to: string, otp: string) => {
   }
 };
 
+export const sendOtpChangeEmail = async (to: string, otp: string) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+      subject: 'Verify Email Change - Hopper',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Email Change Verification</h2>
+          <p>You have requested to change your email address.</p>
+          <p>Your OTP is: <strong style="font-size: 24px; color: #007bff;">${otp}</strong></p>
+          <p>This OTP will expire in 2 minutes.</p>
+          <p>If you did not request this change, please ignore this email.</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(msg);
+    return otp;
+  } catch (error) {
+    console.error(error);
+    throw new InternalServerError('Failed to send email');
+  }
+};
+
+export const sendOtpDeleteAccount = async (to: string, otp: string) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+      subject: 'Account Deletion Verification - Hopper',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2 style="color: #dc3545;">Account Deletion Verification</h2>
+          <p><strong>Warning:</strong> You have requested to delete your account. This action is permanent and cannot be undone.</p>
+          <p>Your OTP is: <strong style="font-size: 24px; color: #dc3545;">${otp}</strong></p>
+          <p>This OTP will expire in 2 minutes.</p>
+          <p>If you did not request this, please secure your account immediately.</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(msg);
+    return otp;
+  } catch (error) {
+    console.error(error);
+    throw new InternalServerError('Failed to send email');
+  }
+};
+
 export const sendBulkEmailUtility = async (
   recipients: string[],
   subject: string,

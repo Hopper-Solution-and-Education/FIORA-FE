@@ -154,6 +154,7 @@ const WalletDepositPage = () => {
         <div className="flex flex-col gap-6 w-full">
           <WalletTopbarAction
             enableDeposit={false}
+            enableTransfer={false}
             enableWithdraw={false}
             enableFilter={false}
             searchType="deposit"

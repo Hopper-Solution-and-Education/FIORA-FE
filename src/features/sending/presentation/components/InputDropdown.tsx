@@ -61,12 +61,7 @@ export default function InputDropdown({
 
   // compute options depending on value
   const numericValue = Number(value || 0);
-  const options: number[] =
-    numericValue > 0
-      ? [numericValue * 10, numericValue * 100, numericValue * 1000].map((v) =>
-          v > 10_000_000_000 ? 10_000_000_000 : v,
-        )
-      : initialPackages;
+  const options: number[] = initialPackages;
 
   // sync localValue when value prop changes (only when not focused)
   useEffect(() => {

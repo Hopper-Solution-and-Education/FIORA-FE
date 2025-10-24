@@ -1,18 +1,22 @@
 'use client';
 
+import { GlobalDialog } from '@/components/common/molecules/GlobalDialog';
 import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { STATUS_COLOR } from '@/features/profile/constant';
 import { eKYC, EKYCStatus, EKYCType } from '@/features/profile/domain/entities/models/profile';
 import { useGetEKYCByUserIdQuery } from '@/features/profile/store/api/profileApi';
 import { cn } from '@/shared/utils';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { KYCPageType } from '../types';
 import BankAccountVerifyForm from './BankAccountVerifyForm';
 import ContactInformationVerifyForm from './ContactInformationVerifyForm';
+import { useVerifyKYC } from './hooks/useVerifyKYC';
 import IdentificationDocumentVerifyForm from './IdentificationDocumentVerifyForm';
 import TaxInformationVerifyForm from './TaxInformationVerifyForm';
 
@@ -23,6 +27,7 @@ const VerifyKYCPage = () => {
   const userId = params?.userid as string;
   const id = searchParams?.get('id') ?? KYCPageType.identificationDocument;
   const { data: eKYCDataResponse, isLoading: isLoadingEKYCData } = useGetEKYCByUserIdQuery(userId);
+  const [remarks, setRemarks] = useState('');
 
   const eKYCData = useMemo(() => {
     const getData = (type: EKYCType): eKYC | null => {
@@ -35,6 +40,35 @@ const VerifyKYCPage = () => {
       bankAccount: getData(EKYCType.BANK_ACCOUNT),
     };
   }, [eKYCDataResponse]);
+
+  // Get current active eKYC data
+  const currentEKYCData = useMemo(() => {
+    switch (id) {
+      case KYCPageType.identificationDocument:
+        return eKYCData.identificationDocument;
+      case KYCPageType.contactInformation:
+        return eKYCData.contactInformation;
+      case KYCPageType.taxInformation:
+        return eKYCData.taxInformation;
+      case KYCPageType.bankAccount:
+        return eKYCData.bankAccount;
+      default:
+        return null;
+    }
+  }, [id, eKYCData]);
+
+  // Use verify hook
+  const {
+    modalOpen,
+    setModalOpen,
+    modalType,
+    isVerifying,
+    handleOpenApprove,
+    handleOpenReject,
+    handleVerify,
+  } = useVerifyKYC({
+    kycId: currentEKYCData?.id,
+  });
 
   const getStatusCircle = useCallback((status: EKYCStatus | undefined) => {
     if (!status) {
@@ -172,7 +206,13 @@ const VerifyKYCPage = () => {
                     value={tab.id}
                     className="m-0 focus-visible:outline-none"
                   >
-                    <Component eKYCData={tab.eKYCData as eKYC} userId={userId} />
+                    <Component
+                      eKYCData={tab.eKYCData as eKYC}
+                      userId={userId}
+                      onApprove={handleOpenApprove}
+                      onReject={handleOpenReject}
+                      isVerifying={isVerifying}
+                    />
                   </TabsContent>
                 );
               })}
@@ -180,6 +220,51 @@ const VerifyKYCPage = () => {
           </div>
         </Tabs>
       </div>
+
+      {/* Global Dialog for Approve/Reject */}
+      <GlobalDialog
+        open={modalOpen}
+        onOpenChange={(open) => {
+          if (!isVerifying) {
+            setModalOpen(open);
+            if (!open) {
+              setRemarks('');
+            }
+          }
+        }}
+        title={modalType === 'approve' ? 'Approve KYC Request' : 'Reject KYC Request'}
+        description={
+          modalType === 'approve'
+            ? 'This action will mark the KYC status as "Approved", and the user will be considered verified. Please ensure all submitted information and documents have been carefully reviewed.'
+            : 'This action will mark the KYC status as "Rejected". The user will be notified and may be required to re-submit their documents.'
+        }
+        variant={modalType === 'approve' ? 'info' : 'danger'}
+        type={modalType === 'approve' ? 'info' : 'danger'}
+        confirmText={modalType === 'approve' ? 'Approve' : 'Reject'}
+        cancelText="Cancel"
+        onConfirm={() => handleVerify(modalType === 'reject' ? remarks : undefined)}
+        isLoading={isVerifying}
+        renderContent={
+          modalType === 'reject'
+            ? () => (
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="remarks" className="text-sm font-medium text-gray-700">
+                    Remarks (Optional)
+                  </Label>
+                  <Textarea
+                    id="remarks"
+                    placeholder="Enter the reason for rejection"
+                    value={remarks}
+                    onChange={(e) => setRemarks(e.target.value)}
+                    rows={4}
+                    disabled={isVerifying}
+                    className="resize-none text-sm"
+                  />
+                </div>
+              )
+            : undefined
+        }
+      />
     </div>
   );
 };

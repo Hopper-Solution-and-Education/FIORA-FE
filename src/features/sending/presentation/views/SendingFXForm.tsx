@@ -4,7 +4,7 @@ import { Loading } from '@/components/common/atoms';
 import { MetricCard } from '@/components/common/metric';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -84,6 +84,9 @@ function SendingFXForm() {
     availableLimit: 0,
     currency: currency,
   });
+
+  const [packages, setPackages] = useState<number[]>([]);
+
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
@@ -102,6 +105,7 @@ function SendingFXForm() {
         availableLimit: d.availableLimit?.amount || 0,
         currency: d.currency || currency,
       });
+      setPackages(d.packageFXs || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
     } finally {
@@ -407,6 +411,7 @@ function SendingFXForm() {
                             onChange={debouncedSetAmountInput}
                             error={errors.amount}
                             max={getCurrentBalance()}
+                            initialPackages={packages}
                           />
                         )}
                       </div>
@@ -458,6 +463,10 @@ function SendingFXForm() {
                         isStartCountdown={otpState !== 'Get'}
                       />
                     </div>
+                    <CardDescription className="sm:block hidden">
+                      By input OTP and click submit button, you confirm that this transaction is
+                      unsuspicious and will be fully responsible yourself!
+                    </CardDescription>
                   </div>
                 </>
               )}

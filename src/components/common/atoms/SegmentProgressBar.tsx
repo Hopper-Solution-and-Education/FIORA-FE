@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils';
 
 type SegmentProps = {
   leftLabel: string;
