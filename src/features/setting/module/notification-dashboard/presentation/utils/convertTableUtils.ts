@@ -30,6 +30,7 @@ export function convertToTableData(item: any): NotificationDashboardTableData {
     notifyType: item.notifyType,
     channel: item.channel,
     status: item.status,
+    userNotifications: item.userNotifications,
     key: item.id,
   };
 }
