@@ -12,7 +12,6 @@ function FlexiInterestCronjobDashboardPage() {
   return (
     <section>
       <div>
-        {/* <FlexiInterestCronJobChartSample /> */}
         <FlexiInterestCronJobChart />
       </div>
       <div className="my-6"></div>
