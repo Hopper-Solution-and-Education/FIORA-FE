@@ -12,13 +12,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
 import { ICON_SIZE } from '@/shared/constants/size';
+import useMarkNotificationAsRead from '@/shared/hooks/useMarkNotificationAsRead';
 import { cn } from '@/shared/utils';
 import { format } from 'date-fns';
 import { Bell } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link'; // For View All link
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -32,32 +32,6 @@ interface Notification {
     deepLink: string;
   };
 }
-
-// Custom hook for marking notification as read
-const useMarkNotificationAsRead = () => {
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const response = await fetch(`/api/notification/${notificationId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to mark notification as read');
-      }
-
-      return await response.json();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to mark notification as read');
-      throw error;
-    }
-  }, []);
-
-  return { markAsRead };
-};
 
 export function NotificationContent({
   data,

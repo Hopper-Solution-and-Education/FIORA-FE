@@ -96,7 +96,7 @@ const NotificationDashboardTableRow = ({
           case 'Action':
             return (
               <TableCell key={col} className={alignClass}>
-                <NotificationActionButton notificationId={data.id} />
+                <NotificationActionButton notificationData={data} />
               </TableCell>
             );
           default:
