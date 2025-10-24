@@ -59,6 +59,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     if (eKYCRecord.refId) {
       switch (eKYCRecord.type) {
         case KYCType.IDENTIFICATION:
+          await identificationRepository.delete(eKYCRecord.refId);
+          break;
         case KYCType.TAX:
           await identificationRepository.delete(eKYCRecord.refId);
           break;
