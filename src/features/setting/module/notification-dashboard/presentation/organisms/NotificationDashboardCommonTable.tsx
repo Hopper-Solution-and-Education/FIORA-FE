@@ -178,7 +178,7 @@ const NotificationDashboardCommonTable = ({
         title: 'Action',
         align: 'center',
         width: '12%',
-        render: (r) => <NotificationActionButton notificationId={r.id} />,
+        render: (r) => <NotificationActionButton notificationData={r} />,
       },
     ];
 
