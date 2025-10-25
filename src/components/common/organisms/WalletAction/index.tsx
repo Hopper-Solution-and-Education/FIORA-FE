@@ -5,6 +5,7 @@ import {
   WalletTransferButton,
   WalletWithdrawButton,
 } from '@/components/common/atoms';
+import { SendingFXForm } from '@/features/sending/presentation/views';
 import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 
 const WalletAction = ({
@@ -23,6 +24,7 @@ const WalletAction = ({
         {enableTransfer && <WalletTransferButton />}
         {enableWithdraw && <WalletWithdrawButton />}
       </div>
+      <SendingFXForm />
       <WithdrawFXForm />
     </>
   );

@@ -2,12 +2,9 @@
 
 import { Loading } from '@/components/common/atoms';
 import { MetricCard } from '@/components/common/metric';
-import { Icons } from '@/components/Icon';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { GlobalDialog } from '@/components/common/molecules';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import ProductSelectField from '@/features/home/module/transaction/components/ProductSelectField';
 import ReceiverSelectField from '@/features/home/module/transaction/components/ReceiverSelectField';
@@ -84,9 +81,6 @@ function SendingFXForm() {
     availableLimit: 0,
     currency: currency,
   });
-
-  const [packages, setPackages] = useState<number[]>([]);
-
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
@@ -105,7 +99,6 @@ function SendingFXForm() {
         availableLimit: d.availableLimit?.amount || 0,
         currency: d.currency || currency,
       });
-      setPackages(d.packageFXs || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
     } finally {
@@ -328,187 +321,148 @@ function SendingFXForm() {
         />
       )}
 
-      <Dialog open={isShowSendingFXForm} onOpenChange={handleClose}>
-        <DialogContent className="w-full max-w-[95vw] md:max-w-[700px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 bg-white">
-          <DialogTitle className="text-xl md:text-2xl font-semibold text-center text-gray-800 mb-2">
-            SENDING FX
-          </DialogTitle>
-          <DialogDescription className="text-center text-gray-500 mb-6 md:mb-8 text-sm leading-relaxed">
-            Please be careful when sending your FX to another user.
-            <br />
-            Any mistaken transaction will be your responsibility.
-          </DialogDescription>
-
-          <Card className="w-full">
-            <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
-              {isLoadingLimit ? (
+      <GlobalDialog
+        open={isShowSendingFXForm}
+        onOpenChange={handleClose}
+        onCancel={handleClose}
+        onConfirm={handleSubmit}
+        confirmText="Submit"
+        cancelText="Cancel and go back"
+        type="info"
+        title="SENDING FX"
+        description="Please be careful when sending your FX to another user. 
+  Any mistaken transaction will be your responsibility."
+        className="w-full max-w-[95vw] md:max-w-[700px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 bg-white"
+      >
+        <Card className="w-full">
+          <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
+            {isLoadingLimit ? (
+              <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+              </div>
+            ) : (
+              <>
                 <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-                  <LoadingCard />
-                  <LoadingCard />
-                  <LoadingCard />
-                  <LoadingCard />
+                  <MetricCard
+                    title="Daily Moving Limit"
+                    value={limit.dailyMovingLimit}
+                    type="neutral"
+                    icon="vault"
+                  />
+                  <MetricCard
+                    title="1-time Moving Limit"
+                    value={limit.oneTimeMovingLimit}
+                    type="total"
+                    icon="handCoins"
+                  />
+                  <MetricCard
+                    title="Moved Amount"
+                    value={limit.movedAmount}
+                    type="expense"
+                    icon="wallet"
+                  />
+                  <MetricCard
+                    title="Available Limit"
+                    value={limit.availableLimit}
+                    type="income"
+                    icon="arrowRight"
+                  />
                 </div>
-              ) : (
-                <>
+
+                <Separator />
+
+                <div className="space-y-5">
                   <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-                    <MetricCard
-                      title="Daily Moving Limit"
-                      value={limit.dailyMovingLimit}
-                      type="neutral"
-                      icon="vault"
-                    />
-                    <MetricCard
-                      title="1-time Moving Limit"
-                      value={limit.oneTimeMovingLimit}
-                      type="total"
-                      icon="handCoins"
-                    />
-                    <MetricCard
-                      title="Moved Amount"
-                      value={limit.movedAmount}
-                      type="expense"
-                      icon="wallet"
-                    />
-                    <MetricCard
-                      title="Available Limit"
-                      value={limit.availableLimit}
-                      type="income"
-                      icon="arrowRight"
-                    />
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Receiver <span className="text-red-700">*</span>
+                      </label>
+                      {walletsLoading ? (
+                        <Skeleton className="h-12 w-full" />
+                      ) : (
+                        <ReceiverSelectField
+                          value={receiver}
+                          onChange={debouncedSetReceiver}
+                          error={errors.receiver}
+                          placeholder="Search receiver by email"
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      {walletsLoading ? (
+                        <Skeleton className="h-12 w-full" />
+                      ) : (
+                        <AmountSelect
+                          key="amount"
+                          name="amount"
+                          currency={currency}
+                          label="Amount"
+                          required
+                          value={amountInput}
+                          onChange={debouncedSetAmountInput}
+                          error={errors.amount}
+                          max={getCurrentBalance()}
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  <Separator />
-
-                  <div className="space-y-5">
-                    <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Receiver <span className="text-red-700">*</span>
-                        </label>
-                        {walletsLoading ? (
-                          <Skeleton className="h-12 w-full" />
-                        ) : (
-                          <ReceiverSelectField
-                            value={receiver}
-                            onChange={debouncedSetReceiver}
-                            error={errors.receiver}
-                            placeholder="Search receiver by email"
-                          />
-                        )}
-                      </div>
-
-                      <div>
-                        {walletsLoading ? (
-                          <Skeleton className="h-12 w-full" />
-                        ) : (
-                          <AmountSelect
-                            key="amount"
-                            name="amount"
-                            currency={currency}
-                            label="Amount"
-                            required
-                            value={amountInput}
-                            onChange={debouncedSetAmountInput}
-                            error={errors.amount}
-                            max={getCurrentBalance()}
-                            initialPackages={packages}
-                          />
-                        )}
-                      </div>
+                  <div className="grid sm:grid-cols-2 grid-cols-1 gap-5">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Category (Optional)
+                      </label>
+                      {categories.length === 0 ? (
+                        <Skeleton className="h-12 w-full" />
+                      ) : (
+                        <CategorySelect
+                          name="category"
+                          value={categoryId}
+                          onChange={debouncedSetCategoryId}
+                          categories={categories}
+                        />
+                      )}
                     </div>
 
-                    <div className="grid sm:grid-cols-2 grid-cols-1 gap-5">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Category (Optional)
-                        </label>
-                        {categories.length === 0 ? (
-                          <Skeleton className="h-12 w-full" />
-                        ) : (
-                          <CategorySelect
-                            name="category"
-                            value={categoryId}
-                            onChange={debouncedSetCategoryId}
-                            categories={categories}
-                          />
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Product (Optional)
-                        </label>
-                        {products.length === 0 ? (
-                          <Skeleton className="h-12 w-full" />
-                        ) : (
-                          <ProductSelectField
-                            name="product"
-                            value={productId}
-                            onChange={debouncedSetProductId}
-                            products={products}
-                          />
-                        )}
-                      </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Product (Optional)
+                      </label>
+                      {products.length === 0 ? (
+                        <Skeleton className="h-12 w-full" />
+                      ) : (
+                        <ProductSelectField
+                          name="product"
+                          value={productId}
+                          onChange={debouncedSetProductId}
+                          products={products}
+                        />
+                      )}
                     </div>
-
-                    <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
-                      <div className="flex-1">
-                        <InputOtp value={otp} onChange={debouncedSetOtp} error={errors.otp} />
-                      </div>
-                      <SendOtpButton
-                        classNameBtn="mt-[25px]"
-                        state={otpState}
-                        callback={handleGetOtp}
-                        countdown={120}
-                        isStartCountdown={otpState !== 'Get'}
-                      />
-                    </div>
-                    <CardDescription className="sm:block hidden">
-                      By input OTP and click submit button, you confirm that this transaction is
-                      unsuspicious and will be fully responsible yourself!
-                    </CardDescription>
                   </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
 
-          <TooltipProvider>
-            <div className="w-full flex items-center justify-between gap-4 mt-6">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={handleClose}
-                    className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                  >
-                    <Icons.circleArrowLeft className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Cancel and go back</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={loading || isLoadingLimit || walletsLoading}
-                    className="w-32 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg"
-                  >
-                    <Icons.check className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Submit transaction</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-        </DialogContent>
-      </Dialog>
+                  <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
+                    <div className="flex-1">
+                      <InputOtp value={otp} onChange={debouncedSetOtp} error={errors.otp} />
+                    </div>
+                    <SendOtpButton
+                      classNameBtn="mt-[25px]"
+                      state={otpState}
+                      callback={handleGetOtp}
+                      countdown={120}
+                      isStartCountdown={otpState !== 'Get'}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </GlobalDialog>
     </>
   );
 }
