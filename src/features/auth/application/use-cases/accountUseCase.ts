@@ -33,7 +33,7 @@ export class AccountUseCase {
     private accountRepository: IAccountRepository,
     private transactionRepository: ITransactionRepository,
     private currencyRepository: IExchangeRateRepository,
-  ) {}
+  ) { }
 
   async create(params: {
     userId: string;
@@ -173,8 +173,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v: any) => v.toLowerCase() === typeSearchParams,
-          ) as AccountType)
+          (v: any) => v.toLowerCase() === typeSearchParams,
+        ) as AccountType)
         : null;
 
       const orConditions: any = [{ name: { contains: typeSearchParams, mode: 'insensitive' } }];
@@ -231,8 +231,8 @@ export class AccountUseCase {
       const enumValues = Object.values(AccountType).map((v: any) => v.toLowerCase());
       const matchedType = enumValues.includes(typeSearchParams)
         ? (Object.values(AccountType).find(
-            (v: any) => v.toLowerCase() === typeSearchParams,
-          ) as AccountType)
+          (v: any) => v.toLowerCase() === typeSearchParams,
+        ) as AccountType)
         : null;
 
       const orConditions: Prisma.AccountWhereInput[] = [
@@ -378,7 +378,15 @@ export class AccountUseCase {
       throw new Error('Account not found');
     }
 
-    return await this.accountRepository.update(id, { ...params });
+    const { balance, currency } = params;
+    const baseCurrency = DEFAULT_BASE_CURRENCY;
+    const baseAmount = await convertCurrency(
+      balance as number,
+      currency as string,
+      baseCurrency as string,
+    );
+
+    return await this.accountRepository.update(id, { ...params, baseAmount });
   }
 
   async deleteAccount(id: string, userId: string): Promise<Account | null> {
