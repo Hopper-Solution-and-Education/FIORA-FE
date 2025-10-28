@@ -91,6 +91,7 @@ export const useMembershipCronjobDashboard = () => {
 
         const hasMore =
           list.page < (list.totalPage ?? Math.ceil((list.total ?? 0) / list.pageSize));
+        
         dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
         dispatch(setStatistics(list.statistics));
       } finally {
