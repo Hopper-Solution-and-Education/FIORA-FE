@@ -6,6 +6,7 @@ import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
 import { CURRENCY } from '@/shared/constants';
 import { COLORS } from '@/shared/constants/chart';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
@@ -39,13 +40,13 @@ const WalletBarChart = () => {
   const handlePaymentWalletClick = (item: TwoSideBarItem) => {
     switch (item.type) {
       case WalletType.Payment:
-        router.push('/wallet/payment');
+        router.push(RouteEnum.WalletPayment);
         break;
       case WalletType.Saving:
-        router.push('/wallet/saving');
+        router.push(RouteEnum.WalletSaving);
         break;
       case WalletType.Referral:
-        router.push('/wallet/referral');
+        router.push(RouteEnum.WalletReferral);
         break;
       default:
         break;

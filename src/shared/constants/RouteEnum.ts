@@ -7,6 +7,9 @@ export enum RouteEnum {
   WalletDashboard = '/wallet',
   WalletDeposit = '/wallet/deposit',
   DepositFX = '/setting/wallet',
+  WalletPayment = '/wallet/payment',
+  WalletSaving = '/wallet/saving',
+  WalletReferral = '/wallet/referral',
 
   // Notification
   NotificationDashboard = '/setting/notification',

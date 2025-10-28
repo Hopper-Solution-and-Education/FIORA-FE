@@ -36,7 +36,7 @@ export default function CommonTable<T>({
   columnConfigMenuProps,
   ...props
 }: CommonTableProps<T>) {
-  const { containerRef, sentinelRef } = useCommonInfiniteScroll({
+  const { containerRef } = useCommonInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
     hasMore,
     isLoadingMore,
@@ -242,7 +242,6 @@ export default function CommonTable<T>({
                   <TableRow>
                     <TableCell colSpan={shownColumns.length}>
                       <div
-                        ref={sentinelRef}
                         style={{ height: '20px', backgroundColor: 'transparent' }}
                         data-testid="infinite-scroll-sentinel"
                       />
