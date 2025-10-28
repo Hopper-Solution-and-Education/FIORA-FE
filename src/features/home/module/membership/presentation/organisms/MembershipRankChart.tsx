@@ -44,7 +44,7 @@ const MembershipRankChart = () => {
       (bTier, sTier, item) => handleShowCurrentTier(item as Membership),
       currentUserTier.data.currentSpent ?? 0,
       currentUserTier,
-      currentUserTier.data.currentBalance ?? 0
+      currentUserTier.data.currentBalance ?? 0,
     );
   }, [balanceTiers, spentTiers, memberships, currentUserTier]);
 
