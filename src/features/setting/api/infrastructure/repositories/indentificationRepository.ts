@@ -136,9 +136,12 @@ class IdentificationRepository {
           where: { id: identification.userId },
           select: { id: true, kyc_levels: true },
         });
+
+        const levelOrder = identification.type === IdentificationType.TAX ? '2' : '1';
+
         const updatedKycLevels = user?.kyc_levels || [];
-        if (!updatedKycLevels.includes('1')) {
-          updatedKycLevels.push('1');
+        if (!updatedKycLevels.includes(levelOrder)) {
+          updatedKycLevels.push(levelOrder);
         }
 
         await tx.user.update({

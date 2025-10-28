@@ -111,8 +111,8 @@ class BankAccountRepository {
         });
         const updatedKycLevels = user?.kyc_levels || [];
 
-        if (!updatedKycLevels.includes('2')) {
-          updatedKycLevels.push('2');
+        if (!updatedKycLevels.includes('4')) {
+          updatedKycLevels.push('4');
         }
         await tx.user.update({
           where: { id: user?.id },
