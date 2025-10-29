@@ -18,6 +18,7 @@ const MembershipRankChart = () => {
   );
 
   const currentUserTier = useAppSelector((state) => state.user.userTier);
+
   const handleShowCurrentTier = (tier: Membership) => {
     dispatch(setSelectedTier(tier));
   };
@@ -34,15 +35,18 @@ const MembershipRankChart = () => {
 
   // Create combined tier icons mapping with onClick handlers
   const combinedTierIcons = useMemo(() => {
+    if (!currentUserTier?.data) return {};
+
     return createCombinedTierIcons(
       balanceTiers,
       spentTiers,
       memberships,
       (bTier, sTier, item) => handleShowCurrentTier(item as Membership),
-      currentUserTier?.data?.currentBalance ?? 0,
-      currentUserTier?.data?.currentSpent ?? 0,
+      currentUserTier.data.currentSpent ?? 0,
+      currentUserTier,
+      currentUserTier.data.currentBalance ?? 0,
     );
-  }, [balanceTiers, spentTiers, memberships]);
+  }, [balanceTiers, spentTiers, memberships, currentUserTier]);
 
   return (
     <div className="shadow col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-7 rounded-lg p-2 dark:border dark:border-gray-700 min-h-[500px]">

@@ -8,8 +8,7 @@ import { loadColumnConfigFromStorage } from '../../slices/persist';
 import { DispatchTableProvider } from '../context/DispatchTableContext';
 import { TableProvider } from '../context/TableContext';
 import { useNotificationDashboard } from '../hooks/useNotificationDashboard';
-import NotificationDashboardTable from '../organisms/NotificationDashboardTable';
-import NotificationDashboardTopBarAction from '../organisms/NotificationDashboardTopBarAction';
+import { NotificationDashboardCommonTable } from '../organisms';
 import NotificationDashboardLayout from './NotificationDashboardLayout';
 
 /**
@@ -17,34 +16,25 @@ import NotificationDashboardLayout from './NotificationDashboardLayout';
  * Manages the overall layout and provides context for child components
  */
 const NotificationDashboardPage = () => {
-  // Custom hook that manages table data, loading states, and pagination
   const { tableData, loading, loadMore, dispatchTable } = useNotificationDashboard();
   const dispatch = useAppDispatch();
 
-  // Initialize dashboard on component mount
   useEffect(() => {
-    // Load saved column configuration from localStorage
     const config = loadColumnConfigFromStorage();
 
     if (config) {
       dispatch(setColumnConfig(config));
     }
 
-    // Fetch filter options for dropdown menus
     dispatch(fetchFilterOptionsAsyncThunk());
   }, [dispatch]);
 
   return (
-    // Context providers for table state management
     <DispatchTableProvider value={{ dispatchTable }}>
       <TableProvider value={{ table: tableData }}>
         <NotificationDashboardLayout>
           <div className="space-y-6 border p-4 rounded-2xl mb-12">
-            {/* Self-contained top bar with search, filters, and column management */}
-            <NotificationDashboardTopBarAction />
-
-            {/* Table component with infinite scroll and loading states */}
-            <NotificationDashboardTable
+            <NotificationDashboardCommonTable
               data={tableData.data}
               loading={loading}
               hasMore={tableData.hasMore}

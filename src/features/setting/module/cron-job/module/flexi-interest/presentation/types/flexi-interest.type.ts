@@ -1,3 +1,5 @@
+import { ComposedChartDataItem } from '@/components/common/charts/composed-chart/type';
+
 export type FlexiInterestCronjobTableStatusType = 'SUCCESSFUL' | 'FAIL';
 
 export type FlexiInterestCronjobTableData = {
@@ -13,18 +15,13 @@ export type FlexiInterestCronjobTableData = {
   reason?: string;
 };
 
-// Thêm các interface mới cho chart và statistics
-export interface FlexiInterestChartData {
-  name: string;
-  amount: number;
-}
-
 export interface FlexiInterestStatistics {
-  chartData: FlexiInterestChartData[];
+  chartData: FlexiInterestChartDataItem[];
   totalAmount: number;
 }
 
 export interface TierInterestAmount {
+  tierId: string;
   tierName: string;
   interestAmount: string;
 }
@@ -32,4 +29,10 @@ export interface TierInterestAmount {
 export interface DashboardResponse {
   tierInterestAmount: TierInterestAmount[];
   totalInterestAmount: string;
+}
+
+export interface FlexiInterestChartDataItem extends ComposedChartDataItem {
+  id: string;
+  name: string;
+  amount: number;
 }

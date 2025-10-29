@@ -136,9 +136,12 @@ class IdentificationRepository {
           where: { id: identification.userId },
           select: { id: true, kyc_levels: true },
         });
+
+        const levelOrder = identification.type === IdentificationType.TAX ? '2' : '1';
+
         const updatedKycLevels = user?.kyc_levels || [];
-        if (!updatedKycLevels.includes('1')) {
-          updatedKycLevels.push('1');
+        if (!updatedKycLevels.includes(levelOrder)) {
+          updatedKycLevels.push(levelOrder);
         }
 
         await tx.user.update({
@@ -192,6 +195,26 @@ class IdentificationRepository {
       return prisma.$transaction(async (tx) => {
         const identification = await tx.identificationDocument.delete({ where: { id } });
 
+        const user = await tx.user.findFirst({
+          where: { id: identification.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const kycKey = identification.type === IdentificationType.TAX ? '2' : '1';
+
+        let updatedKycLevels = user?.kyc_levels || [];
+
+        if (updatedKycLevels.includes(kycKey)) {
+          updatedKycLevels = updatedKycLevels.filter((key) => key !== kycKey);
+        }
+
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: identification.userId,
+          },
+        });
         const eKycRecord = await tx.eKYC.findFirst({ where: { refId: id } });
         if (eKycRecord) {
           await tx.eKYC.delete({ where: { id: eKycRecord.id } });

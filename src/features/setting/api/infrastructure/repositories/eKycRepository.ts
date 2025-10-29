@@ -15,21 +15,41 @@ class EKycRepository {
     id: string;
   }): Promise<any> {
     try {
-      const newKyc = await prisma.eKYC.create({
-        data: {
-          type: kyc.type,
-          method: KYCMethod.MANUAL,
-          refId: null,
-          fieldName: kyc.fieldName,
-          status: kyc.status,
-          createdBy: kyc.createdBy,
-          userId: kyc.userId,
-          createdAt: kyc.createdAt,
-          updatedAt: kyc.updatedAt,
-          id: kyc.id, // UUID
-        },
+      return prisma.$transaction(async (tx) => {
+        const newKyc = await tx.eKYC.create({
+          data: {
+            type: kyc.type,
+            method: KYCMethod.MANUAL,
+            refId: null,
+            fieldName: kyc.fieldName,
+            status: kyc.status,
+            createdBy: kyc.createdBy,
+            userId: kyc.userId,
+            createdAt: kyc.createdAt,
+            updatedAt: kyc.updatedAt,
+            id: kyc.id, // UUID
+          },
+        });
+
+        const user = await tx.user.findFirst({
+          where: { id: kyc.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const updatedKycLevels = user?.kyc_levels || [];
+
+        if (!updatedKycLevels.includes('2')) {
+          updatedKycLevels.push('2');
+        }
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: kyc.userId,
+          },
+        });
+        return newKyc;
       });
-      return newKyc;
     } catch (error) {
       console.log(error);
       return error;
