@@ -105,8 +105,7 @@ export default function DateRangePicker(props: DateRangePickerProps) {
           selectedClasses:
             'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground',
           rangeMiddleClasses: 'bg-accent/20 text-accent-foreground hover:bg-accent/30',
-          rangeEdgeClasses:
-            'bg-accent text-accent-foreground ring-2 ring-accent ring-offset-2 ring-offset-background hover:bg-accent/90',
+          rangeEdgeClasses: 'bg-accent text-accent-foreground hover:bg-accent/90',
           selectedStyle: {},
           rangeMiddleStyle: {},
           rangeEdgeStyle: {},
@@ -116,8 +115,7 @@ export default function DateRangePicker(props: DateRangePickerProps) {
           selectedClasses:
             'bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground',
           rangeMiddleClasses: 'bg-secondary/20 text-secondary-foreground hover:bg-secondary/30',
-          rangeEdgeClasses:
-            'bg-secondary text-secondary-foreground ring-2 ring-secondary ring-offset-2 ring-offset-background hover:bg-secondary/90',
+          rangeEdgeClasses: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
           selectedStyle: {},
           rangeMiddleStyle: {},
           rangeEdgeStyle: {},
@@ -146,9 +144,8 @@ export default function DateRangePicker(props: DateRangePickerProps) {
         return {
           selectedClasses:
             'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground', // Changed to full primary for selected
-          rangeMiddleClasses: 'bg-primary/20 text-primary-foreground hover:bg-primary/30',
-          rangeEdgeClasses:
-            'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background hover:bg-primary/90', // Changed to full primary for range edge
+          rangeMiddleClasses: 'bg-primary/20 text-foreground hover:bg-primary/30',
+          rangeEdgeClasses: 'bg-primary text-primary-foreground hover:bg-primary/90', // Changed to full primary for range edge
           selectedStyle: { color: 'white !important' },
           rangeMiddleStyle: {},
           rangeEdgeStyle: {},
@@ -355,7 +352,7 @@ export default function DateRangePicker(props: DateRangePickerProps) {
               className="p-2"
               disabled={disabledDates}
               classNames={{
-                day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors cursor-pointer text-foreground/70',
+                day: 'h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent rounded-md transition-colors cursor-pointer',
                 day_selected: cn(selectedClasses, 'font-semibold'),
                 day_today: 'bg-accent/50 text-accent-foreground font-semibold',
                 // Important: Apply classes to day_range_middle for the range fill
