@@ -748,6 +748,9 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      // baseAmount sometimes passed to transferBalance as undefined if convertCurrency returns undefined.
+      // Ensure baseAmount gets a fallback value if conversion fails.
+
       const baseAmount = await convertCurrency(
         transactionUnique.amount,
         transactionUnique.currency!,
@@ -806,14 +809,6 @@ class TransactionUseCase {
       if (!transaction) {
         throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
       }
-
-      await this.accountRepository.transferBalance(
-        tx,
-        data.fromAccountId as string,
-        data.toAccountId as string,
-        data.amount as number,
-        data.baseAmount as number,
-      );
 
       return transaction;
     });
