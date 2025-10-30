@@ -113,6 +113,47 @@ class EKycRepository {
     });
   }
 
+  async verifyOtp(
+    userId: string,
+    otp: string,
+    type: OtpType,
+  ): Promise<{
+    isValid: boolean;
+    message?: string;
+    otpRecord?: any;
+  }> {
+    const otpRecord = await this.checkOtp(userId, type);
+
+    if (!otpRecord) {
+      return {
+        isValid: false,
+        message: 'OTP not found or has expired',
+      };
+    }
+
+    const createDate = new Date(otpRecord.createdAt);
+    const expiredAt = new Date(createDate.getTime() + Number(otpRecord.duration) * 1000);
+
+    if (expiredAt < new Date()) {
+      return {
+        isValid: false,
+        message: 'OTP has expired',
+      };
+    }
+
+    if (otpRecord.otp !== otp) {
+      return {
+        isValid: false,
+        message: 'Invalid OTP',
+      };
+    }
+
+    return {
+      isValid: true,
+      otpRecord,
+    };
+  }
+
   async updateStatus(kycId: string, status: any, verifiedBy: string) {
     try {
       return await prisma.eKYC.update({
