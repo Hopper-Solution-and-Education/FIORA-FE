@@ -7,6 +7,7 @@ import SavingInterestActionButton from '@/features/setting/module/cron-job/modul
 import StatusBadge from '@/features/setting/module/cron-job/module/saving-interest/presentation/atoms/StatusBadge';
 import SavingInterestTopBarAction from '@/features/setting/module/cron-job/module/saving-interest/presentation/molecules/SavingInterestTopBarAction';
 import { SavingInterestTableData } from '@/features/setting/module/cron-job/module/saving-interest/presentation/types/saving-interest.type';
+import { useAppSelector } from '@/store';
 import { useMemo, useState } from 'react';
 
 interface Props {
@@ -31,6 +32,8 @@ const SavingInterestCommonTable = ({
   className,
   onRetrySuccess,
 }: Props) => {
+  const filterState = useAppSelector((s) => s.savingInterest);
+
   const columns: CommonTableColumn<SavingInterestTableData>[] = useMemo(
     () => [
       {
@@ -228,6 +231,7 @@ const SavingInterestCommonTable = ({
               </div>
             </div>
           }
+          deps={[filterState]}
         />
       </div>
     </div>

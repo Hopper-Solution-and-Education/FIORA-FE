@@ -57,6 +57,9 @@ const NotificationDashboardCommonTable = ({
 
   // Get current filter state from Redux store
   const filter = useAppSelector((state) => state.notificationDashboard.filter);
+  const searchFromRedux = useAppSelector(
+    (state) => state.notificationDashboard.filter.search || '',
+  );
 
   // Handle filter changes and dispatch to Redux store
   const handleFilterChange = useCallback(
@@ -225,6 +228,7 @@ const NotificationDashboardCommonTable = ({
       className={className}
       leftHeaderNode={leftHeaderNode}
       rightHeaderNode={rightHeaderNode}
+      deps={[filter, searchFromRedux]}
     />
   );
 };

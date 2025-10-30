@@ -7,6 +7,7 @@ import ReferralActionButton from '@/features/setting/module/cron-job/module/refe
 import StatusBadge from '@/features/setting/module/cron-job/module/referral/presentation/atoms/StatusBadge';
 import { ReferralCronjobTableData } from '@/features/setting/module/cron-job/module/referral/presentation/types/referral.type';
 import { formatReferralDateTime } from '@/shared/lib/formatReferralDateTime';
+import { useAppSelector } from '@/store';
 import { useMemo, useState } from 'react';
 import { ReferralTopBarAction } from '..';
 
@@ -40,6 +41,8 @@ const ReferralCronjobCommonTable = ({
   onLoadMore,
   onRetrySuccess,
 }: Props) => {
+  const { filter } = useAppSelector((s) => s.referralCronjob);
+
   const columns: CommonTableColumn<ReferralCronjobTableData>[] = useMemo(
     () => [
       {
@@ -177,6 +180,7 @@ const ReferralCronjobCommonTable = ({
               </div>
             </div>
           }
+          deps={[filter]}
         />
       </div>
     </div>
