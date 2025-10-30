@@ -9,21 +9,31 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       if (request.method !== 'POST') {
-        return response
-          .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
-          .json({ error: 'Method not allowed' });
+        return response.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({
+          status: RESPONSE_CODE.METHOD_NOT_ALLOWED,
+          message: 'Method not allowed',
+          data: null,
+        });
       }
 
       const { email } = request.body;
 
       if (!email) {
-        return response.status(RESPONSE_CODE.BAD_REQUEST).json({ error: 'Email is required' });
+        return response.status(RESPONSE_CODE.BAD_REQUEST).json({
+          status: RESPONSE_CODE.BAD_REQUEST,
+          message: 'Email is required',
+          data: null,
+        });
       }
 
       // Check if user exists
       const user = await userRepository.findByEmail(email);
       if (!user) {
-        return response.status(RESPONSE_CODE.NOT_FOUND).json({ error: 'User not found' });
+        return response.status(RESPONSE_CODE.NOT_FOUND).json({
+          status: RESPONSE_CODE.NOT_FOUND,
+          message: 'User not found',
+          data: null,
+        });
       }
 
       // Generate OTP
@@ -33,6 +43,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
       await reNewPasswordUseCase.sendOtpForgotPassword(email, otp);
 
       response.status(RESPONSE_CODE.OK).json({
+        status: RESPONSE_CODE.OK,
         message: 'OTP sent successfully',
         otp, // In production, don't return OTP in response, store it in session/cache
       });
