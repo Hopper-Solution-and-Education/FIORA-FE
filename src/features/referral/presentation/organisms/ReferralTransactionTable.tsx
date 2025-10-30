@@ -8,6 +8,7 @@ import {
 } from '@/components/common/organisms/CommonTable/types';
 import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
+import { useAppSelector } from '@/store';
 import { FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
@@ -78,6 +79,7 @@ const formatAmount = (value: string) => {
 const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) => {
   const router = useRouter();
   const { tableData, loading, loadMore } = useReferralTransactionDashboard();
+  const { filter } = useAppSelector((s) => s.referralTransaction);
 
   const normalizedRows = useMemo<ReferralTransactionRow[]>(
     () =>
@@ -213,6 +215,7 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         onLoadMore={loadMore}
         className={className}
         leftHeaderNode={<ReferralTransactionTopBarAction />}
+        deps={[filter]}
       />
     </div>
   );
