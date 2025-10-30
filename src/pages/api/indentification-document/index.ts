@@ -147,6 +147,13 @@ export async function POST(
   user: SessionUser,
 ) {
   const { error, value } = validateBody(identificationDocumentSchema, req.body);
+
+  if (error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+  }
+
   const {
     fileFrontId,
     fileBackId,
@@ -158,11 +165,7 @@ export async function POST(
     issuedPlace,
     fileLocationId,
   } = value;
-  if (error) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-  }
+
   const checkVerify = await identificationRepository.getByType(userId, type);
   if (checkVerify) {
     return res

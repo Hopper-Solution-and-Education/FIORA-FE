@@ -1154,6 +1154,7 @@ enum OtpType {
   WITHDRAW
   EMAIL
   DELETE
+  VERIFY_EKYC
 }
 
 enum ReferralStatus {

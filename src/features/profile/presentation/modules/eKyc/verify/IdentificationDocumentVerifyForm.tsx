@@ -49,9 +49,11 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
       frontImage: null,
       backImage: null,
       facePhoto: null,
+      locationImage: null,
       initialFrontImage: '',
       initialBackImage: '',
       initialFacePhoto: '',
+      initialLocationImage: '',
     }),
     [],
   );
@@ -86,6 +88,8 @@ const IdentificationDocumentVerifyForm: FC<IdentificationDocumentVerifyFormProps
         initialBackImage: identificationDocument?.fileBack?.url || '',
         facePhoto: null,
         initialFacePhoto: identificationDocument?.filePhoto?.url || '',
+        locationImage: null,
+        initialLocationImage: identificationDocument?.fileLocation?.url || '',
       };
 
       reset(formData);

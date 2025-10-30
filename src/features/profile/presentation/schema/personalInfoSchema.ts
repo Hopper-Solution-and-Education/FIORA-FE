@@ -91,9 +91,11 @@ export type IdentificationDocument = {
   frontImage: File | null;
   backImage: File | null;
   facePhoto: File | null;
+  locationImage: File | null;
   initialFrontImage?: string;
   initialBackImage?: string;
   initialFacePhoto?: string;
+  initialLocationImage?: string;
 };
 
 export type TaxInformation = {

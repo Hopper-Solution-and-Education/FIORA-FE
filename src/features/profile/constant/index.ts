@@ -1,4 +1,9 @@
 import { EKYCStatus, EKYCType } from '../domain/entities/models/profile';
+import { KYCPageType } from '../presentation/modules/eKyc/types';
+import BankAccountVerifyForm from '../presentation/modules/eKyc/verify/BankAccountVerifyForm';
+import ContactInformationVerifyForm from '../presentation/modules/eKyc/verify/ContactInformationVerifyForm';
+import IdentificationDocumentVerifyForm from '../presentation/modules/eKyc/verify/IdentificationDocumentVerifyForm';
+import TaxInformationVerifyForm from '../presentation/modules/eKyc/verify/TaxInformationVerifyForm';
 
 export const KYC_ITEMS = {
   IDENTIFICATION_DOCUMENT: {
@@ -46,3 +51,54 @@ export const STATUS_COLOR = {
     hoverColor: 'hover:bg-red-400',
   },
 };
+
+// KYC Verify Page Constants
+export const KYC_TAB_CONFIG = [
+  {
+    id: KYCPageType.identificationDocument,
+    label: 'Identification Document',
+    component: IdentificationDocumentVerifyForm,
+  },
+  {
+    id: KYCPageType.contactInformation,
+    label: 'Contact Information',
+    component: ContactInformationVerifyForm,
+  },
+  {
+    id: KYCPageType.taxInformation,
+    label: 'Tax Information',
+    component: TaxInformationVerifyForm,
+  },
+  {
+    id: KYCPageType.bankAccount,
+    label: 'Bank Accounts',
+    component: BankAccountVerifyForm,
+  },
+] as const;
+
+export const MODAL_CONFIG = {
+  approve: {
+    title: 'Approve KYC Request',
+    description:
+      'This action will mark the KYC status as "Approved", and the user will be considered verified. Please ensure all submitted information and documents have been carefully reviewed.',
+    variant: 'info' as const,
+    type: 'info' as const,
+    confirmText: 'Continue',
+  },
+  reject: {
+    title: 'Reject KYC Request',
+    description:
+      'This action will mark the KYC status as "Rejected". The user will be notified and may be required to re-submit their documents.',
+    variant: 'danger' as const,
+    type: 'danger' as const,
+    confirmText: 'Continue',
+  },
+} as const;
+
+export const OTP_MODAL_CONFIG = {
+  description: 'Please verify this action using the OTP sent to your email',
+  variant: 'info' as const,
+  type: 'info' as const,
+  confirmText: 'Verify',
+  cancelText: 'Cancel',
+} as const;
