@@ -28,7 +28,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -72,13 +72,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -522,11 +522,17 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       await this.accountRepository.receiveBalance(
         tx,
         transactionUnique.fromAccountId as string,
         transactionUnique.amount.toNumber(),
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (
@@ -544,12 +550,6 @@ class TransactionUseCase {
           data.userId as string,
         );
       }
-
-      const baseAmount = await convertCurrency(
-        Number(data.amount),
-        data.currency as string,
-        DEFAULT_BASE_CURRENCY,
-      );
 
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
@@ -579,7 +579,7 @@ class TransactionUseCase {
         tx,
         data.fromAccountId as string,
         data.amount as number,
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -640,11 +640,17 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       await this.accountRepository.deductBalance(
         tx,
         transactionUnique.toAccountId as string,
         transactionUnique.amount.toNumber(),
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (
@@ -662,12 +668,6 @@ class TransactionUseCase {
           data.userId as string,
         );
       }
-
-      const baseAmount = await convertCurrency(
-        Number(data.amount),
-        data.currency as string,
-        DEFAULT_BASE_CURRENCY,
-      );
 
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
@@ -697,7 +697,7 @@ class TransactionUseCase {
         tx,
         data.toAccountId as string,
         data.amount as number,
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
