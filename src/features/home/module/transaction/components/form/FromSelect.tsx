@@ -37,7 +37,11 @@ const FromSelectField: React.FC<FromSelectProps> = ({
     error: fetchError,
     lastFetchedType,
   } = useSelector((state: RootState) => state.createTransaction.supportingData);
-
+  useEffect(() => {
+    if (transactionType && lastFetchedType !== transactionType) {
+      dispatch(fetchSupportingData(transactionType as TransactionType));
+    }
+  }, [transactionType, lastFetchedType, dispatch]);
   // Process options based on transaction type and data
   const options = useMemo((): DropdownOption[] => {
     // If we're still loading or data doesn't match current type, show loading state
