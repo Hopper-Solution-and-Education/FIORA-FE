@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { SessionUser } from '@/shared/types/session';
 import {
-  ChannelType,
   IdentificationDocument,
   IdentificationType,
   KYCMethod,
@@ -43,27 +43,14 @@ class IdentificationRepository {
           },
         });
 
-        const newNotification = await tx.notification.create({
-          data: {
-            title: `Verify ${fieldName} !`,
-            message: `User ${user.email} has submitted a new verify ${fieldName}.`,
-            channel: ChannelType.BOX,
-            notifyTo: NotificationType.ADMIN_CS,
-            type: type,
-            emails: [user.email],
-            emailTemplateId: null,
-            createdBy: null,
-          },
-        });
-
-        await tx.userNotification.create({
-          data: {
-            userId: user.id.toString(),
-            notificationId: newNotification.id,
-            isRead: false,
-            createdBy: null,
-            content: `User ${user.email} has submitted a new verify ${fieldName}.`,
-          },
+        await notificationUseCase.createBoxNotification({
+          title: `Verify ${fieldName} !`,
+          type: type,
+          notifyTo: NotificationType.ADMIN_CS,
+          attachmentId: '',
+          deepLink: '',
+          message: `User ${user.email} has submitted a new verify ${fieldName}.`,
+          emails: [user.email],
         });
         return identification;
       });
