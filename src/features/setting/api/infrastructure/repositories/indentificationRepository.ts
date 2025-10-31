@@ -42,7 +42,8 @@ class IdentificationRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await tx.notification.create({
+
+        const newNotification = await tx.notification.create({
           data: {
             title: `Verify ${fieldName} !`,
             message: `User ${user.email} has submitted a new verify ${fieldName}.`,
@@ -52,6 +53,16 @@ class IdentificationRepository {
             emails: [user.email],
             emailTemplateId: null,
             createdBy: null,
+          },
+        });
+
+        await tx.userNotification.create({
+          data: {
+            userId: user.id.toString(),
+            notificationId: newNotification.id,
+            isRead: false,
+            createdBy: null,
+            content: `User ${user.email} has submitted a new verify ${fieldName}.`,
           },
         });
         return identification;

@@ -30,7 +30,7 @@ class BankAccountRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await tx.notification.create({
+        const newNotification = await tx.notification.create({
           data: {
             title: `Verify new bank account!`,
             message: `User ${user.email} has submitted a new verify bank account.`,
@@ -40,6 +40,15 @@ class BankAccountRepository {
             emails: [user.email],
             emailTemplateId: null,
             createdBy: null,
+          },
+        });
+        await tx.userNotification.create({
+          data: {
+            userId: user.id.toString(),
+            notificationId: newNotification.id,
+            isRead: false,
+            createdBy: null,
+            content: `User ${user.email} has submitted a new verify bank account.`,
           },
         });
         return bankAccount;
