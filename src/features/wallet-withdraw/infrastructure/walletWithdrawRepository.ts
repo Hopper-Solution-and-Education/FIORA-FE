@@ -424,6 +424,11 @@ class walletWithdrawRepository implements IWalletWithdrawRepository {
         createdAt: new Date(),
         id: crypto.randomUUID(),
       },
+      select: {
+        type: true,
+        duration: true,
+        createdAt: true,
+      },
     });
     return {
       data: data,
