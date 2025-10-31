@@ -1,11 +1,19 @@
 'use client';
 import SelectField from '@/components/common/forms/select/SelectField';
+import { httpClient } from '@/config'; // ✅ import đúng
 import React, { useEffect, useState } from 'react';
 
 interface Product {
   id: string;
   name: string;
   image?: string | null;
+}
+
+interface CatalogResponse {
+  data: {
+    products: Product[];
+    categories?: any[];
+  };
 }
 
 interface ProductSelectProps {
@@ -27,17 +35,12 @@ const ProductSelectField: React.FC<ProductSelectProps> = ({
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
-  // 🧭 Gọi API catalog
   useEffect(() => {
     const fetchCatalog = async () => {
       try {
-        const res = await fetch('/api/sending-wallet/catalog');
-        if (!res.ok) throw new Error('Failed to fetch catalog');
-        const json = await res.json();
-
-        // Giả định BE trả về dạng { data: { categories: [...], products: [...] } }
-        if (json?.data?.products) {
-          setProducts(json.data.products);
+        const res = await httpClient.get<CatalogResponse>('/api/sending-wallet/catalog');
+        if (res?.data?.products) {
+          setProducts(res.data.products);
         }
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -47,12 +50,15 @@ const ProductSelectField: React.FC<ProductSelectProps> = ({
     fetchCatalog();
   }, []);
 
-  // 🔁 Chuẩn hóa data thành options
-  const options = products.map((p) => ({
-    value: p.id,
-    label: p.name,
-    icon: p.image ?? undefined,
-  }));
+  const options = Array.isArray(products)
+    ? products
+        .filter((p): p is Product => !!p && !!p.id && !!p.name) // loại bỏ phần tử null/undefined
+        .map((p) => ({
+          value: p.id,
+          label: p.name,
+          icon: p.image ?? undefined,
+        }))
+    : [];
 
   return (
     <SelectField

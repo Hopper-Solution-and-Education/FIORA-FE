@@ -1,28 +1,26 @@
 'use client';
 
 import { Loading } from '@/components/common/atoms';
+import SendOtpButton from '@/components/common/atoms/SendOtpButton';
+import InputOtp from '@/components/common/forms/input/InputOtp';
 import { MetricCard } from '@/components/common/metric';
 import { GlobalDialog } from '@/components/common/molecules';
 import { Card, CardContent } from '@/components/ui/card';
+import { httpClient } from '@/config';
 import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import ProductSelectField from '@/features/home/module/transaction/components/ProductSelectField';
 import ReceiverSelectField from '@/features/home/module/transaction/components/ReceiverSelectField';
-import {
-  fetchFrozenAmountAsyncThunk,
-  getWalletsAsyncThunk,
-} from '@/features/home/module/wallet/slices/actions';
+import { getWalletsAsyncThunk } from '@/features/home/module/wallet/slices/actions';
 import { setSendingFXFormClose } from '@/features/home/module/wallet/slices/index';
-import SendOtpButton from '@/features/wallet-withdraw/presentation/components/SendOtpButton';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
+import type { OtpState, WalletSendingOverview } from '@/shared/types/otp';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Separator } from '@radix-ui/react-dropdown-menu';
 import { useCallback, useEffect, useState } from 'react';
 import type { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
-import type { OtpState, WalletSendingOverview } from '../../types';
 import AmountSelect from '../components/AmountSelect';
-import InputOtp from '../components/InputOtp';
 
 type OverviewSendingResponseType = {
   data: WalletSendingOverview;
@@ -60,7 +58,6 @@ function SendingFXForm() {
   const [errors, setErrors] = useState(initialFormState.errors);
 
   const [loading, setLoading] = useState(false);
-  const [loadingOtp, setLoadingOtp] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const [limit, setLimit] = useState({
@@ -72,11 +69,7 @@ function SendingFXForm() {
   });
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const {
-    data: overviewData,
-    isLoading,
-    mutate: refetchOverview,
-  } = useDataFetch<OverviewSendingResponseType>({
+  const { isLoading, mutate: refetchOverview } = useDataFetch<OverviewSendingResponseType>({
     endpoint: ApiEndpointEnum.walletWithdraw,
     method: 'GET',
     refreshInterval: 1000 * 60 * 5,
@@ -85,9 +78,7 @@ function SendingFXForm() {
   // ================= FETCH =================
   const fetchLimit = async () => {
     try {
-      const res = await fetch('/api/sending-wallet/amount-limit');
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || 'Failed to fetch limit');
+      const json = await httpClient.get<{ data: any }>('/api/sending-wallet/amount-limit');
       const d = json.data;
       setLimit({
         dailyMovingLimit: d.dailyMovingLimit?.amount || 0,
@@ -96,37 +87,46 @@ function SendingFXForm() {
         availableLimit: d.availableLimit?.amount || 0,
         currency: d.currency || currency,
       });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to fetch limit');
     }
   };
 
   const fetchCatalog = async () => {
     try {
-      const res = await fetch('/api/sending-wallet/catalog');
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.message || 'Failed to fetch catalog');
+      const json = await httpClient.get<{ data: any }>('/api/sending-wallet/catalog');
       const d = json.data;
       setCategories(d.categories || []);
       setProducts(d.products || []);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to fetch catalog');
     }
   };
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       await dispatch(getWalletsAsyncThunk()).unwrap();
       await Promise.all([fetchLimit(), fetchCatalog()]);
     } catch {
       toast.error('Failed to load initial data');
+    } finally {
+      await new Promise((r) => setTimeout(r, 300));
+      setLoading(false);
     }
   };
 
   // ================= EFFECTS =================
   useEffect(() => {
-    if (isShowSendingFXForm) fetchData();
-  }, [isShowSendingFXForm, dispatch]);
+    if (isShowSendingFXForm) {
+      setTimeout(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }, 50);
+      fetchData();
+    }
+  }, [isShowSendingFXForm]);
 
   useEffect(() => {
     if (otpState !== 'Resend' || countdown <= 0) return;
@@ -160,36 +160,28 @@ function SendingFXForm() {
     Number(wallets?.find((w: any) => w.type === 'Payment')?.frBalanceActive ?? 0);
 
   const handleGetOtp = async () => {
-    if (isSendingOtp) return;
-
-    // ✅ Dùng validateBase chung
-    const isValid = validateBase();
-    if (!isValid) return toast.error('Please fix errors before requesting OTP.');
-
-    // ===== GỬI OTP =====
     setIsSendingOtp(true);
-    setLoadingOtp(true);
-
+    const isValid = validateBase();
+    if (!isValid) {
+      toast.error('Please fix errors before requesting OTP.');
+      return;
+    }
     try {
-      const res = await fetch('/api/sending-wallet/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountInput, emailReceiver: receiver }),
-      });
+      const response = (await httpClient.post('/api/sending-wallet/send-otp', {
+        amount: amountInput,
+        emailReceiver: receiver,
+      })) as { status?: number; message?: string } | undefined;
 
-      const data = await res.json();
-
-      if (res.ok && data.status === 200) {
+      if (response && response.status === 200) {
         toast.success('OTP sent successfully. Please check your email.');
         setOtpState('Resend');
         setCountdown(120);
       } else {
-        toast.error(data.message || 'Failed to send OTP');
+        toast.error(response?.message || 'Failed to send OTP');
       }
-    } catch {
-      toast.error('Error while sending OTP');
+    } catch (err: any) {
+      toast.error(err?.message || 'Error while sending OTP');
     } finally {
-      setLoadingOtp(false);
       setIsSendingOtp(false);
     }
   };
@@ -232,158 +224,173 @@ function SendingFXForm() {
   };
 
   const handleSubmit = async () => {
-    if (!validateBase('otp')) return toast.error('Fix errors before requesting OTP.');
-    if (!validateBase('submit')) return toast.error('Fix errors before submitting.');
+    if (!validateBase('otp')) {
+      toast.error('Fix errors before requesting OTP.');
+      return;
+    }
+    if (!validateBase('submit')) {
+      toast.error('Fix errors before submitting.');
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await fetch('/api/sending-wallet/send-fx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const response = await httpClient.post<{ status: number; message: string }>(
+        '/api/sending-wallet/send-fx',
+        {
           amount: amountInput,
           otp,
           emailReciever: receiver,
           categoryId,
           productIds: productId ? [productId] : [],
-        }),
-      });
-      const data = await res.json();
+        },
+      );
 
-      if (res.ok && data.status === 200) {
-        toast.success('FX sent successfully!');
-        await Promise.all([
-          dispatch(getWalletsAsyncThunk()).unwrap(),
-          dispatch(fetchFrozenAmountAsyncThunk()).unwrap(),
-        ]);
-        await fetchLimit();
+      if (response.status === 200) {
+        toast.success(response.message || 'FX sent successfully!');
         handleClose();
-      } else toast.error(data.message || 'Failed to send FX');
-    } catch {
-      toast.error('Error while sending FX');
+        refetchOverview();
+      } else {
+        toast.error(response.message || 'Failed to send FX');
+      }
+    } catch (error: any) {
+      if (error.message?.includes('Invalid OTP')) {
+        toast.error('Mã OTP không hợp lệ hoặc đã hết hạn!');
+      } else {
+        toast.error(error.message || 'Error sending FX');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const _renderContent = () => (
-    <Card className="w-full">
-      <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
-        <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-          <MetricCard
-            title="Daily Moving Limit"
-            value={limit.dailyMovingLimit}
-            type="neutral"
-            icon="vault"
-          />
-          <MetricCard
-            title="1-time Moving Limit"
-            value={limit.oneTimeMovingLimit}
-            type="total"
-            icon="handCoins"
-          />
-          <MetricCard title="Moved Amount" value={limit.movedAmount} type="expense" icon="wallet" />
-          <MetricCard
-            title="Available Limit"
-            value={limit.availableLimit}
-            type="income"
-            icon="arrowRight"
-          />
+    <div className="relative">
+      {(loading || isLoading || isSendingOtp) && (
+        <div className="absolute inset-0 bg-white/70 z-50 flex items-center justify-center rounded-xl">
+          <Loading />
         </div>
+      )}
 
-        <Separator />
-
-        <div className="space-y-5">
+      <Card className="w-full">
+        <CardContent className="w-full pt-6 sm:space-y-6 space-y-4">
           <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Receiver <span className="text-red-700">*</span>
-              </label>
-              <ReceiverSelectField
-                value={receiver}
-                onChange={setReceiver}
-                error={errors.receiver}
-                placeholder="Search receiver by email"
-              />
-            </div>
-
-            <div>
-              <AmountSelect
-                key="amount"
-                name="amount"
-                currency={currency}
-                label="Amount"
-                required
-                value={amountInput}
-                onChange={setAmountInput}
-                error={errors.amount}
-                max={getCurrentBalance()}
-              />
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 grid-cols-1 gap-5">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Category (Optional)
-              </label>
-              <CategorySelect
-                name="category"
-                value={categoryId}
-                onChange={setCategoryId}
-                categories={categories}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Product (Optional)
-              </label>
-              <ProductSelectField
-                name="product"
-                value={productId}
-                onChange={setProductId}
-                products={products}
-              />
-            </div>
-          </div>
-
-          <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
-            <div className="flex-1">
-              <InputOtp value={otp} onChange={setOtp} error={errors.otp} />
-            </div>
-            <SendOtpButton
-              classNameBtn="mt-[25px]"
-              state={otpState}
-              callback={handleGetOtp}
-              countdown={120}
-              isStartCountdown={otpState !== 'Get'}
+            <MetricCard
+              title="Daily Moving Limit"
+              value={limit.dailyMovingLimit}
+              type="neutral"
+              icon="vault"
+            />
+            <MetricCard
+              title="1-time Moving Limit"
+              value={limit.oneTimeMovingLimit}
+              type="total"
+              icon="handCoins"
+            />
+            <MetricCard
+              title="Moved Amount"
+              value={limit.movedAmount}
+              type="expense"
+              icon="wallet"
+            />
+            <MetricCard
+              title="Available Limit"
+              value={limit.availableLimit}
+              type="income"
+              icon="arrowRight"
             />
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          <Separator />
+
+          <div className="space-y-5">
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Receiver <span className="text-red-700">*</span>
+                </label>
+                <ReceiverSelectField
+                  value={receiver}
+                  onChange={setReceiver}
+                  error={errors.receiver}
+                  placeholder="Search receiver by email"
+                />
+              </div>
+
+              <div>
+                <AmountSelect
+                  key="amount"
+                  name="amount"
+                  currency={currency}
+                  label="Amount"
+                  required
+                  value={amountInput}
+                  onChange={setAmountInput}
+                  error={errors.amount}
+                  max={getCurrentBalance()}
+                />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 grid-cols-1 gap-5">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Category (Optional)
+                </label>
+                <CategorySelect
+                  name="category"
+                  value={categoryId}
+                  onChange={setCategoryId}
+                  categories={categories}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Product (Optional)
+                </label>
+                <ProductSelectField
+                  name="product"
+                  value={productId}
+                  onChange={setProductId}
+                  products={products}
+                />
+              </div>
+            </div>
+
+            <div className="sm:grid sm:grid-cols-2 flex gap-4 items-start">
+              <div className="flex-1">
+                <InputOtp value={otp} onChange={setOtp} error={errors.otp} />
+              </div>
+              <SendOtpButton
+                classNameBtn="mt-[25px]"
+                state={otpState}
+                callback={handleGetOtp}
+                countdown={120}
+                isStartCountdown={otpState !== 'Get'}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 
-  if (isShowSendingFXForm && (isLoading || loading || isSendingOtp)) return <Loading />;
-  // ================= RENDER =================
   return (
-    <>
-      <GlobalDialog
-        open={isShowSendingFXForm}
-        onOpenChange={handleClose}
-        onCancel={handleClose}
-        onConfirm={handleSubmit}
-        confirmText="Submit"
-        renderContent={_renderContent}
-        cancelText="Cancel and go back"
-        type="info"
-        isLoading={loading || isLoading}
-        title="SENDING FX"
-        description="Please be careful when sending your FX to another user. Any mistaken transaction will be your responsibility."
-        className="w-full max-w-[95vw] md:max-w-[700px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 bg-white"
-      />
-    </>
+    <GlobalDialog
+      open={isShowSendingFXForm}
+      onOpenChange={handleClose}
+      onCancel={handleClose}
+      onConfirm={handleSubmit}
+      confirmText="Submit"
+      renderContent={_renderContent}
+      cancelText="Cancel"
+      type="info"
+      isLoading={loading || isLoading || isSendingOtp}
+      title="SENDING FX"
+      description="Please be careful when sending your FX to another user. Any mistaken transaction will be your responsibility."
+      className="w-full max-w-[95vw] md:max-w-[700px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl p-6 md:p-8 bg-white"
+    />
   );
 }
 

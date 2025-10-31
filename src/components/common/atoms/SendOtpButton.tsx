@@ -1,6 +1,8 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
+import { OtpState } from '@/shared/types/otp';
 import { useEffect, useState } from 'react';
-import { OtpState } from '../../types';
 
 type ChildProps = {
   state?: OtpState;
@@ -23,30 +25,20 @@ function SendOtpButton({
 
   useEffect(() => {
     if (count <= 0) return;
-
     const timer = setInterval(() => {
-      setCount((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-
-        return prev - 1;
-      });
+      setCount((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
-
     return () => clearInterval(timer);
   }, [count]);
 
   const handleButtonClick = () => {
     callback();
-
     if (isStartCountdown && count === 0) setCount(countdown);
   };
 
   useEffect(() => {
     if (isStartCountdown && count === 0) setCount(countdown);
-  }, [isStartCountdown]);
+  }, [isStartCountdown, count, countdown]);
 
   return (
     <div className={classNameBtn}>
@@ -56,7 +48,9 @@ function SendOtpButton({
         </Button>
       ) : (
         <div
-          className={`h-9 flex items-center ${classNameText} ${count <= 5 && 'text-red-600 dark:text-red-400'}`}
+          className={`h-9 flex items-center ${classNameText} ${
+            count <= 5 ? 'text-red-600 dark:text-red-400' : ''
+          }`}
         >
           {state} in {count}s
         </div>

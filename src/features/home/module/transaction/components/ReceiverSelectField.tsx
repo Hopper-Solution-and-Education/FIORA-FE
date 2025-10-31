@@ -11,11 +11,14 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { httpClient } from '@/config';
+import { debounce } from 'lodash';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
 
+// ======================== Types ========================
 interface Receiver {
   id: string;
   email: string;
@@ -37,8 +40,11 @@ interface ReceiverSelectFieldProps {
   className?: string;
 }
 
-const isImageUrl = (url?: string) => !!url && /^https?:\/\/.*\.(png|jpg|jpeg|gif|svg)$/.test(url);
+// ======================== Helper ========================
+const isImageUrl = (url?: string) =>
+  !!url && /^https?:\/\/.*\.(png|jpg|jpeg|gif|svg|webp)$/.test(url);
 
+// ======================== Component ========================
 const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
   value,
   onChange = () => {},
@@ -53,58 +59,78 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
   const [displayLabel, setDisplayLabel] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // ======================== Fetch receivers ========================
   const fetchReceivers = useCallback(async (q: string) => {
     if (!q.trim()) {
       setOptions([]);
       return;
     }
+
     setLoading(true);
     try {
-      const res = await fetch(`/api/sending-wallet/recommend-reciever?q=${encodeURIComponent(q)}`);
-      const json = await res.json();
-      if (!res.ok || json.status !== 200)
-        throw new Error(json.message || 'Failed to fetch receivers');
-      const data: Receiver[] = json.data || [];
-      const opts: ReceiverOptionType[] = data.map((r) => ({
-        value: r.email,
-        label: r.name || r.email,
-        icon: r.image || undefined,
-      }));
+      const json = await httpClient.get<{
+        status: number;
+        message?: string;
+        data?: Receiver[];
+      }>(`/api/sending-wallet/recommend-reciever?q=${encodeURIComponent(q)}`);
+
+      if (!json || json.status !== 200) {
+        throw new Error(json?.message || 'Failed to fetch receivers');
+      }
+
+      const receivers = json.data ?? [];
+      const opts: ReceiverOptionType[] = receivers
+        .filter((r) => r?.email && r?.id)
+        .map((r) => ({
+          value: r.email,
+          label: r.name || r.email,
+          icon: r.image || undefined,
+        }));
+
       setOptions(opts);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+    } catch (e: any) {
+      toast.error(e?.message || 'Unable to load receivers');
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // ======================== Debounce search ========================
   useEffect(() => {
-    if (search) {
-      const timeout = setTimeout(() => {
-        fetchReceivers(search);
-      }, 300);
-      return () => clearTimeout(timeout);
-    } else {
+    if (!search.trim()) {
       setOptions([]);
+      return;
     }
+
+    const debouncedFetch = debounce((query: string) => {
+      fetchReceivers(query);
+    }, 350);
+
+    debouncedFetch(search);
+
+    // Cleanup: cancel debounce khi component unmount hoặc search thay đổi
+    return () => {
+      debouncedFetch.cancel();
+    };
   }, [search, fetchReceivers]);
 
-  // Update displayLabel nếu value thay đổi từ parent
+  // ======================== Sync label with selected value ========================
   useEffect(() => {
     if (value) {
-      // Lấy luôn email của người được chọn
       setDisplayLabel(value);
-    } else {
-      setDisplayLabel('');
     }
   }, [value]);
 
+  // ======================== Auto focus input when open ========================
   useEffect(() => {
-    if (open && inputRef.current) inputRef.current.focus();
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
   }, [open]);
 
+  // ======================== Render icon or fallback ========================
   const renderIconOrImage = (icon?: string) => {
-    if (!icon) return null;
+    if (!icon) return <Icons.user className="w-4 h-4 text-muted-foreground" />;
     if (isImageUrl(icon)) {
       return (
         <div className="w-5 h-5 rounded-full overflow-hidden">
@@ -112,9 +138,10 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
         </div>
       );
     }
-    return <Icons.user className="w-4 h-4" />;
+    return <Icons.user className="w-4 h-4 text-muted-foreground" />;
   };
 
+  // ======================== Render ========================
   return (
     <div className={className}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -127,8 +154,9 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
             onClick={() => setOpen((prev) => !prev)}
           >
             <span className="flex items-center gap-2">
-              {displayLabel &&
-                renderIconOrImage(options.find((o) => o.label === displayLabel)?.icon)}
+              {displayLabel
+                ? renderIconOrImage(options.find((o) => o.value === value)?.icon)
+                : null}
               {displayLabel || placeholder}
             </span>
             <Icons.chevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -158,9 +186,9 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
                       key={opt.value}
                       value={opt.value}
                       onSelect={() => {
-                        onChange(opt.value); // cập nhật parent
-                        setDisplayLabel(opt.value); // hiển thị email
-                        setSearch(''); // reset input
+                        onChange(opt.value);
+                        setDisplayLabel(opt.value);
+                        setSearch('');
                         setOpen(false);
                       }}
                     >
@@ -168,8 +196,7 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
                         {renderIconOrImage(opt.icon)}
                         <span>
                           {opt.label} ({opt.value})
-                        </span>{' '}
-                        {/* tên + email trong dropdown */}
+                        </span>
                         {value === opt.value && <Icons.check className="ml-auto w-4 h-4" />}
                       </div>
                     </CommandItem>

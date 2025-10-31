@@ -1,8 +1,9 @@
+import AmountIntputDropDown from '@/components/common/forms/input/AmountInputDropdown';
+import { DEFAULT_AMOUNT_PACKAGES } from '@/shared/constants/amount';
 import { Currency } from '@prisma/client';
 import { uniqueId } from 'lodash';
 import React, { useMemo } from 'react';
 import { FieldError } from 'react-hook-form';
-import InputDropdown from './InputDropdown';
 
 interface AmountSelectProps {
   name?: string;
@@ -12,7 +13,7 @@ interface AmountSelectProps {
   required?: boolean;
   onChange?: (value: number) => void;
   error?: FieldError;
-  initialPackages?: number[]; // 👈 thêm prop này để truyền từ ngoài vào
+  initialPackages?: number[];
   [key: string]: any;
 }
 
@@ -23,17 +24,14 @@ const AmountSelect: React.FC<AmountSelectProps> = ({
   required,
   onChange = () => {},
   error,
-  initialPackages, // 👈 nhận từ props
+  initialPackages,
 }) => {
-  // fallback: nếu không truyền vào thì dùng mặc định
   const amountPackages = useMemo(() => {
-    return initialPackages?.length
-      ? initialPackages
-      : [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+    return initialPackages?.length ? initialPackages : DEFAULT_AMOUNT_PACKAGES;
   }, [initialPackages]);
 
   return (
-    <InputDropdown
+    <AmountIntputDropDown
       name="amount"
       label={label}
       placeholder="Please type or select amount!"
