@@ -432,6 +432,12 @@ class NotificationUseCase {
             },
           });
 
+          await prisma.notification.update({
+            where: { id: notification.id },
+            data: {
+              message: renderedContent,
+            },
+          });
           // Update result
           result.totalProcessed++;
           if (emailResult.success) {
