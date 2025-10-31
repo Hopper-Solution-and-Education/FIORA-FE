@@ -12,7 +12,7 @@ import {
   identificationDocumentSchema,
   updateIdentificationDocumentSchema,
 } from '@/shared/validators/identificationValidator';
-import { KYCStatus } from '@prisma/client';
+import { IdentificationType, KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -74,7 +74,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   // Check if identification document exists and belongs to user
-  const existingDoc = await identificationRepository.getByType(userId, type);
+  const existingDoc = (await identificationRepository.getByUserId(userId)).find(
+    (item) => item.type !== IdentificationType.TAX,
+  );
+
   if (!existingDoc) {
     return res
       .status(RESPONSE_CODE.NOT_FOUND)
