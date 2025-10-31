@@ -127,7 +127,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               onChange={handleMinValueChange}
               placeholder={minLabel}
               currency={targetCurrency}
-              showSuggestion={false}
+              enableSuggestion={false}
               mode="onChange"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}
@@ -144,7 +144,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               onChange={handleMaxValueChange}
               placeholder={maxLabel}
               currency={targetCurrency}
-              showSuggestion={false}
+              enableSuggestion={false}
               mode="onChange"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}

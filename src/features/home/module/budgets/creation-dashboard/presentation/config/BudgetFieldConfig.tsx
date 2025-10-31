@@ -69,7 +69,7 @@ const useBudgetFieldConfig = () => {
       maxLength={11}
       // required
       disabled={isDisabledField}
-      showSuggestion
+      enableSuggestion
       mode="onChange"
     />,
     <InputCurrency
@@ -80,7 +80,7 @@ const useBudgetFieldConfig = () => {
       maxLength={11}
       // required
       disabled={isDisabledField}
-      showSuggestion
+      enableSuggestion
       mode="onChange"
     />,
     <TextareaField

@@ -26,7 +26,7 @@ interface InputCurrencyProps {
   required?: boolean;
   currency: string;
   maxLength?: number;
-  showSuggestion?: boolean;
+  enableSuggestion?: boolean;
   mode?: 'onBlur' | 'onChange';
   classContainer?: string;
   className?: string;
@@ -48,7 +48,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   required,
   currency,
   maxLength,
-  showSuggestion = false,
+  enableSuggestion = true,
   mode = 'onBlur',
   classContainer,
   className,
@@ -58,7 +58,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [showSuggestionValue, setShowSuggestionValue] = useState(showSuggestion);
+  const [showSuggestionValue, setShowSuggestionValue] = useState(false);
   const { formatCurrency } = useCurrencyFormatter();
   const [localValue, setLocalValue] = useState(
     formatCurrency(value, currency, { applyExchangeRate }),
@@ -161,7 +161,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         {...props}
       />
       {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
-      {value > 0 && showSuggestionValue && (
+      {value > 0 && enableSuggestion && showSuggestionValue && (
         <div className="w-[100%] flex flex-col justify-between items-start overflow-y-hidden overflow-x-auto">
           {/* Increate button group */}
           <div className="w-full h-11 flex justify-evenly items-center gap-2 py-2">
