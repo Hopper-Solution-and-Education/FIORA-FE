@@ -48,7 +48,7 @@ class IdentificationRepository {
             message: `User ${user.email} has submitted a new verify ${fieldName}.`,
             channel: ChannelType.BOX,
             notifyTo: NotificationType.ADMIN_CS,
-            type: 'BANK',
+            type: type,
             emails: [user.email],
             emailTemplateId: null,
             createdBy: null,
