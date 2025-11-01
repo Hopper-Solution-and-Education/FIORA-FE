@@ -34,6 +34,7 @@ const DialogDeleteBenefitTier = () => {
         dispatch(setIsShowDialogDeleteBenefitTier(!isShowDialogDeleteBenefitTier))
       }
       type="info"
+      title="Delete Benefit Tier"
       renderContent={() => (
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2">
@@ -112,8 +113,8 @@ const DialogDeleteBenefitTier = () => {
                     dispatch(setIsShowDialogDeleteBenefitTier(false));
                     setDeleteMode(ProcessMembershipMode.DELETE);
                   })
-                  .catch((error) => {
-                    toast.error(error);
+                  .catch((error: any) => {
+                    toast.error(error?.message || 'Failed to delete benefit tier');
                     dispatch(setIsShowDialogDeleteBenefitTier(false));
                   });
               }
