@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { cn } from '@/shared/utils';
-import { RootState } from '@/store/rootReducer';
-import { useSelector } from 'react-redux';
 import { IRelationalTransaction } from '../types';
 import { TRANSACTION_TYPE } from '../utils/constants';
 import { formatDate } from '../utils/formatDate';
@@ -20,7 +18,6 @@ type DeleteAccountDialogProps = {
 
 const DeleteTransactionDialog = (props: DeleteAccountDialogProps) => {
   const { data, onClose, onDelete, open, isDeleting } = props;
-  const { baseCurrency } = useSelector((state: RootState) => state.settings);
 
   // Initialize currency formatter hook
   const { formatCurrency } = useCurrencyFormatter();
@@ -65,12 +62,9 @@ const DeleteTransactionDialog = (props: DeleteAccountDialogProps) => {
                   <div className="font-semibold text-gray-900 dark:text-gray-100 text-right">
                     {data ? (
                       <div className="space-y-1">
-                        <div>{formatCurrency(Number(data.amount), baseCurrency)}</div>
-                        {data.currency && data.currency !== baseCurrency && (
-                          <div className="text-xs text-gray-500">
-                            Original: {formatCurrency(Number(data.amount), data.currency)}
-                          </div>
-                        )}
+                        <div>
+                          {formatCurrency(Number(data.baseAmount), data?.baseCurrency as string)}
+                        </div>
                       </div>
                     ) : (
                       'Unknown'
@@ -100,13 +94,7 @@ const DeleteTransactionDialog = (props: DeleteAccountDialogProps) => {
                   </strong>{' '}
                   with amount{' '}
                   <strong className={`text-${TRANSACTION_TYPE[data.type.toUpperCase()]}`}>
-                    {formatCurrency(Number(data.amount), baseCurrency)}
-                    {data.currency && data.currency !== baseCurrency && (
-                      <span className="text-gray-500">
-                        {' '}
-                        (Original: {formatCurrency(Number(data.amount), data.currency)})
-                      </span>
-                    )}
+                    {formatCurrency(Number(data.baseAmount), data?.baseCurrency as string)}
                   </strong>
                 </>
               )}
