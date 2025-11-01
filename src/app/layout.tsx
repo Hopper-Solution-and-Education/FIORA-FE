@@ -5,6 +5,7 @@ import Providers from '@/components/providers';
 import { initGrowthBook } from '@/config/growthbook/growthbook';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
+import { cn } from '@/shared/utils';
 import { Inter } from 'next/font/google';
 import React, { useEffect } from 'react';
 import 'reflect-metadata';
@@ -38,7 +39,7 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={inter.className}>
+      <body className={cn(inter.className, 'antialiased')}>
         <React.StrictMode>
           <Providers>
             <MainLayout>{children}</MainLayout>
