@@ -6,35 +6,34 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { HelpCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import { helpItems } from '../utils';
 
 type HelpCenterProps = {
-  isShowingText?: boolean;
+  showLabel?: boolean;
 };
 
-export default function HelpCenter({ isShowingText = true }: HelpCenterProps) {
+export default function HelpCenter({ showLabel = true }: HelpCenterProps) {
   return (
     <DropdownMenu modal={false}>
-      <CommonTooltip content="Helps">
-        <DropdownMenuTrigger asChild>
-          <div className="flex flex-col gap-1 justify-center items-center group">
-            <div className="p-2 rounded-lg transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20">
+      <DropdownMenuTrigger asChild>
+        <div>
+          <NavItem
+            label="Helps"
+            tooltip="Helps"
+            showLabel={showLabel}
+            icon={
               <HelpCircleIcon
                 size={ICON_SIZE.MD}
-                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110 cursor-pointer"
+                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110"
               />
-            </div>
-            {isShowingText && (
-              <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-                Helps
-              </span>
-            )}
-          </div>
-        </DropdownMenuTrigger>
-      </CommonTooltip>
+            }
+          />
+        </div>
+      </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
         sideOffset={8}

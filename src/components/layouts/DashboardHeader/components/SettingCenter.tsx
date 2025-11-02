@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import growthbook from '@/config/growthbook/growthbook';
+import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -21,10 +22,10 @@ import { useEffect, useState } from 'react';
 import { filterMenuItems, MenuSettingItem, menuSettingItems } from '../utils';
 
 type SettingCenterProps = {
-  isShowingText?: boolean;
+  showLabel?: boolean;
 };
 
-export default function SettingCenter({ isShowingText = true }: SettingCenterProps) {
+export default function SettingCenter({ showLabel = true }: SettingCenterProps) {
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
   const gb = growthbook;
@@ -60,23 +61,21 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
 
   return (
     <DropdownMenu modal={false}>
-      <CommonTooltip content={<p>Settings</p>} side="top" delayDuration={0}>
-        <DropdownMenuTrigger asChild>
-          <div className="flex flex-col gap-1 justify-center items-center group">
-            <div className="p-2 rounded-lg transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20">
+      <DropdownMenuTrigger asChild>
+        <div>
+          <NavItem
+            label="Settings"
+            tooltip="Settings"
+            showLabel={showLabel}
+            icon={
               <Settings
                 size={ICON_SIZE.MD}
-                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110 cursor-pointer"
+                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110"
               />
-            </div>
-            {isShowingText && (
-              <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-                Settings
-              </span>
-            )}
-          </div>
-        </DropdownMenuTrigger>
-      </CommonTooltip>
+            }
+          />
+        </div>
+      </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
@@ -84,19 +83,6 @@ export default function SettingCenter({ isShowingText = true }: SettingCenterPro
           session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
         } p-4 grid gap-4 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm`}
       >
-        {/* <CommonTooltip content={<span>Toggle Theme</span>} side="top" delayDuration={0}>
-          <div
-            onClick={toggleTheme}
-            className="flex flex-col items-center justify-center w-10 h-10 rounded-full border transition cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {theme === 'dark' ? (
-              <Icons.sun size={ICON_SIZE.MD} />
-            ) : (
-              <Icons.moon size={ICON_SIZE.MD} />
-            )}
-          </div>
-        </CommonTooltip> */}
-
         <CommonTooltip content={<span>Currency Display</span>} side="top" delayDuration={0}>
           <div
             onClick={handleOpenCurrencyDropdown}

@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import type { UseFormReturn } from 'react-hook-form';
@@ -156,7 +157,7 @@ const ResetPasswordForm = ({
         </div>
 
         <div className="flex justify-center gap-4 w-full mt-8">
-          <Link href="/auth/sign-in">
+          <Link href={RouteEnum.SignIn}>
             <Button
               type="button"
               className="text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center transition-all duration-200"

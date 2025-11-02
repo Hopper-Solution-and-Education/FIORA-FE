@@ -7,6 +7,7 @@ import UserAvatar from '@/features/setting/module/user-management/presentation/a
 import { useGetUsersQuery } from '@/features/setting/module/user-management/store/api/userApi';
 import { COLORS } from '@/shared/constants/chart';
 import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { ICON_SIZE } from '@/shared/constants/size';
 import { UserRole } from '@/shared/constants/userRole';
 import { useCurrencyFormatter } from '@/shared/hooks';
@@ -28,11 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu';
 
-interface UserNavProps {
-  handleSignOut?: () => void;
-}
-
-function UserNav({ handleSignOut }: UserNavProps) {
+function UserNav() {
   const router = useRouter();
   const { data: profile } = useGetProfileQuery();
   const { data: userData } = useGetUsersQuery({ pageSize: 3 });
@@ -69,10 +66,6 @@ function UserNav({ handleSignOut }: UserNavProps) {
         </DropdownMenuShortcut>
       </DropdownMenuItem>
     );
-  };
-
-  const handleClickMembership = () => {
-    router.push('/membership');
   };
 
   const profileRole = () => {
@@ -116,7 +109,7 @@ function UserNav({ handleSignOut }: UserNavProps) {
         {profile ? (
           <>
             <DropdownMenuItem>
-              <div className="w-full space-y-2 cursor-pointer" onClick={handleClickMembership}>
+              <Link className="w-full space-y-2 cursor-pointer" href={RouteEnum.Membership}>
                 <div className="text-sm">Membership</div>
                 <SegmentProgressBar
                   leftLabel={userTier?.currentTier?.tierName || ''}
@@ -136,7 +129,7 @@ function UserNav({ handleSignOut }: UserNavProps) {
                   min={userTier?.currentTier?.spentMinThreshold}
                   max={userTier?.nextSpendingTier?.spentMinThreshold}
                 />
-              </div>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>{globalNavItems.map(renderNavItem)}</DropdownMenuGroup>
@@ -179,10 +172,8 @@ function UserNav({ handleSignOut }: UserNavProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
-                // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
                 clearExchangeRateData();
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                handleSignOut ? handleSignOut() : await signOut();
+                signOut();
               }}
               className="cursor-pointer"
             >

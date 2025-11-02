@@ -5,7 +5,6 @@ import { AnimatePresence } from 'framer-motion';
 import { LogInIcon, Menu, UserPlus, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
@@ -19,17 +18,18 @@ import {
 } from '@/components/layouts/DashboardHeader/components/SettingCenter';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { ICON_SIZE } from '@/shared/constants/size';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import { useSession } from 'next-auth/react';
 import { SectionTypeEnum } from '../../constants';
 import { useGetSection } from '../../hooks/useGetSection';
+import { NavItem } from '../atoms/NavItem';
 
 export default function Header() {
   const { section, isLoading } = useGetSection(SectionTypeEnum.HEADER);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data } = useSession();
-  const router = useRouter();
 
   const {
     announcement,
@@ -40,14 +40,6 @@ export default function Header() {
   const toggleMenu = () => setIsMenuOpen((prevState) => !prevState);
 
   const logo = section?.medias?.[0]?.media_url || HopperLogo;
-
-  const handleSignUp = () => {
-    router.push('/auth/sign-up');
-  };
-
-  const handleSignIn = () => {
-    router.push('/auth/sign-in');
-  };
 
   return (
     <header id="app-header" className={`app-bar bg-background/100 shadow-lg relative`}>
@@ -72,6 +64,7 @@ export default function Header() {
                 <MarqueeAnnouncement className="text-sm w-full text-red-700">
                   {announcement?.data?.[0]?.content}
                 </MarqueeAnnouncement>
+
                 <Button variant="ghost" size="icon" onClick={handleCloseAnnouncement}>
                   ✕
                 </Button>
@@ -79,18 +72,10 @@ export default function Header() {
             )}
             <div className="flex w-full justify-end">
               {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-8 px-8">
-                <CommonTooltip content="News">
-                  <NewsCenter />
-                </CommonTooltip>
-
-                <CommonTooltip content="Helps">
-                  <HelpCenter />
-                </CommonTooltip>
-
-                <CommonTooltip content="Settings">
-                  <SettingCenter />
-                </CommonTooltip>
+              <nav className="hidden md:flex items-center gap-6 px-8">
+                <NewsCenter />
+                <HelpCenter />
+                <SettingCenter />
 
                 {data?.user ? (
                   <CommonTooltip content="User Menu">
@@ -98,26 +83,30 @@ export default function Header() {
                   </CommonTooltip>
                 ) : (
                   <>
-                    <CommonTooltip content="Sign Up">
-                      <div className="flex flex-col gap-1 justify-center items-center">
-                        <UserPlus
-                          onClick={handleSignUp}
-                          size={ICON_SIZE.MD}
-                          className="transition-all duration-200 hover:scale-110 cursor-pointer"
-                        />
-                        <span className="text-sm">Sign Up</span>
-                      </div>
-                    </CommonTooltip>
-                    <CommonTooltip content="Sign In">
-                      <div className="flex flex-col gap-1 justify-center items-center">
-                        <LogInIcon
-                          onClick={handleSignIn}
-                          size={ICON_SIZE.MD}
-                          className="transition-all duration-200 hover:scale-110 cursor-pointer"
-                        />
-                        <span className="text-sm">Sign In</span>
-                      </div>
-                    </CommonTooltip>
+                    <Link href={RouteEnum.SignUp}>
+                      <NavItem
+                        label="Sign Up"
+                        tooltip="Sign Up"
+                        icon={
+                          <UserPlus
+                            size={ICON_SIZE.MD}
+                            className="transition-all duration-200 group-hover:scale-110 group-hover:text-primary"
+                          />
+                        }
+                      />
+                    </Link>
+                    <Link href={RouteEnum.SignIn}>
+                      <NavItem
+                        label="Sign In"
+                        tooltip="Sign In"
+                        icon={
+                          <LogInIcon
+                            size={ICON_SIZE.MD}
+                            className="transition-all duration-200 group-hover:scale-110 group-hover:text-primary"
+                          />
+                        }
+                      />
+                    </Link>
                   </>
                 )}
               </nav>
@@ -152,20 +141,30 @@ export default function Header() {
                 <UserNav />
               ) : (
                 <>
-                  <CommonTooltip content="Sign Up">
-                    <UserPlus
-                      onClick={handleSignUp}
-                      size={18}
-                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  <Link href={RouteEnum.SignUp}>
+                    <NavItem
+                      label="Sign Up"
+                      tooltip="Sign Up"
+                      icon={
+                        <UserPlus
+                          size={24}
+                          className="transition-all duration-200 group-hover:scale-110 group-hover:text-primary"
+                        />
+                      }
                     />
-                  </CommonTooltip>
-                  <CommonTooltip content="Sign In">
-                    <LogInIcon
-                      onClick={handleSignIn}
-                      size={18}
-                      className="transition-all duration-200 hover:text-primary hover:scale-110 cursor-pointer"
+                  </Link>
+                  <Link href={RouteEnum.SignIn}>
+                    <NavItem
+                      label="Sign In"
+                      tooltip="Sign In"
+                      icon={
+                        <LogInIcon
+                          size={24}
+                          className="transition-all duration-200 group-hover:scale-110 group-hover:text-primary"
+                        />
+                      }
                     />
-                  </CommonTooltip>
+                  </Link>
                 </>
               )}
             </div>

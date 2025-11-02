@@ -1,4 +1,8 @@
 export enum RouteEnum {
+  SignIn = '/auth/sign-in',
+  SignUp = '/auth/sign-up',
+  ForgotPassword = '/auth/sign-in/forgot-password',
+
   Budgets = '/budgets',
   BudgetSummary = '/budgets/summary/{year}',
   BudgetDetail = '/budgets/summary/detail/{year}',
@@ -11,6 +15,9 @@ export enum RouteEnum {
   WalletSaving = '/wallet/saving',
   WalletReferral = '/wallet/referral',
 
+  // Membership
+  Membership = '/membership',
+
   // Notification
   NotificationDashboard = '/setting/notification',
   NotificationDetail = '/setting/notification/details/{id}',
@@ -21,4 +28,8 @@ export enum RouteEnum {
   CronjobReferral = '/setting/cron-job/referral',
   UserNotificationDetail = '/notification/details/{id}',
   FlexiInterest = '/setting/cron-job/flexi-interest',
+
+  // News & Helps
+  News = '/news',
+  HelpsCenter = '/helps-center',
 }
