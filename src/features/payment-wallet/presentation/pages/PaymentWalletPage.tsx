@@ -1,6 +1,6 @@
 'use client';
 
-import { SendingFXForm } from '@/features/sending/presentation/views';
+import { SendingFXForm } from '@/features/sending';
 import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 import { PaymentWalletOverview, PaymentWalletTable } from '../organisms';
 

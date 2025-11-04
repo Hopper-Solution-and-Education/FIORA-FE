@@ -9,7 +9,7 @@ interface AmountSelectProps {
   name?: string;
   value?: number;
   label?: string;
-  currency?: Currency;
+  currency?: Currency | string;
   required?: boolean;
   onChange?: (value: number) => void;
   error?: FieldError;
