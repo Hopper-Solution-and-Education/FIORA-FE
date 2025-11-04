@@ -341,6 +341,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
           currency: Currency.FX,
           isMarked: true,
           baseAmount: amountDecimal,
+          remark: description?.trim()
         },
       });
 
