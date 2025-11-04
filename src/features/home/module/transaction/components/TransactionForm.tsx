@@ -1,12 +1,15 @@
 'use client';
 
 import { FormConfig } from '@/components/common/forms';
+import { AppDispatch } from '@/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
+import { fetchSupportingData } from '../slices/createTransactionSlice';
 import {
   defaultNewTransactionValues,
   NewTransactionDefaultValues,
@@ -42,6 +45,7 @@ const TransactionForm = ({
   isExternalLoading = false,
 }: TransactionFormProps) => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const [hasChanges, setHasChanges] = useState(false);
 
   // Use external loading state if provided, otherwise use internal state
@@ -54,8 +58,17 @@ const TransactionForm = ({
     mode: 'onChange',
   });
 
-  const { watch } = methods;
+  const { watch, reset } = methods;
+  useEffect(() => {
+    if (mode === TransactionFormMode.Edit && initialData) {
+      reset(initialData); // Reset form với data mới
 
+      // Fetch supporting data cho type hiện tại
+      if (initialData.type) {
+        dispatch(fetchSupportingData(initialData.type));
+      }
+    }
+  }, [initialData, mode, reset, dispatch]);
   // Track form changes
   useEffect(() => {
     if (mode === TransactionFormMode.Edit && initialData) {

@@ -73,6 +73,11 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
+    const regex = /^\d+(\.\d*)?$/;
+    if (inputValue !== '' && !regex.test(inputValue)) {
+      return;
+    }
+
     // Use helper function to validate and format input
     const { isValid, formatted } = validateCurrencyInput(inputValue, allowNegative);
 
@@ -124,8 +129,10 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   const handleBlur = () => {
     setIsFocused(false);
 
+    const { formatted } = validateCurrencyInput(localValue, allowNegative);
+
     // Parse the input to a number and validate
-    const parsedValue = parseFloat(localValue);
+    const parsedValue = parseFloat(formatted);
     const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
 
     // Format the final value to ensure it meets our requirements

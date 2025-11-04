@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
+import { formatCurrencyNumber, RoundingMode } from '@/shared/utils/currencyFormat';
 import { useAppSelector } from '@/store';
 import { debounce } from 'lodash';
 import { useCallback, useMemo } from 'react';
@@ -50,10 +51,21 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
 
   const exchangeRate = getExchangeRate(currency, targetCurrency) || 1;
 
-  const minValue = baseCurrencyMinValue * exchangeRate;
-  const maxValue = baseCurrencyMaxValue * exchangeRate;
-  const minRange = baseCurrencyMinRange * exchangeRate;
-  const maxRange = baseCurrencyMaxRange * exchangeRate;
+  /// format và parse để input 900 tới 999 không bị sai số nhị phân tích lũy.
+  const minValue = parseFloat(
+    formatCurrencyNumber(baseCurrencyMinValue * exchangeRate, RoundingMode.NORMAL),
+  );
+  const maxValue = parseFloat(
+    formatCurrencyNumber(baseCurrencyMaxValue * exchangeRate, RoundingMode.NORMAL),
+  );
+  const minRange = parseFloat(
+    formatCurrencyNumber(baseCurrencyMinRange * exchangeRate, RoundingMode.NORMAL),
+  );
+  const maxRange = parseFloat(
+    formatCurrencyNumber(baseCurrencyMaxRange * exchangeRate, RoundingMode.NORMAL),
+  );
+
+  console.log('update lai', maxValue);
 
   // Minimum gap between min and max values (adjustable based on your needs)
   const MIN_GAP = 100;
@@ -128,7 +140,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               placeholder={minLabel}
               currency={targetCurrency}
               showSuggestion={false}
-              mode="onChange"
+              mode="onBlur"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}
             />
@@ -145,7 +157,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               placeholder={maxLabel}
               currency={targetCurrency}
               showSuggestion={false}
-              mode="onChange"
+              mode="onBlur"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}
             />

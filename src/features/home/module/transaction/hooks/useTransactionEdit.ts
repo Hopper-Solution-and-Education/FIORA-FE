@@ -45,17 +45,34 @@ export const useTransactionEdit = ({ transactionId, onSuccess }: UseTransactionE
   // Transform transaction data to form format
   const getFormData = (): Partial<NewTransactionDefaultValues> | null => {
     if (!transaction) return null;
+    let fromId = '';
+    let toId = '';
+
+    switch (transaction.type) {
+      case 'Income':
+        fromId = transaction.fromCategoryId || ''; // Income: from = category
+        toId = transaction.toAccountId || ''; // Income: to = account
+        break;
+      case 'Expense':
+        fromId = transaction.fromAccountId || ''; // Expense: from = account
+        toId = transaction.toCategoryId || ''; // Expense: to = category
+        break;
+      case 'Transfer':
+        fromId = transaction.fromAccountId || ''; // Transfer: from = account
+        toId = transaction.toAccountId || ''; // Transfer: to = account
+        break;
+    }
 
     return {
       type: transaction.type,
       date: new Date(transaction.date),
       amount: transaction.amount,
       currency: transaction.currency,
-      product: transaction.products?.[0]?.id || '',
-      fromId: transaction.fromAccountId || transaction.fromCategoryId || '',
-      toId: transaction.toAccountId || transaction.toCategoryId || '',
-      partnerId: transaction.partnerId || undefined,
-      remark: transaction.remark || 'NONE',
+      product: transaction.products?.[0]?.id || null,
+      fromId,
+      toId,
+      partnerId: transaction.partnerId || null,
+      remark: transaction.remark || '',
     };
   };
 
