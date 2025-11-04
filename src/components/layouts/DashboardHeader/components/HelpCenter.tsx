@@ -12,19 +12,13 @@ import { HelpCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import { helpItems } from '../utils';
 
-type HelpCenterProps = {
-  showLabel?: boolean;
-};
-
-export default function HelpCenter({ showLabel = true }: HelpCenterProps) {
+export default function HelpCenter() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <div>
           <NavItem
             label="Helps"
-            tooltip="Helps"
-            showLabel={showLabel}
             icon={
               <HelpCircleIcon
                 size={ICON_SIZE.MD}

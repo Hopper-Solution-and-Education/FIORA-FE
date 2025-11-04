@@ -6,17 +6,11 @@ import { ICON_SIZE } from '@/shared/constants/size';
 import { NewspaperIcon } from 'lucide-react';
 import Link from 'next/link';
 
-type NewsCenterProps = {
-  showLabel?: boolean;
-};
-
-export default function NewsCenter({ showLabel = true }: NewsCenterProps) {
+export default function NewsCenter() {
   return (
     <Link href={RouteEnum.News}>
       <NavItem
         label="News"
-        tooltip="News"
-        showLabel={showLabel}
         icon={
           <NewspaperIcon
             size={ICON_SIZE.MD}

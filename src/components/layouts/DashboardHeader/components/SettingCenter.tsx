@@ -21,11 +21,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { filterMenuItems, MenuSettingItem, menuSettingItems } from '../utils';
 
-type SettingCenterProps = {
-  showLabel?: boolean;
-};
-
-export default function SettingCenter({ showLabel = true }: SettingCenterProps) {
+export default function SettingCenter() {
   const { currency, language } = useAppSelector((state) => state.settings);
   const dispatch = useAppDispatch();
   const gb = growthbook;
@@ -65,8 +61,6 @@ export default function SettingCenter({ showLabel = true }: SettingCenterProps) 
         <div>
           <NavItem
             label="Settings"
-            tooltip="Settings"
-            showLabel={showLabel}
             icon={
               <Settings
                 size={ICON_SIZE.MD}

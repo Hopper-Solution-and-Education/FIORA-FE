@@ -70,6 +70,7 @@ export default function Header() {
                 </Button>
               </div>
             )}
+
             <div className="flex w-full justify-end">
               {/* Navigation */}
               <nav className="hidden md:flex items-center gap-6 px-8">
@@ -86,7 +87,6 @@ export default function Header() {
                     <Link href={RouteEnum.SignUp}>
                       <NavItem
                         label="Sign Up"
-                        tooltip="Sign Up"
                         icon={
                           <UserPlus
                             size={ICON_SIZE.MD}
@@ -98,7 +98,6 @@ export default function Header() {
                     <Link href={RouteEnum.SignIn}>
                       <NavItem
                         label="Sign In"
-                        tooltip="Sign In"
                         icon={
                           <LogInIcon
                             size={ICON_SIZE.MD}
