@@ -30,31 +30,34 @@ const ChartByCategory = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const processData = async () => {
-      if (Array.isArray(financeByCategory)) {
-        const chartData = await Promise.all(
-          financeByCategory
-            .filter((item) => {
-              if (viewChartByCategory === 'income') {
-                return item.totalIncome > 0;
-              }
-              return item.totalExpense > 0;
-            })
-            .map(async (item) => ({
-              name: item.name,
-              column: await getExchangeAmount({
-                amount: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
-                fromCurrency: item.currency as Currency,
-                toCurrency: currency,
-              }).convertedAmount,
-              icon: item.icon ?? 'wallet',
-            })),
-        );
-        setData(chartData);
-      }
-    };
-    processData();
-  }, [financeByCategory, viewChartByCategory, currency]);
+    if (Array.isArray(financeByCategory)) {
+      const baseCurrency = 'USD';
+
+      const chartData = financeByCategory
+        .filter((item) => {
+          if (viewChartByCategory === 'income') {
+            return item.totalIncome > 0;
+          }
+          return item.totalExpense > 0;
+        })
+        .map((item) => {
+          // Convert from USD base currency to selected display currency
+          const convertedAmount = getExchangeAmount({
+            amount: viewChartByCategory === 'income' ? item.totalIncome : item.totalExpense,
+            fromCurrency: baseCurrency as Currency,
+            toCurrency: currency,
+          });
+
+          return {
+            name: item.name,
+            column: convertedAmount.convertedAmount,
+            icon: item.icon ?? 'wallet',
+          };
+        });
+
+      setData(chartData);
+    }
+  }, [financeByCategory, viewChartByCategory, currency, getExchangeAmount]);
 
   return (
     <div className="space-y-8">

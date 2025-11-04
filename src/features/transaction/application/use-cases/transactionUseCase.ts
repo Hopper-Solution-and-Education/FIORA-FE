@@ -365,7 +365,7 @@ class TransactionUseCase {
 
   private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
     if (balance < amount) {
-      throw new Error(errorMessage);
+      throw new ConflictError(errorMessage);
     }
   }
 

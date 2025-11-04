@@ -73,6 +73,11 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
+    const regex = /^\d+(\.\d*)?$/;
+    if (inputValue !== '' && !regex.test(inputValue)) {
+      return;
+    }
+
     // Use helper function to validate and format input
     const { isValid, formatted } = validateCurrencyInput(inputValue, allowNegative);
 
@@ -81,8 +86,13 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
       return;
     }
 
-    // Update local value with formatted input
-    setLocalValue(formatted);
+    // If input is negative
+    if (allowNegative && inputValue.startsWith('-') && !localValue.includes('-')) {
+      setLocalValue(inputValue);
+    } else {
+      // Update local value with formatted input
+      setLocalValue(formatted);
+    }
 
     // Handle real-time validation and onChange mode
     if (mode === 'onChange') {
@@ -119,8 +129,10 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   const handleBlur = () => {
     setIsFocused(false);
 
+    const { formatted } = validateCurrencyInput(localValue, allowNegative);
+
     // Parse the input to a number and validate
-    const parsedValue = parseFloat(localValue);
+    const parsedValue = parseFloat(formatted);
     const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
 
     // Format the final value to ensure it meets our requirements
@@ -141,6 +153,12 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
     if (onBlur) onBlur();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
   return (
     <div className={cn('mb-4', classContainer)}>
       {label &&
@@ -153,6 +171,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         value={isFocused ? localValue : formatCurrency(value, currency, { applyExchangeRate })}
         onChange={handleChange}
         onFocus={handleFocus}
+        onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder}
         maxLength={maxLength}
