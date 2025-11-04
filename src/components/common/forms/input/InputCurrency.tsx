@@ -81,8 +81,13 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
       return;
     }
 
-    // Update local value with formatted input
-    setLocalValue(formatted);
+    // If input is negative
+    if (allowNegative && inputValue.startsWith('-') && !localValue.includes('-')) {
+      setLocalValue(inputValue);
+    } else {
+      // Update local value with formatted input
+      setLocalValue(formatted);
+    }
 
     // Handle real-time validation and onChange mode
     if (mode === 'onChange') {
@@ -141,6 +146,12 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
     if (onBlur) onBlur();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    }
+  };
+
   return (
     <div className={cn('mb-4', classContainer)}>
       {label &&
@@ -153,6 +164,7 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
         value={isFocused ? localValue : formatCurrency(value, currency, { applyExchangeRate })}
         onChange={handleChange}
         onFocus={handleFocus}
+        onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder={placeholder}
         maxLength={maxLength}
