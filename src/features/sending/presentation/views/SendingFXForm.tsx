@@ -388,7 +388,7 @@ function SendingFXForm() {
             <div className="sm:grid flex gap-4 items-start">
               <div className="flex-1">
                 <Controller
-                  name="productId"
+                  name="description"
                   control={control}
                   render={({ field }) => (
                     <TextareaField
