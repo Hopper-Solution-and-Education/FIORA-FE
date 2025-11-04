@@ -115,11 +115,11 @@ export class FinanceUseCase {
       const totalProfit = totals.income - totals.expense;
 
       return {
+        currency: DEFAULT_BASE_CURRENCY,
         ...partner,
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: DEFAULT_BASE_CURRENCY,
       };
     });
 
