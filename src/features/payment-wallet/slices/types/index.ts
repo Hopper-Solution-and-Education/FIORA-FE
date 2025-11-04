@@ -107,6 +107,7 @@ export interface FetchPaymentWalletTransactionsRequest {
   page?: number;
   pageSize: number;
   searchParams?: string;
+  sortBy?: { [key: string]: 'asc' | 'desc' };
 }
 
 export interface FetchPaymentWalletDashboardSuccess {
