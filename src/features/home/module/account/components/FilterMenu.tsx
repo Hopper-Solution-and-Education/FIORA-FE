@@ -88,12 +88,29 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Calculate min/max balance values from Redux state or use defaults
+  // These values come from the backend in base currency, so we need to convert them
   const accountStatistics = useMemo(() => {
+    const baseMinBalance = minBalance ?? DEFAULT_MIN_BALANCE;
+    const baseMaxBalance = maxBalance ?? DEFAULT_MAX_BALANCE;
+
+    // Convert from base currency to selected currency for display
+    const convertedMin = getExchangeAmount({
+      amount: baseMinBalance,
+      fromCurrency: baseCurrency,
+      toCurrency: selectedCurrency,
+    });
+
+    const convertedMax = getExchangeAmount({
+      amount: baseMaxBalance,
+      fromCurrency: baseCurrency,
+      toCurrency: selectedCurrency,
+    });
+
     return {
-      minBalance: minBalance ?? DEFAULT_MIN_BALANCE,
-      maxBalance: maxBalance ?? DEFAULT_MAX_BALANCE,
+      minBalance: convertedMin.convertedAmount,
+      maxBalance: convertedMax.convertedAmount,
     };
-  }, [minBalance, maxBalance]);
+  }, [minBalance, maxBalance, baseCurrency, selectedCurrency, getExchangeAmount]);
 
   // Extract filter data from filters object
   const extractFilterData = useCallback(
@@ -144,7 +161,7 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
         // Handle AND array structure for balance (now baseAmount)
         if (Array.isArray(filters.AND)) {
           filters.AND.forEach((condition: FilterAndCondition) => {
-            // Handle baseAmount conditions
+            // Handle direct baseAmount conditions
             if (condition.baseAmount) {
               if (condition.baseAmount.gte !== undefined) {
                 // Convert from base currency to selected currency for display

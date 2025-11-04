@@ -29,6 +29,7 @@ export const fetchPaymentWalletTransactionsAsyncThunk = createAsyncThunk<
       page: params.page,
       pageSize: params.pageSize || 10,
       search: params.searchParams || '',
+      sortBy: params.sortBy || { createdAt: 'desc' },
     };
 
     const res = await httpClient.post<Response<RawPaymentWalletResponse>>(

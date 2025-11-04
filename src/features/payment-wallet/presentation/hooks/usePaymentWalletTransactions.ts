@@ -35,6 +35,7 @@ export const usePaymentWalletTransactions = () => {
           pageSize: pageSize || 10,
           searchParams: searchTerm || '',
           filters: filterCriteria.filters || {},
+          sortBy: { createdAt: 'desc' },
           ...params,
         };
 
@@ -106,10 +107,6 @@ export const usePaymentWalletTransactions = () => {
 
   // Computed values
   const hasTransactions = useMemo(() => transactions.length > 0, [transactions]);
-  const hasNextPage = useMemo(() => {
-    if (!pagination) return false;
-    return pagination.hasNextPage ?? pagination.page < pagination.totalPage;
-  }, [pagination]);
   const hasPreviousPage = useMemo(() => {
     if (!pagination) return false;
     return pagination.hasPreviousPage ?? pagination.page > 1;
@@ -132,7 +129,6 @@ export const usePaymentWalletTransactions = () => {
 
     // Computed values
     hasTransactions,
-    hasNextPage,
     hasPreviousPage,
     totalCount,
 

@@ -99,10 +99,7 @@ const ChartByProduct = () => {
             },
           ]}
           tooltipFormatter={(data) => {
-            console.log('Tooltip data:', data);
             const profit = data.originalProfit;
-            console.log('Profit in tooltip:', profit);
-            console.log('Currency in tooltip:', data.currency);
             return (
               <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
                 <div className="flex items-center gap-2">
