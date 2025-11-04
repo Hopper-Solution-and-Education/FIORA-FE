@@ -5,7 +5,7 @@ import {
   WalletTransferButton,
   WalletWithdrawButton,
 } from '@/components/common/atoms';
-import { SendingFXForm } from '@/features/sending/presentation/views';
+import { SendingFXForm } from '@/features/sending';
 import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 
 const WalletAction = ({
