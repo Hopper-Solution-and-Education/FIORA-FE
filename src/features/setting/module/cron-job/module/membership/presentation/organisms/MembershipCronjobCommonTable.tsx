@@ -4,6 +4,7 @@ import {
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
+import { useAppSelector } from '@/store';
 import { useMemo, useState } from 'react';
 import MembershipActionButton from '../atoms/MembershipActionButton';
 import MembershipStatusBadge from '../atoms/MembershipStatusBadge';
@@ -29,6 +30,8 @@ const MembershipCronjobCommonTable = ({
   onLoadMore,
   className,
 }: Props) => {
+  const { filter } = useAppSelector((s) => s.membershipCronjob);
+
   const columns: CommonTableColumn<MembershipCronjobTableData>[] = useMemo(
     () => [
       {
@@ -135,6 +138,7 @@ const MembershipCronjobCommonTable = ({
       onLoadMore={onLoadMore}
       className={className}
       leftHeaderNode={<MembershipTopBarAction />}
+      deps={[filter]}
     />
   );
 };

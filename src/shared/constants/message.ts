@@ -377,6 +377,11 @@ export enum Messages {
   CANNOT_ASSIGN_ROLE_TO_YOURSELF = 'Cannot assign role to yourself',
   CANNOT_BLOCK_YOURSELF = 'Cannot block yourself',
   USER_DELETED_SIGNIN_ERROR = 'Account has been deleted. Please contact support if this is a mistake.',
+  SEND_OTP_SUCCESS = 'Send OTP successfully',
+  SEND_OTP_FAILED = 'Send OTP failed',
+  VERIFY_OTP_SUCCESS = 'Verify OTP successfully',
+  VERIFY_OTP_FAILED = 'Verify OTP failed',
+  OTP_REQUIRED = 'OTP is required',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',

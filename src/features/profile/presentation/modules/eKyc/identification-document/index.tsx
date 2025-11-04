@@ -13,7 +13,6 @@ import {
   useUpdateIdentificationDocumentMutation,
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
-import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { User } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -22,6 +21,12 @@ import { IdentificationDocument } from '../../../schema/personalInfoSchema';
 import { EditApprovedModal, ResubmitConfirmModal } from '../components';
 import { EKYCTabActions, FormHeader, RejectedRemarksField } from '../shared/components';
 import { DocumentImagesForm, DocumentInfoForm } from './components';
+import {
+  buildSubmitPayload,
+  uploadEditSubmissionFiles,
+  uploadNewSubmissionFiles,
+  validateRequiredFiles,
+} from './helpers';
 
 interface IdentificationDocumentProps {
   eKYCData: eKYC;
@@ -55,9 +60,11 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
       frontImage: null,
       backImage: null,
       facePhoto: null,
+      locationImage: null,
       initialFrontImage: '',
       initialBackImage: '',
       initialFacePhoto: '',
+      initialLocationImage: '',
     }),
     [],
   );
@@ -73,15 +80,12 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     handleSubmit,
   } = form;
 
-  // Get identification document (not TAX)
   const identificationDocument = useMemo(() => {
     if (!existingData || existingData.length === 0) return null;
     return existingData.find((item: any) => item.type !== IdentificationDocumentType.TAX);
   }, [existingData]);
 
-  // Populate form with existing data when loaded, or use defaults
   useEffect(() => {
-    // Don't populate form with existing data when editing
     if (isEditing) return;
 
     if (identificationDocument && eKYCData) {
@@ -99,35 +103,16 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
         initialBackImage: identificationDocument?.fileBack?.url || '',
         facePhoto: null,
         initialFacePhoto: identificationDocument?.filePhoto?.url || '',
+        locationImage: null,
+        initialLocationImage: identificationDocument?.fileLocation?.url || '',
       };
 
       reset(formData);
       return;
     }
-    // If no existing data, reset to defaults
+
     reset(defaults);
   }, [identificationDocument, eKYCData, reset, defaults, isEditing]);
-
-  const uploadFile = async (
-    file: File,
-    fileType: string,
-  ): Promise<{ url: string; fileName: string } | null> => {
-    try {
-      const fileName = `identification-${fileType}-${Date.now()}`;
-      const downloadURL = await uploadToFirebase({
-        file,
-        path: 'ekyc-documents',
-        fileName,
-      });
-      return {
-        url: downloadURL,
-        fileName: fileName,
-      };
-    } catch (error) {
-      console.error(`Error uploading ${fileType} file:`, error);
-      return null;
-    }
-  };
 
   const handleResubmitConfirm = async () => {
     try {
@@ -138,10 +123,9 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
       await deleteEKYC(eKYCData.id).unwrap();
       setShowResubmitModal(false);
-      setIsEditing(false); // Reset editing state
-      reset(defaults); // Reset form to defaults
+      setIsEditing(false);
+      reset(defaults);
       toast.success('Previous submission deleted. You can now submit new documents.');
-      // Note: Removed window.location.reload() as reset() should handle form state
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
       toast.error(error?.message || 'Failed to delete previous submission');
@@ -160,7 +144,7 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
     if (isApproved) {
       setShowEditApprovedModal(true);
     } else if (isPending) {
-      setIsEditing(true); // Enable editing for pending status
+      setIsEditing(true);
     }
   };
 
@@ -175,7 +159,6 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
       setShowEditApprovedModal(false);
       toast.success('Previous submission deleted. You can now submit new documents.');
       window.location.reload();
-      // Note: Form is now enabled for user to enter new data and submit
     } catch (error: any) {
       console.error('Error deleting eKYC:', error);
       toast.error(error?.message || 'Failed to delete previous submission');
@@ -184,114 +167,29 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
   const handleSubmitForm = async (data: IdentificationDocument) => {
     try {
-      let frontUrl = null,
-        backUrl = null,
-        photoUrl = null;
-      let attachmentFront = null,
-        attachmentBack = null,
-        attachmentPhoto = null;
+      const documentType = data.type;
 
-      // For new submissions, require all files
-      // For edits, allow using existing files if no new files uploaded
-      if (!isEditing) {
-        // New submission - require all files
-        if (!data.frontImage || !data.backImage || !data.facePhoto) {
-          toast.error('Please upload all required files.');
-          return;
-        }
-
-        // Upload all files for new submission
-        const uploadResults = await Promise.all([
-          uploadFile(data.frontImage, 'front'),
-          uploadFile(data.backImage, 'back'),
-          uploadFile(data.facePhoto, 'face'),
-        ]);
-
-        [frontUrl, backUrl, photoUrl] = uploadResults;
-
-        if (!frontUrl || !backUrl || !photoUrl) {
-          toast.error('Failed to upload some files. Please try again.');
-          return;
-        }
-
-        // Create new attachments
-        const attachmentResults = await Promise.all([
-          uploadAttachmentMutation({
-            url: frontUrl.url,
-            path: frontUrl.fileName,
-            type: 'image',
-          }),
-          uploadAttachmentMutation({
-            url: backUrl.url,
-            path: backUrl.fileName,
-            type: 'image',
-          }),
-          uploadAttachmentMutation({
-            url: photoUrl.url,
-            path: photoUrl.fileName,
-            type: 'image',
-          }),
-        ]);
-
-        [attachmentFront, attachmentBack, attachmentPhoto] = attachmentResults;
-      } else {
-        // Edit existing submission - use existing files if no new files uploaded
-        // Upload new files if provided
-        if (data.frontImage) {
-          frontUrl = await uploadFile(data.frontImage, 'front');
-          if (frontUrl) {
-            attachmentFront = await uploadAttachmentMutation({
-              url: frontUrl.url,
-              path: frontUrl.fileName,
-              type: 'image',
-            });
-          }
-        } else if (identificationDocument?.fileFront?.id) {
-          // Use existing front image
-          attachmentFront = { data: { id: identificationDocument.fileFront.id } };
-        }
-
-        if (data.backImage) {
-          backUrl = await uploadFile(data.backImage, 'back');
-          if (backUrl) {
-            attachmentBack = await uploadAttachmentMutation({
-              url: backUrl.url,
-              path: backUrl.fileName,
-              type: 'image',
-            });
-          }
-        } else if (identificationDocument?.fileBack?.id) {
-          // Use existing back image
-          attachmentBack = { data: { id: identificationDocument.fileBack.id } };
-        }
-
-        if (data.facePhoto) {
-          photoUrl = await uploadFile(data.facePhoto, 'face');
-          if (photoUrl) {
-            attachmentPhoto = await uploadAttachmentMutation({
-              url: photoUrl.url,
-              path: photoUrl.fileName,
-              type: 'image',
-            });
-          }
-        } else if (identificationDocument?.filePhoto?.id) {
-          // Use existing photo
-          attachmentPhoto = { data: { id: identificationDocument.filePhoto.id } };
-        }
+      // Validate required files for new submission
+      if (!isEditing && !validateRequiredFiles(documentType, data)) {
+        return;
       }
 
-      const payload = {
-        fileFrontId: attachmentFront?.data?.id,
-        fileBackId: attachmentBack?.data?.id,
-        filePhotoId: attachmentPhoto?.data?.id,
-        idAddress: data.idAddress,
-        issuedDate: new Date(data.issuedDate).toISOString(),
-        type: data.type,
-        idNumber: data.idNumber,
-        issuedPlace: data.issuedPlace,
-      };
+      // Upload files
+      const attachments = isEditing
+        ? await uploadEditSubmissionFiles(
+            documentType,
+            data,
+            identificationDocument,
+            uploadAttachmentMutation,
+          )
+        : await uploadNewSubmissionFiles(documentType, data, uploadAttachmentMutation);
 
-      // Use update or submit based on whether we're editing an existing document
+      if (!attachments) return;
+
+      // Build payload
+      const payload = buildSubmitPayload(documentType, data, attachments);
+
+      // Submit or update
       if (isEditing) {
         await updateDocument({
           ...payload,
@@ -305,19 +203,19 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
           isRejected ? 'Document re-submitted successfully' : 'Document submitted successfully',
         );
       }
-      setIsEditing(false); // Reset editing state after successful submit
+
+      setIsEditing(false);
     } catch (error: any) {
       console.error('Error submitting document:', error);
       toast.error(error?.message || 'Failed to submit document');
     }
   };
 
-  // Enhanced disabled logic based on status and editing state
   const isDisabled = (() => {
-    if (!eKYCData) return false; // No data - allow input
-    if (isRejected) return true; // Rejected - keep disabled
-    if (isPending || isApproved) return !isEditing; // Pending/Approved - disabled unless editing
-    return false; // Fallback
+    if (!eKYCData) return false;
+    if (isRejected) return true;
+    if (isPending || isApproved) return !isEditing;
+    return false;
   })();
 
   if (isLoadingData) {

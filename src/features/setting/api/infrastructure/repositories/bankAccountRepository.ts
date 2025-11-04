@@ -1,8 +1,8 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { SessionUser } from '@/shared/types/session';
 import {
   BankAccount,
-  ChannelType,
   KYCMethod,
   KYCStatus,
   KYCType,
@@ -30,17 +30,14 @@ class BankAccountRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await tx.notification.create({
-          data: {
-            title: `Verify new bank account!`,
-            message: `User ${user.email} has submitted a new verify bank account.`,
-            channel: ChannelType.BOX,
-            notifyTo: NotificationType.ADMIN_CS,
-            type: 'BANK',
-            emails: [user.email],
-            emailTemplateId: null,
-            createdBy: null,
-          },
+        await notificationUseCase.createBoxNotification({
+          title: `Verify new bank account!`,
+          type: 'BANK',
+          notifyTo: NotificationType.ADMIN_CS,
+          attachmentId: '',
+          deepLink: '',
+          message: `User ${user.email} has submitted a new verify bank account.`,
+          emails: [user.email],
         });
         return bankAccount;
       });

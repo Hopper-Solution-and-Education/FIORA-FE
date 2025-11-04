@@ -34,12 +34,14 @@ export default function CommonTable<T>({
   onColumnConfigChange,
   onLoadMore,
   columnConfigMenuProps,
+  deps,
   ...props
 }: CommonTableProps<T>) {
   const { containerRef } = useCommonInfiniteScroll({
     onLoadMore: onLoadMore || (() => {}),
     hasMore,
     isLoadingMore,
+    deps,
   });
 
   const shownColumns = useMemo(() => {

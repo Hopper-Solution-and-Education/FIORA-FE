@@ -94,21 +94,11 @@ export const useForgotPassword = () => {
 
       setOtp(data.otp); // Store OTP from backend response
       setIsOtpSent(true);
-      setCountdown(60);
+      setCountdown(60); // Start countdown
       toast.success('OTP sent to your email');
     } catch (error: any) {
       console.error(error);
-      let errorMessage = 'Failed to send OTP';
-
-      // Try to parse error message from JSON response
-      if (error?.message) {
-        try {
-          const errorData = JSON.parse(error.message);
-          errorMessage = errorData.error || errorData.message || error.message;
-        } catch {
-          errorMessage = error.message;
-        }
-      }
+      const errorMessage = error?.message || 'Failed to send OTP';
 
       toast.error(errorMessage);
     } finally {

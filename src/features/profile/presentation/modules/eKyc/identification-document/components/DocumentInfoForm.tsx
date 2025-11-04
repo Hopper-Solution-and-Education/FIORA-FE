@@ -95,7 +95,11 @@ const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({
             <DateTimePicker
               required
               value={watchedValues.issuedDate ? new Date(watchedValues.issuedDate) : undefined}
-              onChange={(date) => setValue('issuedDate', date?.toISOString().split('T')[0] || '')}
+              onChange={(date) => {
+                setValue('issuedDate', date?.toISOString().split('T')[0] || '', {
+                  shouldValidate: true,
+                });
+              }}
               disabled={isSubmitting || disabled}
               hideTime={true}
             />

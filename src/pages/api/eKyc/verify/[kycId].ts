@@ -1,11 +1,11 @@
-import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
-import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
-import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
-import { userRepository } from '@/features/setting/api/infrastructure/repositories/userRepository';
 import {
   sendKYCApprovedEmail,
   sendKYCRejectedEmail,
 } from '@/features/profile/infrastructure/services/kycEmailService';
+import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
+import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
+import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
+import { userRepository } from '@/features/setting/api/infrastructure/repositories/userRepository';
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { UserRole } from '@/shared/constants/userRole';
@@ -117,11 +117,12 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, sessionUs
 
     // Send email notification to user
     try {
-      if (eKYCRecord.User?.email) {
+      if (eKYCRecord.User?.email && eKYCRecord.userId) {
         const verifierUser = await userRepository.findUserById(sessionUserId);
         const verifierName = verifierUser?.name || verifierUser?.email || 'FIORA Admin';
 
         const emailData = {
+          user_id: eKYCRecord.userId,
           user_name: eKYCRecord.User.name || eKYCRecord.User.email,
           user_email: eKYCRecord.User.email,
           field_name: eKYCRecord.fieldName,

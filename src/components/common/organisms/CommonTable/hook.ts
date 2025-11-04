@@ -12,20 +12,34 @@ export function useCommonInfiniteScroll({
   hasMore = false,
   isLoadingMore = false,
   threshold = 0.8,
-}: UseCommonInfiniteScrollParams) {
+  deps = [],
+}: UseCommonInfiniteScrollParams & { deps?: any[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
   const isFetching = useRef(false);
 
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current || !hasMore || isLoadingMore || isFetching.current) return;
+  useEffect(() => {
+    isFetching.current = false;
+    isInitialMount.current = true;
+    const container = containerRef.current;
+    if (container) container.scrollTop = 0;
+  }, deps);
 
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
     const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+    if (!hasMore || isLoadingMore || isFetching.current) return;
 
     if (scrollPercentage >= threshold) {
       isFetching.current = true;
-      onLoadMore();
+
+      Promise.resolve(onLoadMore()).finally(() => {
+        isFetching.current = false;
+      });
     }
   }, [hasMore, isLoadingMore, onLoadMore, threshold]);
 
@@ -35,34 +49,23 @@ export function useCommonInfiniteScroll({
 
     container.addEventListener('scroll', handleScroll);
 
-    // Reset fetching state when loading completes
-    if (!isLoadingMore) {
-      isFetching.current = false;
-    }
-
     return () => {
       container.removeEventListener('scroll', handleScroll);
-      isFetching.current = false;
     };
-  }, [handleScroll, isLoadingMore]);
+  }, [handleScroll]);
 
-  // Initial check in case content is less than container height
   useEffect(() => {
-    if (!containerRef.current || !hasMore || isLoadingMore || isInitialMount.current) return;
-
     const container = containerRef.current;
-    const { scrollHeight, clientHeight } = container;
+    if (!container || !hasMore || isLoadingMore || isInitialMount.current) return;
 
-    if (clientHeight >= scrollHeight * threshold) {
+    const { scrollHeight, clientHeight } = container;
+    if (clientHeight >= scrollHeight) {
       onLoadMore();
     }
-  }, [hasMore, isLoadingMore, onLoadMore, threshold]);
+  }, [hasMore, isLoadingMore, onLoadMore]);
 
-  // Reset initial mount flag when data finishes loading (isLoadingMore becomes false)
   useEffect(() => {
-    if (!isLoadingMore) {
-      isInitialMount.current = false;
-    }
+    if (!isLoadingMore) isInitialMount.current = false;
   }, [isLoadingMore]);
 
   return { containerRef } as const;

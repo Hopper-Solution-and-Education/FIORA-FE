@@ -49,4 +49,5 @@ export interface CommonTableProps<T> extends HTMLAttributes<HTMLDivElement> {
   skeletonRows?: number;
   loadingMoreRows?: number;
   columnConfigMenuProps?: React.HTMLAttributes<HTMLDivElement>;
+  deps?: any[];
 }

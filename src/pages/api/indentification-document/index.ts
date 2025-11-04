@@ -12,7 +12,7 @@ import {
   identificationDocumentSchema,
   updateIdentificationDocumentSchema,
 } from '@/shared/validators/identificationValidator';
-import { KYCStatus } from '@prisma/client';
+import { IdentificationType, KYCStatus } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export const maxDuration = 30; // 30 seconds
@@ -74,7 +74,10 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
   }
 
   // Check if identification document exists and belongs to user
-  const existingDoc = await identificationRepository.getByType(userId, type);
+  const existingDoc = (await identificationRepository.getByUserId(userId)).find(
+    (item) => item.type !== IdentificationType.TAX,
+  );
+
   if (!existingDoc) {
     return res
       .status(RESPONSE_CODE.NOT_FOUND)
@@ -147,6 +150,13 @@ export async function POST(
   user: SessionUser,
 ) {
   const { error, value } = validateBody(identificationDocumentSchema, req.body);
+
+  if (error) {
+    return res
+      .status(RESPONSE_CODE.BAD_REQUEST)
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
+  }
+
   const {
     fileFrontId,
     fileBackId,
@@ -158,11 +168,7 @@ export async function POST(
     issuedPlace,
     fileLocationId,
   } = value;
-  if (error) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
-  }
+
   const checkVerify = await identificationRepository.getByType(userId, type);
   if (checkVerify) {
     return res
