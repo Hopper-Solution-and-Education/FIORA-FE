@@ -13,14 +13,14 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     };
 
     /**
-     * Convert URL sang absolute path
+     * Convert URL to absolute path
      */
     const toAbsoluteURL = (url: string): string => {
       return new URL(url, window.location.href).href;
     };
 
     /**
-     * Kiểm tra xem có phải anchor trong cùng trang hay không
+     * Check if it's an anchor link within the same page
      */
     const isSamePageAnchor = (currentUrl: string, newUrl: string): boolean => {
       const current = new URL(toAbsoluteURL(currentUrl));
@@ -29,7 +29,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     };
 
     /**
-     * Kiểm tra cùng host
+     * Check if same hostname
      */
     const isSameHostName = (currentUrl: string, newUrl: string): boolean => {
       const current = new URL(toAbsoluteURL(currentUrl));
@@ -38,7 +38,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     };
 
     /**
-     * Tìm thẻ <a> gần nhất
+     * Find the closest anchor tag
      */
     const findClosestAnchor = (el: HTMLElement | null): HTMLAnchorElement | null => {
       while (el && el.tagName.toLowerCase() !== 'a') {
@@ -48,7 +48,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     };
 
     /**
-     * Xử lý click vào link
+     * Handle click on links
      */
     const handleClick = (event: MouseEvent): void => {
       try {
@@ -59,7 +59,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
 
         const currentUrl = window.location.href;
 
-        // Không scroll cho external hoặc special scheme
+        // Don't scroll for external or special scheme links
         const isSpecialScheme = ['mailto:', 'tel:', 'sms:', 'blob:'].some((s) =>
           href.startsWith(s),
         );
@@ -70,7 +70,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
         const sameAnchor = isSamePageAnchor(currentUrl, href);
         if (sameAnchor) return;
 
-        // Nếu là cùng route (kể cả query khác), vẫn scroll
+        // If same route (even with different query), still scroll
         requestAnimationFrame(scrollToTop);
       } catch (error) {
         console.error(error);
@@ -79,7 +79,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     };
 
     /**
-     * Override pushState và replaceState để bắt navigation
+     * Override pushState and replaceState to catch navigation
      */
     const patchHistory = (method: 'pushState' | 'replaceState') => {
       const original = history[method];
@@ -97,7 +97,7 @@ export const AutoScrollTopProvider = (): React.JSX.Element | null => {
     const handlePageHide = () => scrollToTop();
 
     /**
-     * Đăng ký listener
+     * Register event listeners
      */
     document.addEventListener('click', handleClick);
     window.addEventListener('popstate', handlePopState);

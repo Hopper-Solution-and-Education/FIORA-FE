@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { cn } from '@/shared/utils';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
@@ -180,7 +181,7 @@ export function LoginForm({
               <div className="mb-2 sm:mb-0 sm:inline">
                 Cannot sign in?{' '}
                 <Link
-                  href="/auth/sign-in/forgot-password"
+                  href={RouteEnum.ForgotPassword}
                   className="text-blue-500 hover:underline sm:mr-3 font-medium underline underline-offset-4"
                 >
                   Forgot password
@@ -189,7 +190,7 @@ export function LoginForm({
               <div className="sm:inline">
                 Do not have an account?{' '}
                 <Link
-                  href="/auth/sign-up"
+                  href={RouteEnum.SignUp}
                   className="text-blue-500 hover:underline font-medium underline underline-offset-4"
                 >
                   Sign up

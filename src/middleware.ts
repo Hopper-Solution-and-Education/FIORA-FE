@@ -1,6 +1,7 @@
 import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
+import { RouteEnum } from './shared/constants/RouteEnum';
 
 const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path'];
 
@@ -19,32 +20,12 @@ export async function middleware(request: NextRequest) {
     const isPublicRoute = publicPatterns.some((pattern) => isPathMatchPattern(pathname, pattern));
 
     if (!isPublicRoute && !token) {
-      return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+      return NextResponse.redirect(new URL(RouteEnum.SignIn, request.url));
     }
 
-    if (token && (pathname === '/auth/sign-in' || pathname === '/auth/sign-up')) {
+    if (token && (pathname === RouteEnum.SignIn || pathname === RouteEnum.SignUp)) {
       return NextResponse.redirect(new URL('/', request.url));
     }
-
-    // *CHECK FEATURE FLAG ZONE
-    // const requiredFeature = Object.entries(featureProtectedRoutes).find(
-    //   ([route]) => pathname === route || pathname.startsWith(`${route}/`),
-    // )?.[1];
-    // if (requiredFeature) {
-    //   await gb.loadFeatures();
-
-    //   // Set user attributes (e.g., user ID from token)
-    //   gb.setAttributes({
-    //     id: token?.sub, // Use the user ID from NextAuth token
-    //     // Add other attributes if needed (e.g., email, role)
-    //   });
-
-    //   const isFeatureOn = gb.isOn(requiredFeature);
-
-    //   if (!isFeatureOn) {
-    //     return NextResponse.redirect(new URL('/not-found', request.url));
-    //   }
-    // }
 
     return NextResponse.next();
   } catch (error) {
