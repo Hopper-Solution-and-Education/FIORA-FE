@@ -145,7 +145,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
           orientation === 'horizontal' ? 'flex-row' : 'flex-col',
           sizeClasses.container,
         )}
-        aria-labelledby={label ? id : undefined}
+        // aria-labelledby={label ? id : undefined}
         aria-required={required}
         aria-invalid={error ? 'true' : 'false'}
         {...props}
