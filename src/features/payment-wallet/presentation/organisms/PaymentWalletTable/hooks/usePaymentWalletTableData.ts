@@ -1,6 +1,6 @@
 import { CURRENCY } from '@/shared/constants';
 import { FilterCriteria } from '@/shared/types/filter.types';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePaymentWalletTransactions } from '../../../hooks';
 import { PaginationParams, PaymentWalletTransaction, initPaginationParams } from '../types';
 
@@ -125,7 +125,6 @@ export const usePaymentWalletTableData = () => {
     transactions: transactionsResponse,
     transactionsLoading,
     transactionsError,
-    hasNextPage,
     totalCount,
     pagination,
     loadMoreTransactions,
@@ -136,6 +135,10 @@ export const usePaymentWalletTableData = () => {
 
   const [displayData, setDisplayData] = useState<PaymentWalletTransaction[]>([]);
   const [paginationParams, setPaginationParams] = useState<PaginationParams>(initPaginationParams);
+
+  const hasNextPage = useMemo(() => {
+    return displayData.length < totalCount;
+  }, [displayData]);
 
   // Handle data updates
   useEffect(() => {

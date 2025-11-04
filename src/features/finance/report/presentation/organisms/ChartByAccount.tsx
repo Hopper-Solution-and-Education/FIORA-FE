@@ -33,40 +33,42 @@ const ChartByAccount = () => {
   }, [dispatch, selectedIds]);
 
   useEffect(() => {
-    const processData = async () => {
-      if (Array.isArray(financeByCategory)) {
-        const processedData = await Promise.all(
-          financeByCategory.map(async (item) => ({
-            icon: item.icon,
-            name: item.name,
+    if (Array.isArray(financeByCategory)) {
+      const processedData = financeByCategory.map((item) => {
+        const baseCurrency = 'USD';
 
-            totalExpense: await getExchangeAmount({
-              amount: item.totalExpense,
-              fromCurrency: item.currency as Currency,
-              toCurrency: currency,
-            }).convertedAmount,
+        const convertedIncome = getExchangeAmount({
+          amount: item.totalIncome,
+          fromCurrency: baseCurrency as Currency,
+          toCurrency: currency,
+        });
 
-            totalIncome: await getExchangeAmount({
-              amount: item.totalIncome,
-              fromCurrency: item.currency as Currency,
-              toCurrency: currency,
-            }).convertedAmount,
+        const convertedExpense = getExchangeAmount({
+          amount: item.totalExpense,
+          fromCurrency: baseCurrency as Currency,
+          toCurrency: currency,
+        });
 
-            balance: await getExchangeAmount({
-              amount: Number(item?.balance ?? 0),
-              fromCurrency: item.currency as Currency,
-              toCurrency: currency,
-            }).convertedAmount,
-          })),
-        );
-        setData(processedData);
-      } else {
-        setData([]);
-      }
-    };
+        const baseAmountValue = item.totalIncome > 0 ? item.totalIncome : -item.totalExpense;
+        const convertedBalance = getExchangeAmount({
+          amount: baseAmountValue,
+          fromCurrency: baseCurrency as Currency,
+          toCurrency: currency,
+        });
 
-    processData();
-  }, [financeByCategory, currency]);
+        return {
+          icon: item.icon,
+          name: item.name,
+          totalExpense: convertedExpense.convertedAmount,
+          totalIncome: convertedIncome.convertedAmount,
+          balance: convertedBalance.convertedAmount,
+        };
+      });
+      setData(processedData);
+    } else {
+      setData([]);
+    }
+  }, [financeByCategory, currency, getExchangeAmount]);
 
   return (
     <div className="space-y-8">
