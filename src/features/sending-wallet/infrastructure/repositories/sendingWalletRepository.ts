@@ -222,7 +222,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
    * - Dùng Prisma transaction đảm bảo atomicity
    */
   async createTransactionSending(data: ArgCreateTransactionSendingType): Promise<any> {
-    const { amount, recieverEmail, userId, categoryId, productIds } = data;
+    const { amount, recieverEmail, userId, categoryId, productIds, description } = data;
     const amountDecimal = new Decimal(amount);
 
     // Giao dịch transaction bảo toàn dữ liệu
@@ -326,6 +326,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
           },
           isMarked: true,
           baseAmount: amountDecimal,
+          remark: description?.trim()
         },
       });
 

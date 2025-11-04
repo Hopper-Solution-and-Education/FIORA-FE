@@ -62,8 +62,9 @@ class SendingWalletUseCase {
     otp?: string;
     productIds?: string[];
     categoryId?: string;
+    description?: string
   }) {
-    const { userId, amount, emailReceiver, otp, productIds, categoryId } = params;
+    const { userId, amount, emailReceiver, otp, productIds, categoryId, description } = params;
 
     if (!amount) throw new BadRequestError('Amount FX cannot be not empty');
     if (!emailReceiver) throw new BadRequestError('Receiver email cannot be empty');
@@ -127,6 +128,13 @@ class SendingWalletUseCase {
       if (!category) throw new NotFoundError('Category not found');
     }
 
+    if (typeof description === "string" && description.trim()) {
+      const wordCount = description.trim().split(/\s+/).length;
+      if (wordCount > 150) {
+        throw new BadRequestError('Description must not exceed 150 words');
+      }
+    }
+
     // Verify OTP nếu có
     if (otp) await this._sendingRepo.verifyOTP({ userId, otp });
 
@@ -138,6 +146,7 @@ class SendingWalletUseCase {
       receiverWallet,
       dailyLimitDecimal,
       oneTimeLimitDecimal,
+      description
     };
   }
 
@@ -208,8 +217,9 @@ class SendingWalletUseCase {
     emailReciever: string;
     categoryId?: string;
     productIds?: string[];
+    description?: string;
   }) {
-    const { userId, amount, otp, emailReciever, categoryId, productIds } = data;
+    const { userId, amount, otp, emailReciever, categoryId, productIds, description } = data;
 
     if (!otp) throw new BadRequestError('OTP must not be empty');
 
@@ -221,6 +231,7 @@ class SendingWalletUseCase {
       otp,
       categoryId,
       productIds,
+      description
     });
 
     // Tạo transaction gửi tiền
@@ -230,6 +241,7 @@ class SendingWalletUseCase {
       userId,
       categoryId,
       productIds,
+      description
     });
 
     // Format số tiền và thời gian
