@@ -214,12 +214,12 @@ class SendingWalletUseCase {
     userId: string;
     amount: number;
     otp: string;
-    emailReciever: string;
+    emailReceiver: string;
     categoryId?: string;
     productIds?: string[];
     description?: string;
   }) {
-    const { userId, amount, otp, emailReciever, categoryId, productIds, description } = data;
+    const { userId, amount, otp, emailReceiver, categoryId, productIds, description } = data;
 
     if (!otp) throw new BadRequestError('OTP must not be empty');
 
@@ -227,7 +227,7 @@ class SendingWalletUseCase {
     const { sender, receiver } = await this.validateSendingRequest({
       userId,
       amount,
-      emailReceiver: emailReciever,
+      emailReceiver,
       otp,
       categoryId,
       productIds,
@@ -237,7 +237,7 @@ class SendingWalletUseCase {
     // Tạo transaction gửi tiền
     const { expense, income } = await this._sendingRepo.createTransactionSending({
       amount,
-      recieverEmail: emailReciever,
+      recieverEmail: emailReceiver,
       userId,
       categoryId,
       productIds,
