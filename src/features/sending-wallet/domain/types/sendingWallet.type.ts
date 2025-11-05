@@ -17,6 +17,7 @@ export type ArgCreateTransactionSendingType = {
   userId: string;
   amount: number;
   categoryId?: string;
+  description?: string;
   productIds?: string[];
 };
 

@@ -582,12 +582,12 @@ model UserNotification {
   id             String       @id @default(uuid()) @db.Uuid
   userId         String       @db.Uuid
   notificationId String       @db.Uuid
-  content        String?      @db.Text
   isRead         Boolean      @default(false)
   createdAt      DateTime     @default(now()) @db.Timestamptz(0)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
+  content        String?
   notification   Notification @relation(fields: [notificationId], references: [id])
   User           User         @relation(fields: [userId], references: [id])
 
@@ -1119,11 +1119,11 @@ enum emailType {
   DEPOPSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
-  FLEXI_INTEREST
-  MEMBERSHIP_CHANGE
-  WITHDRAW_OTP
   SENDING_OTP
   SENDING_SUCCESSFUL
+  WITHDRAW_OTP
+  FLEXI_INTEREST
+  MEMBERSHIP_CHANGE
 }
 
 enum CronJobStatus {
