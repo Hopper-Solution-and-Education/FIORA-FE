@@ -7,7 +7,7 @@ import {
   CategoryItemType,
   MovingLimitType,
   ProductType,
-  Reciever,
+  Receiver,
 } from '../types/sendingWallet.type';
 
 export interface CreateNotificationInbox {
@@ -25,7 +25,7 @@ export interface ISendingWalletRepository {
 
   getMovedAmount(userId: string): Promise<number>;
 
-  getRecommendReciever(query: string, userId: string): Promise<Reciever[]>;
+  getRecommendReceiver(query: string, userId: string): Promise<Receiver[]>;
 
   getPackageFX(data: ArgGetPackageType): Promise<number[]>;
 

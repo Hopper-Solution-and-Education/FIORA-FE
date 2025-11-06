@@ -5,7 +5,7 @@ export type AmountCurrencyType = {
   currency?: string | null;
 };
 
-export type Reciever = Pick<Partner, 'email' | 'logo' | 'id' | 'name'>;
+export type Receiver = Pick<Partner, 'email' | 'logo' | 'id' | 'name'>;
 
 export type MovingLimitType = {
   dailyMovingLimit: AmountCurrencyType;
@@ -13,7 +13,7 @@ export type MovingLimitType = {
 };
 
 export type ArgCreateTransactionSendingType = {
-  recieverEmail: string;
+  receiverEmail: string;
   userId: string;
   amount: number;
   categoryId?: string;

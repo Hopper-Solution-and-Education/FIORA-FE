@@ -2,91 +2,51 @@ import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { InternalServerError, NotFoundError } from '@/shared/lib';
 import { emailType } from '@prisma/client';
-import * as fs from 'fs';
-import * as path from 'path';
 import { IEmailService } from '../../domain/interfaces/sendOTP.interface';
 
 class EmailService implements IEmailService {
   constructor(
     private _repo = prisma, // Prisma ORM instance
-    private _notificationUsecase = notificationUseCase, // Use case gửi thông báo
+    private _notificationUsecase = notificationUseCase, // Use case for sending notifications
   ) {}
 
   /**
-   * Hàm loadEmailTemplate
-   * - Lấy template email từ DB; nếu chưa có thì đọc từ file .html trong local rồi lưu vào DB.
-   * - Giúp đảm bảo lần đầu chạy hệ thống vẫn có template mặc định để gửi.
+   * loadEmailTemplate
+   * -----------------
+   * Retrieves an email template from the database by its type.
+   * Throws an error if the template does not exist.
    */
-  private async loadEmailTemplate(file: string, type: emailType, name: string) {
+  private async loadEmailTemplate(type: emailType) {
     try {
-      // Tìm template trong DB dựa theo loại email (type)
-      let templateEntity = await this._repo.emailTemplate.findFirst({
+      const templateEntity = await this._repo.emailTemplate.findFirst({
         where: {
           EmailTemplateType: { type },
+          isActive: true,
         },
         include: { EmailTemplateType: true },
       });
 
-      // Nếu đã có template --> lấy nội dung ra
-      let template = templateEntity?.content;
-
-      // Nếu chưa có template trong DB --> đọc từ file local
-      if (!template) {
-        const filePath = path.join(
-          process.cwd(),
-          'src/features/sending-wallet/infrastructure/templates',
-          file,
-        );
-
-        // Kiểm tra file có tồn tại không
-        if (!fs.existsSync(filePath)) {
-          throw new Error(`Template file not found: ${filePath}`);
-        }
-
-        // Đọc nội dung file HTML
-        template = fs.readFileSync(filePath, 'utf8');
-
-        // Tìm hoặc tạo mới emailTemplateType (bảng loại template)
-        let templateType = await this._repo.emailTemplateType.findFirst({
-          where: { type },
-        });
-
-        if (!templateType) {
-          templateType = await this._repo.emailTemplateType.create({
-            data: {
-              type,
-              createdAt: new Date(),
-            },
-          });
-        }
-
-        // Lưu template mới vào DB
-        templateEntity = await this._repo.emailTemplate.create({
-          data: {
-            name,
-            content: template,
-            isActive: true,
-            isdefault: true,
-            emailtemplatetypeid: templateType.id,
-          },
-          include: { EmailTemplateType: true },
-        });
+      if (!templateEntity) {
+        throw new NotFoundError(`Email template not found for type: ${type}`);
       }
 
       return templateEntity;
     } catch (err) {
-      // Ném lỗi nếu có bất kỳ bước nào thất bại
-      throw new InternalServerError(`Failed to load template: ${(err as Error).message}`);
+      throw new InternalServerError(`Failed to load email template: ${(err as Error).message}`);
     }
   }
 
   /**
-   * Gửi email OTP khi người dùng xác nhận giao dịch
-   * - `to`: email người nhận OTP
-   * - `otp`: mã OTP
-   * - `amount`: số tiền gửi
-   * - `emailReceiver`: email người nhận tiền (hiển thị trong email)
-   * - `userName`: tên người gửi
+   * sendOtpEmail
+   * -------------
+   * Sends an OTP email for transaction confirmation.
+   *
+   * Parameters:
+   * - `to`: recipient’s email address (user who will receive the OTP)
+   * - `otp`: one-time password (6-digit code)
+   * - `amount`: transaction amount
+   * - `emailReceiver`: the email of the FX receiver (shown in the email body)
+   * - `userName`: name of the sender (FX initiator)
    */
   async sendOtpEmail(
     to: string,
@@ -96,25 +56,23 @@ class EmailService implements IEmailService {
     userName: string,
   ) {
     try {
-      // Tìm người nhận email trong DB
+      // Find the recipient user in the database
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
         select: { id: true, email: true },
       });
 
-      if (!userReceiver) throw new NotFoundError('User receive email not found');
+      if (!userReceiver) throw new NotFoundError('User receiving email not found');
 
-      // Dữ liệu truyền vào template
+      // Variables to inject into the HTML template
       const variables = { otp, amount, emailReceiver, userName };
 
-      // Load template HTML tương ứng loại email SENDING_OTP
+      // Load the OTP email template (type: SENDING_OTP)
       const templateEntity = await this.loadEmailTemplate(
-        'otp.html',
-        'SENDING_OTP',
-        'Sending FX OTP',
+        'SENDING_OTP'
       );
 
-      // Gọi usecase để gửi email qua hệ thống notification
+      // Use the notification use case to send the email via the notification system
       await this._notificationUsecase.sendNotificationWithTemplate(
         templateEntity?.id as string,
         [
@@ -126,7 +84,7 @@ class EmailService implements IEmailService {
         ],
         'PERSONAL',
         emailType.SENDING_OTP,
-        'Confirm Your Sending FX Transaction', // tiêu đề email
+        'Confirm Your Sending FX Transaction', // Email subject
       );
     } catch (err) {
       console.error('Send OTP email failed:', err);
@@ -135,39 +93,48 @@ class EmailService implements IEmailService {
   }
 
   /**
-   * Gửi email thông báo khi giao dịch thành công (người gửi hoặc người nhận)
-   * - Hỗ trợ cả gửi email và tạo notification trong hệ thống (isSendInBox)
+   * sendNotificationEmail
+   * ---------------------
+   * Sends a success notification email after a transaction is completed.
+   * Can also create an in-app notification if `isSendInBox` is enabled.
+   *
+   * Parameters:
+   * - `to`: recipient’s email
+   * - `variables`: information used inside the email template
+   * - `isSendInBox`: if true, also creates an in-app notification record
+   * - `sendInBoxProps`: optional properties for in-app notification
+   *    (deepLink, attachmentId, etc.)
    */
   async sendNotificationEmail(
     to: string,
     variables: {
-      userName: string; // người gửi
-      receiverName: string; // người nhận (hiển thị trong email)
-      emailReceiver: string; // email người nhận
+      userName: string; // Sender name
+      receiverName: string; // Receiver name (displayed in email)
+      emailReceiver: string; // Receiver email
       date: string;
       amount: string;
-      isSender: boolean; // true nếu là người gửi
+      isSender: boolean; // True if this email is for the sender
     },
-    isSendInBox?: boolean, // nếu true, sẽ tạo thêm notification trong hệ thống
+    isSendInBox?: boolean, // Whether to create an in-app notification
     sendInBoxProps?: {
-      deepLink?: string; // đường dẫn mở nhanh từ app
-      attachmentId?: string; // file đính kèm nếu có
+      deepLink?: string; // Quick navigation link in app
+      attachmentId?: string; // Optional file attachment
     },
   ) {
     try {
-      // Lấy thông tin người nhận email
+      // Find the email recipient in the database
       const userReceiver = await this._repo.user.findFirst({
         where: { email: to, isDeleted: false },
         select: { id: true, email: true },
       });
 
-      if (!userReceiver) throw new NotFoundError('User receive email not found');
+      if (!userReceiver) throw new NotFoundError('User receiving email not found');
 
-      // Giải cấu trúc biến đầu vào
+      // Destructure template variables
       const isSender = variables.isSender;
       const { userName, receiverName, emailReceiver, date, amount } = variables;
 
-      // Dữ liệu cơ bản truyền vào template
+      // Base variables used in both templates
       let newVariables: Record<string, string> = {
         userName,
         receiverName,
@@ -176,7 +143,7 @@ class EmailService implements IEmailService {
         amount,
       };
 
-      // Nếu là người gửi
+      // Customize the content based on sender or receiver
       if (isSender) {
         newVariables = {
           ...newVariables,
@@ -191,7 +158,6 @@ class EmailService implements IEmailService {
             'Keep this receipt for your records. If you did not recognize this transaction, please contact',
         };
       } else {
-        // Nếu là người nhận
         newVariables = {
           ...newVariables,
           subject: 'Payment Notification',
@@ -205,14 +171,12 @@ class EmailService implements IEmailService {
         };
       }
 
-      // Load template email thông báo thành công
+      // Load the "transaction success" email template
       const templateEntity = await this.loadEmailTemplate(
-        'notification.html',
         'SENDING_SUCCESSFUL',
-        'Sending successful',
       );
 
-      // Gửi email thông báo qua notification usecase
+      // Send email via notification use case
       await this._notificationUsecase.sendNotificationWithTemplate(
         templateEntity?.id as string,
         [
@@ -227,7 +191,7 @@ class EmailService implements IEmailService {
         isSender ? 'Sending Receipt' : 'Payment Notification',
       );
 
-      // Nếu bật chế độ gửi vào hộp thư trong hệ thống (inbox)
+      // Optionally create an in-app notification (Inbox)
       if (isSendInBox) {
         await this._notificationUsecase.createNotificationWithTemplate({
           emailParts: [
@@ -257,5 +221,5 @@ class EmailService implements IEmailService {
   }
 }
 
-// Export instance của service để dùng ở các module khác
+// Export a singleton instance for use in other modules
 export const emailService = new EmailService();

@@ -26,9 +26,9 @@ export default withAuthorization({
 );
 
 export async function GET(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  const { q } = req.query;
+  const { q: query } = req.query;
 
-  const data = await sendingWalletUseCase.getRecommendUser(q as string, userId);
+  const data = await sendingWalletUseCase.getRecommendUser(query as string, userId);
 
   return res
     .status(RESPONSE_CODE.OK)

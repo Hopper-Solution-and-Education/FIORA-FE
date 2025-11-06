@@ -10,30 +10,33 @@ import {
   ArgVerifyOTP,
   MovingLimitType,
   ProductType,
-  Reciever,
+  Receiver,
 } from '../../domain/types/sendingWallet.type';
 
 /**
- * Repository xử lý các thao tác với Prisma cho tính năng "Sending Wallet"
- * Bao gồm:
- *  - Lấy hạn mức chuyển tiền
- *  - Lấy số tiền đã chuyển
- *  - Gợi ý người nhận
- *  - Tạo và xác thực OTP
- *  - Thực hiện giao dịch gửi tiền
+ * Repository layer that handles all Prisma database operations
+ * for the "Sending Wallet" feature.
+ *
+ * Responsibilities:
+ *  - Fetching user transfer limits
+ *  - Calculating total transferred amount per day
+ *  - Suggesting receivers (users or partners)
+ *  - Creating and verifying OTPs
+ *  - Executing wallet-to-wallet transfer transactions
  */
 class SendingWalletRepository implements ISendingWalletRepository {
-  // Slug dùng để tìm benefit trong bảng membershipBenefit
+  // Slugs used to locate benefit types inside membershipBenefit table
   private _BENEFIT_DAILY_MOVING_SLUG = 'moving-daily-limit';
   private _BENEFIT_ONE_TIME_MOVING_SLUG = 'moving-1-time-limit';
 
   constructor(private _prisma = prisma) {}
 
   /**
-   * Lấy hạn mức chuyển tiền (1 lần và trong ngày)
+   * Get user's sending limits (daily and one-time)
+   * based on their membership tier configuration.
    */
   async getMovingLimit(userId: string): Promise<MovingLimitType> {
-    // 1: Kiểm tra membership hiện tại của user
+    // Step 1: Get user's membership progress
     const membershipProgress = await this._prisma.membershipProgress.findFirst({
       where: { userId },
     });
@@ -41,7 +44,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
     if (!membershipProgress.tierId)
       throw new NotFoundError('Tier ID not found for membership progress');
 
-    // 2: Lấy 2 loại benefit: daily & one-time
+    // Step 2: Retrieve the two benefit types (daily and one-time)
     const benefits = await this._prisma.membershipBenefit.findMany({
       where: {
         slug: { in: [this._BENEFIT_DAILY_MOVING_SLUG, this._BENEFIT_ONE_TIME_MOVING_SLUG] },
@@ -50,10 +53,10 @@ class SendingWalletRepository implements ISendingWalletRepository {
 
     const benefitDaily = benefits.find((b) => b.slug === this._BENEFIT_DAILY_MOVING_SLUG);
     const benefitOneTime = benefits.find((b) => b.slug === this._BENEFIT_ONE_TIME_MOVING_SLUG);
-    if (!benefitDaily) throw new NotFoundError('Benefit daily moving limit not found');
-    if (!benefitOneTime) throw new NotFoundError('Benefit one-time moving limit not found');
+    if (!benefitDaily) throw new NotFoundError('Daily moving limit benefit not found');
+    if (!benefitOneTime) throw new NotFoundError('One-time moving limit benefit not found');
 
-    // 3: Lấy giá trị của benefit cho tier hiện tại
+    // Step 3: Get the benefit values for the user's current tier
     const tierBenefits = await this._prisma.tierBenefit.findMany({
       where: {
         tierId: membershipProgress.tierId,
@@ -63,10 +66,10 @@ class SendingWalletRepository implements ISendingWalletRepository {
 
     const tierDaily = tierBenefits.find((tb) => tb.benefitId === benefitDaily.id);
     const tierOneTime = tierBenefits.find((tb) => tb.benefitId === benefitOneTime.id);
-    if (!tierDaily) throw new NotFoundError('Benefit daily moving limit value not found');
-    if (!tierOneTime) throw new NotFoundError('Benefit one-time moving limit value not found');
+    if (!tierDaily) throw new NotFoundError('Daily moving limit value not found');
+    if (!tierOneTime) throw new NotFoundError('One-time moving limit value not found');
 
-    // 4: Trả về limit dạng số và đơn vị tiền tệ
+    // Step 4: Return limit values and currency type
     return {
       dailyMovingLimit: {
         amount: tierDaily.value.toNumber(),
@@ -80,7 +83,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Tính tổng số tiền đã chuyển trong ngày từ ví Payment của user
+   * Calculate the total amount sent today from the user’s Payment wallet.
    */
   async getMovedAmount(userId: string): Promise<number> {
     const paymentWallet = await this._prisma.wallet.findFirst({
@@ -89,7 +92,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
     });
     if (!paymentWallet) throw new NotFoundError('Payment wallet not found');
 
-    // Tính tổng số tiền đã gửi trong ngày
+    // Sum all outgoing Expense/Transfer transactions within the current day
     const result = await this._prisma.transaction.aggregate({
       where: {
         fromWalletId: paymentWallet.id,
@@ -107,12 +110,13 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Gợi ý danh sách người nhận (User hoặc Partner)
-   * - Ưu tiên partner nếu email trùng
-   * - Giới hạn 10 kết quả
+   * Suggest receivers based on email query.
+   * Combines both Partner and User tables.
+   * - Prioritizes partners when email duplicates occur.
+   * - Limits result to 10 records.
    */
-  async getRecommendReciever(query: string, userId: string): Promise<Reciever[]> {
-    const receivers = await this._prisma.$queryRaw<Reciever[]>`
+  async getRecommendReceiver(query: string, userId: string): Promise<Receiver[]> {
+    const receivers = await this._prisma.$queryRaw<Receiver[]>`
       SELECT DISTINCT ON (email) id, email, name, image, "isPartner"
       FROM (
           -- Partner
@@ -146,7 +150,8 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Lấy danh sách gói FX (theo hạn mức hiện tại)
+   * Fetch available FX package amounts
+   * that are below or equal to the user’s current available limit.
    */
   async getPackageFX(data: ArgGetPackageType): Promise<number[]> {
     const { availableLimit } = data;
@@ -161,7 +166,8 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Tạo OTP gửi FX - Giới hạn mỗi 2 phút mới được request lại
+   * Create a new OTP for FX sending.
+   * Enforces a 2-minute cooldown before allowing a new OTP request.
    */
   async createOTP(data: ArgCreateOTP): Promise<Otp> {
     const lastOtp = await this._prisma.otp.findFirst({
@@ -169,7 +175,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Nếu OTP gần nhất vẫn trong thời gian 2 phút --> không cho tạo mới
+    // Enforce cooldown (2 minutes)
     if (lastOtp) {
       const twoMinutes = 2 * 60 * 1000;
       const expiresAt = new Date(lastOtp.createdAt.getTime() + twoMinutes);
@@ -178,12 +184,12 @@ class SendingWalletRepository implements ISendingWalletRepository {
       }
     }
 
-    // Xoá OTP cũ
+    // Remove old OTPs
     await this._prisma.otp.deleteMany({
       where: { userId: data.userId, type: 'SENDING_FX' },
     });
 
-    // Tạo OTP mới
+    // Create a new OTP record
     return this._prisma.otp.create({
       data: {
         ...data,
@@ -194,8 +200,8 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Xác thực OTP
-   * - Kiểm tra tồn tại + hạn sử dụng + xóa sau khi xác thực
+   * Verify OTP validity.
+   * - Ensures OTP exists, has not expired, and deletes it after successful validation.
    */
   async verifyOTP(data: ArgVerifyOTP): Promise<void> {
     const { userId, otp } = data;
@@ -207,34 +213,32 @@ class SendingWalletRepository implements ISendingWalletRepository {
 
     if (!record) throw new NotFoundError('Invalid OTP');
 
-    // Check expired
     const expiresAt = new Date(record.createdAt.getTime() + Number(record.duration) * 1000);
     if (new Date() > expiresAt) throw new BadRequestError('OTP has expired');
 
-    // OTP chỉ dùng 1 lần
+    // Delete OTP after successful verification (one-time use)
     await this._prisma.otp.delete({ where: { id: record.id } });
   }
 
   /**
-   * Tạo giao dịch gửi tiền (Expense cho sender, Income cho receiver)
-   * - Kiểm tra ví, đối tác, hạn mức, số dư
-   * - Tạo partner 2 chiều nếu chưa có
-   * - Dùng Prisma transaction đảm bảo atomicity
+   * Create a two-sided transaction for sending FX:
+   * - Expense record for sender
+   * - Income record for receiver
+   * Ensures atomicity using Prisma transaction.
    */
   async createTransactionSending(data: ArgCreateTransactionSendingType): Promise<any> {
-    const { amount, recieverEmail, userId, categoryId, productIds, description } = data;
+    const { amount, receiverEmail, userId, categoryId, productIds, description } = data;
     const amountDecimal = new Decimal(amount);
 
-    // Giao dịch transaction bảo toàn dữ liệu
     return this._prisma.$transaction(async (tx) => {
-      // Kiểm tra category
+      // Validate category (if provided)
       let category, products;
       if (categoryId) {
         category = await tx.category.findFirst({ where: { id: categoryId, userId } });
         if (!category) throw new NotFoundError('Category not found');
       }
 
-      // Kiểm tra products
+      // Validate product list (if provided)
       if (productIds && productIds.length > 0) {
         products = await tx.product.findMany({
           where: { id: { in: productIds }, userId },
@@ -242,13 +246,12 @@ class SendingWalletRepository implements ISendingWalletRepository {
         if (!products?.length) throw new NotFoundError('Products not found');
       }
 
-      // Kiểm tra người gửi
+      // Validate sender and sender wallet
       const sender = await tx.user.findFirst({
         where: { id: userId, isBlocked: false, isDeleted: false },
       });
       if (!sender) throw new BadRequestError('Sender not found');
 
-      // Lấy ví người gửi
       const senderWallet = await tx.wallet.findFirst({
         where: { userId, type: 'Payment' },
       });
@@ -257,21 +260,20 @@ class SendingWalletRepository implements ISendingWalletRepository {
       if (senderWallet.frBalanceActive.lt(amountDecimal))
         throw new BadRequestError('Insufficient balance');
 
-      // Lấy người nhận
+      // Validate receiver and receiver wallet
       const receiver = await tx.user.findFirst({
-        where: { email: recieverEmail, isBlocked: false, isDeleted: false },
+        where: { email: receiverEmail, isBlocked: false, isDeleted: false },
       });
       if (!receiver) throw new NotFoundError('Receiver not found');
 
-      // Lấy ví người nhận
       const receiverWallet = await tx.wallet.findFirst({
         where: { userId: receiver.id, type: 'Payment' },
       });
       if (!receiverWallet) throw new NotFoundError('Receiver wallet not found');
 
-      // Tạo partner 2 chiều nếu chưa có
+      // Ensure mutual partner records exist between sender and receiver
       let partnerReceiver = await tx.partner.findFirst({
-        where: { email: recieverEmail, userId: sender.id },
+        where: { email: receiverEmail, userId: sender.id },
       });
       if (!partnerReceiver) {
         partnerReceiver = await tx.partner.create({
@@ -298,7 +300,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
         });
       }
 
-      // Cập nhật số dư 2 ví
+      // Update wallet balances for both parties
       await tx.wallet.update({
         where: { id: senderWallet.id },
         data: { frBalanceActive: { decrement: amountDecimal } },
@@ -308,7 +310,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
         data: { frBalanceActive: { increment: amountDecimal } },
       });
 
-      // Ghi transaction cho sender (Expense)
+      // Create Expense transaction for sender
       const createdTxSending = await tx.transaction.create({
         data: {
           amount: amountDecimal,
@@ -330,7 +332,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
         },
       });
 
-      // Ghi transaction cho receiver (Income)
+      // Create Income transaction for receiver
       const createdTxIncome = await tx.transaction.create({
         data: {
           amount: amountDecimal,
@@ -345,13 +347,13 @@ class SendingWalletRepository implements ISendingWalletRepository {
         },
       });
 
-      // Trả về kết quả 2 chiều
+      // Return both transaction records
       return { expense: createdTxSending, income: createdTxIncome };
     });
   }
 
   /**
-   * Lấy danh sách category (chỉ loại Expense)
+   * Fetch all categories of type "Expense".
    */
   async getCategories(userId: string) {
     return this._prisma.category.findMany({
@@ -362,7 +364,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
   }
 
   /**
-   * Lấy danh sách sản phẩm kèm category
+   * Fetch all products belonging to a user, including their category info.
    */
   async getProductions(userId: string): Promise<ProductType[]> {
     return this._prisma.product.findMany({
