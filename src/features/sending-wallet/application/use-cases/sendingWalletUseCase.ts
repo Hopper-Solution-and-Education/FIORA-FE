@@ -1,14 +1,12 @@
 import { prisma } from '@/config';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
+import { OtpType, TransactionType, WalletType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import {
-  CategoryType,
-  DeepLink,
   Duration,
-  LocaleFormat,
-  OTPType,
-  WalletType,
+  LocaleFormat
 } from '../../constants/sendingWalletConstants';
 import { SendingWalletMessage } from '../../constants/sendingWalletMessage';
 import { sendingWalletRepository } from '../../infrastructure/repositories/sendingWalletRepository';
@@ -79,7 +77,7 @@ class SendingWalletUseCase {
     if (!sender) throw new NotFoundError(SendingWalletMessage.SENDER_NOT_FOUND);
 
     const senderWallet = await this._prisma.wallet.findFirst({
-      where: { userId, type: WalletType.PAYMENT },
+      where: { userId, type: WalletType.Payment  },
     });
     if (!senderWallet) throw new NotFoundError(SendingWalletMessage.SENDER_WALLET_NOT_FOUND);
 
@@ -90,7 +88,7 @@ class SendingWalletUseCase {
     if (!receiver) throw new NotFoundError(SendingWalletMessage.RECEIVER_NOT_FOUND);
 
     const receiverWallet = await this._prisma.wallet.findFirst({
-      where: { userId: receiver.id, type: WalletType.PAYMENT },
+      where: { userId: receiver.id, type: WalletType.Payment },
     });
     if (!receiverWallet) throw new NotFoundError(SendingWalletMessage.RECEIVER_WALLET_NOT_FOUND);
 
@@ -121,7 +119,7 @@ class SendingWalletUseCase {
     // Validate category
     if (categoryId) {
       const category = await this._prisma.category.findFirst({
-        where: { id: categoryId, userId, type: CategoryType.EXPENSE },
+        where: { id: categoryId, userId, type: TransactionType.Expense  },
       });
       if (!category) throw new NotFoundError(SendingWalletMessage.CATEGORY_NOT_FOUND);
     }
@@ -178,7 +176,7 @@ class SendingWalletUseCase {
       duration: Duration.OTP_5_MIN,
       otp: otpCode,
       userId: data.userId,
-      type: OTPType.SENDING_FX,
+      type: OtpType.SENDING_FX,
     });
 
     if (!otpCreated) throw new InternalServerError(SendingWalletMessage.OTP_CREATE_FAILURE);
@@ -252,7 +250,7 @@ class SendingWalletUseCase {
         receiverName: receiver.name ?? receiver.email,
       },
       true,
-      { deepLink: DeepLink.WALLET_PAYMENT },
+      { deepLink: RouteEnum.WalletPayment },
     );
 
     // Notify receiver
@@ -267,7 +265,7 @@ class SendingWalletUseCase {
         receiverName: receiver.name ?? receiver.email,
       },
       true,
-      { deepLink: DeepLink.WALLET_PAYMENT },
+      { deepLink: RouteEnum.WalletPayment },
     );
   }
 }

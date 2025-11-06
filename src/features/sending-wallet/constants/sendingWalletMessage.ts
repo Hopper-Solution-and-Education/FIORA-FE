@@ -1,6 +1,4 @@
-// File: sendingWalletMessage.ts
 // Centralized message constants for SendingWalletUseCase.
-// This makes it easier to maintain and localize (multi-language support).
 
 export enum SendingWalletMessage {
   // Validation messages
