@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { httpClient } from '@/config';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { routeConfig } from '@/shared/utils/route';
 import { debounce } from 'lodash';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -68,11 +70,15 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
 
     setLoading(true);
     try {
+      const url = routeConfig(ApiEndpointEnum.SendingWalletRecommendReceiver, undefined, {
+        q: q.trim(),
+      });
+
       const json = await httpClient.get<{
         status: number;
         message?: string;
         data?: Receiver[];
-      }>(`/api/sending-wallet/recommend-reciever?q=${encodeURIComponent(q)}`);
+      }>(url);
 
       if (!json || json.status !== 200) {
         throw new Error(json?.message || 'Failed to fetch receivers');
@@ -108,7 +114,7 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
 
     debouncedFetch(search);
 
-    // Cleanup: cancel debounce khi component unmount hoặc search thay đổi
+    // Cleanup: cancel debounce on unmount or search change
     return () => {
       debouncedFetch.cancel();
     };

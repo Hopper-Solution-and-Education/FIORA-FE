@@ -82,6 +82,11 @@ export enum ApiEndpointEnum {
   NewsCategories = '/api/news/categories?type=NEWS',
   NewsReaction = '/api/news/react',
 
+  //Sending FX
+  SendingWalletRecommendReceiver = '/api/sending-wallet/recommend-reciever',
+  SendingSendOTP = '/api/sending-wallet/send-otp',
+  SendingWalletSendFX = '/api/sending-wallet/send-fx',
+
   // Withdraw FX
   walletWithdraw = '/api/wallet/withdraw',
   getOtp = '/api/wallet/withdraw/sendOtp',

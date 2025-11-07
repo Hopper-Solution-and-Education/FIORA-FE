@@ -4,8 +4,7 @@ import { httpClient } from '@/config';
 import { setSendingFXFormClose } from '@/features/home/module/wallet/slices';
 import { getWalletsAsyncThunk } from '@/features/home/module/wallet/slices/actions';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import useDataFetch from '@/shared/hooks/useDataFetcher';
-import type { OtpState, WalletSendingOverview } from '@/shared/types/otp';
+import type { OtpState } from '@/shared/types/otp';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -22,12 +21,6 @@ export const useSendingFXAction = () => {
   const [otpState, setOtpState] = useState<OtpState>('Get');
   const [countdown, setCountdown] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { mutate: refetchOverview } = useDataFetch<{ data: WalletSendingOverview }>({
-    endpoint: ApiEndpointEnum.walletWithdraw,
-    method: 'GET',
-    refreshInterval: 1000 * 60 * 5,
-  });
 
   const getCurrentBalance = useCallback(() => {
     const paymentWallet = wallets?.find((w: any) => w.type === 'Payment');
@@ -101,7 +94,7 @@ export const useSendingFXAction = () => {
       setIsLoading(true);
       try {
         const res = await httpClient.post<{ status?: number; message?: string }>(
-          '/api/sending-wallet/send-otp',
+          ApiEndpointEnum.SendingSendOTP,
           { amount: data.amountInput, emailReceiver: data.receiver },
         );
 
@@ -137,7 +130,7 @@ export const useSendingFXAction = () => {
       setIsLoading(true);
       try {
         const res = await httpClient.post<{ status: number; message: string }>(
-          '/api/sending-wallet/send-fx',
+          ApiEndpointEnum.SendingWalletSendFX,
           {
             amount: data.amountInput,
             otp: data.otp,
@@ -150,7 +143,6 @@ export const useSendingFXAction = () => {
 
         if (res.status === 200) {
           toast.success(res.message || 'FX sent successfully!');
-          refetchOverview();
           handleClose(reset);
         } else {
           toast.error(res.message || 'Failed to send FX');
@@ -166,7 +158,7 @@ export const useSendingFXAction = () => {
         setIsLoading(false);
       }
     },
-    [refetchOverview, handleClose],
+    [handleClose],
   );
 
   return {

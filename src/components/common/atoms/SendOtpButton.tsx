@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { OtpState } from '@/shared/types/otp';
+import { cn } from '@/shared/utils';
 import { useEffect, useState } from 'react';
 
 type ChildProps = {
@@ -48,9 +49,11 @@ function SendOtpButton({
         </Button>
       ) : (
         <div
-          className={`h-9 flex items-center ${classNameText} ${
-            count <= 5 ? 'text-red-600 dark:text-red-400' : ''
-          }`}
+          className={cn(
+            'h-9 flex items-center',
+            classNameText,
+            count <= 5 && 'text-red-600 dark:text-red-400',
+          )}
         >
           {state} in {count}s
         </div>
