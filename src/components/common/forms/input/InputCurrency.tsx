@@ -73,8 +73,9 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    const regex = /^\d+(\.\d*)?$/;
-    if (inputValue !== '' && !regex.test(inputValue)) {
+    // Allow input only numbers, decimal point, and minus sign
+    const regex = /^-?\d*\.?\d*$/;
+    if (!regex.test(inputValue)) {
       return;
     }
 
