@@ -8,8 +8,6 @@ const apiMiddleware: Middleware = () => (next) => (action) => {
     // } catch {
     //   console.error(action.payload);
     // }
-
-    return action?.payload;
   }
   return next(action);
 };

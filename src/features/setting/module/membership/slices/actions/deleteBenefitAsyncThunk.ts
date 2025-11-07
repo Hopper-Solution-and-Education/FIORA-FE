@@ -6,7 +6,7 @@ import { IDeleteBenefitUseCase } from '../../domain/usecases/deleteBenefitUseCas
 export const deleteBenefitAsyncThunk = createAsyncThunk<
   DeleteBenefitTierResponse,
   DeleteBenefitTierRequest,
-  { rejectValue: string }
+  { rejectValue: any }
 >('membership/deleteBenefit', async (data, { rejectWithValue }) => {
   try {
     const deleteBenefitUseCase = membershipDIContainer.get<IDeleteBenefitUseCase>(
@@ -14,10 +14,11 @@ export const deleteBenefitAsyncThunk = createAsyncThunk<
     );
 
     const response = await deleteBenefitUseCase.execute(data);
+
     return response;
   } catch (error: any) {
-    console.log(error);
+    console.error(error);
 
-    return rejectWithValue(error || 'Failed to delete benefit');
+    return rejectWithValue(error);
   }
 });
