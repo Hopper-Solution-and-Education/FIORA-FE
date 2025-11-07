@@ -113,7 +113,7 @@ const membershipSlice = createSlice({
       })
       .addCase(deleteBenefitAsyncThunk.rejected, (state, action) => {
         state.isLoadingDeleteBenefitTier = false;
-        toast.error(action.payload);
+        toast.error(action.payload?.message);
       });
 
     builder

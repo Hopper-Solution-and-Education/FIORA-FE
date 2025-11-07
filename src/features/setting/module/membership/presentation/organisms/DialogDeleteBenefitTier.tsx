@@ -5,27 +5,22 @@ import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { ProcessMembershipMode } from '../../data/api';
 import { setIsShowDialogDeleteBenefitTier } from '../../slices';
 import { deleteBenefitAsyncThunk, getListMembershipAsyncThunk } from '../../slices/actions';
 
 const DialogDeleteBenefitTier = () => {
-  const isShowDialogDeleteBenefitTier = useAppSelector(
-    (state) => state.memberShipSettings.deleteBenefitTier.isShowDialogDeleteBenefitTier,
-  );
-  const idTierToDelete = useAppSelector(
-    (state) => state.memberShipSettings.deleteBenefitTier.idTierToDelete,
-  );
-  const slugTierToDelete = useAppSelector(
-    (state) => state.memberShipSettings.deleteBenefitTier.slugTierToDelete,
+  const { isShowDialogDeleteBenefitTier, idTierToDelete, slugTierToDelete } = useAppSelector(
+    (state) => state.memberShipSettings.deleteBenefitTier,
   );
   const selectedMembership = useAppSelector((state) => state.memberShipSettings.selectedMembership);
-  const [deleteMode, setDeleteMode] = useState<ProcessMembershipMode>(ProcessMembershipMode.DELETE);
   const isLoadingDeleteBenefitTier = useAppSelector(
     (state) => state.memberShipSettings.isLoadingDeleteBenefitTier,
   );
+
   const dispatch = useAppDispatch();
+
+  const [deleteMode, setDeleteMode] = useState<ProcessMembershipMode>(ProcessMembershipMode.DELETE);
 
   return (
     <GlobalDialog
@@ -41,16 +36,6 @@ const DialogDeleteBenefitTier = () => {
             <p>Are you sure you want to delete this benefit tier?</p>
             <p>This action cannot be undone.</p>
           </div>
-          {/* <SelectField
-            options={deleteModes.map((mode) => ({
-              label: formatLabel(mode),
-              value: mode,
-            }))}
-            value={deleteMode}
-            required
-            noneValue={false}
-            onChange={(value) => setDeleteMode(value as ProcessMembershipMode)}
-          /> */}
           <RadioField
             key="deleteMode"
             name="deleteMode"
@@ -110,11 +95,9 @@ const DialogDeleteBenefitTier = () => {
                   .unwrap()
                   .then(() => {
                     dispatch(getListMembershipAsyncThunk({ page: 1, limit: 10 }));
-                    dispatch(setIsShowDialogDeleteBenefitTier(false));
                     setDeleteMode(ProcessMembershipMode.DELETE);
                   })
-                  .catch((error: any) => {
-                    toast.error(error?.message || 'Failed to delete benefit tier');
+                  .finally(() => {
                     dispatch(setIsShowDialogDeleteBenefitTier(false));
                   });
               }
