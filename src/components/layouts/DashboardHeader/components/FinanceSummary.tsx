@@ -59,14 +59,13 @@ export default function FinanceSummary() {
   const router = useRouter();
   const { formatCurrency } = useCurrencyFormatter();
 
-  // Memoize the onClick handler
   const handleClick = useCallback(() => {
     router.push(RouteEnum.WalletDashboard);
   }, [router]);
 
   const { totalBalance, totalDebt, FBalance, FDebt } = useMemo(() => {
-    const balance =
-      (wallets?.reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0) + (frozenAmount || 0);
+    const walletsSum = wallets?.reduce((sum, w) => sum + (w.frBalanceActive || 0), 0) || 0;
+    const balance = walletsSum + (Number(frozenAmount) || 0);
 
     const debt =
       wallets
@@ -87,7 +86,6 @@ export default function FinanceSummary() {
 
   const isLoading = loading || !wallets || frozenAmount === null;
 
-  // Calculate percentages based on the larger value to ensure proper visualization
   const maxValue = Math.max(Math.abs(totalBalance), Math.abs(totalDebt));
   const balancePercent = maxValue > 0 ? (Math.abs(totalBalance) / maxValue) * 100 : 0;
   const debtPercent = maxValue > 0 ? (Math.abs(totalDebt) / maxValue) * 100 : 0;
