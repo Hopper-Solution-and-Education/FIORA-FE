@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { httpClient } from '@/config';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
 import { debounce } from 'lodash';
 import Image from 'next/image';
@@ -156,7 +157,7 @@ const ReceiverSelectField: React.FC<ReceiverSelectFieldProps> = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={`w-full justify-between ${error ? 'border-red-500' : ''}`}
+            className={cn('w-full justify-between', error && 'border-red-500')}
             onClick={() => setOpen((prev) => !prev)}
           >
             <span className="flex items-center gap-2">

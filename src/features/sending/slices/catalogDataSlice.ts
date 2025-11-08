@@ -1,4 +1,5 @@
 import { httpClient } from '@/config';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 
@@ -22,7 +23,7 @@ export const fetchCatalogDataAsync = createAsyncThunk(
   'catalogData/fetchCatalog',
   async (_, { rejectWithValue }) => {
     try {
-      const json = await httpClient.get<{ data: any }>('/api/sending-wallet/catalog');
+      const json = await httpClient.get<{ data: any }>(ApiEndpointEnum.SendingCatalog);
       const d = json.data;
       return {
         categories: d.categories || [],

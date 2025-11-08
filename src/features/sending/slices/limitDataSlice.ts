@@ -1,4 +1,5 @@
 import { httpClient } from '@/config';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 
@@ -26,7 +27,7 @@ export const fetchLimitDataAsync = createAsyncThunk(
   'limitData/fetchLimit',
   async (_, { rejectWithValue }) => {
     try {
-      const json = await httpClient.get<{ data: any }>('/api/sending-wallet/amount-limit');
+      const json = await httpClient.get<{ data: any }>(ApiEndpointEnum.SendingWalletAmountLimit);
       const d = json.data;
       return {
         dailyMovingLimit: d.dailyMovingLimit?.amount || 0,
@@ -44,12 +45,7 @@ export const fetchLimitDataAsync = createAsyncThunk(
     condition: (_, { getState }) => {
       const state = getState() as { limitData: { isLoading: boolean; isFetched: boolean } };
 
-      if (state.limitData.isLoading) {
-        return false;
-      }
-      if (state.limitData.isFetched) {
-        return false;
-      }
+      if (state.limitData.isLoading || state.limitData.isFetched) return false;
       return true;
     },
   },
