@@ -1,8 +1,8 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { SessionUser } from '@/shared/types/session';
 import {
   BankAccount,
-  ChannelType,
   KYCMethod,
   KYCStatus,
   KYCType,
@@ -30,17 +30,14 @@ class BankAccountRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await tx.notification.create({
-          data: {
-            title: `Verify new bank account!`,
-            message: `User ${user.email} has submitted a new verify bank account.`,
-            channel: ChannelType.BOX,
-            notifyTo: NotificationType.ADMIN_CS,
-            type: 'BANK',
-            emails: [user.email],
-            emailTemplateId: null,
-            createdBy: null,
-          },
+        await notificationUseCase.createBoxNotification({
+          title: `Verify new bank account!`,
+          type: 'BANK',
+          notifyTo: NotificationType.ADMIN_CS,
+          attachmentId: '',
+          deepLink: '',
+          message: `User ${user.email} has submitted a new verify bank account.`,
+          emails: [user.email],
         });
         return bankAccount;
       });
@@ -111,8 +108,8 @@ class BankAccountRepository {
         });
         const updatedKycLevels = user?.kyc_levels || [];
 
-        if (!updatedKycLevels.includes('2')) {
-          updatedKycLevels.push('2');
+        if (!updatedKycLevels.includes('4')) {
+          updatedKycLevels.push('4');
         }
         await tx.user.update({
           where: { id: user?.id },
@@ -165,6 +162,24 @@ class BankAccountRepository {
       return prisma.$transaction(async (tx) => {
         const bank = await tx.bankAccount.delete({ where: { id } });
 
+        const user = await tx.user.findFirst({
+          where: { id: bank.userId },
+          select: { id: true, kyc_levels: true },
+        });
+
+        let updatedKycLevels = user?.kyc_levels || [];
+
+        if (updatedKycLevels.includes('4')) {
+          updatedKycLevels = updatedKycLevels.filter((key) => key !== '4');
+        }
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: bank.userId,
+          },
+        });
         const eKycRecord = await tx.eKYC.findFirst({ where: { refId: id } });
         if (eKycRecord) {
           await tx.eKYC.delete({ where: { id: eKycRecord.id } });

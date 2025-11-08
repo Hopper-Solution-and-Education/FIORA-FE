@@ -17,7 +17,6 @@ export const personalInfoSchema = Yup.object({
   referrer_code: Yup.string()
     .optional()
     .trim()
-    .min(3, 'Referral code must be at least 3 characters')
     .max(15, 'Referral code must be at most 15 characters'),
 });
 
@@ -92,9 +91,11 @@ export type IdentificationDocument = {
   frontImage: File | null;
   backImage: File | null;
   facePhoto: File | null;
+  locationImage: File | null;
   initialFrontImage?: string;
   initialBackImage?: string;
   initialFacePhoto?: string;
+  initialLocationImage?: string;
 };
 
 export type TaxInformation = {

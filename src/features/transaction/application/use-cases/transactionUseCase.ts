@@ -28,7 +28,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) {}
+  ) { }
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -72,13 +72,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                    {
-                      date: {
-                        gte: new Date(typeSearchParams),
-                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
-                      },
+                  {
+                    date: {
+                      gte: new Date(typeSearchParams),
+                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
                     },
-                  ]
+                  },
+                ]
                 : []),
             ],
           },
@@ -364,8 +364,10 @@ class TransactionUseCase {
   }
 
   private validateSufficientBalance(balance: number, amount: number, errorMessage: string) {
+    console.log('🚀 ~ TransactionUseCase ~ validateSufficientBalance ~ amount:', amount);
+    console.log('🚀 ~ TransactionUseCase ~ validateSufficientBalance ~ balance:', balance);
     if (balance < amount) {
-      throw new Error(errorMessage);
+      throw new ConflictError(errorMessage);
     }
   }
 
@@ -522,11 +524,17 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       await this.accountRepository.receiveBalance(
         tx,
         transactionUnique.fromAccountId as string,
         transactionUnique.amount.toNumber(),
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (
@@ -544,12 +552,6 @@ class TransactionUseCase {
           data.userId as string,
         );
       }
-
-      const baseAmount = await convertCurrency(
-        Number(data.amount),
-        data.currency as string,
-        DEFAULT_BASE_CURRENCY,
-      );
 
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
@@ -579,7 +581,7 @@ class TransactionUseCase {
         tx,
         data.fromAccountId as string,
         data.amount as number,
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -640,11 +642,17 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
+      const baseAmount = await convertCurrency(
+        Number(data.amount),
+        data.currency as string,
+        DEFAULT_BASE_CURRENCY,
+      );
+
       await this.accountRepository.deductBalance(
         tx,
         transactionUnique.toAccountId as string,
         transactionUnique.amount.toNumber(),
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (
@@ -662,12 +670,6 @@ class TransactionUseCase {
           data.userId as string,
         );
       }
-
-      const baseAmount = await convertCurrency(
-        Number(data.amount),
-        data.currency as string,
-        DEFAULT_BASE_CURRENCY,
-      );
 
       const transaction = await tx.transaction.update({
         where: { id: data.id as string },
@@ -697,7 +699,7 @@ class TransactionUseCase {
         tx,
         data.toAccountId as string,
         data.amount as number,
-        data.baseAmount as number,
+        baseAmount,
       );
 
       if (Array.isArray(data.products) && data.products.length > 0) {
@@ -718,17 +720,6 @@ class TransactionUseCase {
 
   async updateTransaction_Transfer(data: Prisma.TransactionUncheckedCreateInput) {
     return prisma.$transaction(async (tx) => {
-      const fromAccount = await tx.account.findUnique({
-        where: { id: data.fromAccountId as string },
-      });
-      const toAccount = await tx.account.findUnique({
-        where: { id: data.toAccountId as string },
-      });
-
-      if (!fromAccount || !toAccount) {
-        throw new Error(Messages.ACCOUNT_NOT_FOUND);
-      }
-
       if (!data.remark) {
         throw new BadRequestError(Messages.REMARK_IS_REQUIRED);
       }
@@ -748,39 +739,87 @@ class TransactionUseCase {
         throw new BadRequestError(Messages.TRANSACTION_NOT_FOUND);
       }
 
-      const baseAmount = await convertCurrency(
-        transactionUnique.amount,
-        transactionUnique.currency!,
+      // Fetch old accounts for reversing the original transfer
+      const oldFromAccount = transactionUnique.fromAccountId
+        ? await tx.account.findUnique({
+          where: { id: transactionUnique.fromAccountId },
+        })
+        : null;
+      const oldToAccount = transactionUnique.toAccountId
+        ? await tx.account.findUnique({
+          where: { id: transactionUnique.toAccountId },
+        })
+        : null;
+
+      // Fetch new accounts for applying the updated transfer
+      const newFromAccount = await tx.account.findUnique({
+        where: { id: data.fromAccountId as string },
+      });
+      const newToAccount = await tx.account.findUnique({
+        where: { id: data.toAccountId as string },
+      });
+
+      if (!newFromAccount || !newToAccount) {
+        throw new Error(Messages.ACCOUNT_NOT_FOUND);
+      }
+
+      // Reverse the old transfer: transfer from oldToAccount back to oldFromAccount
+      if (oldFromAccount && oldToAccount) {
+        const oldAmount = transactionUnique.amount.toNumber();
+        const oldBaseAmount = transactionUnique.baseAmount?.toNumber() || 0;
+
+        // Validate that oldToAccount has sufficient balance to reverse the transfer
+        this.validateSufficientBalance(
+          oldToAccount.balance!.toNumber(),
+          oldAmount,
+          `Account ${oldToAccount.name} does not have sufficient balance to reverse the transfer transaction.`,
+        );
+
+        await this.accountRepository.transferBalance(
+          tx,
+          transactionUnique.toAccountId as string,
+          transactionUnique.fromAccountId as string,
+          oldAmount,
+          oldBaseAmount,
+        );
+      }
+
+      // Calculate new baseAmount using the new amount
+      const newBaseAmount = await convertCurrency(
+        data.amount as number,
+        (data.currency as string) || transactionUnique.currency!,
         DEFAULT_BASE_CURRENCY,
       );
 
-      await this.accountRepository.transferBalance(
-        tx,
-        transactionUnique.fromAccountId as string,
-        transactionUnique.toAccountId as string,
-        transactionUnique.amount.toNumber(),
-        baseAmount,
-      );
-
-      const type = fromAccount.type;
+      const type = newFromAccount.type;
       BooleanUtils.chooseByMap(
         type,
         {
           [AccountType.Payment]: () =>
-            this.validatePaymentAccount(fromAccount, data.amount as number),
+            this.validatePaymentAccount(newFromAccount, data.amount as number),
           [AccountType.Saving]: () =>
-            this.validatePaymentAccount(fromAccount, data.amount as number),
+            this.validatePaymentAccount(newFromAccount, data.amount as number),
           [AccountType.Lending]: () =>
-            this.validatePaymentAccount(fromAccount, data.amount as number),
+            this.validatePaymentAccount(newFromAccount, data.amount as number),
           [AccountType.CreditCard]: () =>
-            this.validateCreditCardAccount(fromAccount, data.amount as number),
-          [AccountType.Debt]: () => this.validateDebtAccount(fromAccount, data.amount as number),
+            this.validateCreditCardAccount(newFromAccount, data.amount as number),
+          [AccountType.Debt]: () => this.validateDebtAccount(newFromAccount, data.amount as number),
           [AccountType.Invest]: () =>
-            this.validateInvestAccount(fromAccount, data.amount as number),
+            this.validateInvestAccount(newFromAccount, data.amount as number),
         },
         () => {
           throw new BadRequestError(Messages.UNSUPPORTED_ACCOUNT_TYPE.replace('{type}', type));
         },
+      );
+
+      // Apply the new transfer: transfer from fromAccount to toAccount
+      const newAmount = data.amount as number;
+      await this.accountRepository.transferBalance(
+        tx,
+        data.fromAccountId as string,
+        data.toAccountId as string,
+        newAmount,
+        newBaseAmount,
       );
 
       const transaction = await tx.transaction.update({
@@ -798,7 +837,7 @@ class TransactionUseCase {
           remark: data.remark,
           createdBy: data.userId as string,
           updatedBy: data.userId,
-          baseAmount: baseAmount,
+          baseAmount: newBaseAmount,
           baseCurrency: data.baseCurrency,
         },
       });
@@ -806,14 +845,6 @@ class TransactionUseCase {
       if (!transaction) {
         throw new InternalServerError(Messages.CREATE_TRANSACTION_FAILED);
       }
-
-      await this.accountRepository.transferBalance(
-        tx,
-        data.fromAccountId as string,
-        data.toAccountId as string,
-        data.amount as number,
-        data.baseAmount as number,
-      );
 
       return transaction;
     });

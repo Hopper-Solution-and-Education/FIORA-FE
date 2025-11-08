@@ -304,13 +304,6 @@ class NotificationUseCase {
     // Render template với variables từ emailPart
     const renderedContent = renderEmailTemplate(emailTemplate.content, emailPart);
 
-    await prisma.notification.update({
-      where: { id: notificationId },
-      data: {
-        content: renderedContent,
-      },
-    });
-
     // Tạo UserNotification record
     await prisma.userNotification.create({
       data: {
@@ -318,6 +311,7 @@ class NotificationUseCase {
         notificationId: notificationId,
         isRead: false,
         createdBy: null,
+        content: renderedContent,
       },
     });
   }
@@ -438,6 +432,12 @@ class NotificationUseCase {
             },
           });
 
+          await prisma.notification.update({
+            where: { id: notification.id },
+            data: {
+              message: renderedContent,
+            },
+          });
           // Update result
           result.totalProcessed++;
           if (emailResult.success) {

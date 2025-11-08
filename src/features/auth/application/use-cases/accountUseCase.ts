@@ -378,7 +378,15 @@ export class AccountUseCase {
       throw new Error('Account not found');
     }
 
-    return await this.accountRepository.update(id, { ...params });
+    const { balance, currency } = params;
+    const baseCurrency = DEFAULT_BASE_CURRENCY;
+    const baseAmount = await convertCurrency(
+      balance as number,
+      currency as string,
+      baseCurrency as string,
+    );
+
+    return await this.accountRepository.update(id, { ...params, baseAmount });
   }
 
   async deleteAccount(id: string, userId: string): Promise<Account | null> {

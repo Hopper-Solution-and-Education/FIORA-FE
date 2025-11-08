@@ -57,19 +57,23 @@ export class MembershipCronjobMapper {
   }
 
   static toList(response: MembershipCronjobPaginatedResponse) {
-    const pagination = (response.data as any) || {};
-    const items: MembershipCronjobItem[] = Array.isArray(pagination.items)
-      ? pagination.items
-      : Array.isArray(response.data)
-        ? (response.data as any)
-        : [];
+    // API returns pagination at root level, not inside data
+    const items: MembershipCronjobItem[] = Array.isArray(response.data)
+      ? (response.data as any)
+      : [];
+
+    // Get pagination from root level
+    const page = (response as any).page;
+    const pageSize = (response as any).pageSize;
+    const totalPage = (response as any).totalPage;
+    const total = (response as any).total ?? items.length;
 
     return {
       data: items || [],
-      page: pagination.page,
-      pageSize: pagination.pageSize,
-      totalPage: pagination.totalPage,
-      total: pagination.total ?? (Array.isArray(items) ? items.length : 0),
+      page,
+      pageSize,
+      totalPage,
+      total,
       statistics: response.statistics ?? undefined,
     };
   }

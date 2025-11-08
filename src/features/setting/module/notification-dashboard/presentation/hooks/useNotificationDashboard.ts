@@ -75,6 +75,7 @@ export const useNotificationDashboard = () => {
         const hasMore =
           response.page <
           (response.totalPage ?? Math.ceil((response.total ?? 0) / response.pageSize));
+
         dispatchTable({ type: 'SET_HAS_MORE', payload: hasMore });
       } finally {
         // Clear loading states
@@ -112,7 +113,10 @@ export const useNotificationDashboard = () => {
    * Called when user scrolls near the bottom of the table
    */
   const loadMore = useCallback(async () => {
-    if (!state.hasMore || state.isLoadingMore || isFetching.current) return;
+    if (!state.hasMore || state.isLoadingMore || isFetching.current) {
+      return;
+    }
+
     const nextPage = state.pagination.current + 1;
     await fetchData(nextPage, state.pagination.pageSize, true, isPersonalNotificationDashboard);
   }, [

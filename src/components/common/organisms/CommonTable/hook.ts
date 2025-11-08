@@ -1,38 +1,72 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 type UseCommonInfiniteScrollParams = {
   onLoadMore: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  rootMargin?: string;
+  threshold?: number;
 };
 
 export function useCommonInfiniteScroll({
   onLoadMore,
   hasMore = false,
   isLoadingMore = false,
-  rootMargin = '200px',
-}: UseCommonInfiniteScrollParams) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  threshold = 0.8,
+  deps = [],
+}: UseCommonInfiniteScrollParams & { deps?: any[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+  const isFetching = useRef(false);
 
   useEffect(() => {
-    if (!hasMore || isLoadingMore) return;
-    if (!sentinelRef.current) return;
+    isFetching.current = false;
+    isInitialMount.current = true;
+    const container = containerRef.current;
+    if (container) container.scrollTop = 0;
+  }, deps);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && hasMore && !isLoadingMore) {
-          onLoadMore();
-        }
-      },
-      { root: containerRef.current || null, rootMargin },
-    );
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, onLoadMore, rootMargin]);
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
 
-  return { containerRef, sentinelRef } as const;
+    if (!hasMore || isLoadingMore || isFetching.current) return;
+
+    if (scrollPercentage >= threshold) {
+      isFetching.current = true;
+
+      Promise.resolve(onLoadMore()).finally(() => {
+        isFetching.current = false;
+      });
+    }
+  }, [hasMore, isLoadingMore, onLoadMore, threshold]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !hasMore || isLoadingMore || isInitialMount.current) return;
+
+    const { scrollHeight, clientHeight } = container;
+    if (clientHeight >= scrollHeight) {
+      onLoadMore();
+    }
+  }, [hasMore, isLoadingMore, onLoadMore]);
+
+  useEffect(() => {
+    if (!isLoadingMore) isInitialMount.current = false;
+  }, [isLoadingMore]);
+
+  return { containerRef } as const;
 }

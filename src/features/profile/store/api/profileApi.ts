@@ -236,6 +236,18 @@ export const profileApi = createApi({
       ],
     }),
 
+    // Admin/CS: Send OTP for eKYC verification
+    sendOtpVerifyEKYC: builder.mutation<any, void>({
+      query: () => ({ url: '/api/eKyc/verify/send-otp', method: 'POST' }),
+      transformResponse: (response: Response<any>) => response.data,
+    }),
+
+    // Admin/CS: Verify OTP for eKYC verification
+    verifyOtpVerifyEKYC: builder.mutation<any, { otp: string }>({
+      query: (body) => ({ url: '/api/eKyc/verify/verify-otp', method: 'POST', body }),
+      transformResponse: (response: Response<any>) => response.data,
+    }),
+
     // Delete eKYC for re-submit
     deleteEKYC: builder.mutation<any, string>({
       query: (kycId) => ({ url: `${ApiEndpointEnum.eKYC}/${kycId}`, method: 'DELETE' }),
@@ -306,6 +318,8 @@ export const {
   useUpdateBankAccountMutation,
   useGetEKYCByUserIdQuery,
   useVerifyEKYCMutation,
+  useSendOtpVerifyEKYCMutation,
+  useVerifyOtpVerifyEKYCMutation,
   useGetIdentificationDocumentByUserIdQuery,
   useGetBankAccountByUserIdQuery,
   useGetProfileByUserIdQuery,

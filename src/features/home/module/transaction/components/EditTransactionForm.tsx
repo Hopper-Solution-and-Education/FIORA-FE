@@ -1,9 +1,12 @@
 'use client';
 
+import { AppDispatch } from '@/store';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { useTransactionEdit } from '../hooks/useTransactionEdit';
+import { fetchSupportingData } from '../slices/createTransactionSlice';
 import TransactionForm, { TransactionFormMode } from './TransactionForm';
 
 interface EditTransactionFormProps {
@@ -14,12 +17,19 @@ interface EditTransactionFormProps {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const EditTransactionForm = ({ initialData, onSuccess }: EditTransactionFormProps) => {
   const params = useParams();
+  const dispatch = useDispatch<AppDispatch>();
+
   const transactionId = params?.id as string;
 
-  const { isLoading, error, getFormData, handleSubmit, canEdit } = useTransactionEdit({
+  const { transaction, isLoading, error, getFormData, handleSubmit, canEdit } = useTransactionEdit({
     transactionId,
     onSuccess,
   });
+  useEffect(() => {
+    if (transaction?.type) {
+      dispatch(fetchSupportingData(transaction.type));
+    }
+  }, [transaction, dispatch]);
 
   // Handle errors
   useEffect(() => {

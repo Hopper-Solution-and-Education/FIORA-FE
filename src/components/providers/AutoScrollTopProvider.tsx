@@ -1,67 +1,115 @@
-'use client'
+'use client';
 
-import { useIsomorphicEffect } from '@/shared/hooks'
-import { ScrollType, useAppScroll } from '@/shared/hooks/useAppScroll'
-import { useNavigationState } from '@/shared/hooks/useNavigationState'
-import { usePathname } from 'next/navigation'
-import { useRef } from 'react'
+import { ScrollType, useAppScroll } from '@/shared/hooks/useAppScroll';
+import { useEffect } from 'react';
 
-export const AutoScrollTopProvider = () => {
-  const pathname = usePathname()
-  const { scroll } = useAppScroll()
-  const { isNavigating, navigationStartTime } = useNavigationState()
-  const prevPathnameRef = useRef<string | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+export const AutoScrollTopProvider = (): React.JSX.Element | null => {
+  const { scroll } = useAppScroll();
 
-  useIsomorphicEffect(() => {
-    const prevPathname = prevPathnameRef.current
+  useEffect(() => {
+    const scrollToTop = () => {
+      // document.getElementById('app-content')?.scrollTo(0, 0);
+      scroll({ type: ScrollType.ToTop });
+    };
 
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
+    /**
+     * Convert URL to absolute path
+     */
+    const toAbsoluteURL = (url: string): string => {
+      return new URL(url, window.location.href).href;
+    };
 
-    // Only scroll if the base route changed (not just parameters) and navigation is complete
-    if (prevPathname && pathname && prevPathname !== pathname && !isNavigating) {
-      const prevBaseRoute = prevPathname.split('?')[0].split('#')[0]
-      const currentBaseRoute = pathname.split('?')[0].split('#')[0]
+    /**
+     * Check if it's an anchor link within the same page
+     */
+    const isSamePageAnchor = (currentUrl: string, newUrl: string): boolean => {
+      const current = new URL(toAbsoluteURL(currentUrl));
+      const next = new URL(toAbsoluteURL(newUrl));
+      return current.href.split('#')[0] === next.href.split('#')[0];
+    };
 
-      if (prevBaseRoute !== currentBaseRoute) {
-        // Calculate adaptive delay based on navigation time
-        const navigationTime = navigationStartTime ? Date.now() - navigationStartTime : 0
-        const baseDelay = 200
-        const adaptiveDelay = Math.max(baseDelay, 400 - navigationTime) // Longer delay for faster navigation
+    /**
+     * Check if same hostname
+     */
+    const isSameHostName = (currentUrl: string, newUrl: string): boolean => {
+      const current = new URL(toAbsoluteURL(currentUrl));
+      const next = new URL(toAbsoluteURL(newUrl));
+      return current.hostname.replace(/^www\./, '') === next.hostname.replace(/^www\./, '');
+    };
 
-        // Use requestAnimationFrame for better timing
-        const frameId = requestAnimationFrame(() => {
-          timeoutRef.current = setTimeout(() => {
-            // Final check to ensure we're still on the same path and navigation is complete
-            if (prevPathnameRef.current === pathname && !isNavigating) {
-              scroll({
-                type: ScrollType.ToTop,
-              })
-            }
-          }, adaptiveDelay)
-        })
-
-        return () => {
-          cancelAnimationFrame(frameId)
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current)
-          }
-        }
+    /**
+     * Find the closest anchor tag
+     */
+    const findClosestAnchor = (el: HTMLElement | null): HTMLAnchorElement | null => {
+      while (el && el.tagName.toLowerCase() !== 'a') {
+        el = el.parentElement;
       }
-    }
+      return el as HTMLAnchorElement | null;
+    };
 
-    prevPathnameRef.current = pathname
+    /**
+     * Handle click on links
+     */
+    const handleClick = (event: MouseEvent): void => {
+      try {
+        const target = event.target as HTMLElement;
+        const anchor = findClosestAnchor(target);
+        const href = anchor?.href;
+        if (!href) return;
 
-    // Cleanup timeout on unmount or pathname change
+        const currentUrl = window.location.href;
+
+        // Don't scroll for external or special scheme links
+        const isSpecialScheme = ['mailto:', 'tel:', 'sms:', 'blob:'].some((s) =>
+          href.startsWith(s),
+        );
+        const notSameHost = !isSameHostName(currentUrl, href);
+
+        if (isSpecialScheme || notSameHost) return;
+
+        const sameAnchor = isSamePageAnchor(currentUrl, href);
+        if (sameAnchor) return;
+
+        // If same route (even with different query), still scroll
+        requestAnimationFrame(scrollToTop);
+      } catch (error) {
+        console.error(error);
+        requestAnimationFrame(scrollToTop);
+      }
+    };
+
+    /**
+     * Override pushState and replaceState to catch navigation
+     */
+    const patchHistory = (method: 'pushState' | 'replaceState') => {
+      const original = history[method];
+      history[method] = (...args: [data: any, unused: string, url?: string | URL | null]) => {
+        const result = original.apply(history, args);
+        requestAnimationFrame(scrollToTop);
+        return result;
+      };
+    };
+
+    patchHistory('pushState');
+    patchHistory('replaceState');
+
+    const handlePopState = () => requestAnimationFrame(scrollToTop);
+    const handlePageHide = () => scrollToTop();
+
+    /**
+     * Register event listeners
+     */
+    document.addEventListener('click', handleClick);
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('pagehide', handlePageHide);
+
+    // Cleanup
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [pathname, scroll, isNavigating, navigationStartTime])
+      document.removeEventListener('click', handleClick);
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [scroll]);
 
-  return null
-}
+  return null;
+};

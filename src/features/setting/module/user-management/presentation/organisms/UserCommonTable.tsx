@@ -342,6 +342,7 @@ export function UserTable({
           totalBlocked={totalBlocked}
         />
       }
+      deps={[filters]}
     />
   );
 }

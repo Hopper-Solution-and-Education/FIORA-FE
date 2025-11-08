@@ -1,7 +1,6 @@
 // src/components/notification-dropdown.tsx
 'use client';
 
-import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card'; // Still useful for the overall structure
 import {
@@ -11,14 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
+import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
 import { ICON_SIZE } from '@/shared/constants/size';
+import useMarkNotificationAsRead from '@/shared/hooks/useMarkNotificationAsRead';
 import { cn } from '@/shared/utils';
 import { format } from 'date-fns';
 import { Bell } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link'; // For View All link
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -32,32 +32,6 @@ interface Notification {
     deepLink: string;
   };
 }
-
-// Custom hook for marking notification as read
-const useMarkNotificationAsRead = () => {
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const response = await fetch(`/api/notification/${notificationId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to mark notification as read');
-      }
-
-      return await response.json();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to mark notification as read');
-      throw error;
-    }
-  }, []);
-
-  return { markAsRead };
-};
 
 export function NotificationContent({
   data,
@@ -125,26 +99,26 @@ export function NotificationContent({
 
   return (
     <DropdownMenu>
-      <CommonTooltip content="Notifications">
-        <DropdownMenuTrigger asChild>
-          <div className="flex flex-col gap-1 justify-center items-center group">
-            <div className="relative p-2 rounded-lg transition-all duration-200 hover:bg-primary/10 dark:hover:bg-primary/20">
-              <Bell
-                size={ICON_SIZE.MD}
-                className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110 cursor-pointer"
-              />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-              Notifications
-            </span>
-          </div>
-        </DropdownMenuTrigger>
-      </CommonTooltip>
+      <DropdownMenuTrigger asChild>
+        <div className="relative">
+          <NavItem
+            label="Notifications"
+            icon={
+              <>
+                <Bell
+                  size={ICON_SIZE.MD}
+                  className="transition-all duration-200 text-foreground group-hover:text-primary group-hover:scale-110"
+                />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
+              </>
+            }
+          />
+        </div>
+      </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-80 md:w-96 p-0 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm"
         align="end"

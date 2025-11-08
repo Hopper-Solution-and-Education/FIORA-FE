@@ -1,13 +1,16 @@
 'use client';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import CommonTable from '@/components/common/organisms/CommonTable';
 import {
   ColumnConfigMap,
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
+import { useAppSelector } from '@/store';
+import { FileText } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import type { ReferralTransaction } from '../../types';
 import { useReferralTransactionDashboard } from '../hooks/useReferralTransactionDashboard';
@@ -26,6 +29,44 @@ interface ReferralTransactionRow extends ReferralTransaction {
 const STORAGE_KEY = 'referral:transactions-table';
 const CURRENCY = 'FX';
 
+// Helper function để lấy màu sắc dựa trên loại transaction
+const getTransactionTextColor = (type: string) => {
+  switch (type) {
+    case 'Income':
+      return 'text-green-600 dark:text-green-400';
+    case 'Transfer':
+      return 'text-blue-600 dark:text-blue-400';
+    default:
+      return 'text-foreground';
+  }
+};
+
+// Reusable component để render text với màu phù hợp
+const TransactionText = ({
+  children,
+  type,
+  className = '',
+  variant = 'normal',
+}: {
+  children: React.ReactNode;
+  type: string;
+  className?: string;
+  variant?: 'normal' | 'bold' | 'muted';
+}) => {
+  const baseClasses = getTransactionTextColor(type);
+
+  const variantClasses = {
+    normal: '',
+    bold: 'font-bold',
+    muted: 'text-muted-foreground',
+  };
+
+  const combinedClassName =
+    `block truncate ${baseClasses} ${variantClasses[variant]} ${className}`.trim();
+
+  return <span className={combinedClassName}>{children}</span>;
+};
+
 const formatAmount = (value: string) => {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return value;
@@ -36,7 +77,9 @@ const formatAmount = (value: string) => {
 };
 
 const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) => {
+  const router = useRouter();
   const { tableData, loading, loadMore } = useReferralTransactionDashboard();
+  const { filter } = useAppSelector((s) => s.referralTransaction);
 
   const normalizedRows = useMemo<ReferralTransactionRow[]>(
     () =>
@@ -49,6 +92,10 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
     [tableData.data],
   );
 
+  const gotoDetailPage = (id: string) => {
+    router.push(`/transaction/details/${id}`);
+  };
+
   const columns: CommonTableColumn<ReferralTransactionRow>[] = useMemo(
     () => [
       {
@@ -57,7 +104,9 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         width: '6%',
         align: 'center',
         render: (row) => (
-          <span className="text-xs font-semibold text-muted-foreground">{row.rowNumber}</span>
+          <span className={`text-xs font-semibold ${getTransactionTextColor(row.type)}`}>
+            {row.rowNumber}
+          </span>
         ),
       },
       {
@@ -66,7 +115,9 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         width: '20%',
         align: 'left',
         render: (row) => (
-          <span className="block text-sm text-foreground">{row.formattedDate || '-'}</span>
+          <CommonTooltip content={row.formattedDate || '-'} side="top" align="start">
+            <TransactionText type={row.type}>{row.formattedDate || '-'}</TransactionText>
+          </CommonTooltip>
         ),
       },
       {
@@ -75,16 +126,9 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         width: '10%',
         align: 'left',
         render: (row) => (
-          <Badge
-            variant={row.type === 'Income' ? 'default' : 'secondary'}
-            className={
-              row.type === 'Income'
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
-                : 'bg-slate-200 text-slate-700 hover:bg-slate-200'
-            }
-          >
+          <TransactionText type={row.type} variant="bold">
             {row.type}
-          </Badge>
+          </TransactionText>
         ),
       },
       {
@@ -92,7 +136,11 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         title: 'Amount',
         width: '14%',
         align: 'left',
-        render: (row) => <span className="text-sm">{row.displayAmount}</span>,
+        render: (row) => (
+          <TransactionText type={row.type} variant="bold">
+            {row.displayAmount}
+          </TransactionText>
+        ),
       },
       {
         key: 'from',
@@ -100,9 +148,9 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         width: '16%',
         align: 'left',
         render: (row) => (
-          <span className="block truncate text-sm text-foreground">
+          <TransactionText type={row.type}>
             {row?.from || row?.membershipBenefit?.name || '-'}
-          </span>
+          </TransactionText>
         ),
       },
       {
@@ -110,9 +158,7 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         title: 'To',
         width: '16%',
         align: 'left',
-        render: (row) => (
-          <span className="block truncate text-sm text-foreground">{row.to || '-'}</span>
-        ),
+        render: (row) => <TransactionText type={row.type}>{row.to || '-'}</TransactionText>,
       },
       {
         key: 'remark',
@@ -120,16 +166,24 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         width: '18%',
         align: 'left',
         render: (row) => (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="block truncate text-sm text-foreground cursor-help">
-                {row.remark}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="start" className="max-w-xs whitespace-pre-wrap">
+          <CommonTooltip content={row.remark} side="top" align="start">
+            <span className={`block truncate ${getTransactionTextColor(row.type)}`}>
               {row.remark}
-            </TooltipContent>
-          </Tooltip>
+            </span>
+          </CommonTooltip>
+        ),
+      },
+      {
+        key: 'action',
+        title: 'Action',
+        width: '10%',
+        align: 'center',
+        render: (row) => (
+          <CommonTooltip content="Details">
+            <Button variant="ghost" size="icon" onClick={() => gotoDetailPage(row.id)}>
+              <FileText size={18} color="#595959" />
+            </Button>
+          </CommonTooltip>
         ),
       },
     ],
@@ -161,6 +215,7 @@ const ReferralTransactionTable = ({ className }: ReferralTransactionTableProps) 
         onLoadMore={loadMore}
         className={className}
         leftHeaderNode={<ReferralTransactionTopBarAction />}
+        deps={[filter]}
       />
     </div>
   );

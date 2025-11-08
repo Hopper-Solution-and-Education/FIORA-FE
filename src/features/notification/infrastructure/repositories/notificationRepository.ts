@@ -30,7 +30,7 @@ function mapNotificationDashboardItem(n: any, userMap: Record<string, any>): any
     subject: n.title,
     recipients: n.emails,
     sender: n.createdBy ? userMap[n.createdBy]?.email || n.createdBy : 'System',
-    notifyType: getNotificationStatus(n.channel, n.emailLogs),
+    notifyType: n.type,
     channel: n.channel,
     status: getNotificationStatus(n.channel, n.emailLogs),
     emailTemplate: n.emailTemplate,
@@ -131,7 +131,11 @@ class NotificationRepository implements INotificationRepository {
         },
       },
       include: {
-        userNotifications: true,
+        userNotifications: {
+          where: {
+            userId: userId,
+          },
+        },
         emailLogs: true,
         emailTemplate: true,
       },
@@ -302,6 +306,10 @@ class NotificationRepository implements INotificationRepository {
       let notification = null;
       if (notifyTo === 'ROLE_CS' || notifyTo === 'ROLE_ADMIN') {
         const emailsHighRole = users.map((u) => u.email);
+        console.log(
+          '🚀 ~ NotificationRepository ~ createBoxNotification ~ emailsHighRole:',
+          emailsHighRole,
+        );
         notification = await tx.notification.create({
           data: {
             notifyTo: notifyTo,

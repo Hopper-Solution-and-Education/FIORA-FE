@@ -15,21 +15,41 @@ class EKycRepository {
     id: string;
   }): Promise<any> {
     try {
-      const newKyc = await prisma.eKYC.create({
-        data: {
-          type: kyc.type,
-          method: KYCMethod.MANUAL,
-          refId: null,
-          fieldName: kyc.fieldName,
-          status: kyc.status,
-          createdBy: kyc.createdBy,
-          userId: kyc.userId,
-          createdAt: kyc.createdAt,
-          updatedAt: kyc.updatedAt,
-          id: kyc.id, // UUID
-        },
+      return prisma.$transaction(async (tx) => {
+        const newKyc = await tx.eKYC.create({
+          data: {
+            type: kyc.type,
+            method: KYCMethod.MANUAL,
+            refId: null,
+            fieldName: kyc.fieldName,
+            status: kyc.status,
+            createdBy: kyc.createdBy,
+            userId: kyc.userId,
+            createdAt: kyc.createdAt,
+            updatedAt: kyc.updatedAt,
+            id: kyc.id, // UUID
+          },
+        });
+
+        const user = await tx.user.findFirst({
+          where: { id: kyc.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const updatedKycLevels = user?.kyc_levels || [];
+
+        if (!updatedKycLevels.includes('2')) {
+          updatedKycLevels.push('2');
+        }
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: kyc.userId,
+          },
+        });
+        return newKyc;
       });
-      return newKyc;
     } catch (error) {
       console.log(error);
       return error;
@@ -91,6 +111,47 @@ class EKycRepository {
       where: { userId, type },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async verifyOtp(
+    userId: string,
+    otp: string,
+    type: OtpType,
+  ): Promise<{
+    isValid: boolean;
+    message?: string;
+    otpRecord?: any;
+  }> {
+    const otpRecord = await this.checkOtp(userId, type);
+
+    if (!otpRecord) {
+      return {
+        isValid: false,
+        message: 'OTP not found or has expired',
+      };
+    }
+
+    const createDate = new Date(otpRecord.createdAt);
+    const expiredAt = new Date(createDate.getTime() + Number(otpRecord.duration) * 1000);
+
+    if (expiredAt < new Date()) {
+      return {
+        isValid: false,
+        message: 'OTP has expired',
+      };
+    }
+
+    if (otpRecord.otp !== otp) {
+      return {
+        isValid: false,
+        message: 'Invalid OTP',
+      };
+    }
+
+    return {
+      isValid: true,
+      otpRecord,
+    };
   }
 
   async updateStatus(kycId: string, status: any, verifiedBy: string) {

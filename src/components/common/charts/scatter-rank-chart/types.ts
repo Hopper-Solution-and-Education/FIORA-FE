@@ -77,6 +77,12 @@ export interface CombinedTierIcon {
   isPassed?: boolean;
   onClick?: (balanceTier: Tier, spentTier: Tier, item?: any) => void;
   item?: any;
+  tierName?: string;
+  balanceMin?: number;
+  balanceMax?: number;
+  spentMin?: number;
+  spentMax?: number;
+  isCurrent?: boolean;
 }
 
 export interface ProgressBarChartProps {

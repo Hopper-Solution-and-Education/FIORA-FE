@@ -137,32 +137,27 @@ class HttpClient implements IHttpClient {
       config = await this.interceptors.request(config);
     }
 
-    try {
-      const response = await fetch(fullUrl, config);
-      const contentType = response.headers.get('content-type');
-      const isJson = contentType && contentType.includes('application/json');
+    const response = await fetch(fullUrl, config);
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
 
-      const data = isJson ? await response.json().catch(() => ({})) : await response.text();
+    const data = isJson ? await response.json().catch(() => ({})) : await response.text();
 
-      if (!response.ok) {
-        if (response.status === 403 || response.status === 550) {
-          await signOut();
-        }
-
-        throw data;
+    if (!response.ok) {
+      if (response.status === 403 || response.status === 550) {
+        await signOut();
       }
 
-      let result = data as T;
-
-      if (this.interceptors.response) {
-        result = await this.interceptors.response(result);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('HTTP Request Failed:', error);
-      throw error;
+      throw data;
     }
+
+    let result = data as T;
+
+    if (this.interceptors.response) {
+      result = await this.interceptors.response(result);
+    }
+
+    return result;
   }
 
   public get<T>(url: string, headers: HeadersInit = {}): Promise<T> {

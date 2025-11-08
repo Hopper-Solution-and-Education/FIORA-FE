@@ -4,6 +4,7 @@ import {
   CommonTableColumn,
 } from '@/components/common/organisms/CommonTable/types';
 import { formatDateTime } from '@/shared/lib';
+import { useAppSelector } from '@/store';
 import React, { useCallback, useMemo, useState } from 'react';
 import { formatCurrency } from '../../utils/format-currency.util';
 import FlexiInterestActionButton from '../atoms/FlexiInterestActionButton';
@@ -44,6 +45,8 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
   onUpdateRowItem,
   dataFilterOptions,
 }) => {
+  const { filter } = useAppSelector((s) => s.flexiInterestCronjob);
+
   const getRate = useCallback((rate: string | number) => {
     if (typeof rate === 'number') return rate + ' %/year';
     if (rate.includes('%')) return rate.split('%').join(' %');
@@ -176,6 +179,7 @@ const FlexiInterestCronJobTable: React.FC<FlexiInterestCronJobTableProps> = ({
           />
         )
       }
+      deps={[filter]}
     />
   );
 };

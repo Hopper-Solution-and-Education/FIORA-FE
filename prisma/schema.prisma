@@ -529,7 +529,6 @@ model Notification {
   emailTemplateId   String?                 @db.Uuid
   notifyTo          NotificationType
   type              String
-  content           String?
   Attachment        Attachment[]
   emailLogs         EmailNotificationLogs[]
   emailTemplate     EmailTemplate?          @relation(fields: [emailTemplateId], references: [id])
@@ -588,6 +587,7 @@ model UserNotification {
   updatedAt      DateTime     @updatedAt @db.Timestamptz(0)
   createdBy      String?      @db.Uuid
   updatedBy      String?      @db.Uuid
+  content        String?
   notification   Notification @relation(fields: [notificationId], references: [id])
   User           User         @relation(fields: [userId], references: [id])
 
@@ -1154,6 +1154,7 @@ enum OtpType {
   WITHDRAW
   EMAIL
   DELETE
+  VERIFY_EKYC
 }
 
 enum ReferralStatus {

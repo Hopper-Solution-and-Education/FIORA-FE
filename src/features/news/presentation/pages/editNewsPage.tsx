@@ -96,7 +96,7 @@ const EditNewsPage: React.FC = () => {
   }
 
   return (
-    <main className="px-8">
+    <main className="px-8 pb-8">
       <div>
         {/* Page Header */}
         <div className="border-b pb-4">

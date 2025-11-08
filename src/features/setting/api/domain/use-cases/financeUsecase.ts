@@ -30,7 +30,7 @@ export class FinanceUseCase {
     private _productRepository: IProductRepository = productRepository,
     private _partnerRepository: IPartnerRepository = partnerRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-  ) {}
+  ) { }
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
     const { type, filter = FinanceReportFilterEnum.ALL } = request;
@@ -115,11 +115,11 @@ export class FinanceUseCase {
       const totalProfit = totals.income - totals.expense;
 
       return {
+        currency: DEFAULT_BASE_CURRENCY,
         ...partner,
         totalIncome: totals.income,
         totalExpense: totals.expense,
         totalProfit,
-        currency: 'VND',
       };
     });
 

@@ -9,6 +9,18 @@ export interface NotificationDashboardTableData {
   channel: string;
   status: string;
   key: string;
+  userNotifications: UserNotification[];
+}
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  notificationId: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export type NotificationDashboardTableColumn = {

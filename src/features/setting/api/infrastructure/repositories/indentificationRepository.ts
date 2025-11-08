@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
+import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { SessionUser } from '@/shared/types/session';
 import {
-  ChannelType,
   IdentificationDocument,
   IdentificationType,
   KYCMethod,
@@ -42,17 +42,15 @@ class IdentificationRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await tx.notification.create({
-          data: {
-            title: `Verify ${fieldName} !`,
-            message: `User ${user.email} has submitted a new verify ${fieldName}.`,
-            channel: ChannelType.BOX,
-            notifyTo: NotificationType.ADMIN_CS,
-            type: 'BANK',
-            emails: [user.email],
-            emailTemplateId: null,
-            createdBy: null,
-          },
+
+        await notificationUseCase.createBoxNotification({
+          title: `Verify ${fieldName} !`,
+          type: type,
+          notifyTo: NotificationType.ADMIN_CS,
+          attachmentId: '',
+          deepLink: '',
+          message: `User ${user.email} has submitted a new verify ${fieldName}.`,
+          emails: [user.email],
         });
         return identification;
       });
@@ -136,9 +134,12 @@ class IdentificationRepository {
           where: { id: identification.userId },
           select: { id: true, kyc_levels: true },
         });
+
+        const levelOrder = identification.type === IdentificationType.TAX ? '2' : '1';
+
         const updatedKycLevels = user?.kyc_levels || [];
-        if (!updatedKycLevels.includes('1')) {
-          updatedKycLevels.push('1');
+        if (!updatedKycLevels.includes(levelOrder)) {
+          updatedKycLevels.push(levelOrder);
         }
 
         await tx.user.update({
@@ -192,6 +193,26 @@ class IdentificationRepository {
       return prisma.$transaction(async (tx) => {
         const identification = await tx.identificationDocument.delete({ where: { id } });
 
+        const user = await tx.user.findFirst({
+          where: { id: identification.userId },
+          select: { id: true, kyc_levels: true },
+        });
+        const kycKey = identification.type === IdentificationType.TAX ? '2' : '1';
+
+        let updatedKycLevels = user?.kyc_levels || [];
+
+        if (updatedKycLevels.includes(kycKey)) {
+          updatedKycLevels = updatedKycLevels.filter((key) => key !== kycKey);
+        }
+
+        await tx.user.update({
+          where: { id: user?.id },
+          data: {
+            kyc_levels: updatedKycLevels,
+            updatedAt: new Date(),
+            updatedBy: identification.userId,
+          },
+        });
         const eKycRecord = await tx.eKYC.findFirst({ where: { refId: id } });
         if (eKycRecord) {
           await tx.eKYC.delete({ where: { id: eKycRecord.id } });
