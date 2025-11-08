@@ -23,6 +23,7 @@ const initialState: WalletState = {
   attachmentData: null,
   depositSearch: null,
   frozenAmount: null,
+  isShowSendingFXForm: false,
   isShowWithdrawFXForm: false,
 };
 
@@ -62,6 +63,12 @@ const walletSlice = createSlice({
     },
     setDepositSearch: (state, action) => {
       state.depositSearch = action.payload;
+    },
+    setSendingFXFormOpen: (state) => {
+      state.isShowSendingFXForm = true;
+    },
+    setSendingFXFormClose: (state) => {
+      state.isShowSendingFXForm = false;
     },
     setWithdrawFXFormOpen: (state) => {
       state.isShowWithdrawFXForm = true;
@@ -150,6 +157,8 @@ export const {
   setLoading,
   setError,
   setDepositSearch,
+  setSendingFXFormClose,
+  setSendingFXFormOpen,
   setWithdrawFXFormOpen,
   setWithdrawFXFormClose,
 } = walletSlice.actions;

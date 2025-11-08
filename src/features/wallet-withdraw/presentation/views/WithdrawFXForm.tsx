@@ -2,6 +2,8 @@ import { MetricCard } from '@/components/common/metric';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
 
 import { Loading } from '@/components/common/atoms';
+import SendOtpButton from '@/components/common/atoms/SendOtpButton';
+import InputOtp from '@/components/common/forms/input/InputOtp';
 import { GlobalDialog } from '@/components/common/molecules';
 import { Separator } from '@/components/ui/separator';
 import { httpClient } from '@/config';
@@ -18,16 +20,14 @@ import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import { Response } from '@/shared/types';
+import { OtpState, WalletWithdrawOverview } from '@/shared/types/otp';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { toast } from 'sonner';
-import { OtpState, WalletWithdrawOverview } from '../../types';
 import errorCatching from '../../utils/errorCatching';
 import AmountSelect from '../components/AmountSelect';
 import BankAccountSelect from '../components/BankAccountSelect';
-import InputOtp from '../components/InputOtp';
-import SendOtpButton from '../components/SendOtpButton';
 
 type OverviewWithdrawResponseType = {
   data: WalletWithdrawOverview;

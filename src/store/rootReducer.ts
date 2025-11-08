@@ -17,6 +17,8 @@ import paymentWalletSlice from '@/features/payment-wallet/slices';
 import { profileApi } from '@/features/profile/store/api/profileApi';
 import referralTransactionSlice from '@/features/referral/slices';
 import { referralApi } from '@/features/referral/slices/referralApi';
+import catalogDataSlice from '@/features/sending/slices/catalogDataSlice';
+import limitDataSlice from '@/features/sending/slices/limitDataSlice';
 import { flexiInterestApi } from '@/features/setting/module/cron-job/module/flexi-interest/presentation/services/flexi-interest.service';
 import flexiInterestCronjobSlice from '@/features/setting/module/cron-job/module/flexi-interest/presentation/slices';
 import membershipCronjobSlice from '@/features/setting/module/cron-job/module/membership/slices';
@@ -73,6 +75,8 @@ const reducer = {
   email: emailSlice,
   userManagement: userManagementSlice,
   savingWallet: savingWalletSlice,
+  limitData: limitDataSlice,
+  catalogData: catalogDataSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,
