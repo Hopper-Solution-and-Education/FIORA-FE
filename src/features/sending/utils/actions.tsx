@@ -2,7 +2,11 @@
 
 import { httpClient } from '@/config';
 import { setSendingFXFormClose } from '@/features/home/module/wallet/slices';
-import { getWalletsAsyncThunk } from '@/features/home/module/wallet/slices/actions';
+import {
+  fetchFrozenAmountAsyncThunk,
+  getWalletsAsyncThunk,
+} from '@/features/home/module/wallet/slices/actions';
+import { fetchPaymentWalletDashboardAsyncThunk } from '@/features/payment-wallet/slices/actions';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import type { OtpState } from '@/shared/types/otp';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -144,6 +148,11 @@ export const useSendingFXAction = () => {
         if (res.status === 200) {
           toast.success(res.message || 'FX sent successfully!');
           handleClose(reset);
+          await Promise.all([
+            dispatch(getWalletsAsyncThunk()),
+            dispatch(fetchFrozenAmountAsyncThunk()),
+            dispatch(fetchPaymentWalletDashboardAsyncThunk()),
+          ]);
         } else {
           toast.error(res.message || 'Failed to send FX');
         }
