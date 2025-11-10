@@ -84,7 +84,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
       if (target === 'minValue') {
         // If setting minValue, ensure it doesn't exceed maxRange minus MIN_GAP
         validatedValue = Math.max(minRange, Math.min(maxRange - MIN_GAP, validatedValue));
-        if (validatedValue > maxValue - 100) {
+        if (validatedValue > maxValue - MIN_GAP) {
           const newMaxValue = validatedValue + MIN_GAP;
           onValueChange('maxValue', newMaxValue / exchangeRate);
         }
