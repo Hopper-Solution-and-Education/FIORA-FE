@@ -19,12 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   try {
-    await fetch(GOOGLE_CHAT_WEBHOOK, {
+    const res = await fetch(GOOGLE_CHAT_WEBHOOK, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
       body: JSON.stringify(message),
     });
-    res.status(200).send('OK');
+    return await res.json();
   } catch (error) {
     console.error('Failed to send notification to Google Chat:', error);
     res.status(500).send('Failed to send notification');
