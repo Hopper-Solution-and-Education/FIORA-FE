@@ -4,18 +4,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') return res.status(405).end('Only POST allowed');
 
   const event = req.body;
-  const GOOGLE_CHAT_WEBHOOK = process.env.GOOGLE_CHAT_WEBHOOK_URL;
+  const GOOGLE_CHAT_WEBHOOK = process.env.GOOGLE_CHAT_WEBHOOK;
 
   if (!GOOGLE_CHAT_WEBHOOK) {
     return res.status(500).send('Google Chat webhook URL not configured');
   }
 
-  // Chỉ gửi khi deploy thành công
-  if (event.type !== 'deployment.created' && event.type !== 'deployment.succeeded') {
-    return res.status(200).send('Ignored event type');
-  }
-
   const deploy = event.payload?.deployment;
+  console.log('🚀 ~ handler ~ deploy:', deploy);
   if (!deploy) return res.status(400).send('Missing deployment payload');
 
   const message = {
