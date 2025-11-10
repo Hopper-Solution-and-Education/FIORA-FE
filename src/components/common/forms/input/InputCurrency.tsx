@@ -150,13 +150,14 @@ const InputCurrency: React.FC<InputCurrencyProps> = ({
       setLocalValue('');
       onChange(0);
     }
-
     if (onBlur) onBlur();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleBlur();
+      // handleBlur()
+      // Make it really blur
+      e.currentTarget.blur();
     }
   };
 

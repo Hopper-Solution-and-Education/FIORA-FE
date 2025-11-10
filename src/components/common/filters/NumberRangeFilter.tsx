@@ -65,8 +65,6 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
     formatCurrencyNumber(baseCurrencyMaxRange * exchangeRate, RoundingMode.NORMAL),
   );
 
-  console.log('update lai', maxValue);
-
   // Minimum gap between min and max values (adjustable based on your needs)
   const MIN_GAP = 100;
   // Debounced onValueChange for smoother updates
@@ -82,23 +80,24 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
     (target: 'minValue' | 'maxValue', inputValue: number) => {
       let validatedValue = inputValue;
 
-      // Apply range bounds first
-      validatedValue = Math.max(minRange, Math.min(maxRange, validatedValue));
-
       // Apply cross-validation between min and max with minimum gap
       if (target === 'minValue') {
-        // If setting minValue, ensure it doesn't exceed maxValue minus MIN_GAP
-        if (validatedValue > maxValue - MIN_GAP) {
-          validatedValue = maxValue - MIN_GAP;
+        // If setting minValue, ensure it doesn't exceed maxRange minus MIN_GAP
+        validatedValue = Math.max(minRange, Math.min(maxRange - MIN_GAP, validatedValue));
+        if (validatedValue > maxValue - 100) {
+          const newMaxValue = validatedValue + MIN_GAP;
+          onValueChange('maxValue', newMaxValue / exchangeRate);
         }
         // Ensure minValue doesn't go below minRange
         if (validatedValue < minRange) {
           validatedValue = minRange;
         }
       } else {
-        // If setting maxValue, ensure it's not less than minValue plus MIN_GAP
+        // If setting maxValue, ensure it's not less than minRange plus MIN_GAP
+        validatedValue = Math.max(minRange + MIN_GAP, Math.min(maxRange, validatedValue));
         if (validatedValue < minValue + MIN_GAP) {
-          validatedValue = minValue + MIN_GAP;
+          const newMinValue = validatedValue - MIN_GAP;
+          onValueChange('minValue', newMinValue / exchangeRate);
         }
         // Ensure maxValue doesn't exceed maxRange
         if (validatedValue > maxRange) {
@@ -143,6 +142,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               mode="onBlur"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}
+              allowNegative={minRange < 0}
             />
           </div>
         </CommonTooltip>
@@ -160,6 +160,7 @@ const NumberRangeFilter = (props: NumberRangeFilterProps) => {
               mode="onBlur"
               classContainer="mb-0 w-full"
               className={cn('w-full text-sm')}
+              allowNegative={minRange < -1 * MIN_GAP}
             />
           </div>
         </CommonTooltip>
