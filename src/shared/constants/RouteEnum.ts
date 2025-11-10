@@ -12,7 +12,6 @@ export enum RouteEnum {
   WalletDeposit = '/wallet/deposit',
   WalletPayment = '/wallet/payment',
   DepositFX = '/setting/wallet',
-  WalletPayment = '/wallet/payment',
   WalletSaving = '/wallet/saving',
   WalletReferral = '/wallet/referral',
 
