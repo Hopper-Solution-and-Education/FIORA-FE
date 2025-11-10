@@ -26,7 +26,7 @@ class PaymentWalletUseCase {
     private membershipBenefitRepository: IMembershipBenefitRepository,
     private tierBenefitRepository: ITierBenefitRepository,
     private depositRequestRepository: IDepositRequestRepository,
-  ) { }
+  ) {}
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
     const { filters, lastCursor, page, pageSize, searchParams } = params;

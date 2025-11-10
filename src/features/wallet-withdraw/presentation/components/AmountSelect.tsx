@@ -1,9 +1,9 @@
+import AmountInputDropdown from '@/components/common/forms/input/AmountInputDropdown';
 import { useAppSelector } from '@/store';
 import { Currency } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 import { OptionDropdown } from '../../types';
-import InputDropdown from './InputDropdown';
 
 interface AmountSelectProps {
   name?: string;
@@ -44,17 +44,19 @@ const AmountSelect: React.FC<AmountSelectProps> = ({
   }, [packageFX]);
 
   return (
-    <InputDropdown
-      value={value}
-      label={label}
-      required={required}
-      options={amounts}
-      currency={currency}
-      placeholder="Please type or select amount!"
-      onChange={onChange}
-      error={error}
-      classContainer={props?.className}
-      {...props}
+    <AmountInputDropdown
+      {...({
+        value,
+        label,
+        required,
+        options: amounts,
+        currency,
+        placeholder: 'Please type or select amount!',
+        onChange,
+        error,
+        classContainer: props?.className,
+        ...props,
+      } as any)}
     />
   );
 };

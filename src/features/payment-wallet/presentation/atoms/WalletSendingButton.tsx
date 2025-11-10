@@ -7,7 +7,7 @@ import { setSendingFXFormClose, setSendingFXFormOpen } from '@/features/home/mod
 import { useAppDispatch } from '@/store';
 import { useCallback, useEffect } from 'react';
 
-const WalletTransferButton = () => {
+const WalletSendingButton = () => {
   const dispatch = useAppDispatch();
 
   const handleSending = useCallback(() => {
@@ -16,21 +16,21 @@ const WalletTransferButton = () => {
 
   useEffect(() => {
     dispatch(setSendingFXFormClose());
-  }, []);
+  }, [dispatch]);
 
   return (
-    <CommonTooltip content="Sending">
+    <CommonTooltip content="Sending" side="top" align="center">
       <Button
         variant="outline"
         size="icon"
-        aria-label="Deposit"
+        aria-label="Sending"
         onClick={handleSending}
-        className="h-fit w-fit !px-[1.20rem] !py-2.5"
+        className="h-fit w-fit !px-4 !py-2"
       >
-        <Icons.arrowLeftRight className="!h-5 !w-5 text-orange-600" />
+        <Icons.arrowRight className="!h-6 !w-6 text-green-600" />
       </Button>
     </CommonTooltip>
   );
 };
 
-export default WalletTransferButton;
+export default WalletSendingButton;

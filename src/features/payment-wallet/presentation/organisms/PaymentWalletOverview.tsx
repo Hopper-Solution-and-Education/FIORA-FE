@@ -12,6 +12,7 @@ type PaymentWalletOverviewProps = {
   enableDeposit?: boolean;
   enableWithdraw?: boolean;
   enableTransfer?: boolean;
+  enableSending?: boolean;
 };
 
 const PaymentWalletOverview = ({

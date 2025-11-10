@@ -17,6 +17,7 @@ export interface WalletState {
   attachmentData: AttachmentData | null;
   depositSearch: string | null;
   frozenAmount: number | null;
+  isShowSendingFXForm: boolean;
   isShowWithdrawFXForm: boolean;
 }
 
@@ -33,6 +34,7 @@ export const initialWalletState: WalletState = {
   attachmentData: null,
   depositSearch: null,
   frozenAmount: null,
+  isShowSendingFXForm: false,
   isShowWithdrawFXForm: false,
 };
 

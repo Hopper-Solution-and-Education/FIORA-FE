@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { useEffect } from 'react';
 import { getPackageFXAsyncThunk } from '../../slices/actions';
 
 export function useInitializePackageFX() {
