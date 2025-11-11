@@ -29,7 +29,7 @@ class PaymentWalletUseCase {
   ) {}
 
   async fetchPaymentWallet(userId: string, params: FetchPaymentWalletParams) {
-    const { filters, lastCursor, page, pageSize, searchParams } = params;
+    const { filters, lastCursor, page, pageSize, searchParams, sortBy } = params;
 
     const prefetchFilters: Prisma.TransactionWhereInput = {
       OR: [
@@ -58,6 +58,7 @@ class PaymentWalletUseCase {
 
     const transactions = await transactionUseCaseImported.getTransactionsPagination({
       filters: filtersWithPrefetch,
+      sortBy,
       lastCursor,
       page: page || 1,
       pageSize,
