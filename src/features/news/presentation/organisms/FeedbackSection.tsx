@@ -85,6 +85,12 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
       setOpenWarningDialog(true);
       return;
     }
+
+    // Nếu user đã react cùng loại thì không làm gì cả
+    if (userReaction === type) {
+      return;
+    }
+
     try {
       const tempReactions = (reactions || []).filter(
         (reaction) => reaction.userId !== session?.user?.id,
@@ -132,7 +138,9 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({
                 'transition-all duration-200 transform',
                 'rounded-lg p-2 border-none',
                 isSelected ? 'scale-110' : '',
-                isLoadingReactions ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
+                isLoadingReactions
+                  ? 'cursor-not-allowed opacity-50'
+                  : `${isSelected ? 'cursor-not-allowed' : 'cursor-pointer'}`,
                 'hover:scale-110',
                 'group',
               ]
