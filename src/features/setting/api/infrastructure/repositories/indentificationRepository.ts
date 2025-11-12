@@ -154,36 +154,36 @@ class IdentificationRepository {
           where: { id: kycId, refId: identificationId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
         });
-        let type;
-        let fieldName = '';
-        if (identification.type == IdentificationType.TAX) {
-          type = KYCType.TAX;
-          fieldName = 'tax';
-        } else {
-          type = KYCType.IDENTIFICATION;
-          fieldName = 'identification';
-        }
+        // let type;
+        // let fieldName = '';
+        // if (identification.type == IdentificationType.TAX) {
+        //   type = KYCType.TAX;
+        //   fieldName = 'tax';
+        // } else {
+        //   type = KYCType.IDENTIFICATION;
+        //   fieldName = 'identification';
+        // }
 
-        if (status == KYCStatus.APPROVAL || status == KYCStatus.REJECTED) {
-          const title =
-            status == KYCStatus.REJECTED
-              ? `Reject request verify ${fieldName}!`
-              : `Approve ${fieldName} verification request!`;
-          const message =
-            status == KYCStatus.REJECTED
-              ? `Your request to verify your bank account has been rejected!`
-              : `Your bank account verification request has been approved!`;
+        // if (status == KYCStatus.APPROVAL || status == KYCStatus.REJECTED) {
+        //   const title =
+        //     status == KYCStatus.REJECTED
+        //       ? `Reject request verify ${fieldName}!`
+        //       : `Approve ${fieldName} verification request!`;
+        //   const message =
+        //     status == KYCStatus.REJECTED
+        //       ? `Your request to verify your ${identification.type.toLowerCase()} has been rejected!`
+        //       : `Your ${identification.type.toLowerCase()} verification request has been approved!`;
 
-          await notificationRepository.createBoxNotification({
-            title,
-            type,
-            notifyTo: NotificationType.PERSONAL,
-            attachmentId: '',
-            deepLink: '',
-            message,
-            emails: user?.email ? [user?.email] : [],
-          });
-        }
+        //   await notificationRepository.createBoxNotification({
+        //     title,
+        //     type,
+        //     notifyTo: NotificationType.PERSONAL,
+        //     attachmentId: '',
+        //     deepLink: '',
+        //     message,
+        //     emails: user?.email ? [user?.email] : [],
+        //   });
+        // }
         return identification;
       });
     } catch (error) {
