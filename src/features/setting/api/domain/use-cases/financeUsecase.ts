@@ -30,7 +30,7 @@ export class FinanceUseCase {
     private _productRepository: IProductRepository = productRepository,
     private _partnerRepository: IPartnerRepository = partnerRepository,
     private _transactionRepository: ITransactionRepository = transactionRepository,
-  ) { }
+  ) {}
 
   async getReport({ request, userId }: { request: GetFinanceReportRequest; userId: string }) {
     const { type, filter = FinanceReportFilterEnum.ALL } = request;
@@ -192,16 +192,14 @@ export class FinanceUseCase {
       const totals = categoryTotalMap.get(category.id)!;
 
       if (category.type === CategoryType.Expense) {
-        const expenseAmount = (category.toTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.baseAmount),
-          0,
-        );
+        const expenseAmount = (category.toTransactions || [])
+          .filter((tx) => tx.isDeleted === false)
+          .reduce((sum, tx) => sum + Number(tx.baseAmount), 0);
         totals.expense += expenseAmount;
       } else if (category.type === CategoryType.Income) {
-        const incomeAmount = (category.fromTransactions || []).reduce(
-          (sum, tx) => sum + Number(tx.baseAmount),
-          0,
-        );
+        const incomeAmount = (category.fromTransactions || [])
+          .filter((tx) => tx.isDeleted === false)
+          .reduce((sum, tx) => sum + Number(tx.baseAmount), 0);
         totals.income += incomeAmount;
       }
     });
