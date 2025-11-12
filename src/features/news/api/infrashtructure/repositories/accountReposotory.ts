@@ -1,5 +1,6 @@
 import { prisma } from '@/config';
 import { IAccountRepository } from '../../domain/repository/accountRepository';
+import { AttachmentResponse } from '../../types/attachmentDTO';
 
 class AccountRepository implements IAccountRepository {
   async getRoleByUserId(userId: string): Promise<string | null> {
@@ -12,6 +13,20 @@ class AccountRepository implements IAccountRepository {
       },
     });
     return role?.role ?? null;
+  }
+
+  async getAvatarByIds(avatarIds: string[]): Promise<AttachmentResponse[]> {
+    return prisma.attachment.findMany({
+      where: {
+        id: {
+          in: avatarIds,
+        },
+      },
+      select: {
+        id: true,
+        url: true,
+      },
+    });
   }
 }
 

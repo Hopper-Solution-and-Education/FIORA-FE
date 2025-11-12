@@ -11,13 +11,13 @@ import {
 } from '../../store/api/newsApi';
 import CommentInput from '../molecules/CommentInput';
 
-interface FaqCommentsProps {
+interface NewsCommentsProps {
   newsId: string;
   setOpenWarningDialog: (open: boolean) => void;
   session?: Session | null;
 }
 
-const NewsCommentsSection: React.FC<FaqCommentsProps> = ({
+const NewsCommentsSection: React.FC<NewsCommentsProps> = ({
   newsId,
   setOpenWarningDialog,
   session,

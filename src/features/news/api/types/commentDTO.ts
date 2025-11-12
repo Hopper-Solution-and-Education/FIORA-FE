@@ -37,6 +37,6 @@ export interface CommentResponse {
   User: {
     id: string;
     email: string;
-    avatarId: string | null;
+    image: string | null;
   };
 }
