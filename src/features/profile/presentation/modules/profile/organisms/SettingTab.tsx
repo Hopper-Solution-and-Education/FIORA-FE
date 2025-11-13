@@ -163,9 +163,10 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
                 <AlertCircle className="w-4 h-4 text-amber-600" />
               )
             }
-            onEdit={handleEditEmail}
-            editTooltip={isContactVerified ? 'Edit email' : 'Verify contact info first'}
-            disabled={!isContactVerified}
+            showEdit={false}
+            // onEdit={handleEditEmail}
+            // editTooltip={isContactVerified ? 'Edit email' : 'Verify contact info first'}
+            // disabled={!isContactVerified}
           />
 
           <SettingFieldItem
@@ -184,19 +185,6 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
             }
             editTooltip={isContactVerified ? 'Edit phone number' : 'Verify contact info first'}
             disabled={!isContactVerified}
-          />
-        </SettingSection>
-
-        <Separator />
-
-        {/* Bank Accounts Section */}
-        <SettingSection title="Bank Accounts">
-          <SettingFieldItem
-            label="Bank Accounts"
-            description="Linked bank account: You can update your bank details"
-            icon={<AlertCircle className="w-4 h-4" />}
-            onEdit={() => router.push('/profile/ekyc?id=bank-account')}
-            editTooltip="Edit bank account"
           />
         </SettingSection>
 
