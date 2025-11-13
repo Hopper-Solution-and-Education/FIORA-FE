@@ -47,6 +47,14 @@ class ReactNewsRepository implements IReactNewsRepository {
     });
     return reaction?.reactionType ? reaction.reactionType : null;
   }
+
+  async deleteReactNews(postId: string): Promise<void> {
+    await prisma.reaction.deleteMany({
+      where: {
+        postId: postId,
+      },
+    });
+  }
 }
 
 export const reactNewsRepository = new ReactNewsRepository();

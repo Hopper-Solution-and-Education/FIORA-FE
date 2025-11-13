@@ -11,4 +11,5 @@ export interface ICommentNewsRepository {
   updateCommentNews(dto: CommentUpdationNews, commentId: string): Promise<Comment>;
   deleteCommentNews(commentId: string): Promise<void>;
   getCommentNews(queryParam: GetCommentRequest): Promise<CommentResponseRepo[]>;
+  deleteCommentNewsByPostId(postId: string): Promise<void>;
 }

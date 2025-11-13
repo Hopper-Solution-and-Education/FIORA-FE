@@ -1,6 +1,8 @@
 import { Post } from '@prisma/client';
 import { INewsRepository } from '../../domain/repository/newsRepository';
+import { commentNewsRepository } from '../../infrashtructure/repositories/commentNewsRepository';
 import { newsRepository } from '../../infrashtructure/repositories/newsRepository';
+import { reactNewsRepository } from '../../infrashtructure/repositories/reactNewsRepository';
 import {
   ListNewsResponse,
   NewsCreationRequest,
@@ -42,7 +44,16 @@ class NewsUsecase {
   }
 
   async deleteNews(postId: string): Promise<void> {
-    return await newsRepository.delete(postId);
+    try {
+      //delete news
+      await newsRepository.delete(postId);
+      //delete comment
+      await commentNewsRepository.deleteCommentNewsByPostId(postId);
+      //delete react
+      await reactNewsRepository.deleteReactNews(postId);
+    } catch (error) {
+      throw new Error('Failed to delete news');
+    }
   }
 }
 export const newsUsecase = new NewsUsecase(newsRepository);
