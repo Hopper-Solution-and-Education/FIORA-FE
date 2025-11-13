@@ -40,7 +40,19 @@ const ChartByProduct = () => {
           financeByProduct.map(async (item) => {
             const profit = getExchangeAmount({
               amount: item.totalProfit,
-              fromCurrency: item.currency as Currency,
+              fromCurrency: item.baseCurrency as Currency,
+              toCurrency: currency,
+            }).convertedAmount;
+
+            const expense = getExchangeAmount({
+              amount: item.totalExpense,
+              fromCurrency: item.baseCurrency as Currency,
+              toCurrency: currency,
+            }).convertedAmount;
+
+            const income = getExchangeAmount({
+              amount: item.totalIncome,
+              fromCurrency: item.baseCurrency as Currency,
               toCurrency: currency,
             }).convertedAmount;
 
@@ -48,17 +60,9 @@ const ChartByProduct = () => {
               name: item.name,
               icon: item.icon,
 
-              column1: getExchangeAmount({
-                amount: item.totalExpense,
-                fromCurrency: item.currency as Currency,
-                toCurrency: currency,
-              }).convertedAmount,
+              column1: expense,
 
-              column2: getExchangeAmount({
-                amount: item.totalIncome,
-                fromCurrency: item.currency as Currency,
-                toCurrency: currency,
-              }).convertedAmount,
+              column2: income,
 
               column3: Math.abs(profit),
               profitStatus: profit < 0 ? 'negative' : 'positive',

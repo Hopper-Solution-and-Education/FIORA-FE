@@ -1,5 +1,6 @@
 import { MetricCard } from '@/components/common/metric';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CURRENCY } from '@/shared/constants';
 import useCurrencyFormatter from '@/shared/hooks/useCurrencyFormatter';
 import { Currency } from '@/shared/types';
 import { useAppSelector } from '@/store';
@@ -28,13 +29,13 @@ const MetricCards = () => {
       if ('totalIncome' in item) {
         const income = getExchangeAmount({
           amount: Number(item.totalIncome),
-          fromCurrency: item.currency as Currency,
+          fromCurrency: (item.baseCurrency ?? item.currency) as Currency,
           toCurrency: currency,
         }).convertedAmount;
 
         const expense = getExchangeAmount({
           amount: Number(item.totalExpense),
-          fromCurrency: item.currency as Currency,
+          fromCurrency: (item.baseCurrency ?? item.currency) as Currency,
           toCurrency: currency,
         }).convertedAmount;
 
@@ -221,7 +222,7 @@ const MetricCards = () => {
           <MetricCard
             title="Total Income"
             value={totals.income}
-            currency={currency}
+            currency={financeByProduct ? financeByProduct[0]?.baseCurrency : CURRENCY.USD}
             type="income"
             icon={<ArrowUpIcon className="h-4 w-4 text-green-500" />}
             description="Total income by product"
@@ -229,7 +230,7 @@ const MetricCards = () => {
           <MetricCard
             title="Total Expense"
             value={totals.expense}
-            currency={currency}
+            currency={financeByProduct ? financeByProduct[0]?.baseCurrency : CURRENCY.USD}
             type="expense"
             icon={<ArrowDownIcon className="h-4 w-4 text-red-500" />}
             description="Total expenses by product"
@@ -237,7 +238,7 @@ const MetricCards = () => {
           <MetricCard
             title="Net Total"
             value={totals.total}
-            currency={currency}
+            currency={financeByProduct ? financeByProduct[0]?.baseCurrency : CURRENCY.USD}
             type="total"
             icon={
               <TrendingUpIcon
