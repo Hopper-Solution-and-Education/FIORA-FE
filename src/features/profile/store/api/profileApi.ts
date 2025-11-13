@@ -120,7 +120,7 @@ export const profileApi = createApi({
         body,
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['IdentificationDocument', 'eKYC'],
+      invalidatesTags: ['IdentificationDocument', 'eKYC', 'Profile'],
     }),
 
     updateIdentificationDocument: builder.mutation<
@@ -133,7 +133,7 @@ export const profileApi = createApi({
         body,
       }),
       transformResponse: (response: Response<any>) => response.data,
-      invalidatesTags: ['IdentificationDocument', 'eKYC'],
+      invalidatesTags: ['IdentificationDocument', 'eKYC', 'Profile'],
     }),
 
     // Upload Attachment

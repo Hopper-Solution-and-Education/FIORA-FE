@@ -78,12 +78,6 @@ export async function POST(req: NextApiRequest, res: NextApiResponse, userId: st
   // Update password
   await profileUseCase.updatePassword(userId, hashedPassword);
 
-  // TODO: Send password change confirmation email
-  // await emailService.sendPasswordChangeConfirmation(user.email);
-
-  // TODO: Invalidate all other sessions (optional)
-  // await sessionService.invalidateUserSessions(userId);
-
   return res.status(RESPONSE_CODE.OK).json({
     message: 'Password changed successfully',
     status: RESPONSE_CODE.OK,
