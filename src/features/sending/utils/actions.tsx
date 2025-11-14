@@ -49,12 +49,15 @@ export const useSendingFXAction = () => {
 
   const fetchInitialData = useCallback(async () => {
     try {
-      await Promise.all([
+      const promises = [
         dispatch(getWalletsAsyncThunk()).unwrap(),
-        !isLimitFetched && dispatch(fetchLimitDataAsync()).unwrap(),
-        !isCatalogFetched && dispatch(fetchCatalogDataAsync()).unwrap(),
-      ]);
-    } catch {
+        !isLimitFetched ? dispatch(fetchLimitDataAsync()).unwrap() : null,
+        !isCatalogFetched ? dispatch(fetchCatalogDataAsync()).unwrap() : null,
+      ].filter(Boolean);
+      
+      await Promise.all(promises);
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to load initial data');
     }
   }, [dispatch, isLimitFetched, isCatalogFetched]);
