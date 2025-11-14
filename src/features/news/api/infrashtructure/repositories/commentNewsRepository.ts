@@ -42,6 +42,15 @@ class CommentNewsRepository implements ICommentNewsRepository {
       },
     });
   }
+
+  async deleteCommentNewsByPostId(postId: string): Promise<void> {
+    await prisma.comment.deleteMany({
+      where: {
+        postId: postId,
+      },
+    });
+  }
+
   async createCommentNews(dto: CommentCreationNews): Promise<Comment> {
     return prisma.comment.create({
       data: {
