@@ -20,7 +20,7 @@ function InputOtp({ value, error = null, className, onChange }: ChildProps) {
   };
 
   return (
-    <div className={className}>
+    <div>
       <GlobalLabel text="OTP" htmlFor={id} required />
       <div>
         <Input
@@ -28,7 +28,7 @@ function InputOtp({ value, error = null, className, onChange }: ChildProps) {
           placeholder="Please input OTP!"
           id={id}
           name="input-otp"
-          className={cn(error ? 'border-red-500' : '')}
+          className={cn(error ? 'border-red-500' : '', className)}
           onChange={handleInputChange}
           aria-label="OTP verification code"
           type="text"

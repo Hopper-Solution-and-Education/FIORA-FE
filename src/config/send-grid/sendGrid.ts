@@ -4,7 +4,6 @@ import { emailType } from '@prisma/client';
 import sgMail from '@sendgrid/mail';
 import { BadRequestError, InternalServerError } from '../../shared/lib/responseUtils/errors';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
-console.log('SENDGRID_API_KEY prefix:', process.env.SENDGRID_API_KEY);
 
 export const sendEmail = async (to: string, otp: string, verificationLink: string) => {
   try {
@@ -30,7 +29,6 @@ export const sendOtp = async (to: string, otp: string) => {
       subject: 'Verify Your Email - Hopper',
       html: `<p>Your OTP to reset your password is: <strong>${otp}</strong></p>`,
     };
-    console.log('🚀 ~ sendOtp ~ sgMail:', sgMail);
 
     await sgMail.send(msg);
     return otp;

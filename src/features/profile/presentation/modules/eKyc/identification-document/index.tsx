@@ -1,5 +1,6 @@
 'use client';
 
+import DefaultSubmitButton from '@/components/common/molecules/DefaultSubmitButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   eKYC,
@@ -14,6 +15,7 @@ import {
   useUploadAttachmentMutation,
 } from '@/features/profile/store/api/profileApi';
 import { User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -33,6 +35,8 @@ interface IdentificationDocumentProps {
 }
 
 const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData }) => {
+  const router = useRouter();
+
   const { data: existingData, isLoading: isLoadingData } = useGetIdentificationDocumentQuery(
     undefined,
     { skip: !eKYCData },
@@ -253,13 +257,20 @@ const IdentificationDocumentForm: FC<IdentificationDocumentProps> = ({ eKYCData 
 
           <DocumentImagesForm form={form} isLoadingData={isLoadingData} disabled={isDisabled} />
 
-          <EKYCTabActions
-            isLoading={isSubmitting || isDeleting}
-            onSubmit={handleSubmitClick}
-            onEdit={handleEditClick}
-            status={eKYCData?.status}
-            isEditing={isEditing}
-          />
+          {isApproved ? (
+            <DefaultSubmitButton
+              onBack={() => router.push('/profile/')}
+              backTooltip="Back to Profile"
+            />
+          ) : (
+            <EKYCTabActions
+              isLoading={isSubmitting || isDeleting}
+              onSubmit={handleSubmitClick}
+              onEdit={handleEditClick}
+              status={eKYCData?.status}
+              isEditing={isEditing}
+            />
+          )}
         </form>
       </FormProvider>
 

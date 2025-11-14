@@ -76,8 +76,8 @@ class CategoryRepository implements ICategoryRepository {
         userId,
       },
       include: {
-        fromTransactions: { select: { amount: true, isDeleted: true } },
-        toTransactions: { select: { amount: true, isDeleted: true } },
+        fromTransactions: { select: { baseAmount: true, isDeleted: true } },
+        toTransactions: { select: { baseAmount: true, isDeleted: true } },
       },
       orderBy: [{ toTransactions: { _count: 'desc' } }, { fromTransactions: { _count: 'desc' } }],
     });

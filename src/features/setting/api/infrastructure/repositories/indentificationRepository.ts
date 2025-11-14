@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { SessionUser } from '@/shared/types/session';
 import {
   IdentificationDocument,
@@ -43,8 +43,8 @@ class IdentificationRepository {
           },
         });
 
-        await notificationUseCase.createBoxNotification({
-          title: `Verify ${fieldName} !`,
+        await notificationRepository.createBoxNotification({
+          title: `Verify new ${fieldName} !`,
           type: type,
           notifyTo: NotificationType.ADMIN_CS,
           attachmentId: '',
@@ -132,7 +132,7 @@ class IdentificationRepository {
         });
         const user = await tx.user.findFirst({
           where: { id: identification.userId },
-          select: { id: true, kyc_levels: true },
+          select: { id: true, kyc_levels: true, email: true },
         });
 
         const levelOrder = identification.type === IdentificationType.TAX ? '2' : '1';
@@ -154,7 +154,36 @@ class IdentificationRepository {
           where: { id: kycId, refId: identificationId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
         });
+        // let type;
+        // let fieldName = '';
+        // if (identification.type == IdentificationType.TAX) {
+        //   type = KYCType.TAX;
+        //   fieldName = 'tax';
+        // } else {
+        //   type = KYCType.IDENTIFICATION;
+        //   fieldName = 'identification';
+        // }
 
+        // if (status == KYCStatus.APPROVAL || status == KYCStatus.REJECTED) {
+        //   const title =
+        //     status == KYCStatus.REJECTED
+        //       ? `Reject request verify ${fieldName}!`
+        //       : `Approve ${fieldName} verification request!`;
+        //   const message =
+        //     status == KYCStatus.REJECTED
+        //       ? `Your request to verify your ${identification.type.toLowerCase()} has been rejected!`
+        //       : `Your ${identification.type.toLowerCase()} verification request has been approved!`;
+
+        //   await notificationRepository.createBoxNotification({
+        //     title,
+        //     type,
+        //     notifyTo: NotificationType.PERSONAL,
+        //     attachmentId: '',
+        //     deepLink: '',
+        //     message,
+        //     emails: user?.email ? [user?.email] : [],
+        //   });
+        // }
         return identification;
       });
     } catch (error) {

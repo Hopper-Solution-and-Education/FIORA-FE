@@ -3,24 +3,28 @@
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { setSendingFXFormClose, setSendingFXFormOpen } from '@/features/home/module/wallet';
+import { useAppDispatch } from '@/store';
+import { useCallback, useEffect } from 'react';
 
 const WalletTransferButton = () => {
-  const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const handleDeposit = useCallback(() => {
-    router.push(RouteEnum.WalletDeposit);
-  }, [router]);
+  const handleSending = useCallback(() => {
+    dispatch(setSendingFXFormOpen());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(setSendingFXFormClose());
+  }, []);
 
   return (
-    <CommonTooltip content="Transfer">
+    <CommonTooltip content="Sending">
       <Button
         variant="outline"
         size="icon"
         aria-label="Deposit"
-        onClick={handleDeposit}
+        onClick={handleSending}
         className="h-fit w-fit !px-[1.20rem] !py-2.5"
       >
         <Icons.arrowLeftRight className="!h-5 !w-5 text-orange-600" />

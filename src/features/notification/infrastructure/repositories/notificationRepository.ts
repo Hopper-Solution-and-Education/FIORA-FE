@@ -295,6 +295,11 @@ class NotificationRepository implements INotificationRepository {
         where: { isDeleted: false, email: { in: emails } },
         select: { id: true, email: true },
       });
+    } else if (notifyTo === 'ADMIN_CS') {
+      users = await prisma.user.findMany({
+        where: { isDeleted: false, role: { in: ['Admin', 'CS'] } },
+        select: { id: true, email: true },
+      });
     }
     if (!users || users.length === 0) {
       console.log('No user found for this role or email');

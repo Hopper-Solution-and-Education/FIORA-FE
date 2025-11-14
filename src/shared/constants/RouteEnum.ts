@@ -10,8 +10,8 @@ export enum RouteEnum {
 
   WalletDashboard = '/wallet',
   WalletDeposit = '/wallet/deposit',
-  DepositFX = '/setting/wallet',
   WalletPayment = '/wallet/payment',
+  DepositFX = '/setting/wallet',
   WalletSaving = '/wallet/saving',
   WalletReferral = '/wallet/referral',
 

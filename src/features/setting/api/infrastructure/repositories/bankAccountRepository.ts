@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { SessionUser } from '@/shared/types/session';
 import {
   BankAccount,
@@ -30,7 +30,7 @@ class BankAccountRepository {
             method: KYCMethod.MANUAL,
           },
         });
-        await notificationUseCase.createBoxNotification({
+        await notificationRepository.createBoxNotification({
           title: `Verify new bank account!`,
           type: 'BANK',
           notifyTo: NotificationType.ADMIN_CS,
@@ -104,7 +104,7 @@ class BankAccountRepository {
         });
         const user = await tx.user.findFirst({
           where: { id: bankAccount.userId },
-          select: { id: true, kyc_levels: true },
+          select: { id: true, kyc_levels: true, email: true },
         });
         const updatedKycLevels = user?.kyc_levels || [];
 
@@ -123,7 +123,26 @@ class BankAccountRepository {
           where: { id: kycId, refId: bankAccountId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
         });
+        // if (status == KYCStatus.APPROVAL || status == KYCStatus.REJECTED) {
+        //   const title =
+        //     status == KYCStatus.REJECTED
+        //       ? `Reject request verify bank account!`
+        //       : `Approve bank account verification request!`;
+        //   const message =
+        //     status == KYCStatus.REJECTED
+        //       ? `Your request to verify your bank account has been rejected!`
+        //       : `Your bank account verification request has been approved!`;
 
+        //   await notificationRepository.createBoxNotification({
+        //     title,
+        //     type: 'BANK',
+        //     notifyTo: NotificationType.PERSONAL,
+        //     attachmentId: '',
+        //     deepLink: '',
+        //     message,
+        //     emails: user?.email ? [user?.email] : [],
+        //   });
+        // }
         return bankAccount;
       });
     } catch (error) {

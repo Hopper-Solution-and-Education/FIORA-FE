@@ -4,4 +4,5 @@ export interface FetchPaymentWalletParams {
   page?: number;
   pageSize: number;
   searchParams?: string;
+  sortBy?: Record<string, 'asc' | 'desc'>;
 }

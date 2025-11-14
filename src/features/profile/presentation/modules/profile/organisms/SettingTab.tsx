@@ -19,9 +19,12 @@ import { toast } from 'sonner';
 import SectionHeader from '../atoms/SectionHeader';
 import SettingFieldItem from '../atoms/SettingFieldItem';
 
-import { ChangePasswordDialog } from '../molecules/dialogs';
+import {
+  ChangePasswordDialog,
+  DeleteAccountOtpDialog,
+  DeleteAccountWarningDialog,
+} from '../molecules/dialogs';
 import ChangeEmailDialog from '../molecules/dialogs/ChangeEmailDialog';
-import DeleteAccountDialog from '../molecules/dialogs/DeleteAccountDialog';
 import KYCStatusList from '../molecules/KYCStatusList';
 import SettingSection from '../molecules/SettingSection';
 import TwoFactorAuthField from '../molecules/TwoFactorAuthField';
@@ -30,11 +33,13 @@ interface SettingTabProps {
   profile?: UserProfile;
 }
 
-type DialogType = 'email' | 'phone' | 'password' | 'delete' | null;
+type DialogType = 'email' | 'phone' | 'password' | null;
+type DeleteStep = 'warning' | 'otp' | null;
 
 const SettingTab: FC<SettingTabProps> = ({ profile }) => {
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState<DialogType>(null);
+  const [deleteStep, setDeleteStep] = useState<DeleteStep>(null);
 
   // API Mutations
   const [sendProfileOTP, { isLoading: isSendingOTP }] = useSendProfileOTPMutation();
@@ -70,21 +75,25 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
     return eKYCStatuses[EKYCType.CONTACT_INFORMATION] === EKYCStatus.APPROVAL;
   }, [eKYCStatuses]);
 
-  const handleEditEmail = () => {
-    if (!isContactVerified) {
-      toast.error('Please complete Contact Information eKYC verification first');
-      handleNavigateToKYC('contact-information');
-      return;
-    }
-    setOpenDialog('email');
-  };
-
   const handleChangePassword = () => {
     setOpenDialog('password');
   };
 
   const handleDeleteAccount = () => {
-    setOpenDialog('delete');
+    setDeleteStep('warning');
+  };
+
+  const handleConfirmDeleteWarning = async () => {
+    // Send OTP
+    try {
+      await sendProfileOTP({ type: 'delete' }).unwrap();
+      toast.success('OTP sent to your email');
+      // Open OTP dialog
+      setDeleteStep('otp');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to send OTP');
+      setDeleteStep(null);
+    }
   };
 
   // OTP Handlers
@@ -97,12 +106,12 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
     }
   };
 
-  const handleSendOTPForDelete = async () => {
+  const handleResendOTPForDelete = async () => {
     try {
       await sendProfileOTP({ type: 'delete' }).unwrap();
-      toast.success('OTP sent to your email');
+      toast.success('OTP resent to your email');
     } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to send OTP');
+      toast.error(error?.data?.message || 'Failed to resend OTP');
     }
   };
 
@@ -131,7 +140,7 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
     try {
       await deleteAccount({ otp }).unwrap();
       toast.success('Account deleted successfully');
-      setOpenDialog(null);
+      setDeleteStep(null);
       // Redirect to login or home page
       router.push('/');
     } catch (error: any) {
@@ -163,9 +172,10 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
                 <AlertCircle className="w-4 h-4 text-amber-600" />
               )
             }
-            onEdit={handleEditEmail}
-            editTooltip={isContactVerified ? 'Edit email' : 'Verify contact info first'}
-            disabled={!isContactVerified}
+            showEdit={false}
+            // onEdit={handleEditEmail}
+            // editTooltip={isContactVerified ? 'Edit email' : 'Verify contact info first'}
+            // disabled={!isContactVerified}
           />
 
           <SettingFieldItem
@@ -184,19 +194,6 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
             }
             editTooltip={isContactVerified ? 'Edit phone number' : 'Verify contact info first'}
             disabled={!isContactVerified}
-          />
-        </SettingSection>
-
-        <Separator />
-
-        {/* Bank Accounts Section */}
-        <SettingSection title="Bank Accounts">
-          <SettingFieldItem
-            label="Bank Accounts"
-            description="Linked bank account: You can update your bank details"
-            icon={<AlertCircle className="w-4 h-4" />}
-            onEdit={() => router.push('/profile/ekyc?id=bank-account')}
-            editTooltip="Edit bank account"
           />
         </SettingSection>
 
@@ -248,11 +245,18 @@ const SettingTab: FC<SettingTabProps> = ({ profile }) => {
         isLoading={isChangingPassword}
       />
 
-      <DeleteAccountDialog
-        open={openDialog === 'delete'}
-        onOpenChange={(open: boolean) => !open && setOpenDialog(null)}
+      <DeleteAccountWarningDialog
+        open={deleteStep === 'warning'}
+        onOpenChange={(open: boolean) => !open && setDeleteStep(null)}
+        onConfirm={handleConfirmDeleteWarning}
+        isLoading={isSendingOTP}
+      />
+
+      <DeleteAccountOtpDialog
+        open={deleteStep === 'otp'}
+        onOpenChange={(open: boolean) => !open && setDeleteStep(null)}
         onConfirm={handleConfirmDeleteAccount}
-        onSendOTP={handleSendOTPForDelete}
+        onResendOTP={handleResendOTPForDelete}
         isLoading={isDeletingAccount}
         isSendingOTP={isSendingOTP}
       />

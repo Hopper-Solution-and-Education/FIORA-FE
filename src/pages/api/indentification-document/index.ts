@@ -73,9 +73,9 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
       .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.VALIDATION_ERROR, error));
   }
 
-  // Check if identification document exists and belongs to user
-  const existingDoc = (await identificationRepository.getByUserId(userId)).find(
-    (item) => item.type !== IdentificationType.TAX,
+  const userDocuments = await identificationRepository.getByUserId(userId);
+  const existingDoc = userDocuments.find((item) =>
+    type !== IdentificationType.TAX ? item.type !== IdentificationType.TAX : item.type === type,
   );
 
   if (!existingDoc) {

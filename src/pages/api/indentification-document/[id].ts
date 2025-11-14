@@ -1,9 +1,11 @@
+import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { Messages } from '@/shared/constants/message';
+import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse } from '@/shared/lib';
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
+import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { validateBody } from '@/shared/utils/validate';
@@ -32,6 +34,20 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function PATCH(req: NextApiRequest, res: NextApiResponse, userId: string) {
+  const user = await userRepository.findById(userId);
+
+  if (!user || !user.role || (user.role !== UserRole.ADMIN && user.role !== UserRole.CS)) {
+    return res
+      .status(RESPONSE_CODE.FORBIDDEN)
+      .json(
+        createError(
+          res,
+          RESPONSE_CODE.FORBIDDEN,
+          'You do not have permission to update this document',
+        ),
+      );
+  }
+
   const { id } = req.query;
   const { error } = validateBody(editIdentificationSchema, req.body);
   if (error) {

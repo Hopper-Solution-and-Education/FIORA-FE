@@ -1,6 +1,4 @@
-export type OtpState = 'Get' | 'Resend';
-
-type WalletWithdrawBankAccount = {
+export type WalletWithdrawBankAccount = {
   accountNumber: string | null;
   accountName: string | null;
 };
