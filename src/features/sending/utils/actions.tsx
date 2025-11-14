@@ -54,7 +54,7 @@ export const useSendingFXAction = () => {
         !isLimitFetched ? dispatch(fetchLimitDataAsync()).unwrap() : null,
         !isCatalogFetched ? dispatch(fetchCatalogDataAsync()).unwrap() : null,
       ].filter(Boolean);
-
+      
       await Promise.all(promises);
     } catch (err) {
       console.error(err);
