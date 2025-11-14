@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
 
+import { Messages } from '@/shared/constants/message';
+import { BadRequestError } from '@/shared/lib';
 import { User } from '@prisma/client';
 import { IUserRepository } from '../../domain/repositories/userRepository.interface';
 import { userRepository } from '../../infrastructure/repositories/userRepository';
-import { Messages } from '@/shared/constants/message';
 
 class UserUseCase {
   constructor(private userRepository: IUserRepository) {}
@@ -11,7 +12,7 @@ class UserUseCase {
   async execute(email: string, password: string): Promise<User | null> {
     const userFound = await this.userRepository.findByEmail(email);
     if (userFound) {
-      throw new Error(Messages.USER_EMAIL_EXISTED);
+      throw new BadRequestError(Messages.USER_EMAIL_EXISTED);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

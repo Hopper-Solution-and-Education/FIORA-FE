@@ -281,6 +281,7 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                   {/* inner bar for negative - render FIRST so it appears at the bottom */}
                   {visibleData.map((entry, index) => {
                     const innerValue = entry.innerBar?.[index]?.negativeValue || 0;
+
                     return (
                       <Bar
                         key={`inner-bar-${index}`}
