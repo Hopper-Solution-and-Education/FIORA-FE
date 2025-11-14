@@ -86,7 +86,6 @@ const WalletBarChart = () => {
         if (!payload || !payload.length) return null;
         const item = payload[0].payload;
         const amount = item.positiveValue !== 0 ? item.positiveValue : item.negativeValue;
-        // const frozenForItem = item.innerBar?.[0]?.positiveValue || 0;
 
         const isPositive = amount >= 0;
         const showFrozen = item.type === WalletType.Payment || item.type === 'total';
