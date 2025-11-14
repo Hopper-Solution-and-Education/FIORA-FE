@@ -1,4 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SectionTypeEnum } from '../../constants';
@@ -11,22 +12,51 @@ const FooterContent = ({ medias, description }: { medias: any[]; description: st
     <div className="flex flex-col md:flex-row items-center justify-between pb-2 px-4 lg:px-20">
       <h2 className="text-2xl font-bold">FIORA</h2>
       <div className="flex space-x-4">
-        {medias.map((icon, index) => (
-          <Link
-            key={index}
-            href={icon.redirect_url ?? DEFAULT_URL}
-            target="_blank"
-            className="hover:scale-110 transition-transform"
-          >
-            <Image
-              alt={icon.description ?? ''}
-              src={icon.media_url ?? ''}
-              width={120}
-              height={120}
-              className="h-6 w-6 rounded-full"
-            />
-          </Link>
-        ))}
+        {medias.map((icon, index) => {
+          const hasDescription = icon.description && icon.description.trim() !== '';
+
+          if (hasDescription) {
+            return (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={icon.redirect_url ?? DEFAULT_URL}
+                    target="_blank"
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <Image
+                      alt={icon.description}
+                      src={icon.media_url ?? ''}
+                      width={120}
+                      height={120}
+                      className="h-6 w-6 rounded-full"
+                    />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{icon.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
+          return (
+            <Link
+              key={index}
+              href={icon.redirect_url ?? DEFAULT_URL}
+              target="_blank"
+              className="hover:scale-110 transition-transform"
+            >
+              <Image
+                alt={icon.description ?? ''}
+                src={icon.media_url ?? ''}
+                width={120}
+                height={120}
+                className="h-6 w-6 rounded-full"
+              />
+            </Link>
+          );
+        })}
       </div>
     </div>
 
