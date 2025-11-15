@@ -13,6 +13,11 @@ const isPathMatchPattern = (path: string, pattern: string): boolean => {
 
 export async function middleware(request: NextRequest) {
   try {
+    // Bypass CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 200, headers: { ...request.headers } });
+    }
+
     const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
     const { pathname } = request.nextUrl;
 

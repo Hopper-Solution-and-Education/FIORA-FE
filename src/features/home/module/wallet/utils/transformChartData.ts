@@ -13,6 +13,11 @@ export function transformWalletsToChartData(
   wallets: Wallet[],
   frozenAmount: number = 0,
 ): TwoSideBarItem[] {
+  // If no wallets, return empty array
+  if (wallets.length === 0) {
+    return [];
+  }
+
   // Transform each wallet to chart item format
   const items = wallets.map((w) => {
     const baseItem: TwoSideBarItem = {

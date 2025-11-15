@@ -67,13 +67,11 @@ export function Banner() {
                           src={image.media_url ?? ''}
                           alt={image.description || `Banner ${index + 1}`}
                           fill
-                          // Chỉ prefetch ảnh đầu tiên
+                          unoptimized
                           priority={isFirst}
                           fetchPriority={isFirst ? 'high' : 'auto'}
                           loading={isFirst ? 'eager' : 'lazy'}
                           decoding="async"
-                          // Hãy dùng cover thay vì fill để tránh bóp méo và giảm reflow
-                          className="object-cover"
                           sizes="(min-width: 1024px) 100vw, (min-width: 768px) 100vw, 100vw"
                           quality={70}
                         />
