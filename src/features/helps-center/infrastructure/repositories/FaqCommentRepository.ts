@@ -67,7 +67,7 @@ export class FaqCommentRepository implements IFaqCommentRepository {
             id: true,
             name: true,
             email: true,
-            image: true,
+            avatarId: true,
           },
         },
       },
@@ -76,12 +76,30 @@ export class FaqCommentRepository implements IFaqCommentRepository {
       },
     });
 
+    const avatarIds: string[] = comments
+      .filter(
+        (comment) => typeof comment.User.avatarId === 'string' && comment.User.avatarId.length > 0,
+      )
+      .map((comment) => comment.User.avatarId!);
+
+    const avatars = await prisma.attachment.findMany({
+      where: { id: { in: avatarIds } },
+      select: { id: true, url: true },
+    });
+
+    const avatarMap = new Map(avatars.map((a) => [a.id, a.url]));
+
     return comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
       createdAt: comment.createdAt,
       userId: comment.userId,
-      User: comment.User,
+      User: {
+        id: comment.User.id,
+        name: comment.User.name,
+        email: comment.User.email,
+        image: avatarMap.get(comment.User.avatarId!) || '',
+      },
     }));
   }
 }
