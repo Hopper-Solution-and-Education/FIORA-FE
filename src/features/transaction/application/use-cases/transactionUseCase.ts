@@ -28,7 +28,7 @@ class TransactionUseCase {
     private transactionRepository: ITransactionRepository,
     private accountRepository: IAccountRepository,
     private currencySettingRepository: ICurrencySettingRepository,
-  ) { }
+  ) {}
 
   async listTransactions(userId: string): Promise<Transaction[]> {
     return this.transactionRepository.getTransactionsByUserId(userId);
@@ -72,13 +72,13 @@ class TransactionUseCase {
                 : []),
               ...(isSearchDate
                 ? [
-                  {
-                    date: {
-                      gte: new Date(typeSearchParams),
-                      lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                    {
+                      date: {
+                        gte: new Date(typeSearchParams),
+                        lte: new Date(new Date(typeSearchParams).setHours(23, 59, 59)),
+                      },
                     },
-                  },
-                ]
+                  ]
                 : []),
             ],
           },
@@ -742,13 +742,13 @@ class TransactionUseCase {
       // Fetch old accounts for reversing the original transfer
       const oldFromAccount = transactionUnique.fromAccountId
         ? await tx.account.findUnique({
-          where: { id: transactionUnique.fromAccountId },
-        })
+            where: { id: transactionUnique.fromAccountId },
+          })
         : null;
       const oldToAccount = transactionUnique.toAccountId
         ? await tx.account.findUnique({
-          where: { id: transactionUnique.toAccountId },
-        })
+            where: { id: transactionUnique.toAccountId },
+          })
         : null;
 
       // Fetch new accounts for applying the updated transfer

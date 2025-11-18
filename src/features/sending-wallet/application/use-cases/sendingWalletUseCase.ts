@@ -4,10 +4,7 @@ import { BadRequestError, InternalServerError, NotFoundError } from '@/shared/li
 import { generateSixDigitNumber } from '@/shared/utils/common';
 import { OtpType, TransactionType, WalletType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import {
-  Duration,
-  LocaleFormat
-} from '../../constants/sendingWalletConstants';
+import { Duration, LocaleFormat } from '../../constants/sendingWalletConstants';
 import { SendingWalletMessage } from '../../constants/sendingWalletMessage';
 import { sendingWalletRepository } from '../../infrastructure/repositories/sendingWalletRepository';
 import { emailService } from '../../infrastructure/services/emailService';
@@ -77,7 +74,7 @@ class SendingWalletUseCase {
     if (!sender) throw new NotFoundError(SendingWalletMessage.SENDER_NOT_FOUND);
 
     const senderWallet = await this._prisma.wallet.findFirst({
-      where: { userId, type: WalletType.Payment  },
+      where: { userId, type: WalletType.Payment },
     });
     if (!senderWallet) throw new NotFoundError(SendingWalletMessage.SENDER_WALLET_NOT_FOUND);
 
@@ -102,11 +99,15 @@ class SendingWalletUseCase {
     const oneTimeLimitDecimal = new Decimal(oneTimeMovingLimit.amount);
 
     if (amountDecimal.gt(oneTimeLimitDecimal))
-      throw new BadRequestError(`${SendingWalletMessage.EXCEEDS_ONE_TIME_LIMIT}: ${oneTimeLimitDecimal}`);
+      throw new BadRequestError(
+        `${SendingWalletMessage.EXCEEDS_ONE_TIME_LIMIT}: ${oneTimeLimitDecimal}`,
+      );
 
     const movedAmountDecimal = new Decimal(await this._sendingRepo.getMovedAmount(userId));
     if (movedAmountDecimal.add(amountDecimal).gt(dailyLimitDecimal))
-      throw new BadRequestError(`${SendingWalletMessage.EXCEEDS_DAILY_LIMIT}: ${dailyLimitDecimal}`);
+      throw new BadRequestError(
+        `${SendingWalletMessage.EXCEEDS_DAILY_LIMIT}: ${dailyLimitDecimal}`,
+      );
 
     // Validate productIds
     if (productIds && productIds.length > 0) {
@@ -119,7 +120,7 @@ class SendingWalletUseCase {
     // Validate category
     if (categoryId) {
       const category = await this._prisma.category.findFirst({
-        where: { id: categoryId, userId, type: TransactionType.Expense  },
+        where: { id: categoryId, userId, type: TransactionType.Expense },
       });
       if (!category) throw new NotFoundError(SendingWalletMessage.CATEGORY_NOT_FOUND);
     }
