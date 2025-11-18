@@ -26,6 +26,7 @@ const WalletOverview = () => {
   );
 
   const totalFrozen = frozenAmount || 0;
+  const totalBalance = Number(totalActive) + Number(totalDebt) + Number(totalFrozen);
 
   if (loading) {
     return <Loading />;
@@ -34,27 +35,57 @@ const WalletOverview = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-6">
       <MetricCard
+        title="Total Balance"
+        value={totalBalance}
+        type="total"
+        icon="landmark"
+        description="Total FX Balance"
+        applyExchangeRate={false}
+      />
+
+      <MetricCard
         title="Total Active"
         value={totalActive}
         type="income"
         icon="arrowLeftRight"
         description="Total available FX for trading"
+        applyExchangeRate={false}
       />
 
       <MetricCard
         title="Total Frozen"
         value={totalFrozen}
-        type="total"
+        type="gray"
         icon="snowflake"
         description="Total FX pending activation"
+        applyExchangeRate={false}
+      />
+
+      <MetricCard
+        title="Available BNPL Limit"
+        value={0}
+        type="neutral"
+        icon="billing"
+        description="Total available BNPL limit"
+        applyExchangeRate={false}
+      />
+
+      <MetricCard
+        title="Available Loan Limit"
+        value={0}
+        type="neutral"
+        icon="snowflake"
+        description="Total available loan limit"
+        applyExchangeRate={false}
       />
 
       <MetricCard
         title="Total Debt"
         value={totalDebt}
         type="expense"
-        icon="banknoteArrowDown"
+        icon="handCoins"
         description="Total FX Debt"
+        applyExchangeRate={false}
       />
     </div>
   );

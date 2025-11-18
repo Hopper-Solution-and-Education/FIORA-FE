@@ -9,6 +9,7 @@ export const WALLET_TYPE_ICONS: Record<WalletType, string> = {
   [WalletType.Debt]: 'banknoteArrowDown',
   [WalletType.Referral]: 'userPlus',
   [WalletType.Cashback]: 'circleFadingArrowUp',
+  [WalletType.Staking]: 'handCoins',
 };
 
 export const DEFAULT_WALLET_FIELDS = {
