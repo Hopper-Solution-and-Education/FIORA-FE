@@ -68,9 +68,7 @@ class EmailService implements IEmailService {
       const variables = { otp, amount, emailReceiver, userName };
 
       // Load the OTP email template (type: SENDING_OTP)
-      const templateEntity = await this.loadEmailTemplate(
-        'SENDING_OTP'
-      );
+      const templateEntity = await this.loadEmailTemplate('SENDING_OTP');
 
       // Use the notification use case to send the email via the notification system
       await this._notificationUsecase.sendNotificationWithTemplate(
@@ -172,9 +170,7 @@ class EmailService implements IEmailService {
       }
 
       // Load the "transaction success" email template
-      const templateEntity = await this.loadEmailTemplate(
-        'SENDING_SUCCESSFUL',
-      );
+      const templateEntity = await this.loadEmailTemplate('SENDING_SUCCESSFUL');
 
       // Send email via notification use case
       await this._notificationUsecase.sendNotificationWithTemplate(

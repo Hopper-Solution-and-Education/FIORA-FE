@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LucieIcon from '@/features/home/module/category/components/LucieIcon';
-import { CURRENCY } from '@/shared/constants';
-import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn, isImageUrl } from '@/shared/utils';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -9,19 +7,17 @@ import Image from 'next/image';
 interface MetricCardProps {
   title: string;
   value: number;
-  type: 'income' | 'expense' | 'total' | 'neutral' | 'gray';
+  type: 'income' | 'expense' | 'total' | 'neutral';
   description?: string;
   icon?: string | React.ReactNode;
   className?: string;
-  currency?: string;
   trend?: {
     value: string;
     isPositive: boolean;
   };
-  applyExchangeRate?: boolean;
 }
 
-const MetricCard = ({
+const PercentageMetricCard = ({
   title,
   value,
   type,
@@ -29,10 +25,7 @@ const MetricCard = ({
   icon,
   className,
   trend,
-  currency,
-  applyExchangeRate = true,
 }: MetricCardProps) => {
-  const { formatCurrency } = useCurrencyFormatter();
   const getCardColor = () => {
     switch (type) {
       case 'income':
@@ -45,8 +38,6 @@ const MetricCard = ({
         } else {
           return 'text-yellow-600 dark:text-yellow-400';
         }
-      case 'gray':
-        return 'text-gray-400 dark:text-gray-600';
       case 'neutral':
         return 'text-gray-600 dark:text-gray-400';
       default:
@@ -107,15 +98,13 @@ const MetricCard = ({
   };
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className={cn('flex justify-between items-center overflow-hidden', className)}>
+      <CardHeader className="flex flex-row items-center justify-start gap-2 space-y-0 py-2 pr-0">
         <CardTitle className="text-sm sm:text-md font-medium">{title}</CardTitle>
         {renderIconOrImage(icon)}
       </CardHeader>
-      <CardContent>
-        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>
-          {formatCurrency(value, currency || CURRENCY.FX, { applyExchangeRate })}
-        </div>
+      <CardContent className="py-0">
+        <div className={cn('text-xl sm:text-2xl font-bold', getCardColor())}>{value}%</div>
         {(description || trend) && (
           <div className="mt-1 flex items-center text-[10px] sm:text-xs">
             {description && <p className="text-muted-foreground">{description}</p>}
@@ -132,4 +121,4 @@ const MetricCard = ({
   );
 };
 
-export default MetricCard;
+export default PercentageMetricCard;

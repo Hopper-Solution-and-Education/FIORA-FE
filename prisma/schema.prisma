@@ -1047,6 +1047,7 @@ enum WalletType {
   Debt
   Referral
   Cashback
+  Staking
 }
 
 enum ChannelType {
