@@ -50,7 +50,7 @@ class IdentificationRepository {
           attachmentId: '',
           deepLink: '',
           message: `User ${user.email} has submitted a new verify ${fieldName}.`,
-          emails: [user.email],
+          // emails: [user.email],
         });
         return identification;
       });
