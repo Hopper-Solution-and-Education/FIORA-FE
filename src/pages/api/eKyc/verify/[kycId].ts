@@ -144,6 +144,8 @@ export async function PATCH(req: NextApiRequest, res: NextApiResponse, sessionUs
           }),
           verified_by: verifierName,
           remarks: remarks || '',
+          type: eKYCRecord.type,
+          bank_account_number: eKYCRecord.type == KYCType.BANK ? result?.accountNumber : '',
         };
 
         if (status === KYCStatus.APPROVAL) {

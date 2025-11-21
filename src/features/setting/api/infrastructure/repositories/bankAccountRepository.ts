@@ -37,7 +37,6 @@ class BankAccountRepository {
           attachmentId: '',
           deepLink: '',
           message: `User ${user.email} has submitted a new verify bank account.`,
-          emails: [user.email],
         });
         return bankAccount;
       });
@@ -123,26 +122,7 @@ class BankAccountRepository {
           where: { id: kycId, refId: bankAccountId },
           data: { updatedAt: new Date(), updatedBy: userId, status: status, verifiedBy: userId },
         });
-        // if (status == KYCStatus.APPROVAL || status == KYCStatus.REJECTED) {
-        //   const title =
-        //     status == KYCStatus.REJECTED
-        //       ? `Reject request verify bank account!`
-        //       : `Approve bank account verification request!`;
-        //   const message =
-        //     status == KYCStatus.REJECTED
-        //       ? `Your request to verify your bank account has been rejected!`
-        //       : `Your bank account verification request has been approved!`;
 
-        //   await notificationRepository.createBoxNotification({
-        //     title,
-        //     type: 'BANK',
-        //     notifyTo: NotificationType.PERSONAL,
-        //     attachmentId: '',
-        //     deepLink: '',
-        //     message,
-        //     emails: user?.email ? [user?.email] : [],
-        //   });
-        // }
         return bankAccount;
       });
     } catch (error) {

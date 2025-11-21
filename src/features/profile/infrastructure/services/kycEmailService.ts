@@ -1,7 +1,8 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
+import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
 import { BadRequestError } from '@/shared/lib';
-import { emailType, NotificationType } from '@prisma/client';
+import { emailType, KYCType, NotificationType } from '@prisma/client';
 
 interface KYCEmailData {
   user_id: string;
@@ -16,6 +17,7 @@ interface KYCEmailData {
   remarks?: string;
   document_number?: string;
   bank_account_number?: string;
+  type?: string;
 }
 
 interface KYCEmailPart {
@@ -89,6 +91,15 @@ export const sendKYCApprovedEmail = async (data: KYCEmailData): Promise<void> =>
       'KYC_APPROVAL',
       `KYC Verification Approved - ${data.field_name}`,
     );
+    await notificationRepository.createBoxNotification({
+      title: `KYC Verification Approved!`,
+      type: data?.type || KYCType.IDENTIFICATION,
+      notifyTo: NotificationType.PERSONAL,
+      attachmentId: '',
+      deepLink: '',
+      message: `User ${data.user_email} has verify ${data?.type?.toLowerCase()} request!`,
+      emails: [data.user_email],
+    });
 
     console.log(`KYC approved email sent to ${data.user_email}`);
   } catch (error) {
@@ -152,7 +163,15 @@ export const sendKYCRejectedEmail = async (data: KYCEmailData): Promise<void> =>
       'KYC_REJECTION',
       `KYC Verification Rejected - ${data.field_name}`,
     );
-
+    await notificationRepository.createBoxNotification({
+      title: `KYC Verification Rejected!`,
+      type: data?.type || KYCType.IDENTIFICATION,
+      notifyTo: NotificationType.PERSONAL,
+      attachmentId: '',
+      deepLink: '',
+      message: `User ${data.user_email} has rejected ${data?.type?.toLowerCase()} request!`,
+      emails: [data.user_email],
+    });
     console.log(`KYC rejected email sent to ${data.user_email}`);
   } catch (error) {
     console.error('Error sending KYC rejected email:', error);
