@@ -309,26 +309,13 @@ class NotificationRepository implements INotificationRepository {
     return await prisma.$transaction(async (tx) => {
       // 1. Tạo notification trước
       let notification = null;
-      if (notifyTo === 'ROLE_CS' || notifyTo === 'ROLE_ADMIN') {
+      if (notifyTo === 'ROLE_CS' || notifyTo === 'ROLE_ADMIN' || notifyTo === 'ADMIN_CS') {
         const emailsHighRole = users.map((u) => u.email);
         console.log(
           '🚀 ~ NotificationRepository ~ createBoxNotification ~ emailsHighRole:',
           emailsHighRole,
         );
-        notification = await tx.notification.create({
-          data: {
-            notifyTo: notifyTo,
-            emails: emailsHighRole || [],
-            emailTemplateId: null,
-            attachmentId: attachmentId || null,
-            title,
-            message,
-            type: type,
-            deepLink: deepLink || null,
-            channel: ChannelType.BOX,
-            createdAt: new Date(),
-          },
-        });
+        emails?.push(...emailsHighRole);
       }
       notification = await tx.notification.create({
         data: {
