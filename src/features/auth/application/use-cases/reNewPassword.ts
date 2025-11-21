@@ -1,11 +1,12 @@
+import { prisma } from '@/config';
 import {
   userRepository as UserRepository,
   userRepository,
 } from '@/features/auth/infrastructure/repositories/userRepository';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
-import { EmailTemplateEnum } from '@/shared/constants/EmailTemplateEnum';
+import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
-import { NotificationType } from '@prisma/client';
+import { emailType, NotificationType } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 export class ReNewPasswordUseCase {
@@ -44,16 +45,27 @@ export class ReNewPasswordUseCase {
         },
       ];
 
+      const templateEmailType = await prisma.emailTemplateType.findFirst({
+        where: {
+          type: emailType.OTP,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!templateEmailType) {
+        throw new BadRequestError(Messages.EMAIL_TEMPLATE_NOT_FOUND);
+      }
+
       // Send notification with template
       const result = await this.notificationUseCase.sendNotificationWithTemplate(
-        EmailTemplateEnum.OTP_VERIFICATION,
+        templateEmailType?.id,
         emailParts,
         NotificationType.PERSONAL,
         'OTP',
         'OTP Verification Required - FIORA',
       );
-
-      console.log(result);
 
       return result;
     } catch (error: any) {

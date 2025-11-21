@@ -42,6 +42,7 @@ const NestedBarChart = ({
   levelConfig,
   expanded = true,
   sortEnable = true,
+  baseBarHeight = BASE_BAR_HEIGHT,
 }: NestedBarChartProps) => {
   // State to track whether to show all categories or just top 10
   const [showAll, setShowAll] = useState(false);
