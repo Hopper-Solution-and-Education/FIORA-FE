@@ -1,6 +1,15 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import {
+  ChartLegend,
+  CustomTooltip,
+  CustomYAxisTick,
+  PositiveAndNegativeBarLabel,
+} from '@/components/common/atoms';
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { useWindowSize } from '@/shared/utils/device';
+import { debounce } from 'lodash';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -11,18 +20,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {
-  ChartLegend,
-  CustomTooltip,
-  CustomYAxisTick,
-  PositiveAndNegativeBarLabel,
-} from '@/components/common/atoms';
-import { useWindowSize } from '@/shared/utils/device';
-import { debounce } from 'lodash';
-import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
 import { sortByAbsoluteValue, sortChartData } from '../utils/sortChartData';
-import { processChartData } from './utils';
 import { PositiveAndNegativeBarChartProps } from './type';
+import { processChartData } from './utils';
 
 const PositiveAndNegativeBarChart = ({
   data,

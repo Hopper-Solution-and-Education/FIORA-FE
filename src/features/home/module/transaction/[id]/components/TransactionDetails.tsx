@@ -427,10 +427,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                       {data.createdAt ? format(new Date(data.createdAt), 'Ppp') : 'Unknown'}
                     </span>
                   </div>
-                  <div>
+                  <div className="text-right">
                     Created By:{' '}
                     <span className={!data.createdBy?.email ? 'text-gray-500 italic' : ''}>
-                      {data.createdBy?.email || 'Unknown'}
+                      {data.createdBy?.email || 'System'}
                     </span>
                   </div>
                   <div>
@@ -439,10 +439,10 @@ const TransactionDetails = ({ data }: TransactionDetailsProps) => {
                       {data.updatedAt ? format(new Date(data.updatedAt), 'Ppp') : 'Unknown'}
                     </span>
                   </div>
-                  <div>
+                  <div className="text-right">
                     Updated By:{' '}
                     <span className={!data.updatedBy?.email ? 'text-gray-500 italic' : ''}>
-                      {data.updatedBy?.email || 'Unknown'}
+                      {data.updatedBy?.email || 'System'}
                     </span>
                   </div>
                 </div>

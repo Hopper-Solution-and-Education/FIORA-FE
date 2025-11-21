@@ -31,4 +31,5 @@ export interface NestedBarChartProps extends Omit<BaseChartProps<BarItem>, 'tool
   maxBarRatio?: number;
   levelConfig?: LevelConfig;
   expanded?: boolean;
+  baseBarHeight?: number;
 }
