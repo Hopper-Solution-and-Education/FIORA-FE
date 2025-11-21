@@ -76,7 +76,7 @@ const WalletBarChart = () => {
       title=" "
       showTotal={false}
       currency={CURRENCY.FX}
-      labelFormatter={(value) => formatCurrency(value, CURRENCY.FX)}
+      labelFormatter={(value) => formatCurrency(value, CURRENCY.FX, { applyExchangeRate: false })}
       legendItems={[
         { name: 'Positive', color: COLORS.DEPS_SUCCESS.LEVEL_1 },
         { name: 'Negative', color: COLORS.DEPS_DANGER.LEVEL_1 },
@@ -101,7 +101,7 @@ const WalletBarChart = () => {
                   color: isPositive ? COLORS.DEPS_SUCCESS.LEVEL_1 : COLORS.DEPS_DANGER.LEVEL_1,
                 }}
               >
-                {formatCurrency(amount, 'FX')}
+                {formatCurrency(amount, CURRENCY.FX, { applyExchangeRate: false })}
               </span>
             </p>
 
@@ -114,7 +114,7 @@ const WalletBarChart = () => {
                     color: COLORS.DEPS_DISABLE.LEVEL_1,
                   }}
                 >
-                  {formatCurrency(frozenAmount ?? 0, 'FX')}
+                  {formatCurrency(frozenAmount ?? 0, CURRENCY.FX, { applyExchangeRate: false })}
                 </span>
               </p>
             )}
