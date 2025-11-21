@@ -135,7 +135,7 @@ class IdentificationRepository {
           select: { id: true, kyc_levels: true, email: true },
         });
 
-        const levelOrder = identification.type === IdentificationType.TAX ? '2' : '1';
+        const levelOrder = identification.type === IdentificationType.TAX ? '3' : '1';
 
         const updatedKycLevels = user?.kyc_levels || [];
         if (!updatedKycLevels.includes(levelOrder)) {
