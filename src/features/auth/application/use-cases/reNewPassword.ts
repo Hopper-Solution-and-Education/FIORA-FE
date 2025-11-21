@@ -45,6 +45,7 @@ export class ReNewPasswordUseCase {
         },
       ];
 
+      // 1. Get email template type for OTP
       const templateEmailType = await prisma.emailTemplateType.findFirst({
         where: {
           type: emailType.OTP,
@@ -58,9 +59,23 @@ export class ReNewPasswordUseCase {
         throw new BadRequestError(Messages.EMAIL_TEMPLATE_NOT_FOUND);
       }
 
+      // 2. Get email template
+      const emailTemplate = await prisma.emailTemplate.findFirst({
+        where: {
+          emailtemplatetypeid: templateEmailType.id,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!emailTemplate || !emailTemplate.id) {
+        throw new BadRequestError(Messages.EMAIL_TEMPLATE_NOT_FOUND);
+      }
+
       // Send notification with template
       const result = await this.notificationUseCase.sendNotificationWithTemplate(
-        templateEmailType?.id,
+        emailTemplate?.id,
         emailParts,
         NotificationType.PERSONAL,
         'OTP',
