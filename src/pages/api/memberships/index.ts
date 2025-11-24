@@ -15,7 +15,7 @@ export const maxDuration = 30; // 30 seconds
 export default withAuthorization({
   POST: ['Admin'],
   PUT: ['Admin'],
-  GET: ['User', 'Admin'],
+  GET: ['User', 'Admin', 'CS'],
 })(async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
   switch (req.method) {
     case 'PUT':
