@@ -278,37 +278,8 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                     cursor={false}
                   />
 
-                  {/* inner bar for negative - render FIRST so it appears at the bottom */}
-                  {visibleData.map((entry, index) => {
-                    const innerValue = entry.innerBar?.[index]?.negativeValue || 0;
-
-                    return (
-                      <Bar
-                        key={`inner-bar-${index}`}
-                        dataKey={`innerBar[${index}].negativeValue`}
-                        stackId="a"
-                        label={
-                          innerValue !== 0
-                            ? (props: any) => (
-                                <PositiveAndNegativeV2BarLabel
-                                  {...props}
-                                  value={innerValue}
-                                  formatter={labelFormatter}
-                                />
-                              )
-                            : false
-                        }
-                        fill={entry.innerBar?.[index]?.colorNegative}
-                      >
-                        {entry.innerBar?.map((innerEntry, innerIndex) => (
-                          <Cell key={`inner-cell-${innerIndex}`} fill={innerEntry.colorNegative} />
-                        ))}
-                      </Bar>
-                    );
-                  })}
                   <Bar
                     stackId="a"
-                    radius={[0, 4, 4, 0]}
                     dataKey="negativeValue"
                     activeBar={{
                       stroke: '#ffffff',
@@ -341,6 +312,36 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                       <Cell key={`negative-cell-${index}`} fill={entry.colorNegative} />
                     ))}
                   </Bar>
+
+                  {/* inner bar for negative - render FIRST so it appears at the bottom */}
+                  {visibleData.map((entry, index) => {
+                    const innerValue = entry.innerBar?.[index]?.negativeValue || 0;
+
+                    return (
+                      <Bar
+                        radius={[0, 4, 4, 0]}
+                        key={`inner-bar-${index}`}
+                        dataKey={`innerBar[${index}].negativeValue`}
+                        stackId="a"
+                        label={
+                          innerValue !== 0
+                            ? (props: any) => (
+                                <PositiveAndNegativeV2BarLabel
+                                  {...props}
+                                  value={innerValue}
+                                  formatter={labelFormatter}
+                                />
+                              )
+                            : false
+                        }
+                        fill={entry.innerBar?.[index]?.colorNegative}
+                      >
+                        {entry.innerBar?.map((innerEntry, innerIndex) => (
+                          <Cell key={`inner-cell-${innerIndex}`} fill={innerEntry.colorNegative} />
+                        ))}
+                      </Bar>
+                    );
+                  })}
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -394,40 +395,7 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                     cursor={false}
                   />
 
-                  {/* inner bar for positive - render FIRST so it appears at the bottom */}
-                  {visibleData.map((entry, index) => {
-                    const innerValue = entry.innerBar?.[index]?.positiveValue || 0;
-                    return (
-                      <Bar
-                        key={`inner-bar-${index}`}
-                        dataKey={`innerBar[${index}].positiveValue`}
-                        stackId="a"
-                        label={
-                          innerValue > 0
-                            ? (props: any) => (
-                                <PositiveAndNegativeV2BarLabel
-                                  {...props}
-                                  value={innerValue}
-                                  formatter={labelFormatter}
-                                />
-                              )
-                            : false
-                        }
-                        fill={entry.innerBar?.[index]?.colorPositive}
-                      >
-                        {entry.innerBar?.map((innerEntry, innerIndex) => {
-                          return (
-                            <Cell
-                              key={`inner-cell-${innerIndex}`}
-                              fill={innerEntry.colorPositive}
-                            />
-                          );
-                        })}
-                      </Bar>
-                    );
-                  })}
                   <Bar
-                    radius={[0, 4, 4, 0]}
                     dataKey="positiveValue"
                     label={(props) => {
                       // Use the actual positiveValue instead of the stacked total
@@ -455,6 +423,40 @@ const PositiveAndNegativeBarChartV2 = (props: PositiveAndNegativeBarChartV2Props
                       <Cell key={`positive-cell-${index}`} fill={entry.colorPositive} />
                     ))}
                   </Bar>
+
+                  {/* inner bar for positive - render FIRST so it appears at the bottom */}
+                  {visibleData.map((entry, index) => {
+                    const innerValue = entry.innerBar?.[index]?.positiveValue || 0;
+                    return (
+                      <Bar
+                        radius={[0, 4, 4, 0]}
+                        key={`inner-bar-${index}`}
+                        dataKey={`innerBar[${index}].positiveValue`}
+                        stackId="a"
+                        label={
+                          innerValue > 0
+                            ? (props: any) => (
+                                <PositiveAndNegativeV2BarLabel
+                                  {...props}
+                                  value={innerValue}
+                                  formatter={labelFormatter}
+                                />
+                              )
+                            : false
+                        }
+                        fill={entry.innerBar?.[index]?.colorPositive}
+                      >
+                        {entry.innerBar?.map((innerEntry, innerIndex) => {
+                          return (
+                            <Cell
+                              key={`inner-cell-${innerIndex}`}
+                              fill={innerEntry.colorPositive}
+                            />
+                          );
+                        })}
+                      </Bar>
+                    );
+                  })}
                 </BarChart>
               </ResponsiveContainer>
             )}
