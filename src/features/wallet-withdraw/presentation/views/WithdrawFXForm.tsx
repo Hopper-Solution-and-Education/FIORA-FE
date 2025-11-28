@@ -154,15 +154,6 @@ function WithdrawFXForm() {
       return;
     }
 
-    if (otpState === 'Get') {
-      setErrorOtp({
-        type: 'value',
-        message: Messages.OTP_NOT_REQUESTED,
-      });
-      toast.error(Messages.OTP_NOT_REQUESTED);
-      return;
-    }
-
     if (amountInput > (overviewData?.data?.data?.onetime_moving_limit ?? 0)) {
       setErrorAmount({
         type: 'value',
