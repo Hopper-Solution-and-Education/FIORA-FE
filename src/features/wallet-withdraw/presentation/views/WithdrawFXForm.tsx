@@ -176,13 +176,15 @@ function WithdrawFXForm() {
 
         setLoading(false);
         handleClose();
-      } else {
-        setLoading(false);
-        toast.error(response.message || 'Something went wrong!');
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       setLoading(false);
-      toast.error(errorCatching(error)?.message);
+
+      if (error?.statusCode === RESPONSE_CODE.BAD_REQUEST) {
+        toast.error(error?.message);
+      } else {
+        toast.error(errorCatching(error)?.message);
+      }
     }
   };
 
