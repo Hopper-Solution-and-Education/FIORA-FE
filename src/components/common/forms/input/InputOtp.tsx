@@ -2,6 +2,7 @@ import { GlobalLabel } from '@/components/common/atoms';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/shared/utils';
 import { uniqueId } from 'lodash';
+import { useEffect, useRef } from 'react';
 import { FieldError } from 'react-hook-form';
 
 const id = uniqueId();
@@ -14,6 +15,14 @@ type ChildProps = {
 };
 
 function InputOtp({ value, error = null, className, onChange }: ChildProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (error && inputRef?.current) {
+      inputRef.current.focus();
+    }
+  }, [error]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     onChange(raw);
@@ -24,11 +33,15 @@ function InputOtp({ value, error = null, className, onChange }: ChildProps) {
       <GlobalLabel text="OTP" htmlFor={id} required />
       <div>
         <Input
+          ref={inputRef}
           value={value ? value : ''}
           placeholder="Please input OTP!"
           id={id}
           name="input-otp"
-          className={cn(error ? 'border-red-500' : '', className)}
+          className={cn(
+            error ? 'border-red-500 focus-visible:ring-0' : 'focus-visible:ring-1',
+            className,
+          )}
           onChange={handleInputChange}
           aria-label="OTP verification code"
           type="text"

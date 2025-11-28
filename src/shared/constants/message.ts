@@ -382,6 +382,9 @@ export enum Messages {
   VERIFY_OTP_SUCCESS = 'Verify OTP successfully',
   VERIFY_OTP_FAILED = 'Verify OTP failed',
   OTP_REQUIRED = 'OTP is required',
+  OTP_NOT_REQUESTED = 'Please request an OTP first',
+  OTP_EXPIRED = 'OTP has expired',
+  OTP_INVALID = 'Sorry! OTP is not valid',
 
   //Common
   DELETE_SUCCESS = 'Delete successfully',
