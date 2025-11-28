@@ -108,7 +108,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
   if (!categoryExists) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.POST_CATEGORY_NOT_FOUND));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CATEGORY_NOT_FOUND));
   }
 
   //UPdate news

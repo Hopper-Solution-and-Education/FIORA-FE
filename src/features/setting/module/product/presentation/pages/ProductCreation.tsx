@@ -16,7 +16,7 @@ import { TYPES } from '../../di/productDIContainer.type';
 import { Product } from '../../domain/entities';
 import { GetSingleProductUseCase } from '../../domain/usecases';
 
-import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
+import { removeFromFirebase, setErrorsFromObject, uploadToFirebase } from '@/shared/lib';
 import { setDeletedItems, setProductDetail } from '../../slices';
 import {
   createProduct,
@@ -207,8 +207,10 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           method.reset(defaultProductFormValue);
           router.replace('/setting/product');
         });
-    } catch (error) {
-      console.error('Error creating/updating product:', error);
+    } catch (error: any) {
+      if (error) {
+        setErrorsFromObject(error, method.setError);
+      }
     }
   };
 

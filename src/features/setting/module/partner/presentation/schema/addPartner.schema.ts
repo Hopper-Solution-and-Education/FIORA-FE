@@ -1,3 +1,4 @@
+import { excludeEmojiPattern } from '@/shared/constants';
 import * as yup from 'yup';
 
 const partnerSchema = yup.object({
@@ -5,13 +6,15 @@ const partnerSchema = yup.object({
     .string()
     .required('Name is required')
     .min(2, 'Minimum 2 characters')
-    .max(50, 'Maximum 50 characters'),
+    .max(50, 'Maximum 50 characters')
+    .matches(excludeEmojiPattern, 'Name cannot contain emojis'),
   // Accept mixed types (File or string)
   logo: yup.mixed().nullable().notRequired(),
   identify: yup
     .string()
     .nullable()
     .notRequired()
+    .matches(excludeEmojiPattern, 'Identification cannot contain emojis')
     .test('validIdentifyLength', 'Identification should be between 5-20 characters', (value) => {
       if (!value) return true; // Allow empty value
       return value.length >= 5 && value.length <= 20;
@@ -51,6 +54,7 @@ const partnerSchema = yup.object({
     .string()
     .nullable()
     .notRequired()
+    .matches(excludeEmojiPattern, 'Address cannot contain emojis')
     .test('validAddressLength', 'Address should be between 5-200 characters', (value) => {
       if (!value) return true; // Allow empty value
       return value.length >= 5 && value.length <= 200;
@@ -59,6 +63,7 @@ const partnerSchema = yup.object({
     .string()
     .nullable()
     .notRequired()
+    .matches(excludeEmojiPattern, 'Email cannot contain emojis')
     .test('validEmailLength', 'Email should be between 5-100 characters', (value) => {
       if (!value) return true; // Allow empty value
       return value.length >= 5 && value.length <= 100;
@@ -85,7 +90,11 @@ const partnerSchema = yup.object({
       return value.length <= 500;
     }),
   parentId: yup.string().nullable().notRequired(),
-  bankAccount: yup.string().nullable().notRequired(),
+  bankAccount: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .matches(excludeEmojiPattern, 'Bank account cannot contain emojis'),
 });
 
 export const defaultPartnerFormValue = {

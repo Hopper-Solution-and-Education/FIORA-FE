@@ -91,13 +91,13 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     await commentUsecase.deleteComment(commentIdString);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCESS));
+      .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCCESS));
   } else {
     if (user === UserRole.ADMIN || user === UserRole.CS) {
       await commentUsecase.deleteComment(commentIdString);
       return res
         .status(RESPONSE_CODE.OK)
-        .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCESS));
+        .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCCESS));
     }
   }
   return res

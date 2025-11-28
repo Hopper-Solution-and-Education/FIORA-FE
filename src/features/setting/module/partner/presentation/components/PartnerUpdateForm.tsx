@@ -179,8 +179,8 @@ export default function PartnerUpdateForm({ initialData }: PartnerUpdateFormProp
       await dispatch(updatePartner(updateData)).unwrap();
       router.push('/setting/partner');
     } catch (error: any) {
-      if (error.message) {
-        setErrorsFromObject(error.message, methods.setError);
+      if (error) {
+        setErrorsFromObject(error, methods.setError);
       } else {
         toast.error('Failed to update partner');
       }
