@@ -60,6 +60,13 @@ export default function AmountInputDropdown({
   const numericValue = Number(value || 0);
   const options = initialPackages;
 
+  // 🧩 Focus on error
+  useEffect(() => {
+    if (error && inputRef?.current) {
+      inputRef.current.focus();
+    }
+  }, [error]);
+
   // 🧩 Sync external value
   useEffect(() => {
     if (!isFocused) {
@@ -143,7 +150,10 @@ export default function AmountInputDropdown({
         onBlur={handleBlur}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        className={cn(error ? 'border-red-500' : '', className)}
+        className={cn(
+          error ? 'border-red-500 focus-visible:ring-0' : 'focus-visible:ring-1',
+          className,
+        )}
         inputMode="numeric"
         aria-expanded={isOpen}
       />
