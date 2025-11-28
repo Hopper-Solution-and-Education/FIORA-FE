@@ -155,16 +155,28 @@ function WithdrawFXForm() {
     }
 
     if (otpState === 'Get') {
+      setErrorOtp({
+        type: 'value',
+        message: Messages.OTP_NOT_REQUESTED,
+      });
       toast.error(Messages.OTP_NOT_REQUESTED);
       return;
     }
 
     if (amountInput > (overviewData?.data?.data?.onetime_moving_limit ?? 0)) {
+      setErrorAmount({
+        type: 'value',
+        message: 'Exceeded the allowable one-time withdrawal limit',
+      });
       toast.error('Exceeded the allowable one-time withdrawal limit');
       return;
     }
 
     if (amountInput > (overviewData?.data?.data?.available_limit ?? 0)) {
+      setErrorAmount({
+        type: 'value',
+        message: 'Exceeded the allowable daily withdrawal limit',
+      });
       toast.error('Exceeded the allowable daily withdrawal limit');
       return;
     }
@@ -195,6 +207,10 @@ function WithdrawFXForm() {
       setLoading(false);
 
       if (error?.statusCode === RESPONSE_CODE.BAD_REQUEST) {
+        setErrorOtp({
+          type: 'value',
+          message: error?.message,
+        });
         toast.error(error?.message);
       } else {
         toast.error(errorCatching(error)?.message);
