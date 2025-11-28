@@ -1,5 +1,5 @@
 // src/features/setting/module/partner/presentation/schema/updatePartner.schema.ts
-import { excludeEmojiPattern } from '@/shared/constants';
+import { emailRegex, excludeEmojiPattern } from '@/shared/constants';
 import * as yup from 'yup';
 
 export const updatePartnerSchema = yup.object({
@@ -63,6 +63,8 @@ export const updatePartnerSchema = yup.object({
     .string()
     .nullable()
     .notRequired()
+    .email('Invalid email format')
+    .matches(emailRegex, 'Invalid email format')
     .matches(excludeEmojiPattern, 'Email cannot contain emojis')
     .test('validEmailLength', 'Email should be between 5-100 characters', (value) => {
       if (!value) return true; // Allow empty value
