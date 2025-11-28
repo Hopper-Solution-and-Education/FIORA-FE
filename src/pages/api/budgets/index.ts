@@ -94,5 +94,5 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updatedRes));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.BUDGET_UPDATE_SUCCESS, updatedRes));
 }

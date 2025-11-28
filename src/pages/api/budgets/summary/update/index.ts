@@ -57,7 +57,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
     return res
       .status(RESPONSE_CODE.CREATED)
-      .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updateBudget));
+      .json(createResponse(RESPONSE_CODE.CREATED, Messages.BUDGET_UPDATE_SUCCESS, updateBudget));
   } catch (error: any) {
     return res
       .status(error.status || RESPONSE_CODE.INTERNAL_SERVER_ERROR)
