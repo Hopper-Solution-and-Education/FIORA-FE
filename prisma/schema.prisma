@@ -23,15 +23,15 @@ model User {
   createdBy                 String?                  @db.Uuid
   updatedBy                 String?                  @db.Uuid
   role                      UserRole                 @default(User)
-  address                   String?
   avatarId                  String?                  @db.Uuid
-  birthday                  DateTime?
   isBlocked                 Boolean?                 @default(false)
   logoId                    String?                  @db.Uuid
+  birthday                  DateTime?
   phone                     String?
-  kyc_levels                String[]
+  address                   String?
   is_referral_bonus_paid    Boolean?                 @default(false)
   is_referral_campaign_paid Boolean?                 @default(false)
+  kyc_levels                String[]
   referral_code             String?                  @unique @db.VarChar(15)
   referrer_code             String?                  @db.VarChar(15)
   accounts                  Account[]                @relation("UserAccounts")
@@ -82,10 +82,6 @@ model Account {
   name             String            @db.VarChar(50)
   description      String?           @db.VarChar(1000)
   type             AccountType       @default(Payment)
-  currencyId       String?           @db.Uuid
-  currency         String?
-  baseCurrency     String?           @default("USD")
-  baseAmount       Decimal?          @default(0) @db.Decimal(13, 2)
   limit            Decimal?          @default(0) @db.Decimal(13, 2)
   balance          Decimal?          @default(0) @db.Decimal(13, 2)
   parentId         String?           @db.Uuid
@@ -94,6 +90,10 @@ model Account {
   createdBy        String?           @db.Uuid
   updatedBy        String?           @db.Uuid
   color            String?
+  baseAmount       Decimal?          @default(0) @db.Decimal(13, 2)
+  baseCurrency     String?           @default("USD")
+  currencyId       String?           @db.Uuid
+  currency         String?
   currencyExchange CurrencyExchange? @relation(fields: [currencyId], references: [id])
   parent           Account?          @relation("ChildAccounts", fields: [parentId], references: [id])
   children         Account[]         @relation("ChildAccounts")
@@ -141,10 +141,10 @@ model Product {
   updatedAt        DateTime             @updatedAt @db.Timestamptz(0)
   createdBy        String?              @db.Uuid
   updatedBy        String?              @db.Uuid
+  baseAmount       Decimal?             @db.Decimal(13, 2)
+  baseCurrency     String?              @default("USD")
   currencyId       String?              @db.Uuid
   currency         String?
-  baseCurrency     String?              @default("USD")
-  baseAmount       Decimal?             @db.Decimal(13, 2)
   category         CategoryProducts?    @relation(fields: [catId], references: [id])
   currencyExchange CurrencyExchange?    @relation(fields: [currencyId], references: [id])
   user             User                 @relation("UserProducts", fields: [userId], references: [id])
@@ -199,8 +199,6 @@ model Transaction {
   fromCategoryId      String?              @db.Uuid
   toAccountId         String?              @db.Uuid
   toCategoryId        String?              @db.Uuid
-  fromWalletId        String?              @db.Uuid
-  toWalletId          String?              @db.Uuid
   products            Json?
   partnerId           String?              @db.Uuid
   remark              String?              @db.VarChar(255)
@@ -210,13 +208,15 @@ model Transaction {
   updatedAt           DateTime             @updatedAt @db.Timestamptz(0)
   updatedBy           String?              @db.Uuid
   createdBy           String?              @db.Uuid
-  currencyId          String?              @db.Uuid
-  currency            String?
-  baseCurrency        String?              @default("USD")
-  baseAmount          Decimal?             @db.Decimal(13, 2)
   isMarked            Boolean              @default(false)
   isExpired           Boolean              @default(false)
+  fromWalletId        String?              @db.Uuid
+  toWalletId          String?              @db.Uuid
   membershipBenefitId String?              @db.Uuid
+  baseAmount          Decimal?             @db.Decimal(13, 2)
+  baseCurrency        String?              @default("USD")
+  currencyId          String?              @db.Uuid
+  currency            String?
   commonId            String?              @db.Uuid
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
@@ -674,7 +674,7 @@ model MembershipTier {
   updatedBy           String?              @db.Uuid
   userId              String               @db.Uuid
   MembershipProgress  MembershipProgress[]
-  user                User                 @relation(fields: [userId], references: [id])
+  user                User?                @relation(fields: [userId], references: [id])
   tierBenefits        TierBenefit[]
 
   @@unique([spentMinThreshold, spentMaxThreshold, balanceMinThreshold, balanceMaxThreshold])
