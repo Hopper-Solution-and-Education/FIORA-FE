@@ -1,4 +1,5 @@
 export * from './category.types';
+export * from './common.type';
 export * from './common.types';
 export * from './exchangeRate';
 export * from './filter.types';

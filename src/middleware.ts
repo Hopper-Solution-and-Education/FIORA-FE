@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 import { RouteEnum } from './shared/constants/RouteEnum';
 
-const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path'];
+const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path', '/demo'];
 
 const isPathMatchPattern = (path: string, pattern: string): boolean => {
   const { regexp } = pathToRegexp(pattern);
