@@ -5,7 +5,6 @@ import { RadioField } from '@/components/common/forms/radio';
 import { useAppSelector } from '@/store';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { v4 as uuidv4 } from 'uuid';
 import { ProcessMembershipMode } from '../../data/api';
 
 export const formatLabel = (mode: string) => {
@@ -29,8 +28,7 @@ const useAddBenefitTierFieldConfig = () => {
   useEffect(() => {
     if (watch('name')) {
       const baseSlug = watch('name').toLowerCase().replace(/ /g, '-');
-      const uuid = uuidv4().split('-')[0];
-      setValue('slug', `${baseSlug}-${uuid}`);
+      setValue('slug', baseSlug);
     }
   }, [watch('name')]);
 

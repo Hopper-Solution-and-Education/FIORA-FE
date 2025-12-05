@@ -1,4 +1,6 @@
+import { EmptyState } from '@/components/common/organisms';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserSession } from '../../hooks/useUserSession';
 import { useGetAboutUsQuery } from '../../store/api/helpsCenterApi';
@@ -19,21 +21,39 @@ const AboutUsPage = () => {
     );
   }
 
+  const hasContent = !!data?.content;
+
   return (
     <div className="px-6 space-y-6">
-      {data && (
-        <>
-          <PostDetailHeader
-            title={data.title}
-            canEdit={isAdminOrCs}
-            onEdit={() => {
-              router.push(`/helps-center/about-us/edit/${data.id}`);
-            }}
-          />
-          <div className="border border-gray-200 p-4">
-            <ParsedFaqContent htmlContent={data.content} />
-          </div>
-        </>
+      <PostDetailHeader
+        title={data?.title ?? 'About Us'}
+        canEdit={isAdminOrCs}
+        onEdit={() => {
+          if (data?.id) {
+            router.push(`/helps-center/about-us/edit/${data?.id}`);
+          }
+        }}
+        hasContent={hasContent}
+      />
+
+      {hasContent ? (
+        <div className="border border-gray-200 rounded-lg p-6 bg-white shadow-sm">
+          <ParsedFaqContent htmlContent={data.content} />
+        </div>
+      ) : (
+        <EmptyState
+          icon={FileText}
+          title="No About Us Yet"
+          description="No content available. Click to edit and add about us."
+          actionLabel={isAdminOrCs ? 'Edit About Us' : undefined}
+          onAction={
+            isAdminOrCs && data?.id
+              ? () => {
+                  router.push(`/helps-center/about-us/edit/${data.id}`);
+                }
+              : undefined
+          }
+        />
       )}
     </div>
   );
