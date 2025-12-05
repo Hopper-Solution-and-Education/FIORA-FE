@@ -60,7 +60,7 @@ export const useFaqEdit = ({ faqId }: UseFaqEditProps) => {
       const initialData = {
         title: faqData.title,
         description: faqData.description || '',
-        content: faqData.content,
+        content: faqData?.content || 'Input your content here',
         categoryId: faqData.categoryId || '',
       };
       setFormData(initialData);

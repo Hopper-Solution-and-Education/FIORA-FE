@@ -1,4 +1,9 @@
 export enum ApiEndpointEnum {
+  // Auth
+  Login = '/api/auth/sign-in',
+  Refresh = '/api/auth/refresh',
+  Logout = '/api/auth/sign-out',
+
   BudgetYears = '/api/budgets/dashboard',
   BudgetCategories = '/api/budgets/categories',
   BudgetActualPlanningSumUp = '/api/categories/sum-up/{categoryId}',
@@ -103,3 +108,5 @@ export enum ApiEndpointEnum {
   SendOtpForgotPassword = '/api/auth/send-otp',
   ResetPassword = '/api/auth/forgot-password',
 }
+
+export const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
