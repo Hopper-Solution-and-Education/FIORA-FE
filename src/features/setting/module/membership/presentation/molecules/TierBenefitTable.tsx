@@ -51,38 +51,41 @@ const TierBenefitTable = ({
         </TableHeader>
 
         <TableBody>
-          {dynamicTierFields.map((item, index) => (
-            <TableRow key={item.id} className="h-14 [&>td]:border-r last:border-r-0">
-              <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
-                {index + 1}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-left py-3">
-                {item.label}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-right py-3">
-                {item.value}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-left py-3">
-                {item.suffix}
-              </TableCell>
-              <TableCell className="text-center py-3 flex items-center gap-2 justify-center sticky right-0 z-10 bg-background h-14">
-                <CommonTooltip content="Edit Benefit">
-                  <Icons.edit
-                    className="cursor-pointer hover:scale-110 transition-all duration-300 text-blue-500"
-                    size={ICON_SIZE.SM}
-                    onClick={() => onEditBenefitTier(item)}
-                  />
-                </CommonTooltip>
-                <CommonTooltip content="Delete Benefit">
-                  <Icons.trash
-                    className="cursor-pointer hover:scale-110 transition-all duration-300 text-red-500"
-                    size={ICON_SIZE.SM}
-                    onClick={() => onDeleteBenefitTier(item)}
-                  />
-                </CommonTooltip>
-              </TableCell>
-            </TableRow>
-          ))}
+          {dynamicTierFields &&
+            dynamicTierFields
+              .sort((a, b) => a.label.localeCompare(b.label))
+              .map((item, index) => (
+                <TableRow key={item.id} className="h-14 [&>td]:border-r last:border-r-0">
+                  <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
+                    {index + 1}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-left py-3">
+                    {item.label}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-right py-3">
+                    {item.value}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-left py-3">
+                    {item.suffix}
+                  </TableCell>
+                  <TableCell className="text-center py-3 flex items-center gap-2 justify-center sticky right-0 z-10 bg-background h-14">
+                    <CommonTooltip content="Edit Benefit">
+                      <Icons.edit
+                        className="cursor-pointer hover:scale-110 transition-all duration-300 text-blue-500"
+                        size={ICON_SIZE.SM}
+                        onClick={() => onEditBenefitTier(item)}
+                      />
+                    </CommonTooltip>
+                    <CommonTooltip content="Delete Benefit">
+                      <Icons.trash
+                        className="cursor-pointer hover:scale-110 transition-all duration-300 text-red-500"
+                        size={ICON_SIZE.SM}
+                        onClick={() => onDeleteBenefitTier(item)}
+                      />
+                    </CommonTooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </div>
