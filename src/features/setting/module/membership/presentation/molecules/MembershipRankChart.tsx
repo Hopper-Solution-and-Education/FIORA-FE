@@ -55,7 +55,16 @@ const MembershipRankChart = () => {
   // initial load data when page load
   useEffect(() => {
     if (memberships.length > 0) {
-      dispatch(setSelectedMembership(memberships[0]));
+      if (selectedMembership) {
+        // if selected membership is not null, find it in memberships and set it as selected membership
+        const initialMembership = memberships.find(
+          (membership) => membership.id === selectedMembership.id,
+        );
+        dispatch(setSelectedMembership(initialMembership || memberships[0]));
+      } else {
+        // if selected membership is null, set first membership as selected membership
+        dispatch(setSelectedMembership(memberships[0]));
+      }
     }
   }, [memberships]);
 
