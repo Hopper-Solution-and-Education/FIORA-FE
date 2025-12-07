@@ -3,7 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
 import { RouteEnum } from './shared/constants/RouteEnum';
 
-const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path', '/demo'];
+const publicPatterns = [
+  '/',
+  '/auth/*path',
+  '/helps-center/*path',
+  '/news',
+  '/news/*path',
+  '/demo',
+  '/images/*path',
+];
 
 const isPathMatchPattern = (path: string, pattern: string): boolean => {
   const { regexp } = pathToRegexp(pattern);
@@ -40,5 +48,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|firebasestorage.googleapis.com).*)'],
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|images|firebasestorage.googleapis.com).*)',
+  ],
 };
