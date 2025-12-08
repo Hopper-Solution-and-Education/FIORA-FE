@@ -47,22 +47,25 @@ const TierRank = ({ data, nextTierRanks }: TierRankProps) => {
         </TableHeader>
 
         <TableBody>
-          {data.map((item, index) => (
-            <TableRow key={item.label} className="h-14 [&>td]:border-r last:border-r-0">
-              <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
-                {index + 1}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-left py-3">
-                {item.label}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-right py-3">
-                {item.value}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words text-left py-3">
-                {item.suffix}
-              </TableCell>
-            </TableRow>
-          ))}
+          {data &&
+            data
+              .sort((a, b) => a.label.localeCompare(b.label))
+              .map((item, index) => (
+                <TableRow key={item.label} className="h-14 [&>td]:border-r last:border-r-0">
+                  <TableCell className="hidden sm:table-cell text-center font-bold text-blue-400 py-3">
+                    {index + 1}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-left py-3">
+                    {item.label}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-right py-3">
+                    {item.value}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-left py-3">
+                    {item.suffix}
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </div>
