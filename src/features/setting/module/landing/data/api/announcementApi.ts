@@ -17,12 +17,12 @@ class AnnouncementAPI implements IAnnouncementAPI {
   }
 
   async fetchAnnouncement(): Promise<HttpResponse<IAnnouncement[]>> {
-    return await this.httpClient.get<HttpResponse<IAnnouncement[]>>(`/api/announcement`);
+    return await this.httpClient.get<HttpResponse<IAnnouncement[]>>(`/api/banners/announcements`);
   }
 
   async updateAnnouncement(announcement: IAnnouncement[]): Promise<HttpResponse<IAnnouncement[]>> {
     return await this.httpClient.put<HttpResponse<IAnnouncement[]>>(
-      `/api/announcement`,
+      `/api/banners/announcement`,
       announcement,
     );
   }
