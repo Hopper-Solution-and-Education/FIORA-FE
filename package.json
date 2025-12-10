@@ -113,7 +113,7 @@
     "lucia-auth": "^1.8.0",
     "lucide-react": "^0.485.0",
     "match-sorter": "^8.0.0",
-    "next": "^15.3.2",
+    "next": "^15.3.6",
     "next-auth": "^4.24.11",
     "next-qrcode": "^2.5.1",
     "next-seo": "^6.6.0",

@@ -1,8 +1,7 @@
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Editor from '../atoms/Editor';
-import ParsedFaqContent from '../atoms/ParsedFaqContent';
 
 interface ContentEditorProps {
   value: string;
@@ -83,78 +82,16 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
   onChange,
   error,
   disabled = false,
-  showPreview = true,
 }) => {
-  const [isEditorExpanded, setIsEditorExpanded] = useState(true);
-  const [isPreviewExpanded, setIsPreviewExpanded] = useState(showPreview);
-
-  // Prevent both panels from being collapsed
-  useEffect(() => {
-    if (!isEditorExpanded && !isPreviewExpanded && showPreview) {
-      setIsEditorExpanded(true);
-    }
-  }, [isEditorExpanded, isPreviewExpanded, showPreview]);
-
-  // Calculate panel widths
-  const editorWidth =
-    !showPreview || !isPreviewExpanded ? 'w-full' : !isEditorExpanded ? 'w-12' : 'w-1/2';
-
-  const previewWidth = !showPreview
-    ? 'w-0'
-    : !isEditorExpanded
-      ? 'w-full'
-      : !isPreviewExpanded
-        ? 'w-12'
-        : 'w-1/2';
-
   return (
     <div className="space-y-4">
       {/* Editor Container */}
       <div className="flex border rounded-lg overflow-hidden bg-white ">
-        {/* Editor Panel */}
-        <div
-          className={`
-          relative transition-all duration-300 ease-in-out 
-          ${showPreview ? 'border-r border-gray-200' : ''}
-          ${editorWidth}
-        `}
-        >
-          <PanelHeader
-            isExpanded={isEditorExpanded}
-            onToggle={() => setIsEditorExpanded(!isEditorExpanded)}
-            disabled={disabled}
-            isEditor={true}
-          />
-
-          {isEditorExpanded && (
-            <div>
-              <div className={`h-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
-                {/* <RichTextEditor
-                  key={`editor-${isEditorExpanded}`}
-                  value={value}
-                  onChange={onChange}
-                /> */}
-                {value && <Editor content={value} setContent={onChange} />}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Preview Panel */}
-        {showPreview && (
-          <div className={`relative transition-all duration-300 ease-in-out ${previewWidth}`}>
-            <PanelHeader
-              isExpanded={isPreviewExpanded}
-              onToggle={() => setIsPreviewExpanded(!isPreviewExpanded)}
-              disabled={disabled}
-              isEditor={false}
-            />
-
-            {isPreviewExpanded && (
-              <div>{value ? <ParsedFaqContent htmlContent={value} /> : <p></p>}</div>
-            )}
+        <div>
+          <div className={`h-full ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
+            {value && <Editor content={value} setContent={onChange} />}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Error Message */}
