@@ -2,6 +2,7 @@
 
 import { SegmentProgressBar } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import UserAvatar from '@/features/setting/module/user-management/presentation/atoms/UserAvatar';
 import { useGetUsersQuery } from '@/features/setting/module/user-management/store/api/userApi';
@@ -14,7 +15,6 @@ import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -38,6 +38,7 @@ function UserNav() {
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
   );
+  const { logout } = useLogout();
   const canViewSwitchProfile = profile?.role === UserRole.ADMIN || profile?.role === UserRole.CS;
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
@@ -173,7 +174,7 @@ function UserNav() {
             <DropdownMenuItem
               onClick={async () => {
                 clearExchangeRateData();
-                signOut();
+                logout();
               }}
               className="cursor-pointer"
             >
