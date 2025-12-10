@@ -3,6 +3,7 @@
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useMutation } from '@tanstack/react-query';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -23,11 +24,9 @@ const loginSchema = Yup.object().shape({
 
 export function useLogin() {
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm({
     resolver: yupResolver(loginSchema),
@@ -38,36 +37,29 @@ export function useLogin() {
     },
   });
 
-  const handleCredentialsSignIn = async (
-    data: { email: string; password: string },
-    callbackUrl?: string,
-  ) => {
-    setError(null);
-    setSuccess(null);
-    setIsLoading(true);
-
-    try {
+  const loginMutation = useMutation({
+    mutationFn: async (data: any) => {
       const loginResponse = await authService.login({
         email: data.email,
         password: data.password,
         rememberMe: rememberMe,
       });
-
+      return loginResponse;
+    },
+    onSuccess: async (loginResponse, variables) => {
       if (loginResponse.statusCode === RESPONSE_CODE.OK) {
-        // Call NextAuth (Legacy Support)
-        // TODO: Remove this after migrating all modules to use the new backend directly
+        // TODO: Remove logic when completed migration
         const response = await signIn('credentials', {
-          ...data,
+          ...variables,
           rememberMe,
           redirect: false,
         });
 
         if (response?.ok) {
-          form.reset(); // Reset form fields
-          router.push(callbackUrl || '/');
+          form.reset();
+          router.push(variables.callbackUrl || '/');
+          toast.success('Login successful!');
         } else {
-          // If NextAuth fails even though backend succeeded, it might be a sync issue or NextAuth config issue
-          // For now, fail if NextAuth fails to ensure consistency
           if (response?.error === Messages.USER_BLOCKED_SIGNIN_ERROR) {
             setError('Your account has been blocked. Please contact support for assistance.');
           } else {
@@ -77,17 +69,23 @@ export function useLogin() {
       } else {
         setError('Login failed: No access token received.');
       }
-    } catch (error: any) {
-      setError(error?.message || 'An unexpected error occurred. Please try again.');
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
+    },
+    onError: (err: any) => {
+      setError(err?.message || 'An unexpected error occurred. Please try again.');
+      console.log(err);
+    },
+  });
+
+  const handleCredentialsSignIn = (
+    data: { email: string; password: string },
+    callbackUrl?: string,
+  ) => {
+    setError(null);
+    loginMutation.mutate({ ...data, callbackUrl });
   };
 
   const handleGoogleSignIn = async (callbackUrl?: string) => {
     setError(null);
-    setSuccess(null);
     try {
       await signIn('google', { redirect: true, callbackUrl: callbackUrl || '/' });
     } catch (error) {
@@ -102,20 +100,16 @@ export function useLogin() {
     if (error) {
       toast.error(error);
     }
-    if (success) {
-      toast.success(success);
-    }
-  }, [error, success]);
+  }, [error]);
 
   return {
     form,
     rememberMe,
     toggleRememberMe,
     error,
-    success,
     handleCredentialsSignIn,
     handleGoogleSignIn,
     session,
-    isLoading,
+    isLoading: loginMutation.isPending,
   };
 }

@@ -70,22 +70,3 @@ export type OrderByFields = {
 };
 
 export type RequestType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-
-export interface ValidationErrorDetail {
-  property: string;
-  children: any[];
-  constraints: Record<string, string> | string;
-}
-
-export interface BackendError {
-  message: string;
-  errorCode: string;
-  details?: ValidationErrorDetail[];
-}
-
-export interface BackendErrorResponse {
-  statusCode: number;
-  timestamp: string;
-  path: string;
-  errors: BackendError;
-}
