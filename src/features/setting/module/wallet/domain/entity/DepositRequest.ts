@@ -1,5 +1,11 @@
 import { DepositRequestStatus, FXRequestType } from '../enum';
 
+export type BankAccount = {
+  bankName: string;
+  accountNumber: string;
+  status: string;
+};
+
 export type DepositRequest = {
   id: string;
   userId: string;
@@ -37,5 +43,6 @@ export type DepositRequest = {
     name: string | null;
     email: string | null;
     image: string | null;
+    BankAccount: BankAccount[] | [];
   };
 };
