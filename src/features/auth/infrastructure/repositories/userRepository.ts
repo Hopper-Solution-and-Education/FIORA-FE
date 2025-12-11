@@ -1,13 +1,8 @@
-﻿// infrastructure/repositories/userRepository.ts
-import { prisma } from '@/config';
+﻿import { prisma } from '@/config';
 import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
 import { Prisma, User } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { randomBytes } from 'node:crypto';
-
-const REFERRAL_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const REFERRAL_CODE_LENGTH = 10;
-const REFERRAL_CODE_MAX_ATTEMPTS = 10;
 
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -68,18 +63,9 @@ class UserRepository implements IUserRepository {
     return prisma.user.findUnique({ where: { id } });
   }
 
-  private buildReferralCodeCandidate(length = REFERRAL_CODE_LENGTH): string {
-    const bytes = randomBytes(length);
-    let code = '';
-    for (let index = 0; index < length; index += 1) {
-      code += REFERRAL_CODE_ALPHABET[bytes[index] % REFERRAL_CODE_ALPHABET.length];
-    }
-    return code;
-  }
-
   private async generateUniqueReferralCode(): Promise<string> {
     for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
-      const code = this.buildReferralCodeCandidate();
+      const code = buildReferralCodeCandidate();
       const existing = await prisma.user.findUnique({ where: { referral_code: code } });
       if (!existing) {
         return code;
