@@ -183,6 +183,7 @@ export function LoginForm({
                 <Link
                   href={RouteEnum.ForgotPassword}
                   className="text-blue-500 hover:underline sm:mr-3 font-medium underline underline-offset-4"
+                  data-test="forgot-password-link"
                 >
                   Forgot password
                 </Link>
@@ -192,6 +193,7 @@ export function LoginForm({
                 <Link
                   href={RouteEnum.SignUp}
                   className="text-blue-500 hover:underline font-medium underline underline-offset-4"
+                  data-test="register-link"
                 >
                   Sign up
                 </Link>
