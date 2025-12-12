@@ -32,7 +32,7 @@ export function sessionWrapper(handler: HandlerWithUser): any {
       });
 
       if (user?.isBlocked) {
-        res.status(550).json({ message: Messages.USER_BLOCKED_SIGNIN_ERROR });
+        res.status(RESPONSE_CODE.FORBIDDEN).json({ message: Messages.USER_BLOCKED_SIGNIN_ERROR });
         return;
       }
 
