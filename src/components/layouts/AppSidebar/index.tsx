@@ -10,7 +10,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from 'lucide-react';
-import { Session, signOut, useSession } from 'next-auth/react';
+import { Session, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect, usePathname, useRouter } from 'next/navigation';
@@ -42,6 +42,7 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
@@ -76,12 +77,12 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
 
   const { data: profile, isLoading: isLoadingProfile } = useGetProfileQuery();
   const { clearExchangeRateData } = useCurrencyFormatter();
+  const { logout } = useLogout();
 
   const handleLogout = async () => {
     // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
     clearExchangeRateData();
-    await signOut().catch(() => {});
-
+    logout();
     redirect('/');
   };
 

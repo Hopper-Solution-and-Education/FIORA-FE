@@ -7,24 +7,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useSignUp } from '@/features/auth/hooks/useSignUp';
 import TermCondition from '@/features/auth/presentation/common/TermCondition';
 import { cn } from '@/shared/utils';
 import { validateEmail, validatePassword } from '@/shared/validators/signUpValidation';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleIcon from '../components/GoogleIcon';
 
 const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
-  const router = useRouter();
+  const { mutate: signUp, isPending: isRegistering, reset } = useSignUp();
 
+  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isTermAccepted, setIsTermAccepted] = useState<boolean>(false);
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null); // State for error messages
   // State for field-specific errors
   const [fieldErrors, setFieldErrors] = useState({
     email: '',
@@ -58,11 +57,11 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
         setFieldErrors((prev) => ({ ...prev, password: validatePassword(value) }));
         break;
     }
-    setError(null);
+    if (error) setError(null);
   };
 
   const handleGoogleSignIn = async () => {
-    setError(null); // Reset lỗi trước khi thử đăng nhập
+    setError(null);
     try {
       const res = await signIn('google', { callbackUrl: '/' });
       if (!res?.ok) {
@@ -76,36 +75,20 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Clear any global errors
+    if (error) setError(null);
 
     if (!validateForm()) {
       return;
     }
 
-    try {
-      setIsRegistering(true);
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (data.status !== 201) {
-        setError(data.message);
-        return;
-      }
-
-      router.push('/auth/sign-in?registerSuccess=true');
-      localStorage.setItem(
-        'signupMsg',
-        'Congratulation! You have registered an account successfully.',
-      );
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
-    } finally {
-      setIsRegistering(false);
-    }
+    signUp(
+      { email, password },
+      {
+        onError: (err: any) => {
+          setError(err.message || 'Registration failed');
+        },
+      },
+    );
   };
 
   const isSignUpNotAvailable: boolean =
