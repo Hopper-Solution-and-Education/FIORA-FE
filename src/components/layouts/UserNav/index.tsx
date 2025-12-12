@@ -32,13 +32,13 @@ import {
 function UserNav() {
   const router = useRouter();
   const { data: profile } = useGetProfileQuery();
-  const { data: userData } = useGetUsersQuery({ pageSize: 3 });
   const { clearExchangeRateData } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
   );
   const canViewSwitchProfile = profile?.role === UserRole.ADMIN || profile?.role === UserRole.CS;
+  const { data: userData } = useGetUsersQuery({ pageSize: 3 }, { skip: !canViewSwitchProfile });
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
     userId: user.User?.id,

@@ -67,6 +67,18 @@ const WalletSettingTableRow = ({ data, columns }: WalletSettingTableRowProps) =>
                 <UserProfileCard user={data.user} userId={data.userId} />
               </TableCell>
             );
+          case 'Bank Name':
+            return (
+              <TableCell key={col} className={alignClass}>
+                {data.user?.BankAccount?.[0]?.bankName || '-'}
+              </TableCell>
+            );
+          case 'Bank Number':
+            return (
+              <TableCell key={col} className={alignClass}>
+                {data.user?.BankAccount?.[0]?.accountNumber || '-'}
+              </TableCell>
+            );
           case 'Amount':
             return (
               <TableCell key={col} className={alignClass}>

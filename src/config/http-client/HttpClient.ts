@@ -144,7 +144,7 @@ class HttpClient implements IHttpClient {
     const data = isJson ? await response.json().catch(() => ({})) : await response.text();
 
     if (!response.ok) {
-      if (response.status === 403 || response.status === 550) {
+      if (response.status === 403) {
         await signOut();
       }
 
