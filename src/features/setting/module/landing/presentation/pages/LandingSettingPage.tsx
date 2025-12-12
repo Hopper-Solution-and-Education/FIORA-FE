@@ -57,6 +57,7 @@ export default function MediaDashboard() {
               <TabsTrigger
                 key={section.value}
                 value={section.value}
+                data-test={section.value}
                 className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
               >
                 {section.label}

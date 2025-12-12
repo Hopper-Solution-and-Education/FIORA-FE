@@ -21,7 +21,7 @@ class LandingAPI implements ILandingAPI {
 
   async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
     const response = await this.httpClient.get<BannerResponse>(
-      `/api/banners/sections?sectionType=${sectionType}`,
+      `/api/banner/section?sectionType=${sectionType}`,
     );
     return response.data;
   }

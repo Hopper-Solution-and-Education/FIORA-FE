@@ -61,6 +61,7 @@ export default function SettingCenter() {
         <div>
           <NavItem
             label="Settings"
+            data-test="setting-center"
             icon={
               <Settings
                 size={ICON_SIZE.MD}
@@ -73,12 +74,14 @@ export default function SettingCenter() {
 
       <DropdownMenuContent
         align="end"
+        data-test="setting-dropdown-content"
         className={`${
           session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
         } p-4 grid gap-4 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm`}
       >
         <CommonTooltip content={<span>Currency Display</span>} side="top" delayDuration={0}>
           <div
+            data-test="currency-toggle-button"
             onClick={handleOpenCurrencyDropdown}
             className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105"
           >
@@ -94,7 +97,11 @@ export default function SettingCenter() {
               delayDuration={0}
               key={index}
             >
-              <Link href={item.url} passHref>
+              <Link
+                href={item.url}
+                passHref
+                data-test={`menu-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+              >
                 <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105">
                   <item.icon
                     size={ICON_SIZE.MD}
@@ -106,7 +113,10 @@ export default function SettingCenter() {
           ))}
 
         {showCurrencyDropdown && (
-          <div className="col-span-5 py-2 border-t-[1px] border-border/60 grid grid-cols-5 gap-2">
+          <div
+            data-test="currency-dropdown"
+            className="col-span-5 py-2 border-t-[1px] border-border/60 grid grid-cols-5 gap-2"
+          >
             {getSupportedCurrencies().map((currency: string) => (
               <CommonTooltip
                 content={<span>{currency}</span>}
@@ -115,6 +125,7 @@ export default function SettingCenter() {
                 key={currency}
               >
                 <div
+                  data-test={`currency-option-${currency.toLowerCase()}`}
                   onClick={(e) => handleToggleCurrency(e, currency)}
                   className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105 ${
                     selectedCurrency === currency

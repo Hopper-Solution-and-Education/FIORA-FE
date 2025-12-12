@@ -17,7 +17,7 @@ class AnnouncementAPI implements IAnnouncementAPI {
   }
 
   async fetchAnnouncement(): Promise<HttpResponse<IAnnouncement[]>> {
-    return await this.httpClient.get<HttpResponse<IAnnouncement[]>>(`/api/banners/announcements`);
+    return await this.httpClient.get<HttpResponse<IAnnouncement[]>>(`/api/announcement`);
   }
 
   async updateAnnouncement(announcement: IAnnouncement[]): Promise<HttpResponse<IAnnouncement[]>> {
