@@ -145,6 +145,7 @@ const InputField: React.FC<InputFieldProps> = ({
       </div>
       {error && (
         <p
+          data-test={props.name ? `${props.name}-error` : undefined}
           className={`
             mt-1 text-xs text-red-500
             md:text-sm

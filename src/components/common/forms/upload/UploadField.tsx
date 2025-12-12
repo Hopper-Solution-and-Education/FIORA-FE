@@ -312,7 +312,10 @@ const UploadField: React.FC<UploadFieldProps> = ({
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 flex items-center mt-1.5">
+        <p
+          data-test={name ? `${name}-error` : undefined}
+          className="text-sm text-red-500 flex items-center mt-1.5"
+        >
           <AlertTriangle className="h-4 w-4 mr-1" />
           {error.message}
         </p>

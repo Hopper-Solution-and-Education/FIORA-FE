@@ -18,14 +18,12 @@ const useAnnouncementFormConfig = (index: number) => {
       key={`${index}.title`}
       name={`${prefix}title`}
       label="Title"
-      required
       disabled={isSubmitting || isLoadingSaveChange}
     />,
     <TextareaField
       key={`${index}.content`}
       name={`${prefix}content`}
       label="Content"
-      required
       disabled={isSubmitting || isLoadingSaveChange}
     />,
 
@@ -33,7 +31,6 @@ const useAnnouncementFormConfig = (index: number) => {
       key={`${index}.isActive`}
       name={`${prefix}isActive`}
       label="Show on Homepage"
-      required
       disabled={isSubmitting || isLoadingSaveChange}
       activeLabel="Show"
       inactiveLabel="Hide"
