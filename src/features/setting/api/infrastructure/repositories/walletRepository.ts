@@ -275,6 +275,13 @@ class WalletRepository implements IWalletRepository {
               name: true,
               email: true,
               image: true,
+              BankAccount: {
+                select: {
+                  bankName: true,
+                  accountNumber: true,
+                  status: true,
+                },
+              },
             },
           },
           attachment: true,
