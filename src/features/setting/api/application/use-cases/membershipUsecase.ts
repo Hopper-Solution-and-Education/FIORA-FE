@@ -463,19 +463,32 @@ class MembershipSettingUseCase {
     const dFloor = new Prisma.Decimal(FLOOR);
     const dCeil = new Prisma.Decimal(CEILING);
 
-    const newValue = dNewMax.sub(dOldMax); // positive value means increased, negative value means decreased
+    // --- BASIC VALIDATION ---
 
     if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
       throw new BadRequestError(
-        'Old min must be greater than 0 and old max must be less than 99999999999',
+        'Old min must be >= 0 and old max must be <= 99999999998',
       );
     }
 
-    // Not allowed to update new min to be less than old min
-    if (dNewMin.lt(dOldMin)) {
-      throw new BadRequestError('New min must be greater than old min');
+    // new range must be within [FLOOR, CEILING]
+    if (dNewMin.lt(dFloor) || dNewMax.gt(dCeil)) {
+      throw new BadRequestError(
+        'New min/max must be within [0, 99999999998]',
+      );
     }
 
+    // Không cho newMin < oldMin (shrink left only / giữ invariant bạn đang dùng)
+    if (dNewMin.lt(dOldMin)) {
+      throw new BadRequestError('New min must be greater than or equal to old min');
+    }
+
+    // newMax phải >= newMin
+    if (dNewMax.lt(dNewMin)) {
+      throw new BadRequestError('New max must be greater than or equal to new min');
+    }
+
+    // Đảm bảo tier hiện tại tồn tại
     const targetCount = await prisma.membershipTier.count({
       where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
     });
@@ -484,51 +497,67 @@ class MembershipSettingUseCase {
       throw new BadRequestError('Membership tier not found (old range)');
     }
 
-    // Find overlap tier ranges & exclude the current target tier
+    // --- OVERLAP VALIDATION (KHÔNG ĐƯỢC ẢNH HƯỞNG QUÁ 2 NEIGHBORS) ---
+
     const overlapTiers = await prisma.membershipTier.findMany({
       where: {
         ...overlapWhere(axis, newMin, newMax),
       },
       select: { [minKey]: true, [maxKey]: true },
-      distinct: [minKey, maxKey], // unique axis pairs only
-      orderBy: { [minKey]: 'asc' },
+      distinct: [minKey, maxKey],
+      orderBy: { [minKey]: 'asc' } as any,
     });
 
-    // If it would touch > 1 distinct neighbor tiers (on the same axis)
-    if (overlapTiers.length > 3) {
-      throw new BadRequestError('Change would affect more than one neighboring tier; rejected.');
+    const isSameRange = (t: any) =>
+      new Prisma.Decimal(t[minKey]).eq(dOldMin) &&
+      new Prisma.Decimal(t[maxKey]).eq(dOldMax);
+
+    const otherOverlaps = overlapTiers.filter((t) => !isSameRange(t));
+
+    // current + tối đa 2 neighbors (prev + next) => tổng length tối đa = 3
+    if (overlapTiers.length > 3 || otherOverlaps.length > 2) {
+      throw new BadRequestError(
+        'Change would affect more than one neighboring tier; rejected.',
+      );
     }
 
-    // Identify immediate neighbors by current edges
+    // --- FIND IMMEDIATE NEIGHBORS BASED ON CURRENT EDGES ---
+
     const nextMinOld = oldMax + 1;
     const prevMaxOld = oldMin - 1;
 
-    // Fetch immediate neighbors
     const [nextNeighbor, prevNeighbor] = await Promise.all([
       prisma.membershipTier.findFirst({
-        where: { [minKey]: new Prisma.Decimal(nextMinOld) },
+        where: { [minKey]: new Prisma.Decimal(nextMinOld) } as any,
         select: { [minKey]: true, [maxKey]: true },
-        orderBy: { [maxKey]: 'desc' }, // not strictly needed, but deterministic
+        orderBy: { [maxKey]: 'desc' } as any,
       }),
-      prevMaxOld >= 0
+      prevMaxOld >= FLOOR
         ? prisma.membershipTier.findFirst({
-            where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-            select: { [minKey]: true, [maxKey]: true },
-            orderBy: { [minKey]: 'asc' },
-          })
+          where: { [maxKey]: new Prisma.Decimal(prevMaxOld) } as any,
+          select: { [minKey]: true, [maxKey]: true },
+          orderBy: { [minKey]: 'asc' } as any,
+        })
         : Promise.resolve(null),
     ]);
 
-    // 2) Validate snaps don’t invert neighbors or ripple past the second neighbor
-    //    - Next: min becomes newMax+1, must be <= its max and < secondNext.min
-    //    - Prev: max becomes newMin-1, must be >= its min and > secondPrev.max
+    // Lưu range neighbor để dùng lại trong transaction
+    let nextRange: { min: number; max: number } | null = null;
+    let prevRange: { min: number; max: number } | null = null;
+
+    // --- VALIDATE SNAP NEXT: next.min = newMax + 1 ---
+
     if (nextNeighbor) {
       const next = rng((nextNeighbor as any)[minKey], (nextNeighbor as any)[maxKey]);
-      const snappedNextMin = newMax + 1;
-      if (snappedNextMin > next.max) {
+      nextRange = next;
+
+      const snappedNextMin = dNewMax.add(1);
+
+      if (snappedNextMin.gt(new Prisma.Decimal(next.max))) {
         throw new ConflictError('Next tier would become invalid after snap (min > max).');
       }
-      // second next (smallest min greater than next.min)
+
+      // second next: tier có min lớn hơn min của next
       const secondNext = await prisma.membershipTier.findFirst({
         where: {
           [minKey]: { gt: new Prisma.Decimal(next.min) },
@@ -536,21 +565,29 @@ class MembershipSettingUseCase {
         select: { [minKey]: true },
         orderBy: { [minKey]: 'asc' } as any,
       });
+
       if (secondNext) {
-        const secondNextMin = Number((secondNext as any)[minKey]);
-        if (snappedNextMin >= secondNextMin) {
-          throw new ConflictError('Change would ripple beyond the immediate next tier; rejected.');
+        const secondNextMin = new Prisma.Decimal((secondNext as any)[minKey]);
+        if (snappedNextMin.gte(secondNextMin)) {
+          throw new ConflictError(
+            'Change would ripple beyond the immediate next tier; rejected.',
+          );
         }
       }
     }
 
+    // --- VALIDATE SNAP PREV: prev.max = newMin - 1 ---
+
     if (prevNeighbor) {
       const prev = rng((prevNeighbor as any)[minKey], (prevNeighbor as any)[maxKey]);
-      const snappedPrevMax = newMin - 1;
-      if (snappedPrevMax < prev.min) {
+      prevRange = prev;
+
+      const snappedPrevMax = dNewMin.sub(1);
+
+      if (snappedPrevMax.lt(new Prisma.Decimal(prev.min))) {
         throw new ConflictError('Previous tier would become invalid after snap (max < min).');
       }
-      // second prev (largest max smaller than prev.max)
+
       const secondPrev = await prisma.membershipTier.findFirst({
         where: {
           [maxKey]: { lt: new Prisma.Decimal(prev.max) },
@@ -558,99 +595,70 @@ class MembershipSettingUseCase {
         select: { [maxKey]: true },
         orderBy: { [maxKey]: 'desc' } as any,
       });
+
       if (secondPrev) {
-        const secondPrevMax = Number((secondPrev as any)[maxKey]);
-        if (snappedPrevMax <= secondPrevMax) {
+        const secondPrevMax = new Prisma.Decimal((secondPrev as any)[maxKey]);
+        if (snappedPrevMax.lte(secondPrevMax)) {
           throw new ConflictError(
             'Change would ripple beyond the immediate previous tier; rejected.',
           );
         }
       }
-
-      return await prisma.$transaction(async (tx) => {
-        const updateCurrentTierIdsAwaited = tx.membershipTier.findMany({
-          where: { [minKey]: dOldMin, [maxKey]: dOldMax },
-          select: { id: true },
-        });
-
-        const updateNextMinTierIdsAwaited = tx.membershipTier.findMany({
-          where: {
-            [minKey]: {
-              gt: new Prisma.Decimal(dOldMin),
-              lte: new Prisma.Decimal(CEILING),
-            },
-          },
-          select: { id: true },
-        });
-
-        const updateNextMaxTierIdsAwaited = tx.membershipTier.findMany({
-          where: {
-            [maxKey]: {
-              gt: new Prisma.Decimal(oldMax),
-              lt: new Prisma.Decimal(CEILING),
-            },
-          },
-          select: { id: true },
-        });
-
-        const [updateCurrentTierIds = [], updateNextMinTierIds = [], updateNextMaxTierIds = []] =
-          await Promise.all([
-            updateCurrentTierIdsAwaited,
-            updateNextMinTierIdsAwaited,
-            updateNextMaxTierIdsAwaited,
-          ]);
-
-        let updatedCurrentTierCount;
-        let updatedNextMinTierCount;
-        let updatedNextMaxTierCount;
-
-        if (updateCurrentTierIds) {
-          updatedCurrentTierCount = await tx.membershipTier.updateMany({
-            where: { id: { in: updateCurrentTierIds.map((tier) => tier.id) } },
-            data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
-          });
-        }
-
-        if (updateNextMinTierIds) {
-          updatedNextMinTierCount = await tx.membershipTier.updateMany({
-            where: { id: { in: updateNextMinTierIds.map((tier) => tier.id) } },
-            data: {
-              [minKey]: {
-                increment: newValue,
-              },
-              updatedBy: userId,
-            },
-          });
-        }
-
-        if (updateNextMaxTierIds) {
-          updatedNextMaxTierCount = await tx.membershipTier.updateMany({
-            where: { id: { in: updateNextMaxTierIds.map((tier) => tier.id) } },
-            data: {
-              [maxKey]: {
-                increment: newValue,
-              },
-              updatedBy: userId,
-            },
-          });
-        }
-
-        const snapPrev =
-          oldMin > 0
-            ? await tx.membershipTier.updateMany({
-                where: { [maxKey]: new Prisma.Decimal(prevMaxOld) },
-                data: { [maxKey]: dNewMin.sub(1), updatedBy: userId },
-              })
-            : { count: 0 };
-
-        return {
-          updated: updatedCurrentTierCount,
-          snapNext: (updatedNextMinTierCount?.count ?? 0) + (updatedNextMaxTierCount?.count ?? 0),
-          snapPrev: snapPrev.count,
-        };
-      });
     }
+
+    // --- TRANSACTION: UPDATE CURRENT + SNAP NEIGHBORS ---
+
+    return await prisma.$transaction(async (tx) => {
+      // 1) Update current tier(s) on this axis
+      const updatedCurrentTier = await tx.membershipTier.updateMany({
+        where: { [minKey]: dOldMin, [maxKey]: dOldMax } as any,
+        data: { [minKey]: dNewMin, [maxKey]: dNewMax, updatedBy: userId },
+      });
+
+      if (!updatedCurrentTier.count) {
+        throw new ConflictError('Membership tier not found during update (race condition).');
+      }
+
+      // 2) Snap next neighbor: all tiers có minKey = next.min (trên cùng axis)
+      let snapNextCount = 0;
+      if (nextRange) {
+        const snappedNextMin = dNewMax.add(1);
+        const resNext = await tx.membershipTier.updateMany({
+          where: {
+            [minKey]: new Prisma.Decimal(nextRange.min),
+          } as any,
+          data: {
+            [minKey]: snappedNextMin,
+            updatedBy: userId,
+          },
+        });
+        snapNextCount = resNext.count;
+      }
+
+      // 3) Snap previous neighbor: all tiers có maxKey = prev.max (trên cùng axis)
+      let snapPrevCount = 0;
+      if (prevRange) {
+        const snappedPrevMax = dNewMin.sub(1);
+        const resPrev = await tx.membershipTier.updateMany({
+          where: {
+            [maxKey]: new Prisma.Decimal(prevRange.max),
+          } as any,
+          data: {
+            [maxKey]: snappedPrevMax,
+            updatedBy: userId,
+          },
+        });
+        snapPrevCount = resPrev.count;
+      }
+
+      return {
+        updated: updatedCurrentTier.count,
+        snapNext: snapNextCount,
+        snapPrev: snapPrevCount,
+      };
+    });
   }
+
 
   async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
     const { limit = 20, search, page } = params;
