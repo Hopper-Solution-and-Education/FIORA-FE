@@ -42,6 +42,7 @@ const PartnerLogo = () => {
                   src={logo.media_url || ''}
                   alt={logo.description || `Partner Logo ${index + 1}`}
                   fill
+                  sizes="(max-width: 768px) 208px, 320px"
                   style={{ objectFit: 'contain', objectPosition: 'center' }}
                   className="rounded-xl"
                   onError={(e) => {
