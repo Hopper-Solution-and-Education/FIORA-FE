@@ -25,6 +25,21 @@ const accountServices = {
   deleteAccount(id: string): Promise<Response<Account>> {
     return httpClient.delete<Response<Account>>(`/api/accounts/${id}`);
   },
+  deleteSubAccount(
+    parentId: string,
+    subAccountId: string,
+  ): Promise<Response<{ success: boolean; message: string }>> {
+    return httpClient.post<Response<{ success: boolean; message: string }>>(
+      '/api/accounts/sub-account/delete',
+      {
+        parentId,
+        subAccountId,
+      },
+    );
+  },
+  fetchBalanceByUserId(userId: string): Promise<Response<any>> {
+    return httpClient.get<Response<any>>(`/api/accounts/balance?userId=${userId}`);
+  },
 };
 
 export default accountServices;
