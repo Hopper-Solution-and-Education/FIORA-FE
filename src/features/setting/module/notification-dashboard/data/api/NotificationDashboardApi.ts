@@ -27,7 +27,6 @@ class NotificationDashboardApi implements INotificationDashboardApi {
 
     // Build the URL with query parameters
     let baseUrl;
-    console.log('getNotificationsPaginated personal: ', personal);
     if (personal) {
       baseUrl = routeConfig(ApiEndpointEnum.NotificationPersonal);
     } else {
