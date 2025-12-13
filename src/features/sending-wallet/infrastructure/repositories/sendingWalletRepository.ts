@@ -227,7 +227,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
    * Ensures atomicity using Prisma transaction.
    */
   async createTransactionSending(data: ArgCreateTransactionSendingType): Promise<any> {
-    const { amount, receiverEmail, userId, categoryId, productIds, description } = data;
+    const { amount, receiverEmail, userId, categoryId, productIds, description, flowType } = data;
     const amountDecimal = new Decimal(amount);
 
     return this._prisma.$transaction(async (tx) => {
@@ -329,6 +329,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
           isMarked: true,
           baseAmount: amountDecimal,
           remark: description?.trim(),
+          flowType: flowType,
         },
       });
 
@@ -344,6 +345,7 @@ class SendingWalletRepository implements ISendingWalletRepository {
           isMarked: true,
           baseAmount: amountDecimal,
           remark: description?.trim(),
+          flowType: flowType,
         },
       });
 

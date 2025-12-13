@@ -2,7 +2,7 @@ import { prisma } from '@/config';
 import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
-import { OtpType, TransactionType, WalletType } from '@prisma/client';
+import { OtpType, TransactionFlow, TransactionType, WalletType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Duration, LocaleFormat } from '../../constants/sendingWalletConstants';
 import { SendingWalletMessage } from '../../constants/sendingWalletMessage';
@@ -215,6 +215,7 @@ class SendingWalletUseCase {
       categoryId,
       productIds,
       description,
+      flowType: TransactionFlow.SENDING,
     });
 
     const formattedAmount = new Intl.NumberFormat(LocaleFormat.DEFAULT, {

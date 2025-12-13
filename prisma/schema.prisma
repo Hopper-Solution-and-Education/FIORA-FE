@@ -218,6 +218,7 @@ model Transaction {
   currencyId          String?              @db.Uuid
   currency            String?
   commonId            String?              @db.Uuid
+  flowType            TransactionFlow?
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   CommonSetting       CommonSetting?       @relation(fields: [commonId], references: [id])
@@ -1140,6 +1141,12 @@ enum TypeCronJob {
   CASHBACK
   FLEXI_INTEREST
   SMART_SAVING_INTEREST
+}
+
+enum TransactionFlow {
+  DEPOSIT
+  WITHDRAW
+  SENDING
 }
 
 enum KYCType {
