@@ -12,11 +12,12 @@ export enum Messages {
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
   TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
-  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
+  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
   TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
   TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
+  SYNC_TRANSACTION_SUCCESS = 'Sync transaction successfully',
 
   // ───────────────────────────────
   // Category

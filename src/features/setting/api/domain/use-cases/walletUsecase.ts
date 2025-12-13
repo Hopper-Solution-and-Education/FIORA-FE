@@ -21,6 +21,7 @@ import {
   FxRequestType,
   NotificationType,
   Prisma,
+  TransactionFlow,
   TransactionType,
   WalletType,
 } from '@prisma/client';
@@ -512,6 +513,7 @@ class WalletUseCase {
         baseCurrency: DEFAULT_BASE_CURRENCY,
         remark: `Deposit request approved`,
         isMarked: true,
+        flowType: TransactionFlow.DEPOSIT,
       });
 
       const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
@@ -574,6 +576,7 @@ class WalletUseCase {
           baseCurrency: DEFAULT_BASE_CURRENCY,
           remark: `Withdrawal request approved`,
           isMarked: true,
+          flowType: TransactionFlow.WITHDRAW,
         });
 
         await this._walletRepository.updateWallet(

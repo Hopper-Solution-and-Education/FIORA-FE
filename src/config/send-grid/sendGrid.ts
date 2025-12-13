@@ -118,7 +118,7 @@ export const sendBulkEmailUtility = async (
   sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
   const {
-    from = process.env.SENDER_EMAIL || 'tribui.it.work@gmail.com',
+    from = process.env.SENDER_EMAIL || 'admin@fiora.live',
     batchSize = 1000,
     delayBetweenBatches = 1000,
   } = options || {};

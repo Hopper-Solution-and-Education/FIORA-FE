@@ -1,5 +1,12 @@
 import { prisma } from '@/config';
-import { Partner, Prisma, Transaction, TransactionType } from '@prisma/client';
+import {
+  Currency,
+  Partner,
+  Prisma,
+  Transaction,
+  TransactionFlow,
+  TransactionType,
+} from '@prisma/client';
 import {
   ITransactionRepository,
   TransactionWithProducts,
@@ -356,6 +363,60 @@ class TransactionRepository implements ITransactionRepository {
       },
       orderBy: { createdAt: 'desc' },
     })) as unknown as TransactionWithProducts[];
+  }
+
+  // SCRIPT SYNC DATA
+  // Sync all flowType transaction, which have type Expense and currency FX to TransactionFlow.SENDING
+  async updateAllFlowTypeTransaction(tx: Prisma.TransactionClient) {
+    const syncSendingFlow = await tx.transaction.updateMany({
+      where: {
+        type: TransactionType.Expense,
+        currency: Currency.FX,
+      },
+      data: {
+        flowType: TransactionFlow.SENDING,
+      },
+    });
+
+    const syncWithdrawFlow = await tx.transaction.updateMany({
+      where: {
+        type: TransactionType.Transfer,
+        currency: Currency.FX,
+        fromWallet: {
+          type: 'Payment',
+        },
+        toAccount: {
+          type: 'Payment',
+        },
+      },
+      data: {
+        flowType: TransactionFlow.WITHDRAW,
+      },
+    });
+
+    const syncDepositFlow = await tx.transaction.updateMany({
+      where: {
+        type: TransactionType.Transfer,
+        currency: {
+          not: Currency.FX,
+        },
+        fromAccount: {
+          type: 'Payment',
+        },
+        toWallet: {
+          type: 'Payment',
+        },
+      },
+      data: {
+        flowType: TransactionFlow.DEPOSIT,
+      },
+    });
+
+    return {
+      syncSendingFlow: syncSendingFlow.count,
+      syncWithdrawFlow: syncWithdrawFlow.count,
+      syncDepositFlow: syncDepositFlow.count,
+    };
   }
 }
 
