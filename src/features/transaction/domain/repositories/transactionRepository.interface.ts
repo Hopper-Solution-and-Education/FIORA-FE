@@ -30,6 +30,11 @@ export interface ITransactionRepository {
 
   // *PRODUCT ZONE
   findProductTransactions(userId: string): Promise<TransactionWithProducts[]>;
+
+  // *SCRIPT SYNC DATA
+  updateAllFlowTypeTransaction(
+    tx: Prisma.TransactionClient,
+  ): Promise<{ syncSendingFlow: number; syncWithdrawFlow: number; syncDepositFlow: number }>;
 }
 
 export interface TransactionWithProducts extends Transaction {
