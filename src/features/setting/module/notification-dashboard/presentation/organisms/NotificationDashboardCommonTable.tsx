@@ -7,10 +7,9 @@ import {
 import { Icons } from '@/components/Icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { UserRole } from '@/shared/constants/userRole';
 import { formatDateTime } from '@/shared/lib/formatDateTime';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { setNotificationDashboardFilter } from '../../slices';
@@ -50,7 +49,6 @@ const NotificationDashboardCommonTable = ({
   const dispatch = useAppDispatch();
   const router = useRouter();
   const path = usePathname();
-  const { data: session } = useSession();
 
   const isSettingDashboard = !!path?.includes('setting');
   const SETTING_COLUMN = isSettingDashboard ? [] : ['Recipients', 'Sender'];
@@ -130,7 +128,7 @@ const NotificationDashboardCommonTable = ({
         width: '10%',
         render: (r) => (
           <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-            {r.notifyTo}
+            {formatUnderlineString(r.notifyTo)}
           </Badge>
         ),
       },
@@ -186,13 +184,12 @@ const NotificationDashboardCommonTable = ({
     ];
 
     // Hide Notify To and Status columns if user role is 'User'
-    const userRole = session?.user?.role;
-    if (userRole === UserRole.USER) {
+    if (!isSettingDashboard) {
       return baseColumns.filter((col) => col.key !== 'notifyTo' && col.key !== 'status');
     }
 
     return baseColumns;
-  }, [session]);
+  }, [isSettingDashboard]);
 
   // Filter columns based on setting dashboard context
   const filteredColumns = useMemo(() => {
