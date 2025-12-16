@@ -10,7 +10,7 @@ import {
   isValidCurrencyAmount,
   RoundingMode,
   validateCurrencyInput,
-} from '@/shared/utils/currencyFormat';
+} from '@/shared/utils/currency';
 import React, { memo, useState } from 'react';
 import { FieldError } from 'react-hook-form';
 

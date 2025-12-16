@@ -1,14 +1,14 @@
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
-import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
+import { FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { UserRole } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { clearUserFilters, setUserFilters } from '../../slices';
 import { FilterState } from '../../slices/type';
-import { useSession } from 'next-auth/react';
 
 const getInitialFilterState = (): FilterState => ({
   roles: [],

@@ -29,7 +29,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
-import { FormFieldProps } from '@/shared/types/formsheet.type';
+import { FormFieldProps } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { LoaderCircle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';

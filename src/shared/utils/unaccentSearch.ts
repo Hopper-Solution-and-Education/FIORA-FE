@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { normalizeVietnamese } from './ExStringUtils';
+import { normalizeVietnamese } from './stringHelper';
 
 export async function searchWithUnaccentFallback<T = any>(
   tableName: string,

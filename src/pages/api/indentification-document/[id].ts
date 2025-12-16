@@ -1,9 +1,8 @@
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
-import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse } from '@/shared/lib';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';

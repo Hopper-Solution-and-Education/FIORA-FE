@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentItem, ConfirmDeleteDialog } from '@/features/helps-center/presentation/molecules';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
 import { Session } from 'next-auth/react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { toggleCurrency } from '@/store/slices/setting.slice';

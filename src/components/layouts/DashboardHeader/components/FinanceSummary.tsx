@@ -1,7 +1,6 @@
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
-import { COLORS } from '@/shared/constants/chart';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { COLORS, RouteEnum } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { motion } from 'framer-motion';

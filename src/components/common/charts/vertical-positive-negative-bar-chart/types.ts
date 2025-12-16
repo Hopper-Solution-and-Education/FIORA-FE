@@ -1,4 +1,4 @@
-import { BaseChartProps, ColumnConfig } from '@/shared/types/chart.type';
+import { BaseChartProps, ColumnConfig } from '@/shared/types';
 
 export type VerticalBarDataItem = {
   name: string | number;

@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
-import { FilterObject } from '@/shared/types/filter.types';
+import { Messages } from '@/shared/constants';
+import { FilterObject } from '@/shared/types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
   Attachment,

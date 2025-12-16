@@ -1,6 +1,6 @@
 import { userUseCase } from '@/features/profile/application/use-cases/userUsecase';
 import { UserFilterParams } from '@/features/profile/domain/entities/models/user.types';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';

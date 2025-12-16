@@ -1,7 +1,6 @@
 import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
-import { Messages } from '@/shared/constants/message';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';

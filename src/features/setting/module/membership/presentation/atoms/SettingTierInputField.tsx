@@ -2,7 +2,7 @@
 
 import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import InputField from '@/components/common/forms/input/InputField';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';

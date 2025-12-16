@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { UserRole } from '@/shared/constants/userRole';
+import { UserRole } from '@/shared/constants';
 import { removeFromFirebase } from '@/shared/lib';
 import type { eKYC, UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
 import type { IProfileRepository } from '../../domain/repositories/profileRepository.interface';

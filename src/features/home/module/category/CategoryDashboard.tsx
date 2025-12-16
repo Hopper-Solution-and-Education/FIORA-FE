@@ -5,7 +5,7 @@ import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import DeleteDialog from '@/features/home/module/category/components/DeleteDialog';
 import { fetchCategories } from '@/features/home/module/category/slices/actions';
 import { Category } from '@/features/home/module/category/slices/types';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { CategoryType } from '@prisma/client';

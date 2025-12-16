@@ -1,4 +1,4 @@
-import { MONTH_MAPPING } from '@/shared/utils/monthBudgetUtil';
+import { MONTH_MAPPING } from '@/shared/utils/monthBudget';
 import { Prisma } from '@prisma/client';
 
 interface BudgetUpdateStrategy {
@@ -155,4 +155,4 @@ function getBudgetStrategy(isExpense: boolean): BudgetUpdateStrategy {
   return isExpense ? new ExpenseUpdateStrategy() : new IncomeUpdateStrategy();
 }
 
-export { ExpenseUpdateStrategy, IncomeUpdateStrategy, getBudgetStrategy };
+export { ExpenseUpdateStrategy, getBudgetStrategy, IncomeUpdateStrategy };

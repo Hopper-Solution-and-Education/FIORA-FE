@@ -6,7 +6,7 @@ import {
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
   MIN_CHART_HEIGHT,
-} from '@/shared/constants/chart';
+} from '@/shared/constants';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {

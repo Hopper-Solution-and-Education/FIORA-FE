@@ -1,6 +1,5 @@
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags, MODULE } from '@/shared/constants';
 import { NavItem } from '../types/Nav.types';
-import { MODULE } from '@/shared/constants';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const expandNavItems: NavItem[] = [

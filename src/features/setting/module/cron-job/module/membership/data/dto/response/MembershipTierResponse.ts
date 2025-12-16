@@ -1,4 +1,4 @@
-import { _PaginationResponse } from '@/shared/types/httpResponse.types';
+import { _PaginationResponse } from '@/shared/types';
 
 export interface MembershipTierItem {
   id: string;

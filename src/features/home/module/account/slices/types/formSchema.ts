@@ -1,6 +1,5 @@
-import { iconOptions } from '@/shared/constants/data';
+import { ACCOUNT_RULES, iconOptions } from '@/shared/constants';
 import * as yup from 'yup';
-import { ACCOUNT_RULES } from '@/shared/constants/account';
 
 // Helper function to calculate available limit
 const calculateAvailableLimit = (limit: number, balance: number): number => {
@@ -122,6 +121,6 @@ const defaultNewAccountValues: NewAccountDefaultValues = {
   availableLimit: 0,
 };
 
-export { validateNewAccountSchema, validateUpdateAccountSchema, defaultNewAccountValues };
+export { defaultNewAccountValues, validateNewAccountSchema, validateUpdateAccountSchema };
 export type NewAccountDefaultValues = yup.InferType<typeof validateNewAccountSchema>;
 export type UpdateAccountDefaultValues = yup.InferType<typeof validateUpdateAccountSchema>;
