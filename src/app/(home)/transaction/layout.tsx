@@ -1,5 +1,5 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

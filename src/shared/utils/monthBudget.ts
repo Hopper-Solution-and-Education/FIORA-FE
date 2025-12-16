@@ -1,7 +1,7 @@
 import { BudgetsTable, Category, CategoryType, Transaction, TransactionType } from '@prisma/client';
 import _ from 'lodash';
 import { BudgetAllocation, FetchTransactionResponse, SumUpAllocation } from '../types/budget.types';
-import { convertCurrency } from './convertCurrency';
+import { convertCurrency } from './currency';
 
 export function getMonthlyValues(fields: Record<string, any>, type: 'exp' | 'inc'): any[] {
   return Array.from({ length: 12 }, (_, i) => fields[`m${i + 1}_${type}`] ?? 0);

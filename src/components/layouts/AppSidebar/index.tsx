@@ -1,7 +1,7 @@
 'use client';
 import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import {
   ChevronRight,

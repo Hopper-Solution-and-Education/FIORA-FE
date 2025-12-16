@@ -1,6 +1,6 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
 import useMarkNotificationAsRead from '@/shared/hooks/useMarkNotificationAsRead';
 import { routeConfig } from '@/shared/utils/route';

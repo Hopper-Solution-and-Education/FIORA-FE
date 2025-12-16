@@ -1,5 +1,5 @@
-import { STACK_TYPE } from '@/shared/constants/chart';
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { STACK_TYPE } from '@/shared/constants';
+import { BaseChartProps } from '@/shared/types';
 import { TooltipProps as RechartsTooltipProps } from 'recharts';
 
 // Types for bar item

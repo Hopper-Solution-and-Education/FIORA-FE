@@ -4,7 +4,7 @@ import { createDefaultCategories } from '@/features/auth/application/use-cases/d
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
 import { membershipSettingUseCase } from '@/features/setting/api/application/use-cases/membershipUsecase';
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { BadRequestError, errorHandler } from '@/shared/lib/responseUtils/errors';

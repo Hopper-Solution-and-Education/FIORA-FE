@@ -4,7 +4,7 @@ import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
-import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
+import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types';
 import { useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';

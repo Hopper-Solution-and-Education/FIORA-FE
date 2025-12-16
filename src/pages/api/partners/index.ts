@@ -1,5 +1,5 @@
 import { partnerUseCase } from '@/features/partner/application/use-cases/partnerUseCase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';

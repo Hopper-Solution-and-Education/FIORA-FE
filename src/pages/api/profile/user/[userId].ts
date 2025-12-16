@@ -1,9 +1,8 @@
 import { profileUseCase } from '@/features/profile/application/use-cases/profileUseCase';
 import { UserProfile } from '@/features/profile/domain/entities/models/profile';
 import { profileRepository } from '@/features/profile/infrastructure/repositories/profileRepository';
-import { Messages } from '@/shared/constants/message';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';

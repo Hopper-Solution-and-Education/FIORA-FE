@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
+import { PartnerExtras } from '@/shared/types';
 import { Partner, Prisma } from '@prisma/client';
 import { IPartnerRepository } from '../../domain/repositories/partnerRepository.interface';
-import { PartnerExtras } from '@/shared/types/partner.types';
 
 class PartnerRepository implements IPartnerRepository {
   async getPartnersByUserId(

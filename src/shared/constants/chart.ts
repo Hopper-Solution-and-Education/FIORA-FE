@@ -1,4 +1,4 @@
-import { ChartFontSize } from '../types/chart.type';
+import { ChartFontSize } from '../types/chart.types';
 
 export const DEFAULT_LOCALE = 'vi-VN';
 export const DEFAULT_CURRENCY = 'VND';

@@ -5,7 +5,7 @@ import {
   PostType,
 } from '@/features/helps-center/domain/entities/models/faqs';
 import { IFaqRepository } from '@/features/helps-center/domain/repositories';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { faqRepository } from '../../../infrastructure/repositories';
 
 export class CreateFaqUseCase {

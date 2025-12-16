@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { OtpState } from '@/shared/types/otp';
+import { OtpState } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import { useEffect, useState } from 'react';
 

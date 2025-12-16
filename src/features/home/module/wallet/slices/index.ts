@@ -1,4 +1,4 @@
-import type { FilterCriteria } from '@/shared/types/filter.types';
+import type { FilterCriteria } from '@/shared/types';
 import { createSlice } from '@reduxjs/toolkit';
 import type { PackageFX } from '../domain/entity/PackageFX';
 import type { AttachmentData } from '../presentation/types/attachment.type';
