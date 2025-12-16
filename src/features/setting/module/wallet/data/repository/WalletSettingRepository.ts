@@ -1,5 +1,5 @@
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { FilterObject } from '@/shared/types/filter.types';
+import { FilterObject } from '@/shared/types';
 import { decorate, inject, injectable } from 'inversify';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';
 import { DepositRequestStatus } from '../../domain';

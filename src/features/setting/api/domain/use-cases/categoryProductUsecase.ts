@@ -1,6 +1,6 @@
 import { PaginationResponse } from '@/shared/types';
 
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { CategoryProducts, Prisma } from '@prisma/client';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';
 import { productRepository } from '../../infrastructure/repositories/productRepository';

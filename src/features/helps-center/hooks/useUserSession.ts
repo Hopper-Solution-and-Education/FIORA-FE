@@ -1,4 +1,4 @@
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
 import { Session, useSession } from 'next-auth/react';
 
 export const useUserSession = () => {

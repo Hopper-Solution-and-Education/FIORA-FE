@@ -1,7 +1,7 @@
 import { createReactionUseCase } from '@/features/helps-center/application/use-cases/faq';
 import { getFaqReactionsUseCase } from '@/features/helps-center/application/use-cases/faq/getFaqReactionsUseCase';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';

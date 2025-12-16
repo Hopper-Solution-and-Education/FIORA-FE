@@ -1,4 +1,4 @@
-import { ColumnConfig, LineConfig } from '@/shared/types/chart.type';
+import { ColumnConfig, LineConfig } from '@/shared/types';
 
 export const findMaxMinValues = <T extends Record<string, any>>(
   data: T[],

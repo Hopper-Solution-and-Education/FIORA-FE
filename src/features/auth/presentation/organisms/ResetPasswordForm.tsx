@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import type { UseFormReturn } from 'react-hook-form';

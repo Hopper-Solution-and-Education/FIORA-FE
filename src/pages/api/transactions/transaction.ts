@@ -1,6 +1,5 @@
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
-import { DEFAULT_BASE_CURRENCY } from '@/shared/constants';
-import { Messages } from '@/shared/constants/message';
+import { DEFAULT_BASE_CURRENCY, Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';

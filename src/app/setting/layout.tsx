@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import SessionSidebar from '@/components/providers/SessionSidebar';
 import { settingNavItems } from '@/features/setting/constants/sidebarData';
-import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'FIORA | Settings',

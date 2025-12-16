@@ -1,6 +1,6 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import { WalletSettingLayout } from '@/features/setting/module/wallet/presentation/pages';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -1,7 +1,7 @@
 'use client';
 
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 
 interface TabLayoutProps {
   children: React.ReactNode;

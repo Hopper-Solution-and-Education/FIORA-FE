@@ -11,7 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { iconOptions } from '@/shared/constants/data';
+import { iconOptions } from '@/shared/constants';
 import { cn, useGetIconLabel } from '@/shared/utils';
 import { Check } from 'lucide-react';
 import React, { memo, useEffect, useRef, useState } from 'react';

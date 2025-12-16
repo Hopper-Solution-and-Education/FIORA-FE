@@ -1,5 +1,5 @@
 import AmountIntputDropDown from '@/components/common/forms/input/AmountInputDropdown';
-import { DEFAULT_AMOUNT_PACKAGES } from '@/shared/constants/amount';
+import { DEFAULT_AMOUNT_PACKAGES } from '@/shared/constants';
 import { Currency } from '@prisma/client';
 import { uniqueId } from 'lodash';
 import React, { useMemo } from 'react';

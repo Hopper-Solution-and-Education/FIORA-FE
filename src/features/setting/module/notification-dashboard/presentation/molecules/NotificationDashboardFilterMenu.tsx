@@ -1,7 +1,7 @@
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
-import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
+import { FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { usePathname } from 'next/navigation';

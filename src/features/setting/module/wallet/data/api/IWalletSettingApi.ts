@@ -1,6 +1,5 @@
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { _PaginationResponse, HttpResponse } from '@/shared/types';
-import { FilterObject } from '@/shared/types/filter.types';
+import { _PaginationResponse, FilterObject, HttpResponse } from '@/shared/types';
 import { DepositRequestStatus } from '../../domain';
 import { GetDepositRequestResponse } from '../dto/response/GetDepositRequestResponse';
 import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';

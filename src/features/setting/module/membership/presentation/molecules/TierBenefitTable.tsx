@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { DynamicFieldTier } from '../schema/editMemberShip.schema';
 
 type TierBenefitTableProps = {

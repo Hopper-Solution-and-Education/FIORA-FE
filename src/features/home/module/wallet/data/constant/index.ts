@@ -1,5 +1,5 @@
+import { FilterCriteria } from '@/shared/types';
 import { WalletType } from '../../domain/enum';
-import { FilterCriteria } from '@/shared/types/filter.types';
 
 export const DEFAULT_MIN_BALANCE = 0;
 export const DEFAULT_MAX_BALANCE = 1000000;

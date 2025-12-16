@@ -4,9 +4,7 @@ import PositiveAndNegativeBarChartV2 from '@/components/common/charts/positive-n
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
 import ChartSkeleton from '@/components/common/organisms/ChartSkeleton';
 import { Icons } from '@/components/Icon';
-import { CURRENCY } from '@/shared/constants';
-import { COLORS } from '@/shared/constants/chart';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { COLORS, CURRENCY, RouteEnum } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';

@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCY } from '@/shared/constants/chart';
+import { DEFAULT_CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
 

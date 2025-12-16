@@ -1,4 +1,4 @@
-import { FilterOperator } from '@/shared/types/filter.types';
+import { FilterOperator } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { walletSettingContainer } from '../../../di/walletSettingDIContainer';

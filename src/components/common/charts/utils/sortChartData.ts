@@ -1,4 +1,4 @@
-import { ColumnConfig } from '@/shared/types/chart.type';
+import { ColumnConfig } from '@/shared/types';
 
 /**
  * Sort chart data by value in descending order (highest first)

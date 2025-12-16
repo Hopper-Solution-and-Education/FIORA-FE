@@ -3,7 +3,7 @@ import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types/filter.types';
+import { FilterColumn, FilterComponentConfig, FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';

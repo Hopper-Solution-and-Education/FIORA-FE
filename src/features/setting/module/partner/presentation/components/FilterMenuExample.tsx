@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
+import { useState } from 'react';
 import FilterMenu from './FilterMenu';
 
 // Example of how to use the FilterMenu component

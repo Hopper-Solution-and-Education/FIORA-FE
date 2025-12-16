@@ -1,6 +1,6 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
 import SettingSubTabContent from '@/features/setting/module/partner/presentation/components/SettingSubTabContent';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { Metadata } from 'next';
 
 interface SettingUpdatePageProps {

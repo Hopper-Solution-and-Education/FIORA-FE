@@ -1,6 +1,6 @@
 import { prisma, sendBulkEmailUtility, sendEmailCronJob } from '@/config';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { BadRequestError } from '@/shared/lib';
 import { ChannelType, NotificationType } from '@prisma/client';
 import type {

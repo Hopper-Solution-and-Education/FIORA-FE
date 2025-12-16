@@ -1,5 +1,5 @@
 import { categoryUseCase } from '@/features/setting/api/domain/use-cases/categoryUseCase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { CategoryFilters } from '@/shared/types';

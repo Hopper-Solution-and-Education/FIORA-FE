@@ -1,5 +1,5 @@
 import { walletWithdrawUsecase } from '@/features/wallet-withdraw/application/walletWithdrawUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
