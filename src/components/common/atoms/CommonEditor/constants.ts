@@ -75,7 +75,7 @@ export const defaultExtensions: AnyExtension[] = [
       showOnlyCurrent: true,
     },
     characterCount: {
-      limit: 50_000,
+      limit: null,
     },
   }),
   History,
@@ -152,41 +152,32 @@ export const defaultExtensions: AnyExtension[] = [
   TextDirection,
   Mention,
   Attachment.configure({
-    upload: (file: any) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const blob = convertBase64ToBlob(reader.result as string);
-          resolve(URL.createObjectURL(blob));
-        }, 300);
-      });
+    upload: async (file: any) => {
+      if (file) {
+        const url = await uploadToFirebase({ file: file, path: 'faqs' });
+        return url;
+      }
+      return '';
     },
   }),
   Katex,
   Excalidraw,
   Mermaid.configure({
-    upload: (file: any) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const blob = convertBase64ToBlob(reader.result as string);
-          resolve(URL.createObjectURL(blob));
-        }, 300);
-      });
+    upload: async (file: any) => {
+      if (file) {
+        const url = await uploadToFirebase({ file: file, path: 'faqs' });
+        return url;
+      }
+      return '';
     },
   }),
   Drawer.configure({
-    upload: (file: any) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const blob = convertBase64ToBlob(reader.result as string);
-          resolve(URL.createObjectURL(blob));
-        }, 300);
-      });
+    upload: async (file: any) => {
+      if (file) {
+        const url = await uploadToFirebase({ file: file, path: 'faqs' });
+        return url;
+      }
+      return '';
     },
   }),
   Twitter,
