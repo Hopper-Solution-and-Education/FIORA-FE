@@ -289,8 +289,8 @@ export const authOptions: NextAuthOptions = {
             await prisma.user.update({
               where: { email: profile.email },
               data: {
-                name: profile.name || dbUser.name,
-                image: profile.image || dbUser.image,
+                name: dbUser.name || profile.name,
+                image: dbUser.image || profile.image,
               },
             });
           }

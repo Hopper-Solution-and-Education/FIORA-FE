@@ -375,6 +375,29 @@ class WalletUseCase {
         depositRequest,
         attachmentData,
       });
+    } else if (newStatus === DepositRequestStatus.Rejected) {
+      if (depositRequest.status !== DepositRequestStatus.Requested) {
+        throw new BadRequestError('Deposit request is not in pending status');
+      }
+
+      const { userId, packageFXId } = depositRequest;
+      const packageFX = packageFXId
+        ? await this._walletRepository.getPackageFXById(packageFXId)
+        : null;
+
+      const amount = Number(packageFX?.fxAmount || depositRequest.amount);
+      precomputedFxAmount = amount;
+
+      const paymentWallet = await this.ensurePaymentWallet(userId);
+
+      await this._walletRepository.updateWallet(
+        { id: paymentWallet.id },
+        {
+          frBalanceFrozen: {
+            decrement: amount,
+          },
+        },
+      );
     }
 
     // Persist new status last, after side effects succeed (transaction + balances)
