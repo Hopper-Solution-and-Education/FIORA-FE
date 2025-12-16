@@ -211,6 +211,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             className="hidden"
             ref={fileInputRef}
             disabled={disabled}
+            data-test={`${name}-input`}
             {...props}
           />
           {preview ? (

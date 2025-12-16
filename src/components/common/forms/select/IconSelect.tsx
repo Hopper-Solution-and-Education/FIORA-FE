@@ -88,6 +88,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
               isCheckError && required && !selectedIcon ? 'border-red-500' : '',
             )}
             onClick={() => setOpen((prev) => !prev)}
+            data-test="icon-select-button"
           >
             <span
               className={cn(
@@ -121,6 +122,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
                         setOpen(false);
                       }}
                       className="data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
+                      data-test={`icon-option-${item.value}`}
                     >
                       <div className="flex items-center gap-2 w-full">
                         {item.icon ? <item.icon className="w-4 h-4" /> : <span>No Icon</span>}

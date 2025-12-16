@@ -3,7 +3,7 @@
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/shared/utils';
-import React, { memo } from 'react';
+import React from 'react';
 import { FieldError } from 'react-hook-form';
 
 interface TextareaFieldProps {
@@ -55,10 +55,7 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         {...props}
       />
       {error && (
-        <p
-          data-test={props.name ? `${props.name}-error` : undefined}
-          className="text-sm text-red-500"
-        >
+        <p data-test={name ? `${name}-error` : undefined} className="text-sm text-red-500">
           {error.message}
         </p>
       )}
@@ -66,4 +63,4 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
   );
 };
 
-export default memo(TextareaField);
+export default TextareaField;

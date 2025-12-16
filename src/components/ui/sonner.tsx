@@ -15,6 +15,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       visibleToasts={2.5}
       dir="ltr"
       toastOptions={{
+        unstyled: false,
         classNames: {
           toast:
             'sonner-toast bg-white dark:bg-[hsl(var(--card))] text-[hsl(var(--foreground))] font-medium text-sm py-3 px-4',
@@ -29,6 +30,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             'sonner-toast-loading bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
         },
       }}
+      data-testid="toast-container"
       {...props}
     />
   );
