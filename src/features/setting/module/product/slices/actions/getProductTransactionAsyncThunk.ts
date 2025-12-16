@@ -10,7 +10,7 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   'product/getProductTransaction',
-  async ({ page, pageSize, filters, userId, search }, { rejectWithValue }) => {
+  async ({ page, pageSize, filters, userId, search = '' }, { rejectWithValue }) => {
     try {
       const getProductTransactionUseCase = productDIContainer.get<IGetProductTransactionUseCase>(
         TYPES.IGetProductTransactionUseCase,
@@ -23,6 +23,7 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
         userId,
         search,
       );
+      console.log('=====> Check response: ', response);
       return response;
     } catch (error: unknown) {
       let errorMessage = 'Failed to get product transaction';

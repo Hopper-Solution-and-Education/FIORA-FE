@@ -7,12 +7,10 @@ import {
   ProductGetTransactionRequest,
   ProductGetTransactionResponse,
   ProductsGetResponse,
-  ProductTransferDeleteRequest,
-  ProductTransferDeleteResponse,
   ProductUpdateRequest,
   ProductUpdateResponse,
 } from '../../domain/entities/Product';
-import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
+import { ProductFormValues } from '../../presentation/schema';
 import type { IProductAPI } from '../api/productApi';
 import { ProductsGetRequestDTO } from '../dto/request/ProductsGetRequestDTO';
 import { ProductMapper } from '../mapper/ProductMapper';
@@ -26,9 +24,6 @@ export interface IProductRepository {
   getProductTransaction: (
     request: ProductGetTransactionRequest,
   ) => Promise<ProductGetTransactionResponse>;
-  deleteProductTransfer: (
-    request: ProductTransferDeleteRequest,
-  ) => Promise<ProductTransferDeleteResponse>;
 }
 
 export class ProductRepository implements IProductRepository {
@@ -46,13 +41,15 @@ export class ProductRepository implements IProductRepository {
 
   async deleteProduct(request: ProductDeleteRequest) {
     const requestAPI = ProductMapper.toDeleteProductAPIRequest(request);
+    console.log('======> Check requestAPI: ', requestAPI);
     const response = await this.productApi.deleteProduct(requestAPI);
+    console.log('======> Check response: ', response);
     return ProductMapper.toDeleteProductResponse(response);
   }
 
   async createProduct(request: ProductFormValues) {
-    const requestAPI = ProductMapper.toCreateProductAPIRequest(request);
-    return this.productApi.createProduct(requestAPI);
+    const response = await this.productApi.createProduct(request);
+    return ProductMapper.toCreateProductResponse(response);
   }
 
   async updateProduct(request: ProductUpdateRequest) {
@@ -70,12 +67,6 @@ export class ProductRepository implements IProductRepository {
     const requestAPI = ProductMapper.toGetProductTransactionAPIRequest(request);
     const response = await this.productApi.getProductTransaction(requestAPI);
     return ProductMapper.toGetProductTransactionResponse(response);
-  }
-
-  async deleteProductTransfer(request: ProductTransferDeleteRequest) {
-    const requestAPI = ProductMapper.toProductTransferDeleteAPIRequest(request);
-    const response = await this.productApi.deleteProductTransfer(requestAPI);
-    return ProductMapper.toProductTransferDeleteResponse(response);
   }
 }
 

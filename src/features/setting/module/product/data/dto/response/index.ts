@@ -5,6 +5,4 @@ export * from './CategoryProductUpdateResponseDTO';
 export * from './ProductCreateResponseDTO';
 export * from './ProductDeleteResponseDTO';
 export * from './ProductGetSingleResponseDTO';
-export * from './ProductGetTransactionResponseDTO';
 export * from './ProductUpdateResponseDTO';
-export * from './ProductsGetResponseDTO';

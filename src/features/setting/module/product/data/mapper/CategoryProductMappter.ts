@@ -32,10 +32,10 @@ class CategoryProductMapper {
     apiResponse: CategoryProductGetResponseDTO,
   ): CategoryProductGetResponse {
     return {
-      page: apiResponse.data.page,
-      pageSize: apiResponse.data.pageSize,
-      totalPage: apiResponse.data.totalPage,
-      data: apiResponse.data.data.map((item: any) => ({
+      meta: {
+        ...apiResponse.data.meta,
+      },
+      items: apiResponse.data.items.map((item: any) => ({
         id: item.id,
         userId: item.userId,
         icon: item.icon,

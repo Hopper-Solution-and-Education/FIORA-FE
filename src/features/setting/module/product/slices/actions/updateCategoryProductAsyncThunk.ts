@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { CategoryProductUpdateRequest, CategoryProductUpdateResponse } from '../../domain/entities';
@@ -16,6 +17,7 @@ export const updateCategoryProductAsyncThunk = createAsyncThunk<
     const response = await createProductUseCase.execute(data);
     return response;
   } catch (error: any) {
+    toast.error(error?.errors?.errorCode || error?.errors?.message || 'Failed to update product');
     return rejectWithValue(error || 'Failed to update product');
   }
 });

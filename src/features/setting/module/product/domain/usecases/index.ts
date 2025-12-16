@@ -1,7 +1,6 @@
 export * from './CreateCategoryProductUseCase';
 export * from './CreateProductUsecase';
 export * from './DeleteCategoryProductUseCase';
-export * from './DeleteProductTransferUseCase';
 export * from './DeleteProductUsecase';
 export * from './GetCategoryProductUseCase';
 export * from './GetProductTransactionUseCase';

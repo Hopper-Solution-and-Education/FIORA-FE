@@ -1,5 +1,7 @@
-import { httpClient } from '@/config/http-client/HttpClient';
+import apiClient from '@/config/http-client';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { decorate, injectable } from 'inversify';
+import { CategoryProductGetResponse } from '../../domain/entities';
 import {
   CategoryProductCreateRequestDTO,
   CategoryProductDeleteRequestDTO,
@@ -27,23 +29,22 @@ interface ICategoryAPI {
 }
 
 class CategoryAPI implements ICategoryAPI {
-  async fetchCategories({
-    page,
-    pageSize,
-  }: CategoryProductGetRequestDTO): Promise<CategoryProductGetResponseDTO> {
-    return await httpClient.get(`/api/category-product?page=${page}&pageSize=${pageSize}`);
+  async fetchCategories({ page, pageSize }: CategoryProductGetRequestDTO) {
+    return await apiClient.get<CategoryProductGetResponse>(
+      `${ApiEndpointEnum.ProductsCategory}?page=${page}&pageSize=${pageSize}`,
+    );
   }
 
   async createCategory(
     request: CategoryProductCreateRequestDTO,
   ): Promise<CategoryProductCreateResponseDTO> {
-    return await httpClient.post(`/api/category-product`, request);
+    return await apiClient.post(`${ApiEndpointEnum.ProductsCategory}`, request);
   }
 
   async updateCategory(
     request: CategoryProductUpdateRequestDTO,
   ): Promise<CategoryProductUpdateResponseDTO> {
-    return await httpClient.put(`/api/category-product/${request.id}`, {
+    return await apiClient.put(`${ApiEndpointEnum.ProductsCategory}/${request.id}`, {
       name: request.name,
       description: request.description,
       icon: request.icon,
@@ -54,8 +55,8 @@ class CategoryAPI implements ICategoryAPI {
   async deleteCategory(
     request: CategoryProductDeleteRequestDTO,
   ): Promise<CategoryProductDeleteResponseDTO> {
-    const response = await httpClient.delete<CategoryProductDeleteResponseDTO>(
-      `/api/category-product/${request.productCategoryId}`,
+    const response = await apiClient.delete(
+      `${ApiEndpointEnum.ProductsCategory}/${request.productCategoryId}`,
     );
     return {
       ...response,

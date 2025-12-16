@@ -1,5 +1,11 @@
-import { CreatedBy, FilterCriteria, PaginationResponse, UpdatedBy } from '@/shared/types';
-import { CategoryType, ProductType } from '@prisma/client';
+import {
+  CreatedBy,
+  FilterCriteria,
+  PaginatedResult,
+  PaginationMeta,
+  UpdatedBy,
+} from '@/shared/types';
+import { CategoryType, Product as ProductEntity, ProductType } from '@prisma/client';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 import { ProductFilterResponse } from '../../slices/types';
 import { Transaction } from './Transaction';
@@ -69,9 +75,11 @@ export class ProductItem {
   }
 }
 
-export class ProductCreateResponse {}
+export type ProductCreateResponse = ProductEntity & {
+  items: ProductItem[];
+};
 
-export type ProductsGetResponse = PaginationResponse<Product>;
+export type ProductsGetResponse = PaginatedResult<Product>;
 
 export type ProductGetSingleResponse = Product;
 
@@ -82,6 +90,7 @@ export type ProductUpdateResponse = Product;
 
 export type ProductDeleteRequest = {
   id: string;
+  targetId?: string;
 };
 
 export type ProductDeleteResponse = {
@@ -105,8 +114,12 @@ export type ProductGetTransactionRequest = {
   search?: string;
 };
 
-export type ProductGetTransactionResponse = PaginationResponse<ProductTransactionCategoryResponse> &
-  ProductFilterResponse;
+export type ProductGetTransactionResponse = {
+  items: ProductTransactionCategoryResponse[];
+  meta: ProductTransactionMeta;
+};
+
+export type ProductTransactionMeta = PaginationMeta & ProductFilterResponse;
 
 export type ProductTransactionCategoryResponse = {
   category: {
@@ -114,7 +127,7 @@ export type ProductTransactionCategoryResponse = {
     name: string;
     description: string | null;
     icon: string;
-    taxRate: number | null;
+    tax_rate: number | null;
     createdAt: string;
     updatedAt: string;
   };
@@ -123,19 +136,17 @@ export type ProductTransactionCategoryResponse = {
 
 // Type cho sản phẩm và giao dịch (Product và Transaction qua ProductTransaction)
 export type ProductTransactionResponse = {
-  product: {
-    id: string;
-    price: number;
-    name: string;
-    type: ProductType;
-    description: string | null;
-    items: ProductItem[] | null;
-    taxRate: number | null;
-    catId: string | null;
-    icon: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  id: string;
+  price: number;
+  name: string;
+  type: ProductType;
+  description: string | null;
+  items: ProductItem[] | null;
+  taxRate: number | null;
+  catId: string | null;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
   transactions: [
     {
       id: string;
