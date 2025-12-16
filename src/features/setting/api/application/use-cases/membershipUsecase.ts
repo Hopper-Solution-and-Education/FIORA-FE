@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { InfinityParams, InfinityResult } from '@/shared/dtos/base-api-response.dto';
 import { BadRequestError, ConflictError } from '@/shared/lib';
 import { Prisma } from '@prisma/client';

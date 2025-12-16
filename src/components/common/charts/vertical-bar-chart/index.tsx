@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { BaseChartProps } from '@/shared/types';
 import { memo, useMemo } from 'react';
 import {
   Bar,

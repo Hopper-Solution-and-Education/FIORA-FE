@@ -2,7 +2,7 @@ import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/ac
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 import { membershipSettingUseCase } from '@/features/setting/api/application/use-cases/membershipUsecase';
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
 import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
 

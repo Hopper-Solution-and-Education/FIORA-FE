@@ -1,10 +1,9 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { FilterObject } from '@/shared/types/filter.types';
-import { _PaginationResponse } from '@/shared/types/httpResponse.types';
+import { _PaginationResponse, FilterObject } from '@/shared/types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { DepositRequestStatus } from '@prisma/client';

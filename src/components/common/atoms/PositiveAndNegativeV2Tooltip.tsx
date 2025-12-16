@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants';
 
 interface PositiveAndNegativeV2TooltipProps {
   active?: boolean;

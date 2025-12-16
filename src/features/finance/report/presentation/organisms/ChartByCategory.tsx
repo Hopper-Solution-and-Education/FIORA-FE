@@ -2,7 +2,7 @@ import { ComposedChart, ComposedChartDataItem } from '@/components/common/charts
 import { ChartSkeleton } from '@/components/common/organisms';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';

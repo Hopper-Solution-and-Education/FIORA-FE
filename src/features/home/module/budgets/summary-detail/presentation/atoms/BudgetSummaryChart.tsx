@@ -1,8 +1,7 @@
 'use client';
 
 import PositiveNegativeStackBarChart from '@/components/common/charts/positive-negative-stack-bar-chart';
-import { CURRENCY } from '@/shared/constants';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS, CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 
 interface BudgetChartProps {

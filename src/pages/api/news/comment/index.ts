@@ -3,9 +3,8 @@ import { commentUsecase } from '@/features/news/api/application/usecase/commentU
 import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase';
 import { CommentCreationNews, GetCommentRequest } from '@/features/news/api/types/commentDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';

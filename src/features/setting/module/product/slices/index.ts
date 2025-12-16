@@ -16,7 +16,7 @@ import {
   updateProductAsyncThunk,
 } from './actions';
 
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
 import { initialProductState } from './types';
 
 // Define a constant for the not found index

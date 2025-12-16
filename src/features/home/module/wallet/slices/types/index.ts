@@ -1,4 +1,4 @@
-import type { FilterCriteria } from '@/shared/types/filter.types';
+import type { FilterCriteria } from '@/shared/types';
 import type { PackageFX } from '../../domain/entity/PackageFX';
 import type { Wallet } from '../../domain/entity/Wallet';
 import type { WalletType } from '../../domain/enum';

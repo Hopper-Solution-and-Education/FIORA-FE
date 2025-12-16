@@ -1,5 +1,5 @@
 import { httpClient } from '@/config/http-client/HttpClient';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { Currency, HttpResponse } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
 import { decorate, injectable } from 'inversify';

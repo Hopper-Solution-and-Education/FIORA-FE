@@ -6,7 +6,7 @@ import { Session, useSession } from 'next-auth/react';
 import { ReactNode } from 'react';
 
 import Loading from '@/components/common/atoms/Loading';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { notFound } from 'next/navigation';
 
 interface ModuleAccessLayoutProps {

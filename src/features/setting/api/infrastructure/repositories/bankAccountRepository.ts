@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
 import { notificationRepository } from '@/features/notification/infrastructure/repositories/notificationRepository';
-import { SessionUser } from '@/shared/types/session';
+import { SessionUser } from '@/shared/types';
 import {
   BankAccount,
   KYCMethod,

@@ -1,5 +1,5 @@
 import { CURRENCY } from '@/shared/constants';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePaymentWalletTransactions } from '../../../hooks';
 import { PaginationParams, PaymentWalletTransaction, initPaginationParams } from '../types';

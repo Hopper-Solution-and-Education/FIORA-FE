@@ -1,4 +1,4 @@
-import { CategoryExtras } from '@/shared/types/category.types';
+import { CategoryExtras } from '@/shared/types';
 import { Account, Partner, Product } from '@prisma/client';
 import { FinanceReportEnum } from '../../constant/FinanceReportEnum';
 

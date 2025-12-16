@@ -1,4 +1,4 @@
-import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { FetchTransactionResponse } from '@/shared/types';
 import { BudgetDetails, BudgetsTable, Prisma } from '@prisma/client';
 
 export interface IBudgetRepository {

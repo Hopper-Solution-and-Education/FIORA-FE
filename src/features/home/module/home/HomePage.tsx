@@ -2,8 +2,7 @@
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ChartByDate } from '@/features/finance/report/presentation/organisms';
 import { getFinanceByDateAsyncThunk } from '@/features/finance/report/slices/actions';
-import { MODULE } from '@/shared/constants';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags, MODULE } from '@/shared/constants';
 import { useAppDispatch } from '@/store';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useEffect } from 'react';

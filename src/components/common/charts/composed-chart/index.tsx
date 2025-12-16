@@ -9,10 +9,10 @@ import {
   DEFAULT_CHART_FONT_SIZE,
   DEFAULT_CHART_TICK_COUNT,
   DEFAULT_CURRENCY,
-} from '@/shared/constants/chart';
+} from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { ColumnConfig, LineConfig, TooltipProps } from '@/shared/types/chart.type';
+import { ColumnConfig, LineConfig, TooltipProps } from '@/shared/types';
 import { cn, isImageUrl } from '@/shared/utils';
 import { findMaxMinValues } from '@/shared/utils/chart';
 import { getChartMargins, useWindowSize } from '@/shared/utils/device';

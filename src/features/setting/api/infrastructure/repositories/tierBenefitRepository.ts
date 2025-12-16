@@ -1,5 +1,5 @@
 import prisma from '@/config/prisma/prisma';
-import { TierBenefit as TierBenefitScheme } from '@/shared/types/membership-benefit';
+import { TierBenefit as TierBenefitScheme } from '@/shared/types';
 import { Prisma, TierBenefit } from '@prisma/client';
 import { ITierBenefitRepository } from '../../repositories/tierBenefitRepository.interface';
 

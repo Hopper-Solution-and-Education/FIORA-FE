@@ -1,7 +1,7 @@
 import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 import { pathToRegexp } from 'path-to-regexp';
-import { RouteEnum } from './shared/constants/RouteEnum';
+import { RouteEnum } from './shared/constants/route';
 
 const publicPatterns = ['/', '/auth/*path', '/helps-center/*path', '/news', '/news/*path', '/demo'];
 

@@ -1,4 +1,4 @@
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 
 export const generateColor = (balance: number, isChild: boolean) => {
   if (balance > 0) {

@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import { BadRequestError, InternalServerError, NotFoundError } from '@/shared/lib';
 import { generateSixDigitNumber } from '@/shared/utils/common';
 import { OtpType, TransactionFlow, TransactionType, WalletType } from '@prisma/client';

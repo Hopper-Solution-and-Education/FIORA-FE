@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
 import { sendBulkEmailUtility } from '@/config/send-grid/sendGrid';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
 import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
 import { Prisma, Referral, Transaction, TransactionType, Wallet, WalletType } from '@prisma/client';

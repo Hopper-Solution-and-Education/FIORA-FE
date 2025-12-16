@@ -1,4 +1,4 @@
-import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
+import { COLORS, STACK_TYPE } from '@/shared/constants';
 import { Currency } from '@/shared/types';
 import { Budget } from '../../domain/entities/Budget';
 import { BudgetSummaryByType } from '../../domain/entities/BudgetSummaryByType';

@@ -1,7 +1,7 @@
 import DateRangeFilter from '@/components/common/filters/DateRangeFilter';
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
-import { FilterColumn, FilterComponentConfig } from '@/shared/types/filter.types';
+import { FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { FilterOptions } from '../../data/api/ISavingInterestDashboardApi';
