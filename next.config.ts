@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['reflect-metadata', 'inversify'],
   images: {
+    unoptimized: true,
     dangerouslyAllowSVG: true,
     remotePatterns: [
       {

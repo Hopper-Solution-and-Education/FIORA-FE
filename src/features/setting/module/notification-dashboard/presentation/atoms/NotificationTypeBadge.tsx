@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
 
 interface NotificationTypeBadgeProps {
   notifyType: string;
@@ -17,7 +18,7 @@ export const NotificationTypeBadge = ({ notifyType, className }: NotificationTyp
   const color = TYPE_COLOR[notifyType] || 'bg-gray-100 text-gray-800';
   return (
     <Badge variant="secondary" className={`hover:bg-${color} ${color} ${className || ''}`}>
-      {notifyType}
+      {formatUnderlineString(notifyType)}
     </Badge>
   );
 };

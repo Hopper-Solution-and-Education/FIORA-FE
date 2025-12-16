@@ -55,6 +55,9 @@ const notificationDashboardSlice = createSlice({
     clearFilter: (state) => {
       state.filter = initialState.filter;
     },
+    setFilter: (state, action: PayloadAction<typeof initialState.filter>) => {
+      state.filter = action.payload;
+    },
     setColumnConfig: (state, action: PayloadAction<typeof initialState.columnConfig>) => {
       // Load column configuration from localStorage
       state.columnConfig = action.payload;
@@ -88,6 +91,7 @@ export const {
   resetColumns,
   updateColumnIndex,
   clearFilter,
+  setFilter,
   setColumnConfig,
 } = notificationDashboardSlice.actions;
 export default notificationDashboardSlice.reducer;
