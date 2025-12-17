@@ -1,11 +1,12 @@
+import AttachmentPreviewModal from '@/components/common/atoms/AttachmentPreviewModal';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/shared/utils';
+import { isImage, isPDF } from '@/shared/utils/common';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FXRequestType } from '../../domain';
 import UpdateWithdrawReceiptDialog from './UpdateWithdrawReceiptDialog';
-import WalletAttachmentPreviewModal from './WalletAttachmentPreviewModal';
 
 interface WalletSettingAttachmentLinkProps {
   attachment?: {
@@ -25,8 +26,6 @@ interface WalletSettingAttachmentLinkProps {
   requestId?: string;
   className?: string;
 }
-
-const SUPPORTED_IMAGE_TYPES = ['jpg', 'jpeg', 'png'];
 
 const WalletSettingAttachmentLink = ({
   attachment,
@@ -85,43 +84,6 @@ const WalletSettingAttachmentLink = ({
       </>
     );
   }
-
-  const formatFileSize = (size: string) => {
-    const bytes = parseInt(size);
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getFileName = (path: string) => {
-    if (!path) return '';
-    const parts = path.split('/');
-    return parts[parts.length - 1];
-  };
-
-  const isPDF = (attachment: { type?: string; path?: string }) => {
-    if (attachment.type === 'application/pdf') return true;
-    if (attachment.path) {
-      const ext = attachment.path.split('.').pop()?.toLowerCase();
-      return ext === 'pdf';
-    }
-    return false;
-  };
-
-  const isImage = (attachment: { type?: string; path?: string }) => {
-    if (attachment.type && attachment.type.startsWith('image/')) {
-      const ext = attachment.type.split('/').pop()?.toLowerCase();
-      return !!ext && SUPPORTED_IMAGE_TYPES.includes(ext);
-    }
-
-    if (attachment.path) {
-      const ext = attachment.path.split('.').pop()?.toLowerCase();
-      return !!ext && SUPPORTED_IMAGE_TYPES.includes(ext);
-    }
-    return false;
-  };
 
   return (
     <>
@@ -182,15 +144,7 @@ const WalletSettingAttachmentLink = ({
         )}
       </div>
 
-      <WalletAttachmentPreviewModal
-        open={open}
-        onOpenChange={setOpen}
-        attachment={attachment!}
-        isImage={isImage(attachment!)}
-        isPDF={isPDF(attachment!)}
-        getFileName={getFileName}
-        formatFileSize={formatFileSize}
-      />
+      <AttachmentPreviewModal open={open} onOpenChange={setOpen} attachment={attachment!} />
 
       <UpdateWithdrawReceiptDialog
         open={uploadDialogOpen}

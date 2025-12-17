@@ -4,7 +4,7 @@ import { membershipSettingUseCase } from '@/features/setting/api/application/use
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
 import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
-import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
 
 import { Prisma, PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
