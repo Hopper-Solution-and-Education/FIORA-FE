@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
+import { formatFileSize, getFileName, isImage, isPDF } from '@/shared/utils/common';
 import Image from 'next/image';
 
 interface AttachmentPreviewModalProps {
@@ -17,22 +18,17 @@ interface AttachmentPreviewModalProps {
     updatedBy: string | null;
     notificationId: string | null;
   };
-  isImage: boolean;
-  isPDF: boolean;
-  getFileName: (path: string) => string;
-  formatFileSize: (size: string) => string;
 }
 
 const AttachmentPreviewModal = ({
   open,
   onOpenChange,
   attachment,
-  isImage,
-  isPDF,
-  getFileName,
-  formatFileSize,
 }: AttachmentPreviewModalProps) => {
-  if (!isImage && !isPDF) return null;
+  const _isImage = isImage(attachment);
+  const _isPDF = isPDF(attachment);
+
+  if (!_isImage && !_isPDF) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,10 +51,10 @@ const AttachmentPreviewModal = ({
           <div
             className={cn(
               'relative rounded-2xl overflow-hidden max-w-[90%] max-h-[60vh] bg-background border border-border shadow-lg',
-              isPDF ? 'w-full h-[60vh]' : '',
+              _isPDF ? 'w-full h-[60vh]' : '',
             )}
           >
-            {isImage && (
+            {_isImage && (
               <Image
                 src={attachment.url}
                 alt={getFileName(attachment.path)}
@@ -71,7 +67,7 @@ const AttachmentPreviewModal = ({
                 priority
               />
             )}
-            {isPDF && (
+            {_isPDF && (
               <iframe
                 src={attachment.url}
                 title={getFileName(attachment.path)}
