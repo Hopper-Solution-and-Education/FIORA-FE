@@ -1,6 +1,6 @@
 ﻿import { prisma } from '@/config';
 import { IUserRepository } from '@/features/auth/domain/repositories/userRepository.interface';
-import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
 import { Prisma, User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 

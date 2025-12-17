@@ -64,6 +64,7 @@ export const CURRENCY: Record<Currency, string> = {
 } as const;
 
 // UPLLOAD
+export const SUPPORTED_IMAGE_TYPES = ['jpg', 'jpeg', 'png'];
 export const FIREBASE_STORAGE_URL = 'https://firebasestorage.googleapis.com';
 export const FIREBASE_GS_URL = 'gs://';
 
