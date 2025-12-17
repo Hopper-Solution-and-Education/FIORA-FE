@@ -62,7 +62,7 @@ export const mapTransactionsToTwoSideBarItems = (
       positiveValue: categoryPositive,
       negativeValue: categoryNegative,
       icon: categoryItem.category.icon,
-      taxRate: categoryItem.category?.tax_rate,
+      taxRate: categoryItem.category.tax_rate,
       createdAt: categoryItem.category.createdAt,
       updatedAt: categoryItem.category.updatedAt,
       description: categoryItem.category.description,

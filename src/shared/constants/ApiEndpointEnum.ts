@@ -113,11 +113,11 @@ export enum ApiEndpointEnum {
   ResetPassword = '/api/auth/forgot-password',
 
   // Products
-  Products = '/api/products',
+  Products = '/api/products/{id}',
   ProductsSearch = '/api/products/search',
 
   // Products Category
-  ProductsCategory = '/api/products/category',
+  ProductsCategory = '/api/products/category/{id}',
 }
 
 export const BASE_API = process.env.NEXT_PUBLIC_BASE_API;

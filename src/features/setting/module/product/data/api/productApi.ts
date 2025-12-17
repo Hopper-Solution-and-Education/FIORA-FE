@@ -1,7 +1,7 @@
-// src/api/product.ts (hoặc nơi bạn định nghĩa ProductAPI)
 import apiClient from '@/config/http-client';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 import { BaseResponse } from '@/shared/types';
+import { routeConfig } from '@/shared/utils/route';
 import { decorate, injectable } from 'inversify';
 import {
   Product,
@@ -43,18 +43,27 @@ class ProductAPI implements IProductAPI {
 
   async getProducts(data: ProductsGetRequestDTO) {
     return await apiClient.get<ProductsGetResponse>(
-      `${ApiEndpointEnum.Products}?page=${data.page}&pageSize=${data.pageSize}`,
+      routeConfig(ApiEndpointEnum.Products, {
+        page: data.page || 1,
+        pageSize: data.pageSize || 20,
+      }),
     );
   }
 
   async updateProduct(data: ProductUpdateRequestDTO) {
-    return await apiClient.put<Product>(`${ApiEndpointEnum.Products}/${data.id}`, data);
+    return await apiClient.put<Product>(
+      routeConfig(ApiEndpointEnum.Products, { id: data.id }),
+      data,
+    );
   }
 
   async deleteProduct(data: ProductDeleteRequestDTO) {
-    return await apiClient.delete<{ id: string }>(`${ApiEndpointEnum.Products}/${data.id}`, {
-      targetId: data.targetId,
-    });
+    return await apiClient.delete<{ id: string }>(
+      routeConfig(ApiEndpointEnum.Products, { id: data.id }),
+      {
+        targetId: data.targetId,
+      },
+    );
   }
 
   async getProductTransaction(data: ProductGetTransactionRequestDTO) {
@@ -65,7 +74,9 @@ class ProductAPI implements IProductAPI {
   }
 
   async getProduct(data: ProductGetSingleRequestDTO) {
-    return await apiClient.get<Product>(`${ApiEndpointEnum.Products}/${data.productId}`);
+    return await apiClient.get<Product>(
+      routeConfig(ApiEndpointEnum.Products, { id: data.productId }),
+    );
   }
 }
 

@@ -1,11 +1,13 @@
 import {
+  CategoryType,
   CreatedBy,
   FilterCriteria,
   PaginatedResult,
   PaginationMeta,
+  Product as ProductEntity,
+  ProductType,
   UpdatedBy,
 } from '@/shared/types';
-import { CategoryType, Product as ProductEntity, ProductType } from '@prisma/client';
 import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
 import { ProductFilterResponse } from '../../slices/types';
 import { Transaction } from './Transaction';
@@ -131,10 +133,9 @@ export type ProductTransactionCategoryResponse = {
     createdAt: string;
     updatedAt: string;
   };
-  products: ProductTransactionResponse[]; // Thêm products vào đây để khớp response
+  products: ProductTransactionResponse[]; // Add products into here to match response
 };
 
-// Type cho sản phẩm và giao dịch (Product và Transaction qua ProductTransaction)
 export type ProductTransactionResponse = {
   id: string;
   price: number;

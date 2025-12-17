@@ -1,5 +1,7 @@
 import { Category, Prisma } from '@prisma/client';
 
+export type CategoryType = 'Expense' | 'Income';
+
 export interface CategoryWithTransactions extends Category {
   fromTransactions: { amount: number }[];
   toTransactions: { amount: number }[];

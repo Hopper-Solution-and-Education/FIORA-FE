@@ -19,7 +19,6 @@ import { mapTransactionsToTwoSideBarItems } from '../utils';
 
 const ChartPage = () => {
   const data = useAppSelector((state) => state.productManagement.productTransaction.data);
-  console.log('=====> Check chart data: ', data);
   const router = useRouter();
   const isLoading = useAppSelector(
     (state) => state.productManagement.productTransaction.isLoadingGet,

@@ -1,5 +1,6 @@
 import apiClient from '@/config/http-client';
 import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { routeConfig } from '@/shared/utils/route';
 import { decorate, injectable } from 'inversify';
 import { CategoryProductGetResponse } from '../../domain/entities';
 import {
@@ -38,13 +39,13 @@ class CategoryAPI implements ICategoryAPI {
   async createCategory(
     request: CategoryProductCreateRequestDTO,
   ): Promise<CategoryProductCreateResponseDTO> {
-    return await apiClient.post(`${ApiEndpointEnum.ProductsCategory}`, request);
+    return await apiClient.post(ApiEndpointEnum.ProductsCategory, request);
   }
 
   async updateCategory(
     request: CategoryProductUpdateRequestDTO,
   ): Promise<CategoryProductUpdateResponseDTO> {
-    return await apiClient.put(`${ApiEndpointEnum.ProductsCategory}/${request.id}`, {
+    return await apiClient.put(routeConfig(ApiEndpointEnum.ProductsCategory, { id: request.id }), {
       name: request.name,
       description: request.description,
       icon: request.icon,
@@ -56,7 +57,7 @@ class CategoryAPI implements ICategoryAPI {
     request: CategoryProductDeleteRequestDTO,
   ): Promise<CategoryProductDeleteResponseDTO> {
     const response = await apiClient.delete(
-      `${ApiEndpointEnum.ProductsCategory}/${request.productCategoryId}`,
+      routeConfig(ApiEndpointEnum.ProductsCategory, { id: request.productCategoryId }),
     );
     return {
       ...response,

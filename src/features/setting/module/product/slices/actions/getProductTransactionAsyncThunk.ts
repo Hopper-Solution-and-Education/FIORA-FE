@@ -23,7 +23,6 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
         userId,
         search,
       );
-      console.log('=====> Check response: ', response);
       return response;
     } catch (error: unknown) {
       let errorMessage = 'Failed to get product transaction';

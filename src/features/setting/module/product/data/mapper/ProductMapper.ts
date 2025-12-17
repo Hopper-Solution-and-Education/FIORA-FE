@@ -65,7 +65,7 @@ export class ProductMapper {
   static toDeleteProductAPIRequest(request: ProductDeleteRequest): ProductDeleteRequestDTO {
     return {
       id: request.id,
-      targetId: request.targetId ? request.targetId : undefined,
+      targetId: request.targetId,
     };
   }
 

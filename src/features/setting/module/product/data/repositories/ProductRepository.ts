@@ -41,9 +41,7 @@ export class ProductRepository implements IProductRepository {
 
   async deleteProduct(request: ProductDeleteRequest) {
     const requestAPI = ProductMapper.toDeleteProductAPIRequest(request);
-    console.log('======> Check requestAPI: ', requestAPI);
     const response = await this.productApi.deleteProduct(requestAPI);
-    console.log('======> Check response: ', response);
     return ProductMapper.toDeleteProductResponse(response);
   }
 
