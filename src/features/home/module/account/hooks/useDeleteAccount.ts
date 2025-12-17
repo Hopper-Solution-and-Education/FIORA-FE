@@ -45,7 +45,10 @@ export function useDeleteAccount() {
       }
     } catch (error: any) {
       // Handle errors
-      console.log(error);
+      console.error('Delete account error:', error);
+      const errorMessage =
+        error?.message || error?.data?.message || 'Failed to delete account. Please try again!';
+      toast.error(errorMessage);
       dispatch(setAccountDeleteDialog(false));
     } finally {
       setIsDeleting(false);

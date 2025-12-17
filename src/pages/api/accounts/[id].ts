@@ -87,12 +87,27 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 }
 
 export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  try {
+    if (req.method !== 'DELETE') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    const { id } = req.query;
+    console.log('🗑️ DELETE account - ID:', id, 'userId:', userId);
+
+    const deletedRes = await AccountUseCaseInstance.deleteAccount(id as string, userId);
+
+    return res
+      .status(RESPONSE_CODE.OK)
+      .json(createResponse(RESPONSE_CODE.OK, 'Delete account successfully', deletedRes));
+  } catch (error: any) {
+    console.error('❌ DELETE account error:', error);
+    return res
+      .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+      .json(
+        createResponse(
+          RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+          error.message || 'Failed to delete account',
+        ),
+      );
   }
-  const { id } = req.query;
-  const deletedRes = await AccountUseCaseInstance.deleteAccount(id as string, userId);
-  res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, 'Delete account successfully', deletedRes));
 }
