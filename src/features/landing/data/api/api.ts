@@ -2,13 +2,10 @@ import type { IHttpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import { SectionTypeEnum } from '../../constants';
 import { ISection } from '../../domain/interfaces/Section';
-
-interface BannerResponse {
-  data: ISection;
-  message: string;
-}
+import { Media } from '../../domain/models/Media';
 
 interface ILandingAPI {
+  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]>;
   fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
 }
 
@@ -19,11 +16,12 @@ class LandingAPI implements ILandingAPI {
     this.httpClient = httpClient;
   }
 
-  async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
-    const response = await this.httpClient.get<BannerResponse>(
-      `/api/banner/section?sectionType=${sectionType}`,
-    );
-    return response.data;
+  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]> {
+    return this.httpClient.get<Media[]>(`/api/banner/media?sectionType=${sectionType}`);
+  }
+
+  fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
+    return this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
   }
 }
 

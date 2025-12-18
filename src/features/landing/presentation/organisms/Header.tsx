@@ -51,14 +51,7 @@ export default function Header() {
               <Skeleton className="w-[80px] sm:w-[90px] md:w-[100px] lg:w-[110px] xl:w-[120px] h-[40px] sm:h-[45px] md:h-[50px] lg:h-[55px] xl:h-[60px]" />
             ) : (
               <div className="w-[80px] sm:w-[90px] md:w-[100px] lg:w-[110px] xl:w-[120px] h-[40px] sm:h-[45px] md:h-[50px] lg:h-[60px] xl:h-[80px] relative">
-                <Image
-                  src={logo}
-                  alt="Fiora Logo"
-                  fill
-                  sizes="(max-width: 640px) 80px, (max-width: 768px) 90px, (max-width: 1024px) 100px, (max-width: 1280px) 110px, 120px"
-                  className="object-contain"
-                  priority
-                />
+                <Image src={logo} alt="Fiora Logo" fill className="object-contain" priority />
               </div>
             )}
           </Link>

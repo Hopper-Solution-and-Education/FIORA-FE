@@ -1,9 +1,8 @@
 'use client';
 
-import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIdle } from '@/shared/hooks/useIdle';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -22,7 +21,6 @@ export function SessionTimeoutModal() {
   const [logoutTriggered, setLogoutTriggered] = useState(false);
   const isIdle = useIdle(30); // Detects inactivity after 30 seconds (adjustable)
   const { clearExchangeRateData } = useCurrencyFormatter();
-  const { logout } = useLogout();
 
   // Automatically refresh session when user is active
   useEffect(() => {
@@ -84,7 +82,7 @@ export function SessionTimeoutModal() {
   const handleLogout = async () => {
     // Clear exchange rate data BEFORE logout to ensure data is cleared while session is still active
     clearExchangeRateData();
-    logout();
+    await signOut();
   };
 
   useEffect(() => {
