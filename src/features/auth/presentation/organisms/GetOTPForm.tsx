@@ -80,6 +80,7 @@ const EmailOtpForm = ({
                       disabled={isOtpSent}
                       {...field}
                       value={field.value ?? ''}
+                      data-test="email-input"
                     />
                   </FormControl>
 
@@ -94,12 +95,16 @@ const EmailOtpForm = ({
                               ? 'text-gray-400 cursor-not-allowed' // Disabled style
                               : 'text-blue-500 hover:text-blue-600 cursor-pointer' // Enabled style
                           }`}
+                          data-test="get-otp-button"
                         >
                           {isLoading ? 'Sending...' : 'Get OTP'}
                         </span>
                       )
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <span
+                        className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"
+                        data-test="resend-timer"
+                      >
                         Resend in {countdown}s
                       </span>
                     )}
@@ -117,12 +122,16 @@ const EmailOtpForm = ({
                             ? 'text-gray-400 cursor-not-allowed' // Disabled style
                             : 'text-blue-500 hover:text-blue-600 cursor-pointer' // Enabled style
                         }`}
+                        data-test="get-otp-button"
                       >
                         {isLoading ? 'Sending...' : 'Get OTP'}
                       </span>
                     )
                   ) : (
-                    <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    <span
+                      className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"
+                      data-test="resend-timer"
+                    >
                       Resend in {countdown}s
                     </span>
                   )}
@@ -152,6 +161,7 @@ const EmailOtpForm = ({
                       maxLength={6}
                       {...field}
                       value={field.value ?? ''}
+                      data-test="otp-input"
                     />
                   </FormControl>
                 </div>
@@ -167,6 +177,7 @@ const EmailOtpForm = ({
             <Button
               type="button"
               className="text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center transition-all duration-200"
+              data-test="back-button"
             >
               <ArrowLeft className="h-5 sm:h-6 w-5 sm:w-6 mr-2 stroke-[4]" />
             </Button>
@@ -177,6 +188,7 @@ const EmailOtpForm = ({
             className={`group text-base sm:text-lg font-semibold w-32 sm:w-44 py-5 sm:py-6 bg-blue-500 text-white hover:bg-blue-600 flex items-center justify-center transition-all duration-200 ${
               !emailOtpForm.formState.isValid && 'cursor-not-allowed'
             }`}
+            data-test="submit-button"
           >
             {isLoading || isSubmitting ? (
               <LoadingIndicator className="w-4 h-4" color="white" />

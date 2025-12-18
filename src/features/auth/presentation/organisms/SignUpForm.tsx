@@ -129,7 +129,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
           </div>
           <div className="p-6 md:p-8">
             {error && (
-              <Alert variant="destructive" className="mb-4">
+              <Alert variant="destructive" className="mb-4" data-test="register-error-message">
                 <AlertDescription className="text-center">{error}</AlertDescription>
               </Alert>
             )}
@@ -233,6 +233,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                 <Link
                   href="/auth/sign-in"
                   className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
+                  data-test="login-link"
                 >
                   Login
                 </Link>

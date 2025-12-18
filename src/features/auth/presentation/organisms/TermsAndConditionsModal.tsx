@@ -71,13 +71,17 @@ const TermsAndConditionsModal = (props: TermsAndConditionModalProps) => {
 
         <DialogFooter className="w-full h-fit flex flex-row !justify-center items-center gap-5">
           <DialogClose onClick={onDecline}>
-            <Button className="bg-red-200 hover:bg-red-300 w-[10vw] h-fit min-w-fit">
+            <Button
+              className="bg-red-200 hover:bg-red-300 w-[10vw] h-fit min-w-fit"
+              data-test="close-terms-button"
+            >
               <CircleX className="block text-red-400 stroke-[3] transform transition-transform duration-200 drop-shadow-sm hover:text-red-200 !h-[23px] !w-[23px]" />
             </Button>
           </DialogClose>
           <Button
             onClick={onAccept}
             className="bg-green-200 hover:bg-green-300 text-green-800 w-[10vw] min-w-fit"
+            data-test="accept-terms-button"
           >
             <Check className="block text-green-400 stroke-[3] transform transition-transform duration-200 drop-shadow-sm hover:text-green-300 !h-[23px] !w-[23px]" />
           </Button>
