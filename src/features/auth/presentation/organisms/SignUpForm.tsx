@@ -234,7 +234,7 @@ const SignUpForm = ({ className, ...props }: React.ComponentProps<'div'>) => {
                   href="/auth/sign-in"
                   className="underline underline-offset-4 text-blue-500 hover:text-blue-600"
                 >
-                  Login
+                  Sign in
                 </Link>
               </div>
             </form>
