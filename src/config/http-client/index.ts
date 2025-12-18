@@ -1,5 +1,5 @@
 import { ApiEndpointEnum, BASE_API } from '@/shared/constants/ApiEndpointEnum';
-import { BaseResponse } from '@/shared/types';
+import { BaseResponse, ErrorResponse } from '@/shared/types';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 export class ApiClient {
@@ -147,7 +147,7 @@ export class ApiClient {
 
   private handleError(error: any): never {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
+      const axiosError = error as AxiosError<ErrorResponse>;
 
       if (axiosError.response?.data) {
         // Throw the actual error response from BE

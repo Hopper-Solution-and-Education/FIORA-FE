@@ -1,8 +1,12 @@
 export enum ApiEndpointEnum {
   // Auth
   Login = '/api/auth/sign-in',
+  SignUp = '/api/auth/sign-up',
+  SignOut = '/api/auth/sign-out',
   Refresh = '/api/auth/refresh',
-  Logout = '/api/auth/sign-out',
+
+  // User
+  Me = '/api/users/me',
 
   BudgetYears = '/api/budgets/dashboard',
   BudgetCategories = '/api/budgets/categories',

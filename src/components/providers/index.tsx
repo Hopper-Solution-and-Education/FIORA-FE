@@ -7,6 +7,7 @@ import growthbook from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
 import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 import NextTopLoader from 'nextjs-toploader';
@@ -17,36 +18,40 @@ import { TooltipProvider } from '../ui/tooltip';
 import { AutoScrollTopProvider } from './AutoScrollTopProvider';
 import { ReduxProvider } from './ReduxProvider';
 
+const queryClient = new QueryClient();
+
 const Providers = ({ children }: PropsWithChildren) => {
   return (
-    <SWRConfig value={swrOptions}>
-      <NextTopLoader showSpinner={false} />
-      <NuqsAdapter>
-        <KBar>
-          <ReduxProvider>
-            <GrowthBookProvider growthbook={growthbook}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-                  <TooltipProvider>
-                    <AutoScrollTopProvider />
-                    <Toaster />
-                    <Updater />
+    <QueryClientProvider client={queryClient}>
+      <SWRConfig value={swrOptions}>
+        <NextTopLoader showSpinner={false} />
+        <NuqsAdapter>
+          <KBar>
+            <ReduxProvider>
+              <GrowthBookProvider growthbook={growthbook}>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="light"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+                    <TooltipProvider>
+                      <AutoScrollTopProvider />
+                      <Toaster />
+                      <Updater />
 
-                    {children}
-                    <SessionTimeoutModal />
-                  </TooltipProvider>
-                </SessionProvider>
-              </ThemeProvider>
-            </GrowthBookProvider>
-          </ReduxProvider>
-        </KBar>
-      </NuqsAdapter>
-    </SWRConfig>
+                      {children}
+                      <SessionTimeoutModal />
+                    </TooltipProvider>
+                  </SessionProvider>
+                </ThemeProvider>
+              </GrowthBookProvider>
+            </ReduxProvider>
+          </KBar>
+        </NuqsAdapter>
+      </SWRConfig>
+    </QueryClientProvider>
   );
 };
 
