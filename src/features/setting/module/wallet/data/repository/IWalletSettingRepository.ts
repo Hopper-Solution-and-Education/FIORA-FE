@@ -1,5 +1,5 @@
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { FilterObject } from '@/shared/types/filter.types';
+import { FilterObject } from '@/shared/types';
 import { DepositRequestStatus } from '../../domain';
 import { DepositRequestsPaginated } from '../../presentation';
 import { UpdateDepositRequestStatusResponse } from '../dto/response/UpdateDepositRequestStatusResponse';

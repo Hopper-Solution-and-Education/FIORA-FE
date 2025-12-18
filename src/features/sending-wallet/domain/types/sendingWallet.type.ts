@@ -1,4 +1,4 @@
-import { Category, Otp, Partner, Product } from '@prisma/client';
+import { Category, Otp, Partner, Product, TransactionFlow } from '@prisma/client';
 
 export type AmountCurrencyType = {
   amount: number;
@@ -19,6 +19,7 @@ export type ArgCreateTransactionSendingType = {
   categoryId?: string;
   description?: string;
   productIds?: string[];
+  flowType?: TransactionFlow;
 };
 
 export type ArgGetPackageType = {

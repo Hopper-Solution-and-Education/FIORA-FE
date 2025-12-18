@@ -2,9 +2,8 @@ import { newsUsecase } from '@/features/news/api/application/usecase/newsUsecase
 import { postCategoryUsecase } from '@/features/news/api/application/usecase/postCategoryUsecase';
 import { NewsUpdateRequest } from '@/features/news/api/types/newsDTO';
 import { userUseCase } from '@/features/setting/api/domain/use-cases/userUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
@@ -108,7 +107,7 @@ export async function UPDATE(req: NextApiRequest, res: NextApiResponse) {
   if (!categoryExists) {
     return res
       .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.POST_CATEGORY_NOT_FOUND));
+      .json(createErrorResponse(RESPONSE_CODE.BAD_REQUEST, Messages.CATEGORY_NOT_FOUND));
   }
 
   //UPdate news

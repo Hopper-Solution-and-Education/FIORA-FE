@@ -13,7 +13,7 @@ import {
   DEFAULT_CURRENCY,
   MIN_CHART_HEIGHT,
   STACK_TYPE,
-} from '@/shared/constants/chart';
+} from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/utils';

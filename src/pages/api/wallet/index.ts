@@ -1,6 +1,6 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
 import { WalletTypeSchema } from '@/features/setting/data/module/wallet/schemas/wallet';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';

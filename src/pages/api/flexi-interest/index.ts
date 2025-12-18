@@ -8,8 +8,8 @@ import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { createResponse } from '../../../shared/lib/responseUtils/createResponse';
 
 // --- Constants ---
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 
 // --- Features & Types ---
 import { flexiInterestUsecases } from '@/features/setting/module/cron-job/module/flexi-interest/application/flexiInterestUsecases';

@@ -1,7 +1,7 @@
 import { faqImportUseCase } from '@/features/helps-center/application/use-cases/faq';
 import { FAQ_IMPORT_CONSTANTS } from '@/features/helps-center/constants';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import formidable from 'formidable';

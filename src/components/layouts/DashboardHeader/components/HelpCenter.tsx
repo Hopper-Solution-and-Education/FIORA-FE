@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { HelpCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import { helpItems } from '../utils';

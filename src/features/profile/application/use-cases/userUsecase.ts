@@ -1,4 +1,4 @@
-import { normalizeToArray } from '@/shared/utils/filterUtils';
+import { normalizeToArray } from '@/shared/utils/filter';
 import { KYCStatus, Prisma, UserRole } from '@prisma/client';
 import { UserBlocked, UserMyProfile } from '../../domain/entities/models/profile';
 import {

@@ -1,5 +1,5 @@
 import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useMemo } from 'react';
 import { Membership } from '../../domain/entities';

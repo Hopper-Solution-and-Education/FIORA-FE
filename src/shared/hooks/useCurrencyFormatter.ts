@@ -13,7 +13,7 @@ import { useSession } from 'next-auth/react';
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
-import { CACHE_KEY, EXCHANGE_RATE_STALE_TIME } from '../constants/exchangeRates';
+import { CACHE_KEY, EXCHANGE_RATE_STALE_TIME } from '../constants';
 import {
   type CurrencyFormatterOptions,
   type ExchangeAmountParams,

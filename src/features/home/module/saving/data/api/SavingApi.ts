@@ -1,5 +1,5 @@
 import { httpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { routeConfig } from '@/shared/utils/route';
 import { CreateSavingClaimRequest } from '../tdo/request/CreateSavingClaimRequest';
 import { CreateSavingHistoryRequest } from '../tdo/request/CreateSavingHistoryRequest';

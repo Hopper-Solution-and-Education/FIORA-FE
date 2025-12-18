@@ -3,14 +3,12 @@ import { IAccountRepository } from '@/features/auth/domain/repositories/accountR
 import { accountRepository } from '@/features/auth/infrastructure/repositories/accountRepository';
 import { currencySettingRepository } from '@/features/setting/api/infrastructure/repositories/currencySettingRepository';
 import { ICurrencySettingRepository } from '@/features/setting/api/repositories/currencySettingRepository.interface';
-import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
-import { Messages } from '@/shared/constants/message';
+import { CURRENCY, DEFAULT_BASE_CURRENCY, Messages } from '@/shared/constants';
 import { BadRequestError, ConflictError, InternalServerError } from '@/shared/lib';
 import { BooleanUtils } from '@/shared/lib/booleanUtils';
-import { PaginationResponse } from '@/shared/types';
-import { TransactionGetPagination } from '@/shared/types/transaction.types';
+import { PaginationResponse, TransactionGetPagination } from '@/shared/types';
 import { buildOrderByTransactionV2, buildWhereClause } from '@/shared/utils';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { convertCurrency } from '@/shared/utils/currency';
 import {
   AccountType,
   CategoryType,
@@ -1254,27 +1252,6 @@ class TransactionUseCase {
     }
   }
 
-  private validateCreditCardAccount(account: Account, amount: number) {
-    const limit = account.limit!.toNumber();
-    const balance = account.balance!.toNumber();
-    const availableCredit = limit - balance;
-
-    if (availableCredit - amount < 0) {
-      throw new BadRequestError('Credit Card does not have enough available credit limit.');
-    }
-  }
-
-  private validateDebtAccount(account: Account, amount: number) {
-    if (account.balance!.toNumber() >= amount) {
-      throw new BadRequestError('Debt Account must have balance below 0.');
-    }
-  }
-
-  private validateInvestAccount(account: Account, amount: number) {
-    if (account.balance!.toNumber() <= amount) {
-      throw new BadRequestError('Invest Account must have balance above 0.');
-    }
-  }
   async getSavingTransactionsPagination(
     params: TransactionGetPagination,
   ): Promise<PaginationResponse<any> & { amountMin?: number; amountMax?: number }> {
@@ -1402,6 +1379,35 @@ class TransactionUseCase {
       amountMin: Number(amountMin['_min']?.baseAmount) || 0,
       total,
     };
+  }
+
+  // Sync all flowType transaction, which have type Expense and currency FX to TransactionFlow.SENDING
+  async syncAllFlowTypeTransaction() {
+    return prisma.$transaction(async (tx) =>
+      this.transactionRepository.updateAllFlowTypeTransaction(tx),
+    );
+  }
+
+  private validateCreditCardAccount(account: Account, amount: number) {
+    const limit = account.limit!.toNumber();
+    const balance = account.balance!.toNumber();
+    const availableCredit = limit - balance;
+
+    if (availableCredit - amount < 0) {
+      throw new BadRequestError('Credit Card does not have enough available credit limit.');
+    }
+  }
+
+  private validateDebtAccount(account: Account, amount: number) {
+    if (account.balance!.toNumber() >= amount) {
+      throw new BadRequestError('Debt Account must have balance below 0.');
+    }
+  }
+
+  private validateInvestAccount(account: Account, amount: number) {
+    if (account.balance!.toNumber() <= amount) {
+      throw new BadRequestError('Invest Account must have balance above 0.');
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import ScatterRankingChart from '@/components/common/charts/scatter-rank-chart';
 import { Tier } from '@/components/common/charts/scatter-rank-chart/types';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useState } from 'react';
 
 const balanceTiers = [

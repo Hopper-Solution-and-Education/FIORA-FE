@@ -2,7 +2,7 @@
 import { ComposedChartDataItem } from '@/components/common/charts';
 import ComposedChartComponent from '@/components/common/charts/composed-chart';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import { DEFAULT_CHART_FONT_SIZE, DEFAULT_CHART_TICK_COUNT } from '@/shared/constants/chart';
+import { DEFAULT_CHART_FONT_SIZE, DEFAULT_CHART_TICK_COUNT } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useDeviceDetect } from '@/shared/hooks/useIsMobile';
 import { useAppDispatch, useAppSelector } from '@/store';

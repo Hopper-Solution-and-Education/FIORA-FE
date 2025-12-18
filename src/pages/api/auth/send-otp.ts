@@ -1,5 +1,6 @@
 import reNewPasswordUseCase from '@/features/auth/application/use-cases/reNewPassword';
 import { userRepository } from '@/features/auth/infrastructure/repositories/userRepository';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { generateOtp } from '@/shared/utils';
@@ -11,7 +12,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
       if (request.method !== 'POST') {
         return response.status(RESPONSE_CODE.METHOD_NOT_ALLOWED).json({
           status: RESPONSE_CODE.METHOD_NOT_ALLOWED,
-          message: 'Method not allowed',
+          message: Messages.METHOD_NOT_ALLOWED,
           data: null,
         });
       }
@@ -21,7 +22,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
       if (!email) {
         return response.status(RESPONSE_CODE.BAD_REQUEST).json({
           status: RESPONSE_CODE.BAD_REQUEST,
-          message: 'Email is required',
+          message: Messages.EMAIL_IS_REQUIRED,
           data: null,
         });
       }
@@ -31,7 +32,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
       if (!user) {
         return response.status(RESPONSE_CODE.NOT_FOUND).json({
           status: RESPONSE_CODE.NOT_FOUND,
-          message: 'User not found',
+          message: Messages.USER_NOT_FOUND,
           data: null,
         });
       }
@@ -44,8 +45,7 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
 
       response.status(RESPONSE_CODE.OK).json({
         status: RESPONSE_CODE.OK,
-        message: 'OTP sent successfully',
-        otp, // In production, don't return OTP in response, store it in session/cache
+        message: Messages.SEND_OTP_SUCCESS,
       });
     },
     req,

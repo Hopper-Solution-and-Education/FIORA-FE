@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
+import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 
 type HandlerWithApiKey = (req: NextApiRequest, res: NextApiResponse) => Promise<void>;
 

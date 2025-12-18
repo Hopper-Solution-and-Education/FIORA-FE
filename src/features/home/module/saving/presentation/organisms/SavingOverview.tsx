@@ -2,7 +2,7 @@
 
 import { Loading } from '@/components/common/atoms';
 import { WalletType } from '@/features/home/module/wallet/domain/enum';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';

@@ -1,9 +1,8 @@
 import { accountUsecase } from '@/features/news/api/application/usecase/accountUsecase';
 import { commentUsecase } from '@/features/news/api/application/usecase/commentUsecase';
 import { CommentUpdationNews } from '@/features/news/api/types/commentDTO';
-import { Messages } from '@/shared/constants/message';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
@@ -91,13 +90,13 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: 
     await commentUsecase.deleteComment(commentIdString);
     return res
       .status(RESPONSE_CODE.OK)
-      .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCESS));
+      .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCCESS));
   } else {
     if (user === UserRole.ADMIN || user === UserRole.CS) {
       await commentUsecase.deleteComment(commentIdString);
       return res
         .status(RESPONSE_CODE.OK)
-        .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCESS));
+        .json(createErrorResponse(RESPONSE_CODE.OK, Messages.DELETE_COMMENT_SUCCESS));
     }
   }
   return res

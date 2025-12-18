@@ -7,8 +7,7 @@ import DeleteAccountDialog from '@/features/home/module/account/components/Delet
 import NavigateToAccountDialog from '@/features/home/module/account/components/NavigateToAccountDialog';
 import { fetchAccounts, fetchParents } from '@/features/home/module/account/slices/actions';
 import { mapAccountsToBarItems } from '@/features/home/module/account/utils';
-import { MODULE } from '@/shared/constants';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS, MODULE } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';

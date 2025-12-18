@@ -1,4 +1,4 @@
-import { iconOptions } from '@/shared/constants/data';
+import { iconOptions } from '@/shared/constants';
 import { OrderByFields } from '@/shared/types';
 import { Filter } from '@growthbook/growthbook';
 import { Prisma } from '@prisma/client';

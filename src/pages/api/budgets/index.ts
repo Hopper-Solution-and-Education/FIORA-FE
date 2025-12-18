@@ -1,5 +1,5 @@
 import { budgetUseCase } from '@/features/setting/api/domain/use-cases/budgetUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -94,5 +94,5 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: str
 
   return res
     .status(RESPONSE_CODE.CREATED)
-    .json(createResponse(RESPONSE_CODE.CREATED, Messages.UPDATE_BUDGET_SUCCESS, updatedRes));
+    .json(createResponse(RESPONSE_CODE.CREATED, Messages.BUDGET_UPDATE_SUCCESS, updatedRes));
 }

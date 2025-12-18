@@ -14,12 +14,10 @@ import {
   getWalletsAsyncThunk,
 } from '@/features/home/module/wallet/slices/actions';
 import { fetchPaymentWalletDashboardAsyncThunk } from '@/features/payment-wallet/slices/actions';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { Messages } from '@/shared/constants/message';
+import { ApiEndpointEnum, Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
-import { Response } from '@/shared/types';
-import { OtpState, WalletWithdrawOverview } from '@/shared/types/otp';
+import { OtpState, Response, WalletWithdrawOverview } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { FieldError } from 'react-hook-form';

@@ -1,5 +1,7 @@
 export enum Messages {
+  // ───────────────────────────────
   // Transaction
+  // ───────────────────────────────
   GET_TRANSACTION_SUCCESS = 'Get transaction list successfully',
   GET_TRANSACTION_BY_ID_SUCCESS = 'Get transaction by id successfully',
   GET_FILTER_OPTIONS_SUCCESS = 'Get transaction filter options successfully',
@@ -7,46 +9,104 @@ export enum Messages {
   UPDATE_TRANSACTION_SUCCESS = 'Update transaction successfully',
   DELETE_TRANSACTION_SUCCESS = 'Delete transaction successfully',
   INVALID_TRANSACTION_TYPE = 'Invalid transaction type',
+  CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
+  TRANSACTION_NOT_FOUND = 'Transaction not found',
+  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
+  TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
+  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
+  TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
+  TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
+  TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
+  SYNC_TRANSACTION_SUCCESS = 'Sync transaction successfully',
 
+  // ───────────────────────────────
   // Category
+  // ───────────────────────────────
   CREATE_CATEGORY_SUCCESS = 'Create category successfully',
   UPDATE_CATEGORY_SUCCESS = 'Update category successfully',
   DELETE_CATEGORY_SUCCESS = 'Delete category successfully',
   GET_CATEGORY_SUCCESS = 'Get category successfully',
   CATEGORY_TYPE_MISMATCH = 'Category type is invalid. Ensure the category type matches the given type.',
-  // Category type is invalid. It must be Expense or Income
+  CATEGORY_NOT_FOUND = 'Category not found',
+  INVALID_CATEGORY_TYPE_INCOME = 'Invalid category type. Category must be Income.',
+  INVALID_CATEGORY_TYPE_EXPENSE = 'Category must be Expense.',
+  INVALID_CATEGORY_TYPE = 'Invalid category type. It must be Expense or Income.',
+  INVALID_CATEGORY_REQUIRED = 'Name and icon are required',
+  PRODUCT_INVALID_CATEGORY_TYPE = 'Invalid product category type.',
+  CATEGORY_CREATE_FAILED = 'Failed to create category',
 
-  // Product
+  // ───────────────────────────────
+  // Product & Service
+  // ───────────────────────────────
   GET_ALL_PRODUCT_SUCCESS = 'Get all product successfully',
   CREATE_PRODUCT_SUCCESS = 'Create product successfully',
   UPDATE_PRODUCT_SUCCESS = 'Update product successfully',
   DELETE_PRODUCT_SUCCESS = 'Delete product successfully',
-  DUPLICATE_PRODUCT_TENANT_ERROR = 'Product with the same name and category already exists',
   GET_PRODUCT_BY_ID_SUCCESS = 'Get product by id successfully',
   GET_PRODUCT_FILTERS = 'Get product filtered successfully.',
+  DUPLICATE_PRODUCT_TENANT_ERROR = 'Product with the same name and category already exists',
   DUPLICATE_PRODUCT_NAME_ERROR = 'Product with the same name already exists',
+  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service or Edu',
+  PRODUCT_NOT_FOUND = 'Product not found',
+  NO_PRODUCTS_PROVIDED = 'No products provided',
+  TARGET_PRODUCT_NOT_FOUND = 'Target product not found',
+  SOURCE_PRODUCT_NOT_FOUND = 'Source product not found',
+  SOURCE_PRODUCT_TRANSFER_SELF_FAILED = 'Source product cannot be the same as target product',
 
-  // Product Failed
+  // Product - Failed
   CREATE_PRODUCT_FAILED = 'Failed to create product',
   UPDATE_PRODUCT_FAILED = 'Failed to update product',
   DELETE_PRODUCT_FAILED = 'Failed to delete product',
   GET_PRODUCT_FAILED = 'Failed to get product',
-  INVALID_PRODUCT_TYPE = 'Invalid product type. Must be either Product or Service or Edu',
-
-  // Product & Service
-  TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
 
   // Product Items
   CREATE_PRODUCT_ITEM_SUCCESS = 'Create product item successfully',
   UPDATE_PRODUCT_ITEM_SUCCESS = 'Update product item successfully',
   DELETE_PRODUCT_ITEM_SUCCESS = 'Delete product item successfully',
   GET_PRODUCT_ITEM_SUCCESS = 'Get product item successfully',
-
-  // Product Items Failed
   CREATE_PRODUCT_ITEM_FAILED = 'Failed to create product item',
   UPDATE_PRODUCT_ITEM_FAILED = 'Failed to update product item',
 
+  // ───────────────────────────────
+  // Category - Product
+  // ───────────────────────────────
+  CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
+  UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',
+  DELETE_CATEGORY_PRODUCT_SUCCESS = 'Delete category product successfully',
+  GET_CATEGORY_PRODUCT_SUCCESS = 'Get list category product successfully',
+  GET_DETAIL_CATEGORY_PRODUCT_SUCCESS = 'Get detail category product successfully',
+  CATEGORY_PRODUCT_STILL_HAS_PRODUCTS = 'Category product still has products',
+  CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
+  CREATE_CATEGORY_PRODUCT_FAILED = 'Failed to create category product',
+  UPDATE_CATEGORY_PRODUCT_FAILED = 'Failed to update category product',
+  UPDATE_CATEGORY_PRODUCT_MANY_FAILED = 'Failed to update many category product',
+  DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
+  GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
+  CATEGORY_PRODUCT_NAME_EXIST = 'Category product name already exists',
+
+  // ───────────────────────────────
+  // Account
+  // ───────────────────────────────
+  CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
+  GET_ACCOUNT_FILTERED_SUCCESS = 'Get account filtered successfully.',
+  UPDATE_ACCOUNT_SUCCESS = 'Account updated successfully',
+  DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully',
+  GET_ACCOUNT_SUCCESS = 'Get account list successfully',
+  CREATE_ACCOUNT_FAILED = 'Failed to create account',
+  ACCOUNT_NOT_FOUND = 'Account not found',
+  INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Invalid account type. Only Payment accounts are allowed for income.',
+  INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Invalid account type. Only Payment and CreditCard are supported.',
+  UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type',
+  REMARK_IS_REQUIRED = 'Remark is required',
+  MASTER_ACCOUNT_ALREADY_EXISTS = 'Master account already exists! You can only have one master account.',
+  UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',
+  INSUFFICIENT_BALANCE = 'Account balance must be greater than or equal to the transaction amount.',
+  INSUFFICIENT_CREDIT_LIMIT = 'Credit card does not have enough available limit.',
+  ACCOUNT_CREATE_FAILED = 'Failed to create default account',
+
+  // ───────────────────────────────
   // Budget Service
+  // ───────────────────────────────
   GET_BUDGET_ITEM_SUCCESS = 'Get budget item successfully',
   GET_BUDGET_LIST_FISCAL_YEAR_SUCCESS = 'Get budget list fiscal year successfully',
   CREATE_BUDGET_SUCCESS = 'Create budget successfully',
@@ -56,13 +116,15 @@ export enum Messages {
   BUDGET_GET_BY_ID_SUCCESS = 'Get budget by id successfully',
   BUDGET_UPDATE_SUCCESS = 'Update budget successfully !',
   BUDGET_DETAIL_CREATE_SUCCESS = 'Create budget details successfully',
+  BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
+  BUDGET_DETAIL_UPDATED_SUCCESS = 'Budget details updated successfully',
+  BUDGET_DETAIL_DELETED_SUCCESS = 'Budget details deleted successfully',
 
+  // Budget - Errors
   TO_DATE_BEFORE_FROM_DATE = 'To date must be after from date',
   INVALID_DATE_FORMAT = 'Invalid date format',
   INVALID_DATE_RANGE_INPUT = 'Invalid date range input',
   INVALID_DATE_RANGE_INPUT_30_DAYS = 'Invalid date range input. Date range must be within 30 days from now',
-
-  // Budget Service Failed
   BUDGET_ID_MISSING = 'Budget id is missing',
   INVALID_BUDGET_TYPE = 'Invalid budget type. Budget type must be Act, Bot, or Top',
   DUPLICATED_BUDGET_FISCAL_YEAR = 'Fiscal year already exists',
@@ -75,90 +137,23 @@ export enum Messages {
   BUDGET_FISCAL_YEAR_ALREADY_EXISTS = 'Budget fiscal year already exists',
   BUDGET_DETAILS_TO_DELETE_NOT_FOUND = 'Budget details to delete not found',
   BUDGET_DETAILS_TO_DELETE_NOT_FOUND_CODE = 'BDNF',
-
-  // Budget Details Service Success
-  BUDGET_DETAIL_CREATED_SUCCESS = 'Budget details created successfully',
-  BUDGET_DETAIL_UPDATED_SUCCESS = 'Budget details updated successfully',
-  BUDGET_DETAIL_DELETED_SUCCESS = 'Budget details deleted successfully',
-
-  // Budget Details Service Failed
   BUDGET_DETAIL_UPDATE_FAILED = 'Failed to update budget details',
   BUDGET_DETAIL_UPDATE_MANY_FAILED = 'Failed to update many budget details',
   BUDGET_DETAIL_DELETE_FAILED = 'Failed to delete budget details',
   DUPLICATED_CATEGORY_BUDGET_DETAILS = 'Category already exists in budget details',
 
-  // Category-Product Success
-  CREATE_CATEGORY_PRODUCT_SUCCESS = 'Create category product successfully',
-  UPDATE_CATEGORY_PRODUCT_SUCCESS = 'Update category product successfully',
-  DELETE_CATEGORY_PRODUCT_SUCCESS = 'Delete category product successfully',
-  GET_CATEGORY_PRODUCT_SUCCESS = 'Get list category product successfully',
-  GET_DETAIL_CATEGORY_PRODUCT_SUCCESS = 'Get detail category product successfully',
-  CATEGORY_PRODUCT_STILL_HAS_PRODUCTS = 'Category product still has products',
-
-  // Category-Product Failed
-  CATEGORY_PRODUCT_NOT_FOUND = 'Category product not found',
-  CREATE_CATEGORY_PRODUCT_FAILED = 'Failed to create category product',
-  UPDATE_CATEGORY_PRODUCT_FAILED = 'Failed to update category product',
-  UPDATE_CATEGORY_PRODUCT_MANY_FAILED = 'Failed to update many category product',
-  DELETE_CATEGORY_PRODUCT_FAILED = 'Failed to delete category product',
-  GET_CATEGORY_PRODUCT_FAILED = 'Failed to get category product',
-  CATEGORY_PRODUCT_NAME_EXIST = 'Category product name already exists',
-  // Account
-  CREATE_ACCOUNT_FAILED = 'Failed to create account',
-  CREATE_ACCOUNT_SUCCESS = 'Account created successfully',
-  GET_ACCOUNT_FILTERED_SUCCESS = 'Get account filtered successfully.',
-  UPDATE_ACCOUNT_SUCCESS = 'Account updated successfully',
-  DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully',
-  GET_ACCOUNT_SUCCESS = 'Get account list successfully',
-
-  // General errors
-  INTERNAL_ERROR = 'An error occurred, please try again later',
-
-  // Transaction-related errors
-  CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
-  TRANSACTION_NOT_FOUND = 'Transaction not found',
-  TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
-  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
-  TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
-
-  // Account-related errors
-  ACCOUNT_NOT_FOUND = 'Account not found',
-  INVALID_ACCOUNT_TYPE_FOR_INCOME = 'Invalid account type. Only Payment accounts are allowed for income.',
-  UNSUPPORTED_ACCOUNT_TYPE = 'Unsupported account type',
-  INVALID_ACCOUNT_TYPE_FOR_EXPENSE = 'Invalid account type. Only Payment and CreditCard are supported.',
-  REMARK_IS_REQUIRED = 'Remark is required',
-  MASTER_ACCOUNT_ALREADY_EXISTS = 'Master account already exists! You can only have one master account.',
-  UNAUTHORIZED = 'Not logged in',
-  UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',
-
-  // Category-related errors
-  CATEGORY_NOT_FOUND = 'Category not found',
-  INVALID_CATEGORY_TYPE_INCOME = 'Invalid category type. Category must be Income.',
-  INVALID_CATEGORY_TYPE_EXPENSE = 'Category must be Expense.',
-  PRODUCT_INVALID_CATEGORY_TYPE = 'Invalid product category type.',
-  INVALID_CATEGORY_TYPE = 'Invalid category type. It must be Expense or Income.',
-  INVALID_CATEGORY_REQUIRED = 'Name and icon are required',
-
-  // Account balance-related errors
-  INSUFFICIENT_BALANCE = 'Account balance must be greater than or equal to the transaction amount.',
-  INSUFFICIENT_CREDIT_LIMIT = 'Credit card does not have enough available limit.',
-
-  // Product-related errors
-  PRODUCT_NOT_FOUND = 'Product not found',
-  NO_PRODUCTS_PROVIDED = 'No products provided',
-  TARGET_PRODUCT_NOT_FOUND = 'Target product not found',
-  SOURCE_PRODUCT_NOT_FOUND = 'Source product not found',
-  SOURCE_PRODUCT_TRANSFER_SELF_FAILED = 'Source product cannot be the same as target product',
-  TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
-  // Transaction Constraint when delete
-  TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
-
-  // System errors
-  MISSING_PARAMS_INPUT = 'Missing required parameters',
-  METHOD_NOT_ALLOWED = 'Method not allowed',
-
-  // Partner validation errors
+  // ───────────────────────────────
+  // Partner
+  // ───────────────────────────────
+  GET_PARTNER_SUCCESS = 'Get partner list successfully.',
+  GET_PARTNER_FILTERED_SUCCESS = 'Get partner filtered successfully.',
+  CREATE_PARTNER_SUCCESS = 'Create partner successfully.',
+  UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
+  DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',
+  CREATE_PARTNER_FAILED = 'Failed to create partner.',
+  UPDATE_PARTNER_FAILED = 'Failed to update partner.',
   INVALID_EMAIL = 'Invalid email',
+  EMAIL_IS_REQUIRED = 'Email is required',
   EMAIL_TOO_LONG = 'Email is too long (maximum 50 characters)',
   INVALID_PHONE_LENGTH = 'Phone number must be between 10 and 15 characters',
   INVALID_TAX_NO = 'Invalid tax number',
@@ -182,15 +177,9 @@ export enum Messages {
   PARTNER_TAXNO_EXISTS = 'Tax number already exists',
   PARTNER_IDENTIFY_EXISTS = 'Identifier already exists',
 
-  GET_PARTNER_SUCCESS = 'Get partner list successfully.',
-  GET_PARTNER_FILTERED_SUCCESS = 'Get partner filtered successfully.',
-  CREATE_PARTNER_SUCCESS = 'Create partner successfully.',
-  UPDATE_PARTNER_SUCCESS = 'Update partner successfully.',
-  DELETE_PARTNER_SUCCESS = 'Delete partner successfully.',
-  CREATE_PARTNER_FAILED = 'Failed to create partner.',
-  UPDATE_PARTNER_FAILED = 'Failed to update partner.',
-
-  // FINANCE REPORT
+  // ───────────────────────────────
+  // Finance Report
+  // ───────────────────────────────
   GET_FINANCE_REPORT_SUCCESS = 'Get finance report successfully.',
   GET_FINANCE_REPORT_FAILED = 'Failed to get finance report.',
   INVALID_FINANCE_REPORT_TYPE = 'Invalid finance report type for {{type}}.',
@@ -198,7 +187,20 @@ export enum Messages {
   INVALID_FINANCE_REPORT_FILTER_TYPE = 'Invalid finance report filter type.',
   INVALID_FINANCE_REPORT_IDS = 'IDs must be a non-empty array',
 
-  // Membership Tier Failed
+  // ───────────────────────────────
+  // Membership Tier
+  // ───────────────────────────────
+  UPSERT_MEMBERSHIP_TIER_SUCCESS = 'Membership tier upserted successfully',
+  MEMBERSHIP_TIER_UPDATE_SUCCESS = 'Membership tier updated successfully',
+  MEMBERSHIP_TIER_CREATE_SUCCESS = 'Membership tier created successfully',
+  MEMBERSHIP_TIER_DELETE_SUCCESS = 'Membership tier deleted successfully',
+  MEMBERSHIP_TIER_GET_SUCCESS = 'Membership tier retrieved successfully',
+  MEMBERSHIP_TIER_GET_ALL_SUCCESS = 'Membership tiers retrieved successfully',
+  GET_CURRENT_MEMBERSHIP_TIER_SUCCESS = 'Current membership tier retrieved successfully',
+  GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
+  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
+
+  // Membership Tier - Errors
   MEMBERSHIP_TIER_ALREADY_EXISTS = 'Membership tier already exists',
   MEMBERSHIP_TIER_CREATE_FAILED = 'Failed to create membership tier',
   MEMBERSHIP_TIER_UPDATE_FAILED = 'Failed to update membership tier',
@@ -209,28 +211,12 @@ export enum Messages {
   MEMBERSHIP_TIER_BENEFIT_NOT_FOUND = 'Membership tier benefit not found',
   MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
-  // Membership Tier Dashboard
-  GET_MEMBERSHIP_TIERS_DASHBOARD_SUCCESS = 'Membership tiers dashboard retrieved successfully',
-
-  // Membership Tier Success
-  UPSERT_MEMBERSHIP_TIER_SUCCESS = 'Membership tier upserted successfully',
-  MEMBERSHIP_TIER_UPDATE_SUCCESS = 'Membership tier updated successfully',
-  MEMBERSHIP_TIER_CREATE_SUCCESS = 'Membership tier created successfully',
-  MEMBERSHIP_TIER_DELETE_SUCCESS = 'Membership tier deleted successfully',
-  MEMBERSHIP_TIER_GET_SUCCESS = 'Membership tier retrieved successfully',
-  MEMBERSHIP_TIER_GET_FAILED = 'Failed to retrieve membership tier',
-  MEMBERSHIP_TIER_GET_ALL_SUCCESS = 'Membership tiers retrieved successfully',
-
-  // Membership Tier Current
-  GET_CURRENT_MEMBERSHIP_TIER_SUCCESS = 'Current membership tier retrieved successfully',
-
-  // Membership Progress Failed
   MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND = 'Membership progress of current user not found',
+  MEMBERSHIP_PROGRESS_CREATE_FAILED = 'Failed to create membership progress',
 
-  // Membership Progress Success
-  MEMBERSHIP_PROGRESS_OF_CURRENT_USER_SUCCESS = 'Membership progress of current user retrieved successfully',
-
-  // WALLET
+  // ───────────────────────────────
+  // Wallet & Deposit/Withdraw
+  // ───────────────────────────────
   GET_WALLET_SUCCESS = 'Get wallet successfully.',
   GET_PACKAGE_FX_SUCCESS = 'Get package FX successfully.',
   GET_FROZEN_DEPOSIT_AMOUNT_SUCCESS = 'Get frozen deposit amount successfully.',
@@ -238,24 +224,34 @@ export enum Messages {
   CREATE_DEPOSIT_REQUEST_SUCCESS = 'Create deposit request successfully.',
   UPDATE_DEPOSIT_REQUEST_STATUS_SUCCESS = 'Update deposit request status successfully.',
   USER_WALLET_NOT_FOUND = 'User wallet not found.',
+  PAYMENT_WALLET_NOT_FOUND = 'Payment wallet not found.',
+  GET_WALLET_WITHDRAW_SUCCESS = 'Get wallet withdraw successfully',
+  WITHDRAW_REQUEST_SUCCESS = 'Withdraw request successfully',
+  WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
+  SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
 
-  // WALLET FAID
+  // Wallet Errors
   INVALID_DEPOSIT_REQUEST_TYPE = 'Invalid deposit request type.',
   MISSING_REJECTION_REASON = 'Missing rejection reason.',
   INVALID_WALLET_TYPE = 'Invalid wallet type.',
   UPDATE_DEPOSIT_REQUEST_STATUS_FAILED = 'Update deposit request status failed.',
   INVALID_STATUS = 'Invalid status.',
-  PAYMENT_WALLET_NOT_FOUND = 'Payment wallet not found.',
   COULD_NOT_GENERATE_UNIQUE_REF_CODE = 'Could not generate unique refCode, please try again.',
   CURRENCY_IS_REQUIRED = 'Currency is required.',
+  INVALID_AMOUNT = 'no data',
+  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
+  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
+  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
+  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
+  WALLET_CREATE_FAILED = 'Failed to create wallet',
 
-  // PACKAGE FX SUCCESS
+  // ───────────────────────────────
+  // Package FX
+  // ───────────────────────────────
   CREATE_PACKAGE_FX_SUCCESS = 'Create package FX successfully.',
   UPDATE_PACKAGE_FX_SUCCESS = 'Update package FX successfully.',
   DELETE_PACKAGE_FX_SUCCESS = 'Delete package FX successfully.',
   GET_PACKAGE_FX_BY_ID_SUCCESS = 'Get package FX by id successfully.',
-
-  // PACKAGE FX FAILED
   CREATE_PACKAGE_FX_FAILED = 'Failed to create package FX.',
   UPDATE_PACKAGE_FX_FAILED = 'Failed to update package FX.',
   DELETE_PACKAGE_FX_FAILED = 'Failed to delete package FX.',
@@ -266,13 +262,13 @@ export enum Messages {
   PACKAGE_FX_FILE_UPLOAD_FAILED = 'Failed to upload file for package FX.',
   PACKAGE_FX_HAS_ACTIVE_DEPOSIT_REQUEST = 'Cannot update PackageFX: There are active deposit requests pending approval',
 
-  // EXCHANGE RATE SUCCESS
+  // ───────────────────────────────
+  // Exchange Rate
+  // ───────────────────────────────
   CREATE_EXCHANGE_RATE_SUCCESS = 'Create exchange rate successfully.',
   UPDATE_EXCHANGE_RATE_SUCCESS = 'Update exchange rate successfully.',
   DELETE_EXCHANGE_RATE_SUCCESS = 'Delete exchange rate successfully.',
   GET_EXCHANGE_RATE_SUCCESS = 'Get exchange rate successfully.',
-
-  // EXCHANGE RATE FAILED
   CREATE_EXCHANGE_RATE_FAILED = 'Failed to create exchange rate.',
   GET_EXCHANGE_RATE_FAILED = 'Failed to get exchange rate.',
   INVALID_EXCHANGE_RATE_DATA = 'Invalid exchange rate data.',
@@ -282,19 +278,18 @@ export enum Messages {
   EXCHANGE_RATE_NOT_FOUND = 'Exchange rate not found.',
   DELETE_EXCHANGE_RATE_FAILED = 'Failed to delete exchange rate.',
 
-  INVALID_USER = 'Invalid user.',
-  USER_EMAIL_EXISTED = 'Email already existed',
-  NOT_FOUND_EMAIL = 'User email not found',
-  INVALID_PHONE = 'Invalid phone number.',
-  INVALID_DOB = 'Invalid date of birth.',
-
-  // CURRENCY SUCCESS
+  // ───────────────────────────────
+  // Currency
+  // ───────────────────────────────
   GET_CURRENCY_SUCCESS = 'Get currency successfully.',
   CREATE_CURRENCY_SUCCESS = 'Create currency successfully.',
-  // CURRENCY ERROR
   CURRENCY_NOT_FOUND = 'Currency not found',
   GET_CURRENCY_FAILED = 'Failed to get currency.',
-  // FAQ
+  INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
+
+  // ───────────────────────────────
+  // FAQ & News
+  // ───────────────────────────────
   IMPORT_FAQS_SUCCESS = 'Import FAQs successfully',
   IMPORT_FAQS_FAILED = 'Import FAQs failed',
   GET_FAQ_CATEGORIES_SUCCESS = 'Get FAQ categories successfully',
@@ -319,9 +314,6 @@ export enum Messages {
   GET_FAQ_REACTIONS_FAILED = 'Get FAQ reactions failed',
   FAQ_TITLE_ALREADY_EXISTS = 'FAQ title already exists',
   CREATE_FAQ_SUCCESS = 'Create FAQ successfully',
-  // COMMON ERRORS
-  INVALID_CURRENCY = 'Invalid currency. Must be either VND or USD.',
-  VALIDATION_ERROR = 'Validation error.',
 
   GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
   NOTIFICATION_NOT_BELONG_TO_USER = 'Notification not belong to user',
@@ -425,6 +417,7 @@ export enum Messages {
   GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
   FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
   //News
+  // News
   GET_LISTNEW_SUCCESS = 'Get list news success',
   CREATE_NEWS_SUCCESS = 'Create news successfully',
   NEWS_TITLE_ALREADY_EXISTS = 'NEWS title already exists',
@@ -444,18 +437,24 @@ export enum Messages {
   GET_LIST_POST_TYPE_SUCCESS = 'Get list post type successfully',
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
-  // Wallet Withdraw
-  GET_WALLET_WITHDRAW_SUCCESS = 'Get wallet withdraw successfully',
-  WITHDRAW_REQUEST_SUCCESS = 'Withdraw request successfully',
-  WITHDRAW_REQUEST_FAILED = 'Withdraw request failed',
-  INVALID_AMOUNT = 'no data',
-  SEND_OTP_SUCESSFULL = 'send otp verify withdraw successfully',
+  // ───────────────────────────────
+  // User & Auth
+  // ───────────────────────────────
+  INVALID_USER = 'Invalid user.',
+  USER_EMAIL_EXISTED = 'Email already existed',
+  NOT_FOUND_EMAIL = 'User email not found',
+  INVALID_PHONE = 'Invalid phone number.',
+  INVALID_DOB = 'Invalid date of birth.',
+  UNAUTHORIZED = 'Not logged in',
+  FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER = 'Failed to generate unique referral code for user',
+  SIGNUP_USER_FAILED = 'Failed to sign up user',
+  SIGNUP_SUCCESS = 'You have registered for an account successfully!',
 
-  //Saving Wallet
-  DEPOSIT_AMOUNT_ERROR = 'Error depositing to saving wallet',
-  WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
-  MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
-
-  //Withdrawal Request
-  ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
+  // ───────────────────────────────
+  // General / Common
+  // ───────────────────────────────
+  INTERNAL_ERROR = 'An error occurred, please try again later',
+  MISSING_PARAMS_INPUT = 'Missing required parameters',
+  METHOD_NOT_ALLOWED = 'Method not allowed',
+  VALIDATION_ERROR = 'Validation error.',
 }

@@ -5,7 +5,7 @@ import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar
 import { ChartSkeleton } from '@/components/common/organisms';
 import { mapPartnersToTwoSideBarItems } from '@/features/setting/module/partner/presentation/utils';
 import { fetchPartners } from '@/features/setting/module/partner/slices/actions/fetchPartnersAsyncThunk';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';

@@ -1,6 +1,6 @@
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import useDataFetch from '@/shared/hooks/useDataFetcher';
-import type { WalletSendingOverview } from '@/shared/types/otp';
+import type { WalletSendingOverview } from '@/shared/types';
 import { useAppSelector } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';

@@ -109,8 +109,8 @@ export function useCreatePartner({ redirectPath }: Props) {
     } catch (error: any) {
       const errorMessage = 'Failed to create partner';
 
-      if (error.message) {
-        setErrorsFromObject(error.message, setError);
+      if (error) {
+        setErrorsFromObject(error, setError);
       }
 
       toast.error(errorMessage);

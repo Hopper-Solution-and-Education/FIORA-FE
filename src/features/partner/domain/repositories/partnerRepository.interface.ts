@@ -1,5 +1,5 @@
+import { PartnerExtras } from '@/shared/types';
 import { Partner, Prisma } from '@prisma/client';
-import { PartnerExtras } from '@/shared/types/partner.types';
 
 export interface IPartnerRepository {
   getPartnersByUserId(

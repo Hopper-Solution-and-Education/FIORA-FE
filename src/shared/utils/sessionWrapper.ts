@@ -2,9 +2,9 @@ import { prisma } from '@/config';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
-import { SessionUser } from '../types/session';
+import RESPONSE_CODE from '../constants/RESPONSE_CODE';
+import { SessionUser } from '../types/session.types';
 
 type HandlerWithUser = (
   req: NextApiRequest,
@@ -32,7 +32,7 @@ export function sessionWrapper(handler: HandlerWithUser): any {
       });
 
       if (user?.isBlocked) {
-        res.status(550).json({ message: Messages.USER_BLOCKED_SIGNIN_ERROR });
+        res.status(RESPONSE_CODE.FORBIDDEN).json({ message: Messages.USER_BLOCKED_SIGNIN_ERROR });
         return;
       }
 

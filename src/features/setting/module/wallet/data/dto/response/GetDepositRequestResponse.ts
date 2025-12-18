@@ -1,4 +1,4 @@
-import { DepositRequestStatus, FXRequestType } from '../../../domain';
+import { BankAccount, DepositRequestStatus, FXRequestType } from '../../../domain';
 
 export interface GetDepositRequestResponse {
   id: string;
@@ -24,6 +24,7 @@ export interface GetDepositRequestResponse {
     name: string | null;
     email: string | null;
     image: string | null;
+    BankAccount: BankAccount[] | [];
   };
   attachment?: {
     id: string;
