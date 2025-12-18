@@ -32,7 +32,7 @@ interface ICategoryAPI {
 class CategoryAPI implements ICategoryAPI {
   async fetchCategories({ page, pageSize }: CategoryProductGetRequestDTO) {
     return await apiClient.get<CategoryProductGetResponse>(
-      `${ApiEndpointEnum.ProductsCategory}?page=${page}&pageSize=${pageSize}`,
+      routeConfig(ApiEndpointEnum.ProductsCategory, {}, { page, pageSize }),
     );
   }
 
