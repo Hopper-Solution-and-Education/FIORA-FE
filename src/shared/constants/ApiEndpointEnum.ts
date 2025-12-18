@@ -4,6 +4,8 @@ export enum ApiEndpointEnum {
   SignUp = '/api/auth/sign-up',
   SignOut = '/api/auth/sign-out',
   Refresh = '/api/auth/refresh',
+  SendOtpForgotPassword = '/api/auth/send-otp',
+  ResetPassword = '/api/auth/reset-password',
 
   // User
   Me = '/api/users/me',
@@ -107,10 +109,6 @@ export enum ApiEndpointEnum {
   SavingTransactionHistory = '/api/wallet/smart-saving/transaction',
   SavingTransfer = '/api/wallet/smart-saving/transfer',
   SavingClaim = '/api/wallet/smart-saving/claims',
-
-  // Auth
-  SendOtpForgotPassword = '/api/auth/send-otp',
-  ResetPassword = '/api/auth/forgot-password',
 }
 
 export const BASE_API = process.env.NEXT_PUBLIC_BASE_API;

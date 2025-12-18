@@ -1,5 +1,6 @@
 'use client';
 
+import { useGetMe } from '@/features/auth/hooks/useGetMe';
 import {
   useInitialFrozenAmount,
   useInitializeUserWallet,
@@ -8,6 +9,7 @@ import {
 const Updater = () => {
   useInitializeUserWallet();
   useInitialFrozenAmount();
+  useGetMe();
 
   return null;
 };

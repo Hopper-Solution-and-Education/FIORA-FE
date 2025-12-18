@@ -1,7 +1,7 @@
 import { GetCurrentTierResponse } from '@/features/home/module/membership/domain/entities';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getCurrentTierAsyncThunk } from '../actions';
-import { initialUserState } from '../types/user.type';
+import { initialUserState, User } from '../types/user.type';
 
 const userSlice = createSlice({
   name: 'user',
@@ -9,6 +9,13 @@ const userSlice = createSlice({
   reducers: {
     setCurrentTierMembership: (state, action: PayloadAction<GetCurrentTierResponse | null>) => {
       state.userTier.data = action.payload;
+    },
+    setUserData: (state, action: PayloadAction<{ user: User }>) => {
+      state.user = action.payload.user;
+    },
+    logout: (state) => {
+      state.user = null;
+      state.userTier.data = null;
     },
   },
   extraReducers: (builder) => {
@@ -25,6 +32,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setCurrentTierMembership } = userSlice.actions;
+export const { setCurrentTierMembership, setUserData, logout } = userSlice.actions;
 
 export default userSlice.reducer;

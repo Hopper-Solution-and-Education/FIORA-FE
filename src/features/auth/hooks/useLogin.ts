@@ -2,6 +2,8 @@
 
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { useAppDispatch } from '@/store';
+import { setUserData } from '@/store/slices/user.slice';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useMutation } from '@tanstack/react-query';
 import { signIn, useSession } from 'next-auth/react';
@@ -27,6 +29,7 @@ export function useLogin() {
   const { data: session } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
 
   const form = useForm({
     resolver: yupResolver(loginSchema),
@@ -48,6 +51,11 @@ export function useLogin() {
     },
     onSuccess: async (loginResponse, variables) => {
       if (loginResponse.statusCode === RESPONSE_CODE.OK) {
+        dispatch(
+          setUserData({
+            user: loginResponse.data.user,
+          }),
+        );
         // TODO: Remove logic when completed migration
         const response = await signIn('credentials', {
           ...variables,

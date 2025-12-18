@@ -2,10 +2,10 @@
 
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
+import Updater from '@/components/providers/Updater';
 import { Toaster } from '@/components/ui/sonner';
 import growthbook from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
-import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
