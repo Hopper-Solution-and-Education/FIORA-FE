@@ -1,7 +1,7 @@
+import InputCurrency from '@/components/common/forms/input/InputCurrency';
+import { ACCOUNT_TYPES } from '@/shared/constants';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
-import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import InputCurrency from '@/components/common/forms/input/InputCurrency';
 
 interface LimitFieldProps {
   name: string;

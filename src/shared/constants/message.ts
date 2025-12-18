@@ -12,11 +12,12 @@ export enum Messages {
   CREATE_TRANSACTION_FAILED = 'Failed to create transaction',
   TRANSACTION_NOT_FOUND = 'Transaction not found',
   TRANSACTION_WALLET_NOT_FOUND = 'Transaction wallet not found',
-  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_TOO_OLD_TO_DELETE = 'Cannot delete a transaction older than 30 days',
+  UPDATE_TRANSACTION_FAILED = 'Failed to update transaction',
   TRANSACTION_DELETE_FAILED_CONSTRAINT = 'Transaction cannot be deleted because it is linked to transactions.',
   TRANSFER_TRANSACTION_SUCCESS = 'Transfer transaction successfully',
   TRANSFER_TRANSACTION_FAILED = 'Failed to transfer transaction',
+  SYNC_TRANSACTION_SUCCESS = 'Sync transaction successfully',
 
   // ───────────────────────────────
   // Category
@@ -32,6 +33,7 @@ export enum Messages {
   INVALID_CATEGORY_TYPE = 'Invalid category type. It must be Expense or Income.',
   INVALID_CATEGORY_REQUIRED = 'Name and icon are required',
   PRODUCT_INVALID_CATEGORY_TYPE = 'Invalid product category type.',
+  CATEGORY_CREATE_FAILED = 'Failed to create category',
 
   // ───────────────────────────────
   // Product & Service
@@ -100,6 +102,7 @@ export enum Messages {
   UPDATE_PARENT_ACCOUNT_NOT_ALLOWED = 'Parent account balance cannot be updated',
   INSUFFICIENT_BALANCE = 'Account balance must be greater than or equal to the transaction amount.',
   INSUFFICIENT_CREDIT_LIMIT = 'Credit card does not have enough available limit.',
+  ACCOUNT_CREATE_FAILED = 'Failed to create default account',
 
   // ───────────────────────────────
   // Budget Service
@@ -209,6 +212,7 @@ export enum Messages {
   MEMBERSHIP_BENEFIT_NOT_FOUND = 'Membership benefit not found',
   MEMBERSHIP_BENEFIT_SLUG_NAME_ALREADY_EXISTS = 'Membership benefit slug name already exists',
   MEMBERSHIP_PROGRESS_OF_CURRENT_USER_NOT_FOUND = 'Membership progress of current user not found',
+  MEMBERSHIP_PROGRESS_CREATE_FAILED = 'Failed to create membership progress',
 
   // ───────────────────────────────
   // Wallet & Deposit/Withdraw
@@ -239,6 +243,7 @@ export enum Messages {
   WITHDRAW_AMOUNT_ERROR = 'Error withdrawing from saving wallet',
   MIN_TRANSFER_AMOUNT_ERROR = 'Transfer amount must be greater than 100 FX',
   ATTACHMENT_REQUIRED = 'Attachment is required to approve a withdrawal request',
+  WALLET_CREATE_FAILED = 'Failed to create wallet',
 
   // ───────────────────────────────
   // Package FX
@@ -425,6 +430,9 @@ export enum Messages {
   VERIFY_OTP_SUCCESS = 'Verify OTP successfully',
   VERIFY_OTP_FAILED = 'Verify OTP failed',
   OTP_REQUIRED = 'OTP is required',
+  FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER = 'Failed to generate unique referral code for user',
+  SIGNUP_USER_FAILED = 'Failed to sign up user',
+  SIGNUP_SUCCESS = 'You have registered for an account successfully!',
 
   // ───────────────────────────────
   // Notification

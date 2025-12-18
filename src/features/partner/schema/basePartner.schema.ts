@@ -1,4 +1,4 @@
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import * as Yup from 'yup';
 
 // Helper function to transform empty strings to null

@@ -7,8 +7,8 @@ import {
   getWalletsAsyncThunk,
 } from '@/features/home/module/wallet/slices/actions';
 import { fetchPaymentWalletDashboardAsyncThunk } from '@/features/payment-wallet/slices/actions';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import type { OtpState } from '@/shared/types/otp';
+import { ApiEndpointEnum } from '@/shared/constants';
+import type { OtpState } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';

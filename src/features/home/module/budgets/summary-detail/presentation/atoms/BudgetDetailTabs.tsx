@@ -1,6 +1,6 @@
 import { Icons } from '@/components/Icon';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { BudgetDetailFilterEnum } from '../../data/constants';
 
 interface BudgetDetailTabsProps {

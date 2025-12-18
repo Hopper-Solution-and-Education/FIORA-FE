@@ -5,11 +5,14 @@ import { Icons } from '@/components/Icon';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import UserAvatar from '@/features/setting/module/user-management/presentation/atoms/UserAvatar';
 import { useGetUsersQuery } from '@/features/setting/module/user-management/store/api/userApi';
-import { COLORS } from '@/shared/constants/chart';
-import { globalNavItems, notSignInNavItems } from '@/shared/constants/data';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { ICON_SIZE } from '@/shared/constants/size';
-import { UserRole } from '@/shared/constants/userRole';
+import {
+  COLORS,
+  globalNavItems,
+  ICON_SIZE,
+  notSignInNavItems,
+  RouteEnum,
+  UserRole,
+} from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
@@ -32,13 +35,13 @@ import {
 function UserNav() {
   const router = useRouter();
   const { data: profile } = useGetProfileQuery();
-  const { data: userData } = useGetUsersQuery({ pageSize: 3 });
   const { clearExchangeRateData } = useCurrencyFormatter();
   const dispatch = useAppDispatch();
   const { data: userTier, isLoading: isLoadingUserTier } = useAppSelector(
     (state) => state.user.userTier,
   );
   const canViewSwitchProfile = profile?.role === UserRole.ADMIN || profile?.role === UserRole.CS;
+  const { data: userData } = useGetUsersQuery({ pageSize: 3 }, { skip: !canViewSwitchProfile });
 
   const switchProfile = (userData?.data ?? []).map((user) => ({
     userId: user.User?.id,

@@ -1,5 +1,5 @@
 import { ChartDataConfig } from '@/components/common/charts/positive-negative-stack-bar-chart/type';
-import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT, STACK_KEY, STACK_TYPE } from '@/shared/constants/chart';
+import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT, STACK_KEY, STACK_TYPE } from '@/shared/constants';
 import { getChartMargins } from '@/shared/utils/device';
 import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 

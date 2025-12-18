@@ -1,6 +1,6 @@
-import { WalletFilterParams } from '../presentation/types/filter.type';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
 import { Wallet } from '../domain/entity/Wallet';
+import { WalletFilterParams } from '../presentation/types/filter.type';
 
 /**
  * Extracts walletTypes, balanceMin, and balanceMax from filterCriteria.

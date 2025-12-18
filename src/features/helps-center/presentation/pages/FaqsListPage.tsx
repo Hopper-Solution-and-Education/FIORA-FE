@@ -1,6 +1,6 @@
 import { FAQ_LIST_CONSTANTS } from '@/features/helps-center/constants';
 import { useFaqsData } from '@/features/helps-center/hooks/useFaqsData';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
 import { Session, useSession } from 'next-auth/react';
 import { PostType } from '../../domain/entities/models/faqs';
 import { useGetFaqCategoriesWithPostQuery } from '../../store/api/helpsCenterApi';

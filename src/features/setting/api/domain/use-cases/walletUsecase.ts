@@ -5,15 +5,17 @@ import { accountRepository } from '@/features/auth/infrastructure/repositories/a
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { CURRENCY, DEFAULT_BASE_CURRENCY } from '@/shared/constants';
-import { EmailTemplateEnum } from '@/shared/constants/EmailTemplateEnum';
-import { Messages } from '@/shared/constants/message';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { SavingWalletAction } from '@/shared/constants/savingWallet';
+import {
+  CURRENCY,
+  DEFAULT_BASE_CURRENCY,
+  EmailTemplateEnum,
+  Messages,
+  RouteEnum,
+  SavingWalletAction,
+} from '@/shared/constants';
 import { BadRequestError, NotFoundError } from '@/shared/lib';
-import { FilterObject } from '@/shared/types/filter.types';
-import { SessionUser } from '@/shared/types/session';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { FilterObject, SessionUser } from '@/shared/types';
+import { convertCurrency } from '@/shared/utils/currency';
 import { generateRefCode } from '@/shared/utils/stringHelper';
 import {
   DepositRequest,
@@ -21,6 +23,7 @@ import {
   FxRequestType,
   NotificationType,
   Prisma,
+  TransactionFlow,
   TransactionType,
   WalletType,
 } from '@prisma/client';
@@ -372,6 +375,29 @@ class WalletUseCase {
         depositRequest,
         attachmentData,
       });
+    } else if (newStatus === DepositRequestStatus.Rejected) {
+      if (depositRequest.status !== DepositRequestStatus.Requested) {
+        throw new BadRequestError('Deposit request is not in pending status');
+      }
+
+      const { userId, packageFXId } = depositRequest;
+      const packageFX = packageFXId
+        ? await this._walletRepository.getPackageFXById(packageFXId)
+        : null;
+
+      const amount = Number(packageFX?.fxAmount || depositRequest.amount);
+      precomputedFxAmount = amount;
+
+      const paymentWallet = await this.ensurePaymentWallet(userId);
+
+      await this._walletRepository.updateWallet(
+        { id: paymentWallet.id },
+        {
+          frBalanceFrozen: {
+            decrement: amount,
+          },
+        },
+      );
     }
 
     // Persist new status last, after side effects succeed (transaction + balances)
@@ -512,6 +538,7 @@ class WalletUseCase {
         baseCurrency: DEFAULT_BASE_CURRENCY,
         remark: `Deposit request approved`,
         isMarked: true,
+        flowType: TransactionFlow.DEPOSIT,
       });
 
       const deductAmount = await convertCurrency(amount, CURRENCY.USD, paymentAccountCurrency);
@@ -574,6 +601,7 @@ class WalletUseCase {
           baseCurrency: DEFAULT_BASE_CURRENCY,
           remark: `Withdrawal request approved`,
           isMarked: true,
+          flowType: TransactionFlow.WITHDRAW,
         });
 
         await this._walletRepository.updateWallet(

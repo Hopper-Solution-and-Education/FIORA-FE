@@ -1,6 +1,6 @@
 'use client';
 
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';

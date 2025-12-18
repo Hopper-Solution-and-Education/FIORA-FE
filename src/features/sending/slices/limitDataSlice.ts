@@ -1,5 +1,5 @@
 import { httpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 

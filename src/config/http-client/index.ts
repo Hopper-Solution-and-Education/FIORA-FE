@@ -1,4 +1,4 @@
-import { ApiEndpointEnum, BASE_API } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum, BASE_API } from '@/shared/constants';
 import { BaseResponse } from '@/shared/types';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 

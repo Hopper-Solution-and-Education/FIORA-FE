@@ -1,5 +1,5 @@
 import ComposedChartComponent from '@/components/common/charts/composed-chart';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useEffect, useState } from 'react';
 import { membershipCronjobContainer } from '../../di/membershipCronjobDashboardDI';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';

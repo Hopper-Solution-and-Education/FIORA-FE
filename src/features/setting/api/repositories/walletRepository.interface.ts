@@ -1,4 +1,4 @@
-import { FilterObject } from '@/shared/types/filter.types';
+import { FilterObject } from '@/shared/types';
 import {
   DepositRequest,
   DepositRequestStatus,

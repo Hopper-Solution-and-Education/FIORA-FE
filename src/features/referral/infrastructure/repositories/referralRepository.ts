@@ -1,5 +1,8 @@
 import { prisma } from '@/config';
 import { sendBulkEmailUtility } from '@/config/send-grid/sendGrid';
+import { Messages } from '@/shared/constants';
+import { BadRequestError } from '@/shared/lib';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
 import { Prisma, Referral, Transaction, TransactionType, Wallet, WalletType } from '@prisma/client';
 import { readFileSync } from 'fs';
 import { randomUUID } from 'node:crypto';
@@ -36,6 +39,12 @@ class ReferralRepository implements IReferralRepository {
 
     if (!wallet) throw new Error('Referral wallet not found');
 
+    // Ensure user has a referral code, create one if missing
+    let referralCode = user?.referral_code;
+    if (!referralCode) {
+      referralCode = await this.ensureUserHasReferralCode(userId);
+    }
+
     const totalEarned = Number(txIn._sum.amount || 0);
     const totalWithdrawn = Number(txOut._sum.amount || 0);
     const availableBalance = Number(wallet.frBalanceActive || 0);
@@ -44,7 +53,7 @@ class ReferralRepository implements IReferralRepository {
       totalEarned,
       totalWithdrawn,
       availableBalance,
-      referralCode: user?.referral_code ?? null,
+      referralCode,
     };
   }
 
@@ -401,6 +410,67 @@ class ReferralRepository implements IReferralRepository {
 
     // Non-null assertion safe due to prior operations
     return { fromWallet: fromWallet!, toWallet: toWallet! };
+  }
+
+  /**
+   * Ensures a user has a referral code, creating one if it doesn't exist
+   */
+  private async ensureUserHasReferralCode(userId: string): Promise<string> {
+    for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
+      const referralCode = await this.generateUniqueReferralCode();
+
+      try {
+        const updatedUser = await this._prisma.user.update({
+          where: { id: userId },
+          data: { referral_code: referralCode },
+          select: { referral_code: true },
+        });
+
+        return updatedUser.referral_code!;
+      } catch (error) {
+        if (this.isReferralCodeUniqueConstraintError(error)) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw new BadRequestError(Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER);
+  }
+
+  /**
+   * Generates a unique referral code by checking for existing codes
+   */
+  private async generateUniqueReferralCode(): Promise<string> {
+    for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
+      const code = buildReferralCodeCandidate();
+      const existing = await this._prisma.user.findUnique({ where: { referral_code: code } });
+      if (!existing) {
+        return code;
+      }
+    }
+
+    throw new BadRequestError(Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER);
+  }
+
+  /**
+   * Checks if an error is a Prisma unique constraint error for referral_code
+   */
+  private isReferralCodeUniqueConstraintError(error: unknown): boolean {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+      return false;
+    }
+
+    if (error.code !== 'P2002') {
+      return false;
+    }
+
+    const target = error.meta?.target;
+    if (Array.isArray(target)) {
+      return target.includes('referral_code');
+    }
+
+    return typeof target === 'string' && target.includes('referral_code');
   }
 }
 

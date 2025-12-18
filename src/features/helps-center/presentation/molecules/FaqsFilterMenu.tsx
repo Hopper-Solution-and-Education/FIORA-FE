@@ -1,6 +1,6 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
-import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { FilterColumn, FilterCriteria } from '@/shared/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaqsCategoriesResponse } from '../../domain/entities/models/faqs';
 import { FaqsFilterValues } from '../organisms/FaqsPageHeader';

@@ -1,6 +1,6 @@
 import { ComposedChart, ComposedChartDataItem } from '@/components/common/charts';
 import { ChartSkeleton } from '@/components/common/organisms';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
 import { useAppSelector } from '@/store';

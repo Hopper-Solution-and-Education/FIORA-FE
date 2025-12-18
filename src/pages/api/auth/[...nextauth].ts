@@ -1,5 +1,11 @@
+import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
-import { Messages } from '@/shared/constants/message';
+import { membershipSettingUseCase } from '@/features/setting/api/application/use-cases/membershipUsecase';
+import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
+import { Messages } from '@/shared/constants';
+import { BadRequestError } from '@/shared/lib';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
+
 import { Prisma, PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import NextAuth, { NextAuthOptions } from 'next-auth';
@@ -7,6 +13,35 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 
 const prisma = new PrismaClient();
+
+async function generateUniqueReferralCode(): Promise<string> {
+  for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
+    const code = buildReferralCodeCandidate();
+    const existing = await prisma.user.findUnique({ where: { referral_code: code } });
+    if (!existing) {
+      return code;
+    }
+  }
+
+  throw new BadRequestError(Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER);
+}
+
+function isReferralCodeUniqueConstraintError(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+    return false;
+  }
+
+  if (error.code !== 'P2002') {
+    return false;
+  }
+
+  const target = error.meta?.target;
+  if (Array.isArray(target)) {
+    return target.includes('referral_code');
+  }
+
+  return typeof target === 'string' && target.includes('referral_code');
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -86,83 +121,176 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
+          // Create new user if not exists and default data
           if (!dbUser) {
-            dbUser = await prisma.user.create({
-              data: {
-                email: profile.email,
-                name: profile.name || 'Google User',
-                image: profile.image || user.image,
-                role: 'User', // Default role for Google users
-                isDeleted: false,
-                isBlocked: false,
-              },
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-                role: true,
-                isBlocked: true,
-                isDeleted: true,
-              },
-            });
+            // Track created entities for potential rollback
+            let createdUserId: string | null = null;
+            let createdAccountId: string | null = null;
+            let membershipProgressCreated = false;
+            let categoriesCreated = false;
+            let walletsCreated = false;
 
-            await prisma.account.create({
-              data: {
-                name: 'Ví tiền payment',
-                userId: dbUser.id,
-                balance: 0,
-                currency: 'VND',
-                type: 'Payment',
-                icon: 'wallet',
-                createdBy: dbUser.id,
-              },
-            });
+            try {
+              // Step 1: Create user with unique referral code (retry logic)
+              let userCreated = false;
+              for (
+                let attempt = 0;
+                attempt < REFERRAL_CODE_MAX_ATTEMPTS && !userCreated;
+                attempt += 1
+              ) {
+                const referralCode = await generateUniqueReferralCode();
 
-            const defaultMembership = await prisma.membershipTier.findFirst({
-              where: {
-                balanceMinThreshold: {
-                  equals: 0,
-                },
-                spentMinThreshold: {
-                  equals: 0,
-                },
-              },
-              select: {
-                id: true,
-              },
-            });
+                try {
+                  dbUser = await prisma.user.create({
+                    data: {
+                      email: profile.email,
+                      name: profile.name || 'Google User',
+                      image: profile.image || user.image,
+                      role: 'User',
+                      isDeleted: false,
+                      isBlocked: false,
+                      referral_code: referralCode,
+                    },
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      image: true,
+                      role: true,
+                      isBlocked: true,
+                      isDeleted: true,
+                    },
+                  });
+                  createdUserId = dbUser.id;
+                  userCreated = true;
+                } catch (error) {
+                  if (isReferralCodeUniqueConstraintError(error)) {
+                    if (attempt === REFERRAL_CODE_MAX_ATTEMPTS - 1) {
+                      throw new BadRequestError(
+                        Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER,
+                      );
+                    }
+                    continue;
+                  }
+                  throw error;
+                }
+              }
 
-            if (defaultMembership) {
-              await prisma.membershipProgress.create({
-                data: {
+              if (!dbUser) {
+                throw new BadRequestError(Messages.SIGNUP_USER_FAILED);
+              }
+              createdUserId = dbUser.id;
+
+              // Step 2: Create default Account
+              try {
+                const accountCreate = await AccountUseCaseInstance.create({
+                  name: 'Payment',
                   userId: dbUser.id,
-                  currentSpent: new Prisma.Decimal(0),
-                  currentBalance: new Prisma.Decimal(0),
-                  createdBy: dbUser.id,
-                  tierId: defaultMembership.id,
-                },
-              });
-            }
+                  balance: 0,
+                  currency: 'VND',
+                  type: 'Payment',
+                  icon: 'wallet',
+                });
 
-            const categoriesCreated = await createDefaultCategories(dbUser.id);
-            if (!categoriesCreated) {
-              console.error('Failed to create default categories for Google user:', dbUser.id);
+                if (!accountCreate) {
+                  throw new BadRequestError(Messages.ACCOUNT_CREATE_FAILED);
+                }
+                createdAccountId = accountCreate.id;
+              } catch (accountError) {
+                console.error('Account creation failed for Google user:', accountError);
+                // Rollback: Delete user
+                await prisma.user.delete({ where: { id: createdUserId } });
+                throw new BadRequestError(Messages.ACCOUNT_CREATE_FAILED);
+              }
+
+              // Step 3: Create default membership progress
+              try {
+                await membershipSettingUseCase.createNewMembershipProgress(dbUser.id);
+                membershipProgressCreated = true;
+              } catch (membershipError) {
+                console.error(
+                  'Membership progress creation failed for Google user:',
+                  membershipError,
+                );
+                // Rollback: Delete account and user
+                await prisma.account
+                  .delete({ where: { id: createdAccountId! } })
+                  .catch(console.error);
+                await prisma.user.delete({ where: { id: createdUserId } }).catch(console.error);
+                throw new BadRequestError(Messages.MEMBERSHIP_PROGRESS_CREATE_FAILED);
+              }
+
+              // Step 4: Create default categories
+              try {
+                const categoriesResult = await createDefaultCategories(dbUser.id);
+                if (!categoriesResult) {
+                  // throw new Error('Failed to create default categories');
+                  throw new BadRequestError(Messages.CATEGORY_CREATE_FAILED);
+                }
+                categoriesCreated = true;
+              } catch (categoriesError) {
+                console.error('Categories creation failed for Google user:', categoriesError);
+                // Rollback: Delete categories, membership progress, account, and user
+                await prisma.category
+                  .deleteMany({ where: { userId: createdUserId } })
+                  .catch(console.error);
+                await prisma.membershipProgress
+                  .deleteMany({ where: { userId: createdUserId } })
+                  .catch(console.error);
+                await prisma.account
+                  .delete({ where: { id: createdAccountId! } })
+                  .catch(console.error);
+                await prisma.user.delete({ where: { id: createdUserId } }).catch(console.error);
+                throw new BadRequestError(Messages.CATEGORY_CREATE_FAILED);
+              }
+
+              // Step 5: Create default wallets
+              try {
+                const wallets = await walletUseCase.getAllWalletsByUser(dbUser.id);
+                if (!wallets || wallets.length === 0) {
+                  throw new BadRequestError(Messages.WALLET_CREATE_FAILED);
+                }
+                walletsCreated = true;
+              } catch (walletsError) {
+                console.error('Wallets creation failed for Google user:', walletsError);
+                // Rollback: Delete everything
+                await prisma.wallet
+                  .deleteMany({ where: { userId: createdUserId } })
+                  .catch(console.error);
+                await prisma.category
+                  .deleteMany({ where: { userId: createdUserId } })
+                  .catch(console.error);
+                await prisma.membershipProgress
+                  .deleteMany({ where: { userId: createdUserId } })
+                  .catch(console.error);
+                await prisma.account
+                  .delete({ where: { id: createdAccountId! } })
+                  .catch(console.error);
+                await prisma.user.delete({ where: { id: createdUserId } }).catch(console.error);
+                throw new BadRequestError(Messages.WALLET_CREATE_FAILED);
+              }
+
+              console.log(
+                `Successfully created Google user with all default resources: ${dbUser.id}`,
+              );
+            } catch (error) {
+              console.error('Error creating Google user with default resources:', error);
+              return false;
             }
           } else {
             if (dbUser.isBlocked) {
-              throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+              throw new BadRequestError(Messages.USER_BLOCKED_SIGNIN_ERROR);
             }
 
             if (dbUser.isDeleted) {
-              throw new Error(Messages.USER_DELETED_SIGNIN_ERROR);
+              throw new BadRequestError(Messages.USER_DELETED_SIGNIN_ERROR);
             }
 
             await prisma.user.update({
               where: { email: profile.email },
               data: {
-                name: profile.name || dbUser.name,
-                image: profile.image || dbUser.image,
+                name: dbUser.name || profile.name,
+                image: dbUser.image || profile.image,
               },
             });
           }
@@ -171,7 +299,7 @@ export const authOptions: NextAuthOptions = {
           user.role = dbUser.role;
           return true;
         } catch (error) {
-          console.error('Error saving Google user to database:', error);
+          console.error('Error in Google sign-in callback:', error);
           return false;
         }
       }

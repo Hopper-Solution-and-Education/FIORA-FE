@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
-import { FilterObject } from '@/shared/types/filter.types';
+import { Messages } from '@/shared/constants';
+import { FilterObject } from '@/shared/types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import {
   Attachment,
@@ -275,6 +275,13 @@ class WalletRepository implements IWalletRepository {
               name: true,
               email: true,
               image: true,
+              BankAccount: {
+                select: {
+                  bankName: true,
+                  accountNumber: true,
+                  status: true,
+                },
+              },
             },
           },
           attachment: true,

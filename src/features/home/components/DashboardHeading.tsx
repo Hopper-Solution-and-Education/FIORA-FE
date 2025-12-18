@@ -2,7 +2,7 @@ import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Input } from '@/components/ui/input';
 import { updateProductFilterCriteria } from '@/features/setting/module/product/slices';
 import { getProductTransactionAsyncThunk } from '@/features/setting/module/product/slices/actions';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';

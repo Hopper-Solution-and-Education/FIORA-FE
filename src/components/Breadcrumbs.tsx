@@ -23,6 +23,18 @@ export function Breadcrumbs({ showWalletAction = true }: { showWalletAction?: bo
 
   const isHiddenWalletAction = pathName?.includes('/wallet') || status === 'unauthenticated';
 
+  const renderWalletAction = () => {
+    if (isHiddenWalletAction || !showWalletAction) return null;
+
+    return (
+      <WalletAction
+        enableDeposit={!isHiddenWalletAction}
+        enableTransfer={!isHiddenWalletAction}
+        enableWithdraw={!isHiddenWalletAction}
+      />
+    );
+  };
+
   return (
     <div className="flex justify-between items-center w-full">
       <Breadcrumb>
@@ -46,9 +58,7 @@ export function Breadcrumbs({ showWalletAction = true }: { showWalletAction?: bo
         </BreadcrumbList>
       </Breadcrumb>
 
-      {!isHiddenWalletAction && showWalletAction && (
-        <WalletAction enableDeposit={true} enableTransfer={true} enableWithdraw={true} />
-      )}
+      {renderWalletAction()}
     </div>
   );
 }

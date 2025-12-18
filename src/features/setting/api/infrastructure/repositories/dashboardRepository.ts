@@ -1,10 +1,10 @@
 import { prisma } from '@/config';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
 import { CreateBoxNotificationInput } from '@/features/notification/domain/repositories/notificationRepository.interface';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError, ConflictError } from '@/shared/lib/responseUtils/errors';
-import { SessionUser } from '@/shared/types/session';
-import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filterUtils';
+import { SessionUser } from '@/shared/types';
+import { applyJsonInFilter, normalizeToArray } from '@/shared/utils/filter';
 import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import {
   CronJobLog,

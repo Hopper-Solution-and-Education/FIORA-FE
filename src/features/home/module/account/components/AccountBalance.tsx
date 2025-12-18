@@ -1,5 +1,5 @@
 import InputCurrency from '@/components/common/forms/input/InputCurrency';
-import { ACCOUNT_TYPES } from '@/shared/constants/account';
+import { ACCOUNT_TYPES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import React from 'react';
 import { FieldError, useFormContext } from 'react-hook-form';
