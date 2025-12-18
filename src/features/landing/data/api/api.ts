@@ -1,29 +1,25 @@
-import type { IHttpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import { SectionTypeEnum } from '../../constants';
-import { ISection } from '../../domain/interfaces/Section';
-
-interface BannerResponse {
-  data: ISection;
-  message: string;
-}
+import { ISection } from '@/features/setting/module/landing/slices/types';
+import { ApiClient } from '@/config/http-client';
+import { routeConfig } from '@/shared/utils/route';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { BaseResponse } from '@/shared/types';
 
 interface ILandingAPI {
-  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>>;
 }
 
 class LandingAPI implements ILandingAPI {
-  private httpClient: IHttpClient;
+  private apiClient: ApiClient;
 
-  constructor(httpClient: IHttpClient) {
-    this.httpClient = httpClient;
+  constructor(apiClient: ApiClient) {
+    this.apiClient = apiClient;
   }
 
-  async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
-    const response = await this.httpClient.get<BannerResponse>(
-      `/api/banners/sections?sectionType=${sectionType}`,
-    );
-    return response.data;
+  async fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>> {
+    const url = routeConfig(ApiEndpointEnum.BannerSections, undefined, { sectionType });
+    return await this.apiClient.get<ISection>(url);
   }
 }
 
@@ -31,8 +27,8 @@ class LandingAPI implements ILandingAPI {
 decorate(injectable(), LandingAPI);
 
 // Create a factory function
-export const createLandingAPI = (httpClient: IHttpClient): ILandingAPI => {
-  return new LandingAPI(httpClient);
+export const createLandingAPI = (apiClient: ApiClient): ILandingAPI => {
+  return new LandingAPI(apiClient);
 };
 
 export { LandingAPI };

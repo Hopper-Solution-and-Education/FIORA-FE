@@ -16,7 +16,7 @@ export class SectionRepository implements ISectionRepository {
 
   async getSection(sectionType: SectionTypeEnum): Promise<ISection> {
     const response = await this.landingAPI.fetchSection(sectionType);
-    return response;
+    return response.data;
   }
 }
 

@@ -15,8 +15,8 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async getMediaBySection(sectionType: SectionTypeEnum): Promise<Media[]> {
-    const section = await this.landingAPI.fetchSection(sectionType);
-    return section.medias;
+    const response = await this.landingAPI.fetchSection(sectionType);
+    return response.data.medias;
   }
 }
 

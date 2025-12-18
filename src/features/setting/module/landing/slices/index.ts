@@ -1,5 +1,5 @@
 import { SectionTypeEnum } from '@/features/landing/constants';
-import { HttpResponse } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'sonner';
 import { IAnnouncement } from '../domain/entities/Announcement';
@@ -113,7 +113,7 @@ const landingSettings = createSlice({
 
     builder.addCase(
       updateAnnouncement.fulfilled,
-      (state, action: PayloadAction<HttpResponse<IAnnouncement[]>>) => {
+      (state, action: PayloadAction<BaseResponse<IAnnouncement[]>>) => {
         state.announcements = action.payload.data;
         state.isLoadingUpdateAnnouncement = false;
       },

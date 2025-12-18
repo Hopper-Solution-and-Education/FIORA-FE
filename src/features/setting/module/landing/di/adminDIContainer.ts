@@ -1,5 +1,5 @@
 // src/features/admin/di/index.ts
-import { IHttpClient, httpClient } from '@/config/http-client/HttpClient';
+import apiClient from '@/config/http-client';
 import { Container } from 'inversify';
 import { IAnnouncementAPI, createAnnouncementAPI } from '../data/api/announcementApi';
 import { ISectionAPI, createSectionAPI } from '../data/api/sectionApi';
@@ -31,8 +31,8 @@ import { TYPES } from './adminDIContainer.type';
 const adminContainer = new Container();
 
 // Create instances using factory functions
-const sectionAPI = createSectionAPI(httpClient);
-const announcementAPI = createAnnouncementAPI(httpClient);
+const sectionAPI = createSectionAPI(apiClient);
+const announcementAPI = createAnnouncementAPI(apiClient);
 const sectionRepository = createSectionRepository(sectionAPI);
 const announcementRepository = createAnnouncementRepository(announcementAPI);
 const getSectionUseCase = createGetSectionUseCase(sectionRepository);
@@ -41,7 +41,6 @@ const getAnnouncementUseCase = createGetAnnouncementUseCase(announcementReposito
 const updateAnnouncementUseCase = createUpdateAnnouncementUseCase(announcementRepository);
 
 // Bind all dependencies
-adminContainer.bind<IHttpClient>(TYPES.IHttpClient).toConstantValue(httpClient);
 adminContainer.bind<ISectionAPI>(TYPES.ISectionAPI).toConstantValue(sectionAPI);
 adminContainer
   .bind<ISectionRepository>(TYPES.ISectionRepository)
