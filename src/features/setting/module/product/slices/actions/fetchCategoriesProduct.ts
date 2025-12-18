@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { IGetCategoryProductUseCase } from '../../domain/usecases';
@@ -12,7 +13,8 @@ export const fetchCategoriesProduct = createAsyncThunk(
       );
       const response = await getCategoryUseCase.execute(page, pageSize);
       return response;
-    } catch (error) {
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to fetch category product');
       return rejectWithValue(error || 'Failed to fetch category product');
     }
   },

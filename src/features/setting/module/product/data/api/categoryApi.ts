@@ -45,19 +45,22 @@ class CategoryAPI implements ICategoryAPI {
   async updateCategory(
     request: CategoryProductUpdateRequestDTO,
   ): Promise<CategoryProductUpdateResponseDTO> {
-    return await apiClient.put(routeConfig(ApiEndpointEnum.ProductsCategory, { id: request.id }), {
-      name: request.name,
-      description: request.description,
-      icon: request.icon,
-      tax_rate: request.tax_rate,
-    });
+    return await apiClient.put(
+      routeConfig(ApiEndpointEnum.SingleProductsCategory, { id: request.id }),
+      {
+        name: request.name,
+        description: request.description,
+        icon: request.icon,
+        tax_rate: request.tax_rate,
+      },
+    );
   }
 
   async deleteCategory(
     request: CategoryProductDeleteRequestDTO,
   ): Promise<CategoryProductDeleteResponseDTO> {
     const response = await apiClient.delete(
-      routeConfig(ApiEndpointEnum.ProductsCategory, { id: request.productCategoryId }),
+      routeConfig(ApiEndpointEnum.SingleProductsCategory, { id: request.productCategoryId }),
     );
     return {
       ...response,

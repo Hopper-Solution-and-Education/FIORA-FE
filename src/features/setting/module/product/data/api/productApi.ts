@@ -52,14 +52,14 @@ class ProductAPI implements IProductAPI {
 
   async updateProduct(data: ProductUpdateRequestDTO) {
     return await apiClient.put<Product>(
-      routeConfig(ApiEndpointEnum.Products, { id: data.id }),
+      routeConfig(ApiEndpointEnum.SingleProducts, { id: data.id }),
       data,
     );
   }
 
   async deleteProduct(data: ProductDeleteRequestDTO) {
     return await apiClient.delete<{ id: string }>(
-      routeConfig(ApiEndpointEnum.Products, { id: data.id }),
+      routeConfig(ApiEndpointEnum.SingleProducts, { id: data.id }),
       {
         targetId: data.targetId,
       },
@@ -75,7 +75,7 @@ class ProductAPI implements IProductAPI {
 
   async getProduct(data: ProductGetSingleRequestDTO) {
     return await apiClient.get<Product>(
-      routeConfig(ApiEndpointEnum.Products, { id: data.productId }),
+      routeConfig(ApiEndpointEnum.SingleProducts, { id: data.productId }),
     );
   }
 }
