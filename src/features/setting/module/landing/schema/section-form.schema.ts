@@ -22,7 +22,7 @@ export const sectionFormSchema = yup.object({
             then: (schema) => schema.required('Media URL is required'),
             otherwise: (schema) => schema.nullable().notRequired(),
           }),
-        redirect_url: yup.string().default(null),
+        redirect_url: yup.string().required('Redirect URL is required'),
         media_url_2: yup.string().default(null).nullable().notRequired(),
         media_order: yup.number().default(0),
         embed_code: yup

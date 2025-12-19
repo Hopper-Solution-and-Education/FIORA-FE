@@ -951,7 +951,7 @@ model Referral {
 }
 
 model CommonSetting {
-  id           String        @id @db.Uuid
+  id           String        @id @default(uuid()) @db.Uuid
   name         String        @db.VarChar(30)
   dynamicValue Json
   createdAt    DateTime      @default(now()) @db.Timestamptz(0)
@@ -1143,12 +1143,6 @@ enum TypeCronJob {
   SMART_SAVING_INTEREST
 }
 
-enum TransactionFlow {
-  DEPOSIT
-  WITHDRAW
-  SENDING
-}
-
 enum KYCType {
   IDENTIFICATION
   CONTACT
@@ -1174,4 +1168,10 @@ enum ReferralStatus {
 enum FxRequestType {
   DEPOSIT
   WITHDRAW
+}
+
+enum TransactionFlow {
+  DEPOSIT
+  WITHDRAW
+  SENDING
 }

@@ -14,3 +14,9 @@ export type ReferralCronjobTableData = {
   reason: string | null;
   transactionId: string | null;
 };
+
+export type CampaignSettings = {
+  bonus_1st_amount: number;
+  minimumWithdrawal: number;
+  isActive: boolean;
+};
