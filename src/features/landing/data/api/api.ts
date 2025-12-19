@@ -1,27 +1,25 @@
-import type { IHttpClient } from '@/config/http-client/HttpClient';
 import { decorate, injectable } from 'inversify';
 import { SectionTypeEnum } from '../../constants';
-import { ISection } from '../../domain/interfaces/Section';
-import { Media } from '../../domain/models/Media';
+import { ISection } from '@/features/setting/module/landing/slices/types';
+import { ApiClient } from '@/config/http-client';
+import { routeConfig } from '@/shared/utils/route';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { BaseResponse } from '@/shared/types';
 
 interface ILandingAPI {
-  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]>;
-  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>>;
 }
 
 class LandingAPI implements ILandingAPI {
-  private httpClient: IHttpClient;
+  private apiClient: ApiClient;
 
-  constructor(httpClient: IHttpClient) {
-    this.httpClient = httpClient;
+  constructor(apiClient: ApiClient) {
+    this.apiClient = apiClient;
   }
 
-  fetchMedia(sectionType: SectionTypeEnum): Promise<Media[]> {
-    return this.httpClient.get<Media[]>(`/api/banner/media?sectionType=${sectionType}`);
-  }
-
-  fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
-    return this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
+  async fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>> {
+    const url = routeConfig(ApiEndpointEnum.BannerSections, undefined, { sectionType });
+    return await this.apiClient.get<ISection>(url);
   }
 }
 
@@ -29,8 +27,8 @@ class LandingAPI implements ILandingAPI {
 decorate(injectable(), LandingAPI);
 
 // Create a factory function
-export const createLandingAPI = (httpClient: IHttpClient): ILandingAPI => {
-  return new LandingAPI(httpClient);
+export const createLandingAPI = (apiClient: ApiClient): ILandingAPI => {
+  return new LandingAPI(apiClient);
 };
 
 export { LandingAPI };

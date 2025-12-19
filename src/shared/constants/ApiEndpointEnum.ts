@@ -108,9 +108,15 @@ export enum ApiEndpointEnum {
   SavingTransfer = '/api/wallet/smart-saving/transfer',
   SavingClaim = '/api/wallet/smart-saving/claims',
 
+  // Landing Page / Banners
+  BannerSections = '/api/banners/sections',
+  BannerSection = '/api/banner/section',
+  BannerAnnouncements = '/api/banners/announcements',
+  BannerAnnouncement = '/api/banners/announcement',
+
   // Auth
   SendOtpForgotPassword = '/api/auth/send-otp',
   ResetPassword = '/api/auth/forgot-password',
 }
 
-export const BASE_API = process.env.NEXT_PUBLIC_BASE_API;
+export const BASE_API: string = process.env.NEXT_PUBLIC_BASE_API || '';
