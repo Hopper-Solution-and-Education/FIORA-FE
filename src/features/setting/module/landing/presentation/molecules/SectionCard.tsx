@@ -129,7 +129,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.IMAGE)}
-                  data-test={sectionType + '-ADD-IMAGE-BUTTON'}
+                  data-test={sectionType + '-add-image-button'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
@@ -143,7 +143,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.IMAGE)}
-                  data-test={sectionType + '-ADD-IMAGE-BUTTON'}
+                  data-test={sectionType + '-add-image-button'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
@@ -157,7 +157,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
-                  data-test={sectionType + '-ADD-EMBED-BUTTON'}
+                  data-test={sectionType + '-add-embed-button'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>
@@ -171,7 +171,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
-                  data-test={sectionType + '-ADD-EMBED-BUTTON'}
+                  data-test={sectionType + '-add-embed-button'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>
@@ -188,7 +188,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                 size="sm"
                 className="text-xs md:text-sm"
                 onClick={() => handleAddMedia(sectionType)}
-                data-test={sectionType + '-ADD-MEDIA-BUTTON'}
+                data-test={sectionType + '-add-media-button'}
               >
                 <PlusCircle className="h-4 w-4" /> Add Media
               </Button>
@@ -226,7 +226,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             <Button
               type="button"
               variant="outline"
-              data-test="DIALOG-CANCEL-BUTTON"
+              data-test="dialog-cancel-button"
               onClick={() => setIsDialogOpen(false)}
             >
               Cancel
@@ -234,7 +234,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             <Button
               type="button"
               variant="destructive"
-              data-test="DIALOG-DELETE-BUTTON"
+              data-test="dialog-delete-button"
               onClick={confirmRemoveMedia}
             >
               <Trash2 className="h-4 w-4 mr-2" /> Delete
