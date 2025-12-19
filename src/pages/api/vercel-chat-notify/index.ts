@@ -92,7 +92,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!chatResponse.ok) {
       console.error('Google Chat API error:', await chatResponse.text());
-      // Nếu lỗi, remove deploymentId khỏi cache để có thể retry
       if (deploymentId) {
         processedDeployments.delete(deploymentId);
       }
@@ -102,7 +101,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ success: true, deploymentId });
   } catch (error) {
     console.error('Failed to send notification to Google Chat:', error);
-    // Nếu lỗi, remove deploymentId khỏi cache để có thể retry
     if (deploymentId) {
       processedDeployments.delete(deploymentId);
     }
