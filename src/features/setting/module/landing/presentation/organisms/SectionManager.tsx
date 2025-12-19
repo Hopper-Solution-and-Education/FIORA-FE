@@ -199,7 +199,7 @@ export default function SectionManager({ sectionType }: SectionManagerProps) {
             <Button
               type="button"
               onClick={methods.handleSubmit(onSubmit)}
-              data-test={sectionType + '-SUBMIT-BUTTON'}
+              data-test={sectionType + '-submit-button'}
               disabled={
                 methods.formState.isSubmitting ||
                 methods.formState.isValidating ||
