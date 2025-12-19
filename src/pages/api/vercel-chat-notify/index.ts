@@ -35,11 +35,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const eventType = event.type || event.event;
-  if (
-    eventType &&
-    !eventType.includes('deployment.ready') &&
-    !eventType.includes('deployment.succeeded')
-  ) {
+
+  // Chỉ xử lý các event type deployment cụ thể
+  if (!eventType) {
+    console.log('Missing event type');
+    return res.status(400).json({ message: 'Missing event type' });
+  }
+
+  // Xác định trạng thái deployment
+  const isSuccess =
+    eventType.includes('deployment.ready') || eventType.includes('deployment.succeeded');
+  const isFailed =
+    eventType.includes('deployment.error') ||
+    eventType.includes('deployment.failed') ||
+    eventType.includes('deployment.canceled');
+
+  // Bỏ qua các event type không liên quan
+  if (!isSuccess && !isFailed) {
     console.log(`Skipping event type: ${eventType}`);
     return res.status(200).json({ message: 'Event type ignored' });
   }
@@ -64,8 +76,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     processedDeployments.set(deploymentId, Date.now());
   }
 
+  // Tạo message dựa trên trạng thái deployment
+  const emoji = isSuccess ? '✅' : '❌';
+  const status = isSuccess ? 'deployed successfully' : 'deployment failed';
   const message = {
-    text: `✅ *${deploy.name}* deployed successfully!\n\n🔗 ${deploy.url}\n👤 ${deploy.meta?.githubCommitAuthorName || 'Unknown'}`,
+    text: `${emoji} *${deploy.name}* ${status}!\n\n🔗 ${deploy.url}\n👤 ${deploy.meta?.githubCommitAuthorName || 'Unknown'}`,
   };
 
   try {
