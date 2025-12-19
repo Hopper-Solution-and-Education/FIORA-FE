@@ -2,7 +2,7 @@ export enum SectionTypeEnum {
   BANNER = 'BANNER',
   FOOTER = 'FOOTER',
   HEADER = 'HEADER',
-  KPS = 'KPS',
+  KPS = 'KSP',
   PARTNER_LOGO = 'PARTNER_LOGO',
   REVIEW = 'REVIEW',
   SYSTEM = 'SYSTEM',

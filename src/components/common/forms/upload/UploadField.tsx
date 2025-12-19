@@ -210,6 +210,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
   return (
     <div className={cn('space-y-3', containerClassName)}>
       {label && <GlobalLabel text={label} required={required} htmlFor={id} />}
+
       <div
         className={cn(
           'relative overflow-hidden border-2 border-dashed rounded-lg',
@@ -243,6 +244,7 @@ const UploadField: React.FC<UploadFieldProps> = ({
             className="hidden"
             ref={fileInputRef}
             disabled={disabled}
+            data-test={`${name}-input`}
             {...props}
           />
           {preview ? (
@@ -346,7 +348,10 @@ const UploadField: React.FC<UploadFieldProps> = ({
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 flex items-center mt-1.5">
+        <p
+          data-test={name ? `${name}-error` : undefined}
+          className="text-sm text-red-500 flex items-center mt-1.5"
+        >
           <AlertTriangle className="h-4 w-4 mr-1" />
           {error.message}
         </p>

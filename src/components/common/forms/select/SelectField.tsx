@@ -228,7 +228,14 @@ const SelectField: React.FC<SelectFieldProps> = ({
           </Command>
         </PopoverContent>
       </Popover>
-      {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
+      {error && (
+        <p
+          data-test={props.name ? `${props.name}-error` : undefined}
+          className="mt-1 text-sm text-red-500"
+        >
+          {error.message}
+        </p>
+      )}
     </div>
   );
 };
