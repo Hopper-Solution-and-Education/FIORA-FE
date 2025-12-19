@@ -366,6 +366,17 @@ export enum Messages {
   FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
 
   // ───────────────────────────────
+  // Referral Campaign
+  // ───────────────────────────────
+  REFERRAL_CAMPAIGN_GET_SUCCESS = 'Get referral campaign successfully',
+  REFERRAL_CAMPAIGN_GET_FAIL = 'Get referral campaign fail!',
+  REFERRAL_CAMPAIGN_NOT_FOUND = 'Referral campaign not found',
+  REFERRAL_CAMPAIGN_UPSERT_SUCCESS = 'Update referral campaign successfully',
+  REFERRAL_CAMPAIGN_UPSERT_FAIL = 'Update referral campaign fail!',
+  // Validation
+  REFERRAL_CAMPAIGN_FORM_INVALID = 'Referral campaign form invalid',
+
+  // ───────────────────────────────
   // Email Template
   // ───────────────────────────────
   CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
@@ -444,17 +455,17 @@ export enum Messages {
   // General / Common
   // ───────────────────────────────
   INTERNAL_ERROR = 'An error occurred, please try again later',
-  MISSING_PARAMS_INPUT = 'Missing required parameters',
+  MISSING_PARAMS_INPUT = 'Missing required fields',
   METHOD_NOT_ALLOWED = 'Method not allowed',
-  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
-  INVALID_FILTER_FORMAT = 'Invalid filter format.',
+  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or page size',
+  INVALID_FILTER_FORMAT = 'Invalid filter format',
   INVALID_CONTENT_TYPE_MULTIPART = 'Content-Type must be multipart/form-data',
-  VALIDATION_ERROR = 'Validation error.',
+  VALIDATION_ERROR = 'One or more fields contain invalid values',
   DELETE_SUCCESS = 'Delete successfully',
   SEND_SUCCESS = 'Send successfully',
   VERIFY_SUCCESS = 'Verify successfully',
   VERIFY_EXIT = 'Verify already exists',
   GET_SUCCESS = 'Get successfully',
   UPDATE_SUCCESS = 'Update successfully',
-  UPDATE_FAIL = 'Update fail!',
+  UPDATE_FAIL = 'Update failed',
 }

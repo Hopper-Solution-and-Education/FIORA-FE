@@ -36,6 +36,7 @@ export enum ApiEndpointEnum {
   // Cronjob Dashboard Referral
   CronjobDashboardReferral = '/api/dashboard/referral',
   CronjobChartReferral = '/api/dashboard/referral/referral-chart',
+  ReferralCampaign = '/api/referral/campaign',
 
   // Notification
   Notification = '/api/notification',
