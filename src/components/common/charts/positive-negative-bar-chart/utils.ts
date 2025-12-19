@@ -1,11 +1,11 @@
+import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT } from '@/shared/constants';
+import { getChartMargins } from '@/shared/utils/device';
 import {
   BarItem,
-  PositiveAndNegativeBarLevelConfig,
-  PositiveAndNegativeBarChartProps,
   ChartConfig,
+  PositiveAndNegativeBarChartProps,
+  PositiveAndNegativeBarLevelConfig,
 } from './type';
-import { getChartMargins } from '@/shared/utils/device';
-import { BASE_BAR_HEIGHT, MIN_CHART_HEIGHT } from '@/shared/constants/chart';
 
 // Process initial data and calculate total item
 const processInitialData = (

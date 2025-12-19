@@ -4,7 +4,7 @@ import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import debounce from 'lodash/debounce';
 import { Search } from 'lucide-react';

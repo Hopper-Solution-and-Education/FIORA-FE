@@ -1,6 +1,7 @@
 'use client';
 
 import { LoadingIndicator } from '@/components/common/atoms';
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,9 +16,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import { cn } from '@/shared/utils';
-import { Check, Eye, EyeOff } from 'lucide-react';
+import { Check, Eye, EyeOff, InfoIcon } from 'lucide-react';
 import Link from 'next/link';
 import type React from 'react';
 import { useState } from 'react';
@@ -156,6 +157,9 @@ export function LoginForm({
                     >
                       Remember me
                     </Label>
+                    <CommonTooltip content="Tick Remember me checkbox will keep your sign in session for 24hrs from the last time you interacted with application. It's only 30 minitues by default.">
+                      <InfoIcon className="h-4 w-4 text-muted-foreground cursor-context-menu" />
+                    </CommonTooltip>
                   </div>
                   <div className="hidden sm:block sm:w-1/4"></div>
                 </div>
@@ -183,6 +187,7 @@ export function LoginForm({
                 <Link
                   href={RouteEnum.ForgotPassword}
                   className="text-blue-500 hover:underline sm:mr-3 font-medium underline underline-offset-4"
+                  data-test="forgot-password-link"
                 >
                   Forgot password
                 </Link>
@@ -192,6 +197,7 @@ export function LoginForm({
                 <Link
                   href={RouteEnum.SignUp}
                   className="text-blue-500 hover:underline font-medium underline underline-offset-4"
+                  data-test="register-link"
                 >
                   Sign up
                 </Link>

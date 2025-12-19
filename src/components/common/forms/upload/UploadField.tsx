@@ -1,5 +1,6 @@
 'use client';
 
+import AttachmentPreviewModal from '@/components/common/atoms/AttachmentPreviewModal';
 import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Input } from '@/components/ui/input';
 import { cn, isImageUrl } from '@/shared/utils';
@@ -56,10 +57,33 @@ const UploadField: React.FC<UploadFieldProps> = ({
   const [preview, setPreview] = useState<string | null>(null);
   const [currentShape, setCurrentShape] = useState<'square' | 'circle'>(previewShape);
   const [isDragging, setIsDragging] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropAreaRef = useRef<HTMLLabelElement>(null);
 
   const methods = useFormContext();
+
+  // Helper function to construct attachment object for preview modal
+  const getAttachmentData = () => {
+    if (!preview) return null;
+
+    const fileName = value instanceof File ? value.name : 'preview-image';
+    const fileType = value instanceof File ? value.type : 'image/jpeg';
+    const fileSize = value instanceof File ? String(value.size) : '0';
+
+    return {
+      id: 'preview',
+      type: fileType,
+      size: fileSize,
+      url: preview,
+      path: fileName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: '',
+      updatedBy: null,
+      notificationId: null,
+    };
+  };
 
   useEffect(() => {
     if (value instanceof File) {
@@ -111,6 +135,14 @@ const UploadField: React.FC<UploadFieldProps> = ({
       fileInputRef.current.value = '';
     }
     methods.setValue(name, null);
+  };
+
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    if (disabled && preview) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsPreviewModalOpen(true);
+    }
   };
 
   const toggleShape = () => {
@@ -222,7 +254,9 @@ const UploadField: React.FC<UploadFieldProps> = ({
                 size === 'small' && 'w-32 h-32',
                 size === 'medium' && 'w-48 h-48',
                 size === 'large' && 'w-full h-72',
+                disabled && 'cursor-pointer',
               )}
+              onClick={handlePreviewClick}
             >
               <div
                 className={cn(
@@ -320,6 +354,15 @@ const UploadField: React.FC<UploadFieldProps> = ({
           <AlertTriangle className="h-4 w-4 mr-1" />
           {error.message}
         </p>
+      )}
+
+      {/* Attachment Preview Modal */}
+      {preview && disabled && getAttachmentData() && (
+        <AttachmentPreviewModal
+          open={isPreviewModalOpen}
+          onOpenChange={setIsPreviewModalOpen}
+          attachment={getAttachmentData()!}
+        />
       )}
     </div>
   );

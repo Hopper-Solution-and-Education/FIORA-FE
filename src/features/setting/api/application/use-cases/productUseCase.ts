@@ -5,10 +5,9 @@ import {
 } from '@/features/setting/api/repositories/productRepository.interface';
 
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
-import { PaginationResponse } from '@/shared/types';
-import { ProductItem } from '@/shared/types/product.types';
+import { PaginationResponse, ProductItem } from '@/shared/types';
 import { Prisma, Product, ProductType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { categoryProductRepository } from '../../infrastructure/repositories/categoryProductRepository';

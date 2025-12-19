@@ -1,5 +1,5 @@
 import type { IHttpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { _PaginationResponse, Currency } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
 import { inject, injectable } from 'inversify';

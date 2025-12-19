@@ -1,6 +1,5 @@
 import { NavItem } from '@/features/home/types/Nav.types';
-import { MODULE } from '@/shared/constants';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { MODULE, RouteEnum } from '@/shared/constants';
 
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const settingNavItems: NavItem[] = [

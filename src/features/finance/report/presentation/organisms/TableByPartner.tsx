@@ -12,8 +12,7 @@ import {
 } from '@/components/ui/table';
 import { FinanceReportEnum } from '@/features/setting/data/module/finance/constant/FinanceReportEnum';
 import { FinanceReportFilterEnum } from '@/features/setting/data/module/finance/constant/FinanceReportFilterEnum';
-import { COLORS } from '@/shared/constants/chart';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { COLORS, ICON_SIZE } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { ArrowUpDown } from 'lucide-react';

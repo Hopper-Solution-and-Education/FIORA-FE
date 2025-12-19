@@ -2,7 +2,7 @@
 
 import { TableV2 } from '@/components/common/tables/custom-table';
 import ActionButton from '@/components/common/UIKit/Button/ActionButton';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
 import { cn } from '@/shared/utils';

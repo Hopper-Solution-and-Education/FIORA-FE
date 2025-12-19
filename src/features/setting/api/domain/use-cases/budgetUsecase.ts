@@ -1,7 +1,7 @@
 import { prisma } from '@/config';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import {
   BudgetCreationParams,
   BudgetGetAnnualYearParams,
@@ -9,14 +9,14 @@ import {
   BudgetTypeData,
   BudgetUpdateParams,
   FetchTransactionResponse,
-} from '@/shared/types/budget.types';
+} from '@/shared/types';
 import { buildWhereClause } from '@/shared/utils';
-import { convertCurrency } from '@/shared/utils/convertCurrency';
+import { convertCurrency } from '@/shared/utils/currency';
 import {
   calculateBudgetAllocation,
   calculateSumUpAllocation,
   calculateTransactionRange,
-} from '@/shared/utils/monthBudgetUtil';
+} from '@/shared/utils/monthBudget';
 import { Filter } from '@growthbook/growthbook';
 import {
   BudgetsTable,

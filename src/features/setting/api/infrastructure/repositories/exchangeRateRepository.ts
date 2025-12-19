@@ -1,6 +1,6 @@
 import { prisma } from '@/config';
 import { FIXED_NUMBER_OF_DECIMALS } from '@/shared/constants';
-import { ExchangeRateResponse } from '@/shared/types/exchangeRate';
+import { ExchangeRateResponse } from '@/shared/types';
 import { Currency, CurrencyExchange, ExchangeRateSetting, Prisma } from '@prisma/client';
 import {
   DirectRateRepositoryType,

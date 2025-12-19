@@ -6,7 +6,7 @@ import {
   CustomYAxisTick,
   PositiveAndNegativeBarLabel,
 } from '@/components/common/atoms';
-import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants/chart';
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/shared/constants';
 import { useWindowSize } from '@/shared/utils/device';
 import { debounce } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';

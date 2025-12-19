@@ -1,5 +1,5 @@
 import { prisma } from '@/config';
-import { FetchTransactionResponse } from '@/shared/types/budget.types';
+import { FetchTransactionResponse } from '@/shared/types';
 import { BudgetDetails, BudgetsTable, Prisma, TransactionType } from '@prisma/client';
 import { IBudgetRepository } from '../../repositories/budgetRepository.interface';
 

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import { NotificationLogType } from '../../domain/enum/NotificationLogType';
 
 interface NotificationStatusBadgeProps {
@@ -16,7 +17,7 @@ export const NotificationStatusBadge = ({ status, className }: NotificationStatu
 
   return (
     <Badge variant="secondary" className={` hover:bg-${color} ${color} ${className || ''}`}>
-      {status}
+      {formatUnderlineString(status)}
     </Badge>
   );
 };

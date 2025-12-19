@@ -1,4 +1,4 @@
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { BaseChartProps } from '@/shared/types';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
 

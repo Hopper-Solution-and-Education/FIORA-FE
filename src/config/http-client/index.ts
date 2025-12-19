@@ -1,5 +1,5 @@
-import { ApiEndpointEnum, BASE_API } from '@/shared/constants/ApiEndpointEnum';
-import { BaseResponse, ErrorResponse } from '@/shared/types';
+import { ApiEndpointEnum, BASE_API } from '@/shared/constants';
+import { BaseResponse } from '@/shared/types';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 export class ApiClient {

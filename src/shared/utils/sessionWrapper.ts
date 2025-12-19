@@ -2,9 +2,9 @@ import { prisma } from '@/config';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import RESPONSE_CODE from '../constants/RESPONSE_CODE';
 import { Messages } from '../constants/message';
-import { SessionUser } from '../types/session';
+import RESPONSE_CODE from '../constants/RESPONSE_CODE';
+import { SessionUser } from '../types/session.types';
 
 type HandlerWithUser = (
   req: NextApiRequest,

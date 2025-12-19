@@ -1,5 +1,5 @@
 import VerticalPositiveNegativeBarChart from '@/components/common/charts/vertical-positive-negative-bar-chart';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { VerticalBarDataItem } from './types';
 
 export const VerticalPositiveNegativeBarChartExample = () => {

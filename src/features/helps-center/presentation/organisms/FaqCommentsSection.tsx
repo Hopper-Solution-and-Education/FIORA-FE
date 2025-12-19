@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
 import { Session } from 'next-auth/react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';

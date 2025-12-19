@@ -1,4 +1,4 @@
-import { downloadBlob } from '@/shared/utils/downloadUtils';
+import { downloadBlob } from '@/shared/utils/download';
 import * as XLSX from 'xlsx';
 
 /**

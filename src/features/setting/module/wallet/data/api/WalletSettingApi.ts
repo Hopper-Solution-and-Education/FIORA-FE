@@ -1,8 +1,7 @@
 import type { IHttpClient } from '@/config';
 import { AttachmentData } from '@/features/setting/api/types/attachmentTypes';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
-import { _PaginationResponse, HttpResponse } from '@/shared/types';
-import { FilterObject } from '@/shared/types/filter.types';
+import { ApiEndpointEnum } from '@/shared/constants';
+import { _PaginationResponse, FilterObject, HttpResponse } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { WALLET_SETTING_TYPES } from '../../di/walletSettingDIContainer.type';

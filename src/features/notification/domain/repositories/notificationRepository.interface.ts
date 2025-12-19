@@ -1,4 +1,4 @@
-import { NotificationFilterOptions } from '@/shared/types/notification.types';
+import { NotificationFilterOptions } from '@/shared/types';
 import type {
   EmailNotificationLogs,
   Notification,

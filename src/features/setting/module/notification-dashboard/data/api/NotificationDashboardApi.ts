@@ -1,5 +1,5 @@
 import type { IHttpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { NOTIFICATION_DASHBOARD_TYPES } from '../../di/notificationDashboardDIContainer.type';
@@ -27,7 +27,6 @@ class NotificationDashboardApi implements INotificationDashboardApi {
 
     // Build the URL with query parameters
     let baseUrl;
-    console.log('getNotificationsPaginated personal: ', personal);
     if (personal) {
       baseUrl = routeConfig(ApiEndpointEnum.NotificationPersonal);
     } else {

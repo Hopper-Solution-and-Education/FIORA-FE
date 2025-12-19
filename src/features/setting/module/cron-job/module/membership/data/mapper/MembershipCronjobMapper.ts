@@ -1,4 +1,4 @@
-import { CronJobType } from '@/shared/constants/cron-job';
+import { CronJobType } from '@/shared/constants';
 import { MembershipCronjobFilterRequest } from '../dto/request/MembershipCronjobFilterRequest';
 import {
   MembershipCronjobItem,

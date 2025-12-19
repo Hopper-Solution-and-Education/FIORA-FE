@@ -1,4 +1,4 @@
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { ExchangeRateSetting, Prisma } from '@prisma/client';
 import { currencySettingRepository } from '../../infrastructure/repositories/currencySettingRepository';
 import { exchangeRateRepository } from '../../infrastructure/repositories/exchangeRateRepository';

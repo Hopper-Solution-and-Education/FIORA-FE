@@ -3,7 +3,7 @@
 import { LoadingIndicator } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { RouteEnum } from '@/shared/constants';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { ArrowLeftIcon } from 'lucide-react';

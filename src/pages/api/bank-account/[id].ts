@@ -1,7 +1,7 @@
 import { bankAccountRepository } from '@/features/setting/api/infrastructure/repositories/bankAccountRepository';
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';

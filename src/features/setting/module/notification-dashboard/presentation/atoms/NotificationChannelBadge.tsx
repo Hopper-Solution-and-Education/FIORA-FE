@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { formatUnderlineString } from '@/shared/utils/stringHelper';
 import { ChannelType } from '../../domain';
 
 interface NotificationChannelBadgeProps {
@@ -13,7 +14,11 @@ const CHANNEL_COLOR: Record<ChannelType, string> = {
 
 export const NotificationChannelBadge = ({ channel, className }: NotificationChannelBadgeProps) => {
   const color = CHANNEL_COLOR[channel as ChannelType] || 'bg-gray-100 text-gray-800';
-  return <Badge className={`hover:bg-${color} ${color} ${className || ''}`}>{channel}</Badge>;
+  return (
+    <Badge className={`hover:bg-${color} ${color} ${className || ''}`}>
+      {formatUnderlineString(channel)}
+    </Badge>
+  );
 };
 
 export default NotificationChannelBadge;

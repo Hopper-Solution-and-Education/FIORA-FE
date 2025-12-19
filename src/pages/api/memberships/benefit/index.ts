@@ -1,9 +1,9 @@
 import { membershipBenefitService } from '@/features/setting/api/application/use-cases/membershipBenefitUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createErrorResponse, errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
-import { MembershipBenefitCreatePayload } from '@/shared/types/membership-benefit';
+import { MembershipBenefitCreatePayload } from '@/shared/types';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { validateBody } from '@/shared/utils/validate';
 import { membershipBenefitCreateSchema } from '@/shared/validators/memBenefitValidation';

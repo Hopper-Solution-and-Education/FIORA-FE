@@ -1,5 +1,5 @@
 import { Icons } from '@/components/Icon';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { UserRole } from '@prisma/client';
 
 export interface NavItem {
