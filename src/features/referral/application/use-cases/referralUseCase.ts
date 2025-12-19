@@ -1,3 +1,4 @@
+import { CommonSetting } from '@prisma/client';
 import type {
   IReferralRepository,
   ListInvitesParams,
@@ -35,6 +36,25 @@ class ReferralUseCase {
 
   withdraw(userId: string, amount: number, options?: { minThreshold?: number }) {
     return this._repo.withdraw(userId, amount, options);
+  }
+
+  // REFERRAL CAMPAIGN
+  getCampaign(): Promise<Omit<
+    CommonSetting,
+    'symbol' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'
+  > | null> {
+    return this._repo.getCampaign();
+  }
+
+  upsertCampaign(
+    userId: string,
+    payload: {
+      bonus_1st_amount: number;
+      minimumWithdrawal: number;
+      isActive: boolean;
+    },
+  ): Promise<CommonSetting> {
+    return this._repo.upsertCampaign(userId, payload);
   }
 }
 

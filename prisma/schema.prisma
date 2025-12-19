@@ -218,6 +218,7 @@ model Transaction {
   isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
   commonId            String?              @db.Uuid
+  flowType            TransactionFlow?
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   CommonSetting       CommonSetting?       @relation(fields: [commonId], references: [id])
@@ -269,8 +270,6 @@ model Partner {
   updatedBy    String?       @db.Uuid
   parentId     String?       @db.Uuid
   bankAccount  String?       @db.VarChar(255)
-  attachmentId String?       @unique @db.Uuid
-  Attachment   Attachment?   @relation(fields: [attachmentId], references: [id])
   parent       Partner?      @relation("ParentChildPartners", fields: [parentId], references: [id])
   children     Partner[]     @relation("ParentChildPartners")
   user         User          @relation("UserPartners", fields: [userId], references: [id])
@@ -616,7 +615,6 @@ model Attachment {
   IdentificationDocument_IdentificationDocument_fileFrontIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_fileFrontIdToAttachment")
   IdentificationDocument_IdentificationDocument_fileLocationIdToAttachment IdentificationDocument[] @relation("IdentificationDocument_fileLocationIdToAttachment")
   IdentificationDocument_IdentificationDocument_filePhotoIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_filePhotoIdToAttachment")
-  Partner                                                                  Partner?
 
   @@index([url])
   @@index([path])
@@ -953,7 +951,7 @@ model Referral {
 }
 
 model CommonSetting {
-  id           String        @id @db.Uuid
+  id           String        @id @default(uuid()) @db.Uuid
   name         String        @db.VarChar(30)
   dynamicValue Json
   createdAt    DateTime      @default(now()) @db.Timestamptz(0)
@@ -1119,8 +1117,8 @@ enum emailType {
   KYC_REJECT
   KYC_SUCCESSFUL
   OTP
-  DEPOSIT_APPROVE
-  DEPOSIT_REJECT
+  DEPOPSIT_APPROVE
+  DEPOPSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
   FLEXI_INTEREST
@@ -1128,7 +1126,6 @@ enum emailType {
   WITHDRAW_OTP
   SENDING_OTP
   SENDING_SUCCESSFUL
-  RESET_PASSWORD_OTP
 }
 
 enum CronJobStatus {
@@ -1171,4 +1168,10 @@ enum ReferralStatus {
 enum FxRequestType {
   DEPOSIT
   WITHDRAW
+}
+
+enum TransactionFlow {
+  DEPOSIT
+  WITHDRAW
+  SENDING
 }

@@ -38,7 +38,7 @@ export function CommonTooltip({
         side={side}
         align={align}
         className={cn(
-          'sm:max-w-[600px] md:max-w-[800px] max-w-xs z-50 bg-white text-black dark:bg-black dark:text-white shadow-lg',
+          'max-w-72 z-50 bg-white text-black dark:bg-black dark:text-white shadow-lg',
           className,
         )}
       >
