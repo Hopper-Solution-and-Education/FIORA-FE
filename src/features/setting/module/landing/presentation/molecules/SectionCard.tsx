@@ -129,6 +129,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.IMAGE)}
+                  data-test={sectionType + '-ADD-IMAGE-BUTTON'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
@@ -142,6 +143,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.IMAGE)}
+                  data-test={sectionType + '-ADD-IMAGE-BUTTON'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Image
                 </Button>
@@ -155,6 +157,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
+                  data-test={sectionType + '-ADD-EMBED-BUTTON'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>
@@ -168,6 +171,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                   size="sm"
                   className="text-xs md:text-sm"
                   onClick={() => addMedia(MediaTypeEnum.EMBEDDED)}
+                  data-test={sectionType + '-ADD-EMBED-BUTTON'}
                 >
                   <PlusCircle className="h-3 w-3 mr-1" /> Embed
                 </Button>
@@ -184,6 +188,7 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
                 size="sm"
                 className="text-xs md:text-sm"
                 onClick={() => handleAddMedia(sectionType)}
+                data-test={sectionType + '-ADD-MEDIA-BUTTON'}
               >
                 <PlusCircle className="h-4 w-4" /> Add Media
               </Button>
@@ -218,10 +223,20 @@ export default function SectionCard({ sectionData, control, sectionType }: Secti
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              data-test="DIALOG-CANCEL-BUTTON"
+              onClick={() => setIsDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="button" variant="destructive" onClick={confirmRemoveMedia}>
+            <Button
+              type="button"
+              variant="destructive"
+              data-test="DIALOG-DELETE-BUTTON"
+              onClick={confirmRemoveMedia}
+            >
               <Trash2 className="h-4 w-4 mr-2" /> Delete
             </Button>
           </DialogFooter>

@@ -16,7 +16,7 @@ const sections = [
   { value: 'banner', label: 'Banner', type: SectionTypeEnum.BANNER },
   { value: 'vision', label: 'Vision & Mission', type: SectionTypeEnum.VISION_MISSION },
   { value: 'system', label: 'System', type: SectionTypeEnum.SYSTEM },
-  { value: 'kps', label: 'KSP', type: SectionTypeEnum.KPS },
+  { value: 'ksp', label: 'KSP', type: SectionTypeEnum.KPS },
   { value: 'partners', label: 'Partners', type: SectionTypeEnum.PARTNER_LOGO },
   { value: 'review', label: 'Review', type: SectionTypeEnum.REVIEW },
   { value: 'footer', label: 'Footer', type: SectionTypeEnum.FOOTER },
