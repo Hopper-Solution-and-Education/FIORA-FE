@@ -1,7 +1,7 @@
+import { FilterCriteria } from '@/shared/types';
 import { decorate, injectable } from 'inversify';
 import type { IProductRepository } from '../../data/repositories/ProductRepository';
 import { ProductGetTransactionResponse } from '../entities/Product';
-import { FilterCriteria } from '@/shared/types';
 
 export interface IGetProductTransactionUseCase {
   execute(
@@ -40,7 +40,7 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
   private transformResponse(
     response: ProductGetTransactionResponse,
   ): ProductGetTransactionResponse {
-    const sortedData = response.data
+    const sortedData = response.items
       .sort((a, b) => {
         return new Date(b.category.createdAt).getTime() - new Date(a.category.createdAt).getTime();
       })
@@ -48,16 +48,14 @@ export class GetProductTransactionUseCase implements IGetProductTransactionUseCa
         return {
           ...category,
           products: category.products.sort((a, b) => {
-            return (
-              new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime()
-            );
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           }),
         };
       });
 
     return {
       ...response,
-      data: sortedData,
+      items: sortedData,
     };
   }
 }

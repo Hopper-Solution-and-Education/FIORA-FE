@@ -1,8 +1,8 @@
 import { SelectField } from '@/components/common/forms';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { isEmpty } from 'lodash';
-import { setProductIdToTransfer } from '../../slices';
 import Link from 'next/link';
+import { setProductIdToTransfer } from '../../slices';
 
 type ProductSelectType = {
   productId?: string;

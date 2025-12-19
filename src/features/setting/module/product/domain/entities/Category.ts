@@ -1,4 +1,4 @@
-import { PaginationResponse } from '@/shared/types';
+import { PaginatedResult } from '@/shared/types';
 
 export class CategoryProduct {
   id: string;
@@ -31,7 +31,7 @@ export class CategoryProduct {
   }
 }
 
-export type CategoryProductGetResponse = PaginationResponse<CategoryProduct>;
+export type CategoryProductGetResponse = PaginatedResult<CategoryProduct>;
 export type CategoryProductCreateRequest = Omit<CategoryProduct, 'id'>;
 export type CategoryProductUpdateRequest = CategoryProduct;
 export type CategoryProductDeleteRequest = { productCategoryId: string };

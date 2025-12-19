@@ -21,7 +21,6 @@ import { setDeletedItems, setProductDetail } from '../../slices';
 import {
   createProduct,
   deleteProductAsyncThunk,
-  deleteProductTransferAsyncThunk,
   fetchCategoriesProduct,
   getProductsAsyncThunk,
   updateProductAsyncThunk,
@@ -76,6 +75,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
           if (!isEmpty(product.transactions)) {
             dispatch(getProductsAsyncThunk({ page: pageProduct, pageSize }));
           }
+
           if (product) {
             dispatch(setProductDetail(product));
             reset({
@@ -132,12 +132,7 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
     }
 
     if (!isEmpty(productToDelete.transactions)) {
-      dispatch(
-        deleteProductTransferAsyncThunk({
-          productIdToDelete: productToDelete.id,
-          productIdToTransfer,
-        }),
-      )
+      dispatch(deleteProductAsyncThunk({ id: productToDelete.id, targetId: productIdToTransfer }))
         .unwrap()
         .then(() => {
           setProductToDelete(null);

@@ -1,5 +1,8 @@
-import { httpClient } from '@/config/http-client/HttpClient';
+import apiClient from '@/config/http-client';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { routeConfig } from '@/shared/utils/route';
 import { decorate, injectable } from 'inversify';
+import { CategoryProductGetResponse } from '../../domain/entities';
 import {
   CategoryProductCreateRequestDTO,
   CategoryProductDeleteRequestDTO,
@@ -27,35 +30,37 @@ interface ICategoryAPI {
 }
 
 class CategoryAPI implements ICategoryAPI {
-  async fetchCategories({
-    page,
-    pageSize,
-  }: CategoryProductGetRequestDTO): Promise<CategoryProductGetResponseDTO> {
-    return await httpClient.get(`/api/category-product?page=${page}&pageSize=${pageSize}`);
+  async fetchCategories({ page, pageSize }: CategoryProductGetRequestDTO) {
+    return await apiClient.get<CategoryProductGetResponse>(
+      routeConfig(ApiEndpointEnum.ProductsCategory, {}, { page, pageSize }),
+    );
   }
 
   async createCategory(
     request: CategoryProductCreateRequestDTO,
   ): Promise<CategoryProductCreateResponseDTO> {
-    return await httpClient.post(`/api/category-product`, request);
+    return await apiClient.post(ApiEndpointEnum.ProductsCategory, request);
   }
 
   async updateCategory(
     request: CategoryProductUpdateRequestDTO,
   ): Promise<CategoryProductUpdateResponseDTO> {
-    return await httpClient.put(`/api/category-product/${request.id}`, {
-      name: request.name,
-      description: request.description,
-      icon: request.icon,
-      tax_rate: request.tax_rate,
-    });
+    return await apiClient.put(
+      routeConfig(ApiEndpointEnum.SingleProductsCategory, { id: request.id }),
+      {
+        name: request.name,
+        description: request.description,
+        icon: request.icon,
+        tax_rate: request.tax_rate,
+      },
+    );
   }
 
   async deleteCategory(
     request: CategoryProductDeleteRequestDTO,
   ): Promise<CategoryProductDeleteResponseDTO> {
-    const response = await httpClient.delete<CategoryProductDeleteResponseDTO>(
-      `/api/category-product/${request.productCategoryId}`,
+    const response = await apiClient.delete(
+      routeConfig(ApiEndpointEnum.SingleProductsCategory, { id: request.productCategoryId }),
     );
     return {
       ...response,

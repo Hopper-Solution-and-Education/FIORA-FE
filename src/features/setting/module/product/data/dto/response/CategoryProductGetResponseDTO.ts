@@ -1,5 +1,4 @@
-import { PaginationResponse } from '@/shared/types';
-import { CategoryProducts } from '@prisma/client';
-import { HttpResponse } from '../../../model';
+import { BaseResponse } from '@/shared/types';
+import { CategoryProductGetResponse } from '../../../domain/entities';
 
-export type CategoryProductGetResponseDTO = HttpResponse<PaginationResponse<CategoryProducts>>;
+export type CategoryProductGetResponseDTO = BaseResponse<CategoryProductGetResponse>;

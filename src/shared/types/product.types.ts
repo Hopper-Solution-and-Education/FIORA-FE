@@ -1,4 +1,15 @@
-import { Currency, ProductItems } from '@prisma/client';
+type ProductItems = {
+  name: string;
+  id: string;
+  description: string | null;
+  userId: string;
+  productId: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  icon: string;
+};
 
 export interface ProductItemsV {
   id: string;
@@ -6,18 +17,40 @@ export interface ProductItemsV {
   description: string | null;
   icon: string | null;
 }
+// TODO: Remove this interface after complete migration and remove prisma schema
+// export interface ProductType {
+//   id: string;
+//   price: number;
+//   name: string;
+//   type: string;
+//   description: string | null;
+//   items: ProductItem[];
+//   taxRate: number;
+//   catId: string | null;
+//   icon: string | null;
+//   currency: Currency;
+// }
 
-export interface ProductType {
-  id: string;
-  price: number;
+export type ProductType = 'Product' | 'Service' | 'Edu';
+
+export type Product = {
   name: string;
-  type: string;
+  id: string;
   description: string | null;
-  items: ProductItem[];
-  taxRate: number;
+  userId: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  icon: string;
+  price: number;
+  taxRate: number | null;
+  type: ProductType;
   catId: string | null;
-  icon: string | null;
-  currency: Currency;
-}
+  currency: string | null;
+  currencyId: string | null;
+  baseCurrency: string | null;
+  baseAmount: number | null;
+};
 
 export type ProductItem = ProductItems;

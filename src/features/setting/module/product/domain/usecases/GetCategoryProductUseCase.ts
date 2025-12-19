@@ -19,13 +19,13 @@ export class GetCategoryProductUseCase implements IGetCategoryProductUseCase {
   }
 
   private processResponse(response: CategoryProductGetResponse): CategoryProductGetResponse {
-    const sortedData = response.data.sort((a, b) => {
+    const sortedData = response.items.sort((a, b) => {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
 
     return {
       ...response,
-      data: sortedData,
+      items: sortedData,
     };
   }
 }

@@ -269,6 +269,8 @@ model Partner {
   updatedBy    String?       @db.Uuid
   parentId     String?       @db.Uuid
   bankAccount  String?       @db.VarChar(255)
+  attachmentId String?       @unique @db.Uuid
+  Attachment   Attachment?   @relation(fields: [attachmentId], references: [id])
   parent       Partner?      @relation("ParentChildPartners", fields: [parentId], references: [id])
   children     Partner[]     @relation("ParentChildPartners")
   user         User          @relation("UserPartners", fields: [userId], references: [id])
@@ -614,6 +616,7 @@ model Attachment {
   IdentificationDocument_IdentificationDocument_fileFrontIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_fileFrontIdToAttachment")
   IdentificationDocument_IdentificationDocument_fileLocationIdToAttachment IdentificationDocument[] @relation("IdentificationDocument_fileLocationIdToAttachment")
   IdentificationDocument_IdentificationDocument_filePhotoIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_filePhotoIdToAttachment")
+  Partner                                                                  Partner?
 
   @@index([url])
   @@index([path])
@@ -1116,8 +1119,8 @@ enum emailType {
   KYC_REJECT
   KYC_SUCCESSFUL
   OTP
-  DEPOPSIT_APPROVE
-  DEPOPSIT_REJECT
+  DEPOSIT_APPROVE
+  DEPOSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
   FLEXI_INTEREST
@@ -1125,6 +1128,7 @@ enum emailType {
   WITHDRAW_OTP
   SENDING_OTP
   SENDING_SUCCESSFUL
+  RESET_PASSWORD_OTP
 }
 
 enum CronJobStatus {

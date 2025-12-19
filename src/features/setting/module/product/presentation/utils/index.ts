@@ -44,11 +44,11 @@ export const mapTransactionsToTwoSideBarItems = (
       });
 
       return {
-        id: item.product.id,
-        name: item.product.name,
+        id: item.id,
+        name: item.name,
         positiveValue: productPositive,
         negativeValue: productNegative,
-        icon: item.product.icon,
+        icon: item.icon,
         type: productPositive + productNegative > 0 ? 'income' : 'expense',
         // Pass the aggregate values to generateColor
         colorPositive: generateColor(productPositive, true),
@@ -62,7 +62,7 @@ export const mapTransactionsToTwoSideBarItems = (
       positiveValue: categoryPositive,
       negativeValue: categoryNegative,
       icon: categoryItem.category.icon,
-      taxRate: categoryItem.category.taxRate,
+      taxRate: categoryItem.category.tax_rate,
       createdAt: categoryItem.category.createdAt,
       updatedAt: categoryItem.category.updatedAt,
       description: categoryItem.category.description,

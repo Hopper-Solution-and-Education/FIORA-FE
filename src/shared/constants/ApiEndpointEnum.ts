@@ -117,6 +117,15 @@ export enum ApiEndpointEnum {
   // Auth
   SendOtpForgotPassword = '/api/auth/send-otp',
   ResetPassword = '/api/auth/forgot-password',
+
+  // Products
+  Products = '/api/products',
+  SingleProducts = '/api/products/{id}',
+  ProductsSearch = '/api/products/search',
+
+  // Products Category
+  ProductsCategory = '/api/products/category',
+  SingleProductsCategory = '/api/products/category/{id}',
 }
 
 export const BASE_API: string = process.env.NEXT_PUBLIC_BASE_API || '';
