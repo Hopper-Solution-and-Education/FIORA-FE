@@ -1,6 +1,10 @@
 import { ApiEndpointEnum, BASE_API } from '@/shared/constants/ApiEndpointEnum';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { BaseResponse, ErrorResponse } from '@/shared/types';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+
+// Endpoints that should not be retried on 401
+const nonRetryEndpoints: string[] = [];
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
@@ -42,7 +46,7 @@ export class ApiClient {
           error.response?.status === 401 &&
           originalRequest &&
           !originalRequest._retry &&
-          !originalRequest.url?.includes('/auth/')
+          !nonRetryEndpoints.includes(originalRequest.url || '')
         ) {
           originalRequest._retry = true;
 
@@ -127,7 +131,7 @@ export class ApiClient {
       // Dispatch session-expired event to disconnect wallet
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('session-expired'));
-        window.location.href = ApiEndpointEnum.Login;
+        window.location.href = RouteEnum.SignIn;
       }
       throw error;
     }

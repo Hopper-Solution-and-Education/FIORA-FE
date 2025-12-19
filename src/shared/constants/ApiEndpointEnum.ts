@@ -1,6 +1,7 @@
 export enum ApiEndpointEnum {
   // Auth
   Login = '/api/auth/sign-in',
+  GoogleLogin = '/api/oauth2/google',
   SignUp = '/api/auth/sign-up',
   SignOut = '/api/auth/sign-out',
   Refresh = '/api/auth/refresh',

@@ -22,6 +22,17 @@ class AuthService {
     return response;
   }
 
+  async loginWithGoogle(token: string): Promise<BaseResponse<LoginResponse>> {
+    const response = await apiClient.post<LoginResponse>(ApiEndpointEnum.GoogleLogin, { token });
+
+    if (response.statusCode === RESPONSE_CODE.OK) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+
+    return response;
+  }
+
   async getMe(): Promise<BaseResponse<User>> {
     return await apiClient.get(ApiEndpointEnum.Me);
   }

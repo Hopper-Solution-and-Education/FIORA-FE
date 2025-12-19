@@ -46,7 +46,7 @@ function isReferralCodeUniqueConstraintError(error: unknown): boolean {
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
     CredentialsProvider({
@@ -94,6 +94,90 @@ export const authOptions: NextAuthOptions = {
           };
         }
         return null;
+      },
+    }),
+    // TODO: Remove logic when completed migration
+    CredentialsProvider({
+      id: 'google-legacy',
+      name: 'Google Legacy',
+      credentials: {
+        googleToken: { label: 'Google Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.googleToken) return null;
+
+        try {
+          // Verify Google Token
+          // Try verifying as ID Token first
+          let email: string | undefined;
+
+          try {
+            const response = await fetch(
+              `https://oauth2.googleapis.com/tokeninfo?id_token=${credentials.googleToken}`,
+            );
+            if (response.ok) {
+              const payload = await response.json();
+              email = payload.email;
+            }
+          } catch (e) {
+            // Ignore
+          }
+
+          // If not ID token, try verifying as Access Token
+          if (!email) {
+            const response = await fetch(
+              `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${credentials.googleToken}`,
+            );
+            if (response.ok) {
+              const payload = await response.json();
+              email = payload.email;
+            }
+          }
+
+          if (!email) {
+            throw new Error('Invalid Google Token');
+          }
+
+          // Find user by email
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              role: true,
+              isBlocked: true,
+              isDeleted: true,
+            },
+          });
+
+          if (!user) {
+            // User should have been created by the new BE flow or existing flow
+            // But if not found here, we can't create a session
+            return null;
+          }
+
+          if (user.isBlocked) {
+            throw new Error(Messages.USER_BLOCKED_SIGNIN_ERROR);
+          }
+
+          if (user.isDeleted) {
+            throw new Error(Messages.USER_DELETED_SIGNIN_ERROR);
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            role: user.role,
+            rememberMe: true, // Default to true for Google Login
+          };
+        } catch (error) {
+          console.error('Google Legacy Auth Error:', error);
+          return null;
+        }
       },
     }),
   ],
