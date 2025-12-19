@@ -1,5 +1,5 @@
 import { Container } from 'inversify';
-import { httpClient, IHttpClient } from '../../../config/http-client/HttpClient';
+import apiClient from '../../../config/http-client';
 import { ILandingAPI, createLandingAPI } from '../data/api/api';
 import { IMediaRepository, createMediaRepository } from '../data/repositories/mediaRepository';
 import {
@@ -13,14 +13,13 @@ import { TYPES } from './landingDIContainer.type';
 const landingDIContainer = new Container();
 
 // Create instances using factory functions
-const landingAPI = createLandingAPI(httpClient);
+const landingAPI = createLandingAPI(apiClient);
 const mediaRepository = createMediaRepository(landingAPI);
 const sectionRepository = createSectionRepository(landingAPI);
 const getMediaUseCase = createGetMediaUseCase(mediaRepository);
 const getSectionUseCase = createGetSectionUseCase(sectionRepository);
 
 // Bind all dependencies
-landingDIContainer.bind<IHttpClient>(TYPES.IHttpClient).toConstantValue(httpClient);
 landingDIContainer.bind<ILandingAPI>(TYPES.ILandingAPI).toConstantValue(landingAPI);
 landingDIContainer.bind<IMediaRepository>(TYPES.IMediaRepository).toConstantValue(mediaRepository);
 landingDIContainer

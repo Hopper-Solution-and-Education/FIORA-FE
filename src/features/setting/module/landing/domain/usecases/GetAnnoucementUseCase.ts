@@ -1,4 +1,4 @@
-import { HttpResponse } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { decorate, injectable } from 'inversify';
 import { IAnnouncementRepository } from '../../data/repositories/annoucementRepository';
 import { IAnnouncement } from '../entities/Announcement';
@@ -16,8 +16,8 @@ export class GetAnnouncementUseCase {
   }
 
   private handleProcessResponse(
-    data: HttpResponse<IAnnouncement[]>,
-  ): HttpResponse<IAnnouncement[]> {
+    data: BaseResponse<IAnnouncement[]>,
+  ): BaseResponse<IAnnouncement[]> {
     return data;
   }
 }

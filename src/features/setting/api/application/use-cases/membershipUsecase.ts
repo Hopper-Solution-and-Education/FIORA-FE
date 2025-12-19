@@ -466,16 +466,12 @@ class MembershipSettingUseCase {
     // --- BASIC VALIDATION ---
 
     if (dOldMin.lt(dFloor) || dOldMax.gt(dCeil)) {
-      throw new BadRequestError(
-        'Old min must be >= 0 and old max must be <= 99999999998',
-      );
+      throw new BadRequestError('Old min must be >= 0 and old max must be <= 99999999998');
     }
 
     // new range must be within [FLOOR, CEILING]
     if (dNewMin.lt(dFloor) || dNewMax.gt(dCeil)) {
-      throw new BadRequestError(
-        'New min/max must be within [0, 99999999998]',
-      );
+      throw new BadRequestError('New min/max must be within [0, 99999999998]');
     }
 
     // Không cho newMin < oldMin (shrink left only / giữ invariant bạn đang dùng)
@@ -509,16 +505,13 @@ class MembershipSettingUseCase {
     });
 
     const isSameRange = (t: any) =>
-      new Prisma.Decimal(t[minKey]).eq(dOldMin) &&
-      new Prisma.Decimal(t[maxKey]).eq(dOldMax);
+      new Prisma.Decimal(t[minKey]).eq(dOldMin) && new Prisma.Decimal(t[maxKey]).eq(dOldMax);
 
     const otherOverlaps = overlapTiers.filter((t) => !isSameRange(t));
 
     // current + tối đa 2 neighbors (prev + next) => tổng length tối đa = 3
     if (overlapTiers.length > 3 || otherOverlaps.length > 2) {
-      throw new BadRequestError(
-        'Change would affect more than one neighboring tier; rejected.',
-      );
+      throw new BadRequestError('Change would affect more than one neighboring tier; rejected.');
     }
 
     // --- FIND IMMEDIATE NEIGHBORS BASED ON CURRENT EDGES ---
@@ -534,10 +527,10 @@ class MembershipSettingUseCase {
       }),
       prevMaxOld >= FLOOR
         ? prisma.membershipTier.findFirst({
-          where: { [maxKey]: new Prisma.Decimal(prevMaxOld) } as any,
-          select: { [minKey]: true, [maxKey]: true },
-          orderBy: { [minKey]: 'asc' } as any,
-        })
+            where: { [maxKey]: new Prisma.Decimal(prevMaxOld) } as any,
+            select: { [minKey]: true, [maxKey]: true },
+            orderBy: { [minKey]: 'asc' } as any,
+          })
         : Promise.resolve(null),
     ]);
 
@@ -569,9 +562,7 @@ class MembershipSettingUseCase {
       if (secondNext) {
         const secondNextMin = new Prisma.Decimal((secondNext as any)[minKey]);
         if (snappedNextMin.gte(secondNextMin)) {
-          throw new ConflictError(
-            'Change would ripple beyond the immediate next tier; rejected.',
-          );
+          throw new ConflictError('Change would ripple beyond the immediate next tier; rejected.');
         }
       }
     }
@@ -658,7 +649,6 @@ class MembershipSettingUseCase {
       };
     });
   }
-
 
   async getTierInfinity(params: InfinityParams): Promise<InfinityResult<OutputTierInfinity>> {
     const { limit = 20, search, page } = params;

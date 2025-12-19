@@ -1,12 +1,12 @@
 // src/features/admin/banner/actions/getMediaAction.ts
 import { adminContainer } from '@/features/setting/module/landing/di/adminDIContainer';
-import { HttpResponse } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { IAnnouncement } from '../../domain/entities/Announcement';
 import { UpdateAnnouncementUseCase } from '../../domain/usecases/UpdateAnnoucementUseCase';
 
 export const updateAnnouncement = createAsyncThunk<
-  HttpResponse<IAnnouncement[]>,
+  BaseResponse<IAnnouncement[]>,
   IAnnouncement[],
   { rejectValue: string }
 >('announcement/updateAnnouncement', async (announcement, { rejectWithValue }) => {
