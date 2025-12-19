@@ -1,5 +1,3 @@
-import { Decimal } from '@/types/global';
-
 type ProductItems = {
   name: string;
   id: string;
@@ -19,7 +17,7 @@ export interface ProductItemsV {
   description: string | null;
   icon: string | null;
 }
-
+// TODO: Remove this interface after complete migration and remove prisma schema
 // export interface ProductType {
 //   id: string;
 //   price: number;
@@ -45,14 +43,14 @@ export type Product = {
   createdAt: Date;
   updatedAt: Date;
   icon: string;
-  price: Decimal;
-  taxRate: Decimal | null;
+  price: number;
+  taxRate: number | null;
   type: ProductType;
   catId: string | null;
   currency: string | null;
   currencyId: string | null;
   baseCurrency: string | null;
-  baseAmount: Decimal | null;
+  baseAmount: number | null;
 };
 
 export type ProductItem = ProductItems;
