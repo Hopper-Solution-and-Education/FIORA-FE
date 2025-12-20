@@ -7,7 +7,7 @@ This is a powerful frontend project built with **Next.js**, designed with a feat
 
 ## 🛠 Project Overview
 
-The Hopper Dashboard is a modern, scalable frontend application tailored for efficient management and visualization of data. It leverages a robust tech stack to ensure type safety, responsive UI, and seamless state management.
+The FIORA Dashboard is a modern, scalable frontend application tailored for efficient management and visualization of data. It leverages a robust tech stack to ensure type safety, responsive UI, and seamless state management.
 
 **Key Technologies:**
 
