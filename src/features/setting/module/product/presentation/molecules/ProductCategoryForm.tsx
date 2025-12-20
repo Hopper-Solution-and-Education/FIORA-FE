@@ -144,6 +144,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
         {/* Cancel Button */}
         <CommonTooltip content="Delete">
           <Button
+            data-test="category-delete-button"
             variant="outline"
             type="button"
             onClick={() => setIsOpenDialogDelete(true)}
@@ -156,6 +157,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
         {/* Submit Button */}
         <CommonTooltip content={formState.isSubmitting ? 'Submitting...' : 'Submit'}>
           <Button
+            data-test="category-submit-button"
             type="submit"
             disabled={isButtonDisabled}
             className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"

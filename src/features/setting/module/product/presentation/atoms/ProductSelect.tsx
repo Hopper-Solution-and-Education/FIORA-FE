@@ -35,6 +35,7 @@ const ProductSelect = ({ productId }: ProductSelectType) => {
             No products available to transfer.
           </p>
           <Link
+            data-test="product-create-link"
             href="/setting/product/create"
             className="inline-block px-6 py-2 rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
           >
@@ -43,6 +44,7 @@ const ProductSelect = ({ productId }: ProductSelectType) => {
         </div>
       ) : (
         <SelectField
+          data-test="product-transfer-select"
           name={''}
           value={productIdToTransfer}
           onChange={handleChangeSelect}
