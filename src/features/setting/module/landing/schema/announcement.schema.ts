@@ -1,10 +1,10 @@
 import * as yup from 'yup';
 
 export const announcementItemSchema = yup.object({
-  title: yup.string().required('Title is required'),
-  content: yup.string().required('Content is required'),
+  title: yup.string().optional(),
+  content: yup.string().optional(),
   isActive: yup.boolean().default(true),
-  id: yup.string().optional(), // Cho phép update nếu có id
+  id: yup.string().optional(),
 });
 
 export const announcementListFormSchema = yup.object({

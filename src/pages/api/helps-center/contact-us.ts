@@ -1,6 +1,6 @@
 import { contactUsUseCase } from '@/features/helps-center/application/use-cases/contact-us/contactUsUseCase';
 import type { ContactUsRequest } from '@/features/helps-center/domain/entities/models/faqs';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { createErrorResponse } from '@/shared/lib/utils';

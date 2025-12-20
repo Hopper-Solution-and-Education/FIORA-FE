@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import {

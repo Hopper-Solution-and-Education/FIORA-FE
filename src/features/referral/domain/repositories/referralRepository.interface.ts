@@ -1,4 +1,11 @@
-import type { Prisma, PrismaClient, Referral, Transaction, Wallet } from '@prisma/client';
+import type {
+  CommonSetting,
+  Prisma,
+  PrismaClient,
+  Referral,
+  Transaction,
+  Wallet,
+} from '@prisma/client';
 import type {
   PaginatedTransactionResponse,
   ReferralDashboardSummary,
@@ -44,6 +51,18 @@ export interface IReferralRepository {
     amount: number,
     options?: { minThreshold?: number },
   ): Promise<{ fromWallet: Wallet; toWallet: Wallet }>;
+  getCampaign(): Promise<Omit<
+    CommonSetting,
+    'symbol' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'
+  > | null>;
+  upsertCampaign(
+    userId: string,
+    payload: {
+      bonus_1st_amount: number;
+      minimumWithdrawal: number;
+      isActive: boolean;
+    },
+  ): Promise<CommonSetting>;
 }
 
 export const createReferralRepository: (

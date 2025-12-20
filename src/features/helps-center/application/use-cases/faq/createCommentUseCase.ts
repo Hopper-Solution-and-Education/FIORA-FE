@@ -1,4 +1,4 @@
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { CreateCommentRequest, FaqComment } from '../../../domain/entities/models/faqs';
 import { IFaqCommentRepository, IFaqRepository } from '../../../domain/repositories';
 import { faqCommentRepository, faqRepository } from '../../../infrastructure/repositories';

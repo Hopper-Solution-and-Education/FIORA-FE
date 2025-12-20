@@ -2,7 +2,7 @@ import {
   PositiveAndNegativeBarV2LevelConfig,
   TwoSideBarItem,
 } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 
 export const getTotalItem = (
   data: TwoSideBarItem[],

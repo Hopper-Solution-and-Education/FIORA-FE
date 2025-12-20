@@ -1,4 +1,4 @@
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import type { Response } from '@/shared/types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import {

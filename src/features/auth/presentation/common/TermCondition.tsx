@@ -1,7 +1,7 @@
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/shared/utils';
 import { Dispatch, SetStateAction, useState } from 'react';
 import TermsAndConditionsModal from '../organisms/TermsAndConditionsModal';
-import { cn } from '@/shared/utils';
-import { Checkbox } from '@/components/ui/checkbox';
 
 type TermConditionProps = {
   isTermAccepted: boolean;
@@ -52,6 +52,7 @@ export default function TermCondition(props: TermConditionProps) {
               'underline underline-offset-4 hover:text-blue-600 text-blue-500',
               !isEditAlowed && 'cursor-not-allowed text-gray-400 hover:text-gray-400',
             )}
+            data-test="terms-detail-link"
           >
             Terms and Conditions.
           </a>{' '}

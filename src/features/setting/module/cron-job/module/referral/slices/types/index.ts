@@ -1,3 +1,5 @@
+import { CampaignSettings } from '../../presentation/types/referral.type';
+
 export interface ReferralCronjobFilterState {
   status: string[];
   typeOfBenefit: string[];
@@ -13,6 +15,8 @@ export interface ReferralCronjobState {
   loading: boolean;
   error: string | null;
   filter: ReferralCronjobFilterState;
+  campaignSettings: CampaignSettings | null;
+  isSubmitting: boolean;
 }
 
 // Get current date at start of day and end of day
@@ -46,4 +50,6 @@ export const initialState: ReferralCronjobState = {
     fromDate: startOfDay,
     toDate: endOfDay,
   },
+  campaignSettings: null,
+  isSubmitting: false,
 };

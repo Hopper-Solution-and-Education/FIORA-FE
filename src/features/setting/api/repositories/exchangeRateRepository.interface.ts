@@ -1,4 +1,4 @@
-import { ExchangeRateResponse } from '@/shared/types/exchangeRate';
+import { ExchangeRateResponse } from '@/shared/types';
 import { CurrencyExchange, ExchangeRateSetting, Prisma } from '@prisma/client';
 
 export interface IExchangeRateRepository {

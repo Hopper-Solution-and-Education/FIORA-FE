@@ -1,8 +1,7 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
 import { useCurrencyFormatter } from '@/shared/hooks';
-import { GlobalFilters } from '@/shared/types';
-import { FilterColumn, FilterCriteria } from '@/shared/types/filter.types';
+import { FilterColumn, FilterCriteria, GlobalFilters } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';

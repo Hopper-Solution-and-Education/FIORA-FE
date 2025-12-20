@@ -4,7 +4,7 @@ import GlobalLabel from '@/components/common/atoms/GlobalLabel';
 import { Icons } from '@/components/Icon';
 import { Input } from '@/components/ui/input';
 import { useDropdownKeyboard } from '@/features/sending/hooks/useDropdownKeyboard';
-import { DEFAULT_AMOUNT_PACKAGES } from '@/shared/constants/amount';
+import { DEFAULT_AMOUNT_PACKAGES } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
 import React, { useEffect, useRef, useState } from 'react';

@@ -3,7 +3,7 @@
 import { ChartLegend, IconDisplay, PositiveAndNegativeV2BarLabel } from '@/components/common/atoms';
 import StackYAxisTick from '@/components/common/atoms/StackYAxisTick';
 import { Icons } from '@/components/Icon';
-import { COLORS, DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_KEY } from '@/shared/constants/chart';
+import { COLORS, DEFAULT_BUDGET_ICON, DEFAULT_CURRENCY, STACK_KEY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import { cn } from '@/shared/utils';

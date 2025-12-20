@@ -1,6 +1,6 @@
 'use client';
 
-import { DynamicFilterGroup, DynamicFilterRule, FilterOperator } from '@/shared/types/filter.types';
+import { DynamicFilterGroup, DynamicFilterRule, FilterOperator } from '@/shared/types';
 import { FilterBuilder } from '@/shared/utils/filterBuilder';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useCallback, useEffect, useReducer, useRef } from 'react';

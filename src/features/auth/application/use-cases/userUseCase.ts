@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
 import { User } from '@prisma/client';
 import { IUserRepository } from '../../domain/repositories/userRepository.interface';

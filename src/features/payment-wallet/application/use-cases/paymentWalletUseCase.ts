@@ -11,7 +11,7 @@ import { IWalletRepository } from '@/features/setting/api/repositories/walletRep
 import { transactionUseCase } from '@/features/transaction/application/use-cases/transactionUseCase';
 import { ITransactionRepository } from '@/features/transaction/domain/repositories/transactionRepository.interface';
 import { transactionRepository } from '@/features/transaction/infrastructure/repositories/transactionRepository';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
 import { DepositRequestStatus, FxRequestType, Prisma, WalletType } from '@prisma/client';
 import { FetchPaymentWalletParams } from '../../infrastructure/types/paymentWallet.types';

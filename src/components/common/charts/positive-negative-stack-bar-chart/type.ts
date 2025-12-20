@@ -1,4 +1,4 @@
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { BaseChartProps } from '@/shared/types';
 import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 
 export interface ChartDataConfig {

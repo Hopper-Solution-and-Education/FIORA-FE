@@ -1,4 +1,7 @@
-import { ReferralCronjobTableData } from '../../../presentation/types/referral.type';
+import {
+  CampaignSettings,
+  ReferralCronjobTableData,
+} from '../../../presentation/types/referral.type';
 
 export interface ReferralCronjobPaginatedResponse {
   data: {
@@ -11,3 +14,9 @@ export interface ReferralCronjobPaginatedResponse {
   message: string;
   success: boolean;
 }
+
+export type CampaignResponse = {
+  id: string;
+  name: string;
+  dynamicValue: CampaignSettings;
+};

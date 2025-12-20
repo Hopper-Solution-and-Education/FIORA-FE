@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/shared/utils';
+import { formatFileSize, getFileName, isImage, isPDF } from '@/shared/utils/common';
 import Image from 'next/image';
 
-interface WalletAttachmentPreviewModalProps {
+interface AttachmentPreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   attachment: {
@@ -17,22 +18,17 @@ interface WalletAttachmentPreviewModalProps {
     updatedBy: string | null;
     notificationId: string | null;
   };
-  isImage: boolean;
-  isPDF: boolean;
-  getFileName: (path: string) => string;
-  formatFileSize: (size: string) => string;
 }
 
-const WalletAttachmentPreviewModal = ({
+const AttachmentPreviewModal = ({
   open,
   onOpenChange,
   attachment,
-  isImage,
-  isPDF,
-  getFileName,
-  formatFileSize,
-}: WalletAttachmentPreviewModalProps) => {
-  if (!isImage && !isPDF) return null;
+}: AttachmentPreviewModalProps) => {
+  const _isImage = isImage(attachment);
+  const _isPDF = isPDF(attachment);
+
+  if (!_isImage && !_isPDF) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,10 +51,10 @@ const WalletAttachmentPreviewModal = ({
           <div
             className={cn(
               'relative rounded-2xl overflow-hidden max-w-[90%] max-h-[60vh] bg-background border border-border shadow-lg',
-              isPDF ? 'w-full h-[60vh]' : '',
+              _isPDF ? 'w-full h-[60vh]' : '',
             )}
           >
-            {isImage && (
+            {_isImage && (
               <Image
                 src={attachment.url}
                 alt={getFileName(attachment.path)}
@@ -71,7 +67,7 @@ const WalletAttachmentPreviewModal = ({
                 priority
               />
             )}
-            {isPDF && (
+            {_isPDF && (
               <iframe
                 src={attachment.url}
                 title={getFileName(attachment.path)}
@@ -86,4 +82,4 @@ const WalletAttachmentPreviewModal = ({
   );
 };
 
-export default WalletAttachmentPreviewModal;
+export default AttachmentPreviewModal;

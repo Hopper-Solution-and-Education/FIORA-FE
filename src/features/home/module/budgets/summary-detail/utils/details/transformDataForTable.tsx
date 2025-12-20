@@ -5,8 +5,7 @@ import {
   FIXED,
 } from '@/components/common/tables/custom-table/types';
 import { Category } from '@/features/home/module/budgets/summary-detail/data/dto/response/CategoryResponseDTO';
-import { Currency } from '@/shared/types';
-import { ComparisonProps } from '@/shared/types/chart.type';
+import { ComparisonProps, Currency } from '@/shared/types';
 import { cn } from '@/shared/utils';
 import CategorySelect from '../../../../category/components/CategorySelect';
 import {

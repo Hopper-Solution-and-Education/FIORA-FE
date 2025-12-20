@@ -1,5 +1,5 @@
 import type { IHttpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { routeConfig } from '@/shared/utils/route';
 import { decorate, inject, injectable } from 'inversify';
 import { MEMBERSHIP_CRONJOB_TYPES } from '../../di/membershipCronjobDashboardDI.type';

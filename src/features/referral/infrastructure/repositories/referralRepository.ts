@@ -1,9 +1,17 @@
 import { prisma } from '@/config';
 import { sendBulkEmailUtility } from '@/config/send-grid/sendGrid';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
-import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/common';
-import { Prisma, Referral, Transaction, TransactionType, Wallet, WalletType } from '@prisma/client';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
+import {
+  CommonSetting,
+  Prisma,
+  Referral,
+  Transaction,
+  TransactionType,
+  Wallet,
+  WalletType,
+} from '@prisma/client';
 import { readFileSync } from 'fs';
 import { randomUUID } from 'node:crypto';
 import { join } from 'path';
@@ -17,6 +25,8 @@ import type {
   ReferralDashboardSummary,
   TransactionFilters,
 } from '../../types';
+
+const REFERRAL_CAMPAIGN_SYMBOL = 'REFERRAL_CAMPAIGN';
 
 class ReferralRepository implements IReferralRepository {
   constructor(private _prisma = prisma) {}
@@ -410,6 +420,74 @@ class ReferralRepository implements IReferralRepository {
 
     // Non-null assertion safe due to prior operations
     return { fromWallet: fromWallet!, toWallet: toWallet! };
+  }
+
+  // Get referral campaign
+  async getCampaign(): Promise<Omit<
+    CommonSetting,
+    'symbol' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'
+  > | null> {
+    const setting = await this._prisma.commonSetting.findFirst({
+      where: { symbol: REFERRAL_CAMPAIGN_SYMBOL },
+      select: {
+        id: true,
+        name: true,
+        dynamicValue: true,
+      },
+    });
+    return setting;
+  }
+
+  // Upsert referral campaign
+  async upsertCampaign(
+    userId: string,
+    payload: {
+      bonus_1st_amount: number;
+      minimumWithdrawal: number;
+      isActive: boolean;
+    },
+  ): Promise<CommonSetting> {
+    // Check if a campaign setting already exists
+    const existingSetting = await this._prisma.commonSetting.findFirst({
+      where: { symbol: REFERRAL_CAMPAIGN_SYMBOL },
+    });
+
+    if (existingSetting) {
+      // Update existing record - only update the allowed fields in dynamicValue
+      const currentDynamicValue = existingSetting.dynamicValue as any;
+      const updatedDynamicValue = {
+        ...currentDynamicValue,
+        bonus_1st_amount: payload.bonus_1st_amount,
+        minimumWithdrawal: payload.minimumWithdrawal,
+        isActive: payload.isActive,
+      };
+
+      return this._prisma.commonSetting.update({
+        where: { id: existingSetting.id },
+        data: {
+          dynamicValue: updatedDynamicValue,
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // Create new record
+      return this._prisma.commonSetting.create({
+        data: {
+          name: 'Referral Campaign Bonus',
+          symbol: REFERRAL_CAMPAIGN_SYMBOL,
+          dynamicValue: {
+            bonus_1st_amount: payload.bonus_1st_amount,
+            minimumWithdrawal: payload.minimumWithdrawal,
+            isActive: payload.isActive,
+          },
+          createdBy: userId,
+          updatedBy: userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
   }
 
   /**

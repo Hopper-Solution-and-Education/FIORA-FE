@@ -1,5 +1,77 @@
 import { Icons } from '@/components/Icon';
 import { GlobalNavItem, IconsOptions } from '@/shared/types';
+import { Currency } from '@prisma/client';
+
+// FEATURE FLAGS
+export enum FeatureFlags {
+  CATEGORY_FEATURE = 'CAT_SETTING',
+  TRANSACTION_FEATURE = 'TRANX',
+  PARTNER_FEATURE = 'PART_SETTING',
+  PRODUCT_FEATURE = 'PROD_SETTING',
+  ACCOUNT_FEATURE = 'ACC',
+  BUDGET_FEATURE = 'BUDGET_CONTROL',
+  FINANCE_FEATURE = 'FINANCE_REPORT',
+  WALLET_FEATURE = 'WALLET',
+  EXCHANGE_RATE_FEATURE = 'EXCHANGE_RATE',
+  MEMBERSHIP_FEATURE = 'MEMBERSHIP',
+  FAQ_FEATURE = 'FAQs',
+  PACKAGE_FX_FEATURE = 'PACKAGE_FX',
+  FLEXI_INTEREST = 'FLEXI_INTEREST',
+  REFERRAL_FEATURE = 'REFERRAL',
+}
+
+export const MODULE = {
+  HOME: 'HOME',
+  WALLET: 'WALLET',
+  ACCOUNT: 'ACCOUNT',
+  CATEGORY: 'CATEGORY',
+  TRANSACTION: 'TRANSACTION',
+  BUDGET: 'BUDGET',
+  ADMIN: 'ADMIN',
+} as const;
+
+export const USER_ROLES = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+  CS: 'CS',
+} as const;
+
+export enum UserRole {
+  ADMIN = 'Admin',
+  USER = 'User',
+  CS = 'CS',
+}
+
+export enum CronJobType {
+  Membership = 'MEMBERSHIP',
+  Referral = 'REFERRAL',
+}
+
+export enum SavingWalletAction {
+  DEPOSIT = 'Deposit',
+  TRANSFER = 'Transfer',
+}
+
+// CURRENCY & EXCHANGE RATE
+export const FIXED_NUMBER_OF_DECIMALS = 8;
+export const DEFAULT_BASE_CURRENCY = 'USD';
+export const EXCHANGE_RATE_STALE_TIME = 6 * 60 * 60 * 1000;
+export const CACHE_KEY = 'fiora_exchange_rates';
+export const CURRENCY: Record<Currency, string> = {
+  USD: 'USD',
+  VND: 'VND',
+  FX: 'FX',
+} as const;
+
+// UPLLOAD
+export const SUPPORTED_IMAGE_TYPES = ['jpg', 'jpeg', 'png'];
+export const FIREBASE_STORAGE_URL = 'https://firebasestorage.googleapis.com';
+export const FIREBASE_GS_URL = 'gs://';
+
+// DATA
+export const DEFAULT_AMOUNT_PACKAGES: number[] = [
+  100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+];
 
 export const globalNavItems: GlobalNavItem[] = [
   {
@@ -30,6 +102,16 @@ export const notSignInNavItems: GlobalNavItem[] = [
     isActive: false,
   },
 ];
+
+export const ICON_SIZE = {
+  XS: 14, // Extra Small
+  SM: 18, // Small
+  MD: 22, // Medium (Default)
+  LG: 30, // Large
+  XL: 46, // Extra Large
+  XXL: 62, // 2X Large
+  XXXL: 94, // 3X Large
+} as const;
 
 export const iconOptions: IconsOptions[] = [
   {
@@ -168,3 +250,12 @@ export const iconOptions: IconsOptions[] = [
     ],
   },
 ];
+
+// EMAIL
+export enum EmailTemplateEnum {
+  OTP_VERIFICATION = '2b651d0c-f041-47b7-ba6d-e84673aaa000',
+  DEPOSIT_APPROVED_EMAIL_TEMPLATE_ID = 'd191b380-3a52-4904-b39c-490360eb41c6',
+  DEPOSIT_REJECTED_EMAIL_TEMPLATE_ID = '0c03e649-d219-4098-b886-f62ec5b8e233',
+  WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID = 'a42b478c-0ba7-4bba-9a69-e10cdc5e9bc5',
+  WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID = '806deaf6-a528-4254-a3d7-2f6e8ba21d4c',
+}

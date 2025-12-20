@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'; // Import DropdownMenu components
 import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import useMarkNotificationAsRead from '@/shared/hooks/useMarkNotificationAsRead';
 import { cn } from '@/shared/utils';
 import { format } from 'date-fns';

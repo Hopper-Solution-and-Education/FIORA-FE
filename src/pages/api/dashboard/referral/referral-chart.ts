@@ -1,6 +1,6 @@
 import { dashboardRepository } from '@/features/setting/api/infrastructure/repositories/dashboardRepository';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';

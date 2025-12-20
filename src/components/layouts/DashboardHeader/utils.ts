@@ -1,5 +1,5 @@
 import { Icons } from '@/components/Icon';
-import { FeatureFlags } from '@/shared/constants/featuresFlags';
+import { FeatureFlags } from '@/shared/constants';
 import { GrowthBook } from '@growthbook/growthbook';
 import {
   BookIcon,

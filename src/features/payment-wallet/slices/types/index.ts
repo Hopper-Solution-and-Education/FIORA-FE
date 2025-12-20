@@ -1,4 +1,4 @@
-import type { FilterCriteria } from '@/shared/types/filter.types';
+import type { FilterCriteria } from '@/shared/types';
 
 // Payment Wallet Dashboard Metrics Interface
 export interface PaymentWalletDashboardMetrics {

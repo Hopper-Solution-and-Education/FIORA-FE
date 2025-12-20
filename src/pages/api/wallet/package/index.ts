@@ -1,5 +1,5 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
@@ -22,8 +22,6 @@ export default sessionWrapper(async (req: NextApiRequest, res: NextApiResponse) 
         return createError(res, RESPONSE_CODE.METHOD_NOT_ALLOWED, Messages.METHOD_NOT_ALLOWED);
     }
   } catch (error: any) {
-    console.log(error.message);
-
     return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 });
@@ -74,18 +72,15 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
     busboy.on('file', (fieldname, file, info) => {
       const { filename, mimeType } = info;
-      console.log(`[DEBUG] Nhận file:`, { fieldname, filename, mimeType });
       const buffers: Uint8Array[] = [];
       file.on('data', (data) => buffers.push(data));
       file.on('end', () => {
         const buffer = Buffer.concat(buffers);
         const blob = new Blob([buffer], { type: mimeType });
         const size = buffer.length;
-        console.log(`[DEBUG] File ${filename} size: ${size} bytes`);
         if (size > 5 * 1024 * 1024) {
           if (!fields.__fileSizeError) fields.__fileSizeError = [];
           fields.__fileSizeError.push(`${filename} vượt quá 5MB`);
-          console.log(`[DEBUG] File ${filename} vượt quá 5MB`);
           return;
         }
         const uploadPromise = uploadToFirebase({
@@ -94,7 +89,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
           fileName: filename,
         })
           .then((firebaseUrl) => {
-            console.log(`[DEBUG] Upload thành công: ${firebaseUrl}`);
             files.push({
               url: firebaseUrl,
               size,
@@ -102,25 +96,19 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
               type: fieldname.toUpperCase(),
             });
           })
-          .catch((err) => {
-            console.error(`[DEBUG] Upload lỗi:`, err);
-          });
+          .catch((err) => {});
         fileUploadPromises.push(uploadPromise);
       });
     });
 
     busboy.on('field', (fieldname, val) => {
-      console.log(`[DEBUG] Nhận field: ${fieldname} = ${val}`);
       fields[fieldname] = val;
     });
 
     busboy.on('finish', async () => {
       try {
-        console.log('[DEBUG] Bắt đầu xử lý finish');
         await Promise.all(fileUploadPromises);
-        console.log('[DEBUG] Upload xong tất cả file:', files);
         if (fields.__fileSizeError && fields.__fileSizeError.length > 0) {
-          console.log('[DEBUG] Có lỗi file size:', fields.__fileSizeError);
           return createError(
             res,
             RESPONSE_CODE.BAD_REQUEST,
@@ -128,12 +116,10 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
           );
         }
         if (!fields.fxAmount) {
-          console.log('[DEBUG] Thiếu fxAmount');
           return createError(res, RESPONSE_CODE.BAD_REQUEST, 'fxAmount are required');
         }
         const fxAmount = Number(fields.fxAmount);
         if (isNaN(fxAmount) || fxAmount < 0) {
-          console.log('[DEBUG] fxAmount không hợp lệ:', fields.fxAmount);
           return createError(
             res,
             RESPONSE_CODE.BAD_REQUEST,
@@ -145,14 +131,11 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
           files,
           createdBy: fields.createdBy || null,
         };
-        console.log('[DEBUG] Data gửi vào createPackageFx:', data);
         const result = await walletUseCase.createPackageFx(data);
-        console.log('[DEBUG] Tạo packageFX thành công:', result);
         return res
           .status(RESPONSE_CODE.CREATED)
           .json(createResponse(RESPONSE_CODE.CREATED, 'PackageFX created successfully', result));
       } catch (error: any) {
-        console.error('[DEBUG] Lỗi khi tạo packageFX:', error);
         return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
       }
     });

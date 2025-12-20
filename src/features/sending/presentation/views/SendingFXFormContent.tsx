@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import CategorySelect from '@/features/home/module/category/components/CategorySelect';
 import ProductSelectField from '@/features/home/module/transaction/components/ProductSelectField';
 import ReceiverSelectField from '@/features/home/module/transaction/components/ReceiverSelectField';
-import { OtpState } from '@/shared/types/otp';
+import { OtpState } from '@/shared/types';
 import { Separator } from '@radix-ui/react-dropdown-menu';
 import { Controller } from 'react-hook-form';
 import AmountSelect from '../../components/AmountSelect';

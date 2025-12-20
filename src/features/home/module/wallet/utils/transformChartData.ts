@@ -1,5 +1,5 @@
 import { TwoSideBarItem } from '@/components/common/charts/positive-negative-bar-chart-v2/types';
-import { COLORS } from '@/shared/constants/chart';
+import { COLORS } from '@/shared/constants';
 import { Wallet } from '../domain/entity/Wallet';
 import { WalletType } from '../domain/enum';
 
