@@ -1,6 +1,7 @@
 import { prisma } from '@/config';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
+import { SectionType } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default (req: NextApiRequest, res: NextApiResponse) =>
@@ -14,7 +15,9 @@ export default (req: NextApiRequest, res: NextApiResponse) =>
 
       const whereCondition = {
         section: {
-          section_type: sectionType,
+          is: {
+            section_type: sectionType as SectionType,
+          },
         },
       };
 

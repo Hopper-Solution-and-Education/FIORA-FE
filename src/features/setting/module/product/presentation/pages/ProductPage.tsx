@@ -66,6 +66,7 @@ const ProductPage = () => {
         <div className="flex items-start justify-between">
           <DashboardHeading />
           <ButtonCreation
+            data-test="create-product-button"
             className="mb-4"
             action={handleClickButtonCreation}
             toolTip="Create New Product"

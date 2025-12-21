@@ -224,7 +224,13 @@ const ProductCreation = ({ productId }: ProductCreationType) => {
               {productId ? `Edit Product: ${productToEdit?.name ?? ''}` : 'Create New Product'}
             </h1>
 
-            <Button disabled={!productId} type="button" variant="ghost" onClick={openDeleteDialog}>
+            <Button
+              data-test="delete-product-button"
+              disabled={!productId}
+              type="button"
+              variant="ghost"
+              onClick={openDeleteDialog}
+            >
               <Trash2 color="red" className="h-4 w-4" />
             </Button>
           </div>

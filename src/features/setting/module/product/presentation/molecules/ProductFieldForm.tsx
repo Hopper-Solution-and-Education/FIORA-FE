@@ -34,6 +34,7 @@ const ProductForm = () => {
     <div className="flex justify-between gap-4 mt-6">
       <CommonTooltip content="Cancel and go back">
         <Button
+          data-test="product-cancel-button"
           variant="outline"
           type="button"
           onClick={() => router.back()}
@@ -45,6 +46,7 @@ const ProductForm = () => {
 
       <CommonTooltip content={isSubmitting ? 'Submiting...' : 'Submit'}>
         <Button
+          data-test="product-submit-button"
           type="submit"
           disabled={!isValid || isCreatingProduct || isUpdatingProduct}
           className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
