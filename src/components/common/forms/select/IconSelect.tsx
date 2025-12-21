@@ -83,6 +83,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
+            data-test="icon-select-button"
             className={cn(
               'w-full justify-between',
               isCheckError && required && !selectedIcon ? 'border-red-500' : '',
@@ -120,6 +121,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
                         onIconChange(item.value);
                         setOpen(false);
                       }}
+                      data-test={`icon-option-${item.value || 'none'}`}
                       className="data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
                     >
                       <div className="flex items-center gap-2 w-full">

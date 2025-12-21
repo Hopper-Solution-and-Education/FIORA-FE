@@ -40,7 +40,6 @@ export default function MediaDashboard() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {(isLoadingSaveChange || isLoading) && <Loading />}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {isMobile ? (
           <div className="mb-4">
@@ -57,6 +56,7 @@ export default function MediaDashboard() {
               <TabsTrigger
                 key={section.value}
                 value={section.value}
+                data-test={section.value}
                 className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
               >
                 {section.label}
