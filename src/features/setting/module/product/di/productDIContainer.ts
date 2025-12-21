@@ -11,7 +11,6 @@ import {
   createCreateCategoryProductUseCase,
   createCreateProductUseCase,
   createDeleteCategoryProductUseCase,
-  createDeleteProductTransferUseCase,
   createDeleteProductUseCase,
   createGetCategoryProductUseCase,
   createGetProductTransactionUseCase,
@@ -22,7 +21,6 @@ import {
   ICreateCategoryProductUseCase,
   ICreateProductUseCase,
   IDeleteCategoryProductUseCase,
-  IDeleteProductTransferUseCase,
   IDeleteProductUseCase,
   IGetCategoryProductUseCase,
   IGetProductTransactionUseCase,
@@ -49,7 +47,6 @@ const createProductUseCase = createCreateProductUseCase(productRepository);
 const getProductUseCase = createGetProductUseCase(productRepository);
 const updateProductUseCase = createUpdateProductUseCase(productRepository);
 const deleteProductUseCase = createDeleteProductUseCase(productRepository);
-const deleteProductTransferUseCase = createDeleteProductTransferUseCase(productRepository);
 const getProductTransactionUseCase = createGetProductTransactionUseCase(productRepository);
 const getSingleProductUseCase = createGetSingleProductUseCase(productRepository);
 const createCategoryProductUseCase = createCreateCategoryProductUseCase(categoryRepository);
@@ -96,8 +93,5 @@ productDIContainer
 productDIContainer
   .bind<IDeleteCategoryProductUseCase>(TYPES.IDeleteCategoryProductUseCase)
   .toConstantValue(deleteCategoryProductUseCase);
-productDIContainer
-  .bind<IDeleteProductTransferUseCase>(TYPES.IDeleteProductTransferUseCase)
-  .toConstantValue(deleteProductTransferUseCase);
 
 export { productDIContainer };

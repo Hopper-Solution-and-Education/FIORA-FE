@@ -1,28 +1,29 @@
-import type { IHttpClient } from '@/config/http-client/HttpClient';
-import { HttpResponse } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { decorate, injectable } from 'inversify';
 import { IAnnouncement } from '../../domain/entities/Announcement';
+import { ApiClient } from '@/config/http-client';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
 
 interface IAnnouncementAPI {
-  fetchAnnouncement(): Promise<HttpResponse<IAnnouncement[]>>;
-  updateAnnouncement(announcement: IAnnouncement[]): Promise<HttpResponse<IAnnouncement[]>>;
+  fetchAnnouncement(): Promise<BaseResponse<IAnnouncement[]>>;
+  updateAnnouncement(announcement: IAnnouncement[]): Promise<BaseResponse<IAnnouncement[]>>;
 }
 
 // Define the class without decorators
 class AnnouncementAPI implements IAnnouncementAPI {
-  private httpClient: IHttpClient;
+  private httpClient: ApiClient;
 
-  constructor(httpClient: IHttpClient) {
+  constructor(httpClient: ApiClient) {
     this.httpClient = httpClient;
   }
 
-  async fetchAnnouncement(): Promise<HttpResponse<IAnnouncement[]>> {
-    return await this.httpClient.get<HttpResponse<IAnnouncement[]>>(`/api/announcement`);
+  async fetchAnnouncement(): Promise<BaseResponse<IAnnouncement[]>> {
+    return await this.httpClient.get<IAnnouncement[]>(ApiEndpointEnum.BannerAnnouncements);
   }
 
-  async updateAnnouncement(announcement: IAnnouncement[]): Promise<HttpResponse<IAnnouncement[]>> {
-    return await this.httpClient.put<HttpResponse<IAnnouncement[]>>(
-      `/api/announcement`,
+  async updateAnnouncement(announcement: IAnnouncement[]): Promise<BaseResponse<IAnnouncement[]>> {
+    return await this.httpClient.put<IAnnouncement[]>(
+      ApiEndpointEnum.BannerAnnouncement,
       announcement,
     );
   }
@@ -32,7 +33,7 @@ class AnnouncementAPI implements IAnnouncementAPI {
 decorate(injectable(), AnnouncementAPI);
 
 // Create a factory function that handles the injection
-const createAnnouncementAPI = (httpClient: IHttpClient): IAnnouncementAPI => {
+const createAnnouncementAPI = (httpClient: ApiClient): IAnnouncementAPI => {
   return new AnnouncementAPI(httpClient);
 };
 

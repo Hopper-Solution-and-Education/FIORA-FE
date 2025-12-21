@@ -1,8 +1,8 @@
-import { ProductFormValues } from '../../presentation/schema/addProduct.schema';
-
+import { BaseResponse } from '@/shared/types';
 import { format } from 'date-fns';
 import {
   Product,
+  ProductCreateResponse,
   ProductDeleteRequest,
   ProductDeleteResponse,
   ProductGetSingleResponse,
@@ -10,34 +10,24 @@ import {
   ProductGetTransactionResponse,
   ProductItem,
   ProductsGetResponse,
-  ProductTransferDeleteRequest,
   ProductTransferDeleteResponse,
   ProductUpdateRequest,
   ProductUpdateResponse,
   Transaction,
 } from '../../domain/entities';
 import {
-  ProductCreateRequestDTO,
   ProductDeleteRequestDTO,
   ProductGetSingleRequestDTO,
   ProductGetTransactionRequestDTO,
-  ProductTransferDeleteRequestDTO,
   ProductUpdateRequestDTO,
 } from '../dto/request';
 import {
+  ProductCreateResponseDTO,
   ProductDeleteResponseDTO,
   ProductGetSingleResponseDTO,
-  ProductGetTransactionResponseDTO,
-  ProductsGetResponseDTO,
   ProductTransferDeleteResponseDTO,
   ProductUpdateResponseDTO,
 } from '../dto/response';
-
-// Define constants for default values
-const DEFAULT_MAX_PRICE = 10000;
-const DEFAULT_MAX_TAX_RATE = 100;
-const DEFAULT_MAX_EXPENSE = 10000;
-const DEFAULT_MAX_INCOME = 10000;
 
 export class ProductMapper {
   static toGetSingleProductAPIRequest(id: string): ProductGetSingleRequestDTO {
@@ -75,6 +65,7 @@ export class ProductMapper {
   static toDeleteProductAPIRequest(request: ProductDeleteRequest): ProductDeleteRequestDTO {
     return {
       id: request.id,
+      targetId: request.targetId,
     };
   }
 
@@ -97,67 +88,17 @@ export class ProductMapper {
   }
 
   static toGetProductTransactionResponse(
-    response: ProductGetTransactionResponseDTO,
+    response: BaseResponse<ProductGetTransactionResponse>,
   ): ProductGetTransactionResponse {
     return {
-      data: response.data.data.map((item) => ({
-        category: {
-          id: item.category.id,
-          name: item.category.name,
-          icon: item.category.icon,
-          description: item.category.description ?? '',
-          createdAt: item.category.created_at,
-          updatedAt: item.category.updated_at,
-          taxRate: item.category.tax_rate ?? 0,
-        },
-        products: item.products.map((productItem) => ({
-          product: {
-            id: productItem.product.id,
-            price: Number(productItem.product.price),
-            name: productItem.product.name,
-            type: productItem.product.type,
-            description: productItem.product.description ?? '',
-            items:
-              productItem.product.items?.map(
-                (item) => new ProductItem(item.id, item.name, item.icon, item.description),
-              ) ?? null,
-            taxRate: productItem.product.taxRate ? Number(productItem.product.taxRate) : 0,
-            catId: productItem.product.catId ?? '',
-            icon: productItem.product.icon,
-            createdAt: productItem.product.created_at,
-            updatedAt: productItem.product.updated_at,
-          },
-          transactions: productItem.transactions,
-        })),
-      })),
-      page: response.data.page,
-      pageSize: response.data.pageSize,
-      totalPage: response.data.totalPage,
-      minPrice: response.data.minPrice ?? 0,
-      maxPrice: response.data.maxPrice ?? DEFAULT_MAX_PRICE,
-      minTaxRate: response.data.minTaxRate ?? 0,
-      maxTaxRate: response.data.maxTaxRate ?? DEFAULT_MAX_TAX_RATE,
-      minExpense: response.data.minExpense ?? 0,
-      maxExpense: response.data.maxExpense ?? DEFAULT_MAX_EXPENSE,
-      minIncome: response.data.minIncome ?? 0,
-      maxIncome: response.data.maxIncome ?? DEFAULT_MAX_INCOME,
-      hasMore: response.data.page < response.data.totalPage,
+      items: response.data.items,
+      meta: response.data.meta,
     };
   }
 
-  static toCreateProductAPIRequest(request: ProductFormValues): ProductCreateRequestDTO {
+  static toCreateProductResponse(response: ProductCreateResponseDTO): ProductCreateResponse {
     return {
-      icon: request.icon,
-      name: request.name,
-      description: request.description,
-      tax_rate: request.taxRate,
-      price: request.price ?? 0,
-      type: request.type,
-      category_id: request.catId,
-      items: request.items?.map(
-        (item) => new ProductItem(item.itemId ?? '', item.name, item.icon, item.description ?? ''),
-      ),
-      currency: request.currency,
+      ...response.data,
     };
   }
 
@@ -201,14 +142,11 @@ export class ProductMapper {
     };
   }
 
-  static toGetProductResponse(response: ProductsGetResponseDTO): ProductsGetResponse {
-    const { data, page, pageSize, totalPage } = response.data;
+  static toGetProductResponse(response: BaseResponse<ProductsGetResponse>): ProductsGetResponse {
+    const data = response.data.items;
 
     const dataResponse = {
-      page,
-      pageSize,
-      totalPage,
-      data: data.map((item) => {
+      items: data.map((item) => {
         // const items: ProductItem[] = Array.isArray(item.items)
         //   ? ProductMapper.parseServerItemToList(item.items as JsonArray)
         //   : [];
@@ -243,17 +181,10 @@ export class ProductMapper {
           item.updatedBy,
         );
       }),
+      meta: { ...response.data.meta },
     } as ProductsGetResponse;
 
     return dataResponse;
-  }
-  static toProductTransferDeleteAPIRequest(
-    request: ProductTransferDeleteRequest,
-  ): ProductTransferDeleteRequestDTO {
-    return {
-      sourceId: request.productIdToDelete,
-      targetId: request.productIdToTransfer,
-    };
   }
 
   static toProductTransferDeleteResponse(

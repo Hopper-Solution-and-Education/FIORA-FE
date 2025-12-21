@@ -1,6 +1,7 @@
 import { setErrorsFromObject } from '@/shared/lib';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { UseFormSetError } from 'react-hook-form';
+import { toast } from 'sonner';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { ProductCreateResponse } from '../../domain/entities';
@@ -21,7 +22,7 @@ export const createProduct = createAsyncThunk<
     return response;
   } catch (error: any) {
     console.log(error);
-
+    toast.error(error?.message || 'Failed to create product');
     setErrorsFromObject(error.message, setError);
     return rejectWithValue(error || 'Failed to create product');
   }

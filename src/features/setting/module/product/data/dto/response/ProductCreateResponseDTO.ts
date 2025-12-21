@@ -1,4 +1,4 @@
-import { Product } from '@prisma/client';
-import { HttpResponse } from '../../../model';
+import { BaseResponse } from '@/shared/types';
+import { ProductCreateResponse } from '../../../domain/entities';
 
-export type ProductCreateResponseDTO = HttpResponse<Product>;
+export type ProductCreateResponseDTO = BaseResponse<ProductCreateResponse>;

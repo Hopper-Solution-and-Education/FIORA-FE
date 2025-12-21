@@ -199,9 +199,9 @@ export class ApiClient {
   }
 
   // DELETE request
-  async delete<T = any>(endpoint: string): Promise<BaseResponse<T>> {
+  async delete<T = any>(endpoint: string, params?: Record<string, any>): Promise<BaseResponse<T>> {
     try {
-      const response = await this.axiosInstance.delete(endpoint);
+      const response = await this.axiosInstance.delete(endpoint, { params });
       return this.handleResponse<T>(response);
     } catch (error) {
       return this.handleError(error);

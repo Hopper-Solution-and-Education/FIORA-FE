@@ -149,7 +149,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
             onClick={() => setIsOpenDialogDelete(true)}
             className="w-32 h-12 flex items-center justify-center border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white transition-colors duration-200"
           >
-            <Icons.circleArrowLeft className="h-5 w-5" />
+            <Icons.trash color="red" className="h-5 w-5" />
           </Button>
         </CommonTooltip>
 
@@ -158,7 +158,7 @@ const ProductCategoryForm = ({ setValue }: productCategoryFormType) => {
           <Button
             type="submit"
             disabled={isButtonDisabled}
-            className="flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+            className="w-32 h-12 flex items-center justify-center gap-2 px-10 py-2 rounded-lg transition bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
           >
             {formState.isSubmitting || isUpdatingCategoryProduct || isCreatingCategoryProduct ? (
               <Loader2 className="animate-spin h-5 w-5" />

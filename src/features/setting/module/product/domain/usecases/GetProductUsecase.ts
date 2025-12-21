@@ -21,7 +21,7 @@ export class GetProductUseCase implements IGetProductUseCase {
     });
 
     // Map the response data to Product instances
-    const mappedData = response.data.map(
+    const mappedData = response.items.map(
       (item) =>
         new Product(
           item.id,
@@ -45,7 +45,7 @@ export class GetProductUseCase implements IGetProductUseCase {
     // Return the response with mapped data
     return {
       ...response,
-      data: mappedData,
+      items: mappedData,
     };
   }
 }

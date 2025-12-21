@@ -8,7 +8,6 @@ import {
   createProduct,
   deleteCategoryProductAsyncThunk,
   deleteProductAsyncThunk,
-  deleteProductTransferAsyncThunk,
   fetchCategoriesProduct,
   getProductsAsyncThunk,
   getProductTransactionAsyncThunk,
@@ -61,14 +60,15 @@ const productManagementSlice = createSlice({
       .addCase(
         fetchCategoriesProduct.fulfilled,
         (state, action: PayloadAction<CategoryProductGetResponse>) => {
-          const { data, page, pageSize, totalPage } = action.payload;
+          const data = action.payload.items;
+          const { page, limit, totalPages } = action.payload.meta;
           state.categories = {
             isLoading: false,
-            data: data,
-            page: page,
-            limit: pageSize,
-            total: totalPage,
-            hasMore: page < totalPage,
+            data,
+            page,
+            limit,
+            total: totalPages,
+            hasMore: page < totalPages,
           };
         },
       )
@@ -97,9 +97,9 @@ const productManagementSlice = createSlice({
       })
       .addCase(getProductsAsyncThunk.fulfilled, (state, action) => {
         state.products.isLoading = false;
-        state.products.items = action.payload.data;
-        state.products.total = action.payload.totalPage;
-        state.products.page = action.payload.page;
+        state.products.items = action.payload.items;
+        state.products.total = action.payload.meta.totalPages;
+        state.products.page = action.payload.meta.page;
       })
       .addCase(getProductsAsyncThunk.rejected, (state) => {
         state.products.isLoading = false;
@@ -136,24 +136,10 @@ const productManagementSlice = createSlice({
         // const deletedProductId = action.payload.id;
         // state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
         toast.success('Success', {
-          description: 'Delete product successfully!!',
+          description: 'Delete product successfully!',
         });
       })
       .addCase(deleteProductAsyncThunk.rejected, (state) => {
-        state.isDeletingProduct = false;
-      })
-      .addCase(deleteProductTransferAsyncThunk.pending, (state) => {
-        state.isDeletingProduct = true;
-      })
-      .addCase(deleteProductTransferAsyncThunk.fulfilled, (state) => {
-        state.isDeletingProduct = false;
-        // const deletedProductId = action.payload.id;
-        // state.products.items = state.products.items.filter((item) => item.id !== deletedProductId);
-        toast.success('Success', {
-          description: 'Delete product successfully!!',
-        });
-      })
-      .addCase(deleteProductTransferAsyncThunk.rejected, (state) => {
         state.isDeletingProduct = false;
       });
 
@@ -164,26 +150,26 @@ const productManagementSlice = createSlice({
     builder.addCase(getProductTransactionAsyncThunk.fulfilled, (state, action) => {
       state.productTransaction.isLoadingGet = false;
 
-      if (action.payload.page === 1) {
-        state.productTransaction.data = action.payload.data;
+      if (action.payload.meta.page === 1) {
+        state.productTransaction.data = action.payload.items;
       } else {
-        state.productTransaction.data = [...state.productTransaction.data, ...action.payload.data];
+        state.productTransaction.data = [...state.productTransaction.data, ...action.payload.items];
       }
 
-      state.productTransaction.total = action.payload.totalPage;
-      state.productTransaction.page = action.payload.page;
-      state.productTransaction.hasMore = action.payload.page < action.payload.totalPage;
+      state.productTransaction.total = action.payload.meta.totalPages;
+      state.productTransaction.page = action.payload.meta.page;
+      state.productTransaction.hasMore = action.payload.meta.page < action.payload.meta.totalPages;
       if (state.productTransaction.maxPrice === 0) {
-        state.productTransaction.maxPrice = action.payload.maxPrice;
+        state.productTransaction.maxPrice = action.payload.meta.maxPrice;
       }
       if (state.productTransaction.maxTaxRate === 0) {
-        state.productTransaction.maxTaxRate = action.payload.maxTaxRate;
+        state.productTransaction.maxTaxRate = action.payload.meta.maxTaxRate;
       }
       if (state.productTransaction.maxExpense === 0) {
-        state.productTransaction.maxExpense = action.payload.maxExpense;
+        state.productTransaction.maxExpense = action.payload.meta.maxExpense;
       }
       if (state.productTransaction.maxIncome === 0) {
-        state.productTransaction.maxIncome = action.payload.maxIncome;
+        state.productTransaction.maxIncome = action.payload.meta.maxIncome;
       }
     });
 
@@ -232,6 +218,7 @@ const productManagementSlice = createSlice({
         if (index !== NOT_FOUND_INDEX) {
           state.categories.data[index] = updatedCategory;
         }
+
         toast.success('Success', {
           description: 'Update category successfully!!',
         });

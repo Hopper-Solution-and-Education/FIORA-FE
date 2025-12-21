@@ -1,6 +1,6 @@
-import { HttpResponse } from '../../../model';
+import { BaseResponse } from '@/shared/types';
 
-export type CategoryProductDeleteResponseDTO = HttpResponse<{
+export type CategoryProductDeleteResponseDTO = BaseResponse<{
   message: string;
   categoryProductId: string;
 }>;
