@@ -4,7 +4,8 @@ import {
   useGetProfileByUserIdQuery,
   useUpdateProfileByUserIdMutation,
 } from '@/features/profile/store/api/profileApi';
-import HopperLogo from '@public/images/logo.jpg';
+import avatar from '@public/images/avatar.png';
+import logo from '@public/images/logo.jpg';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { PersonalInfo } from '../../../schema/personalInfoSchema';
@@ -54,7 +55,8 @@ const ProfileEkycPage = () => {
             profile={profile}
             isLoading={isLoading}
             isUpdating={isUpdating}
-            defaultLogoSrc={HopperLogo.src}
+            defaultLogoSrc={logo.src}
+            defaultAvatarSrc={avatar.src}
             onSave={handleSave}
             eKycId={userId}
             showUserManagement={true}

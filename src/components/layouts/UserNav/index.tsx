@@ -81,17 +81,15 @@ function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="group flex items-center space-x-2 rounded-md px-3 py-1.5 transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <div className="relative h-14 w-14 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 text-gray-700 text-sm font-medium transition-transform group-hover:scale-110">
+          <div className="relative h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-gray-700 text-sm font-medium transition-transform group-hover:scale-110 flex">
             {profile?.avatarUrl ? (
               <Image
                 src={profile?.avatarUrl}
                 alt={profile?.name || 'User Avatar'}
-                width={44} // w-9 = 36px
-                height={44} // h-9 = 36px
+                fill
                 className="object-cover"
               />
             ) : (
-              // Fallback: show first two letters, capitalized
               <span>{profile?.name?.slice(0, 2)?.toUpperCase() || 'CN'}</span>
             )}
           </div>

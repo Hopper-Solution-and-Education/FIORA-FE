@@ -28,6 +28,7 @@ type ProfileTabProps = {
   isLoading: boolean;
   isUpdating: boolean;
   defaultLogoSrc: string;
+  defaultAvatarSrc: string;
   onSave: (
     values: PersonalInfo & { avatarAttachmentId?: string; logoAttachmentId?: string },
   ) => Promise<void>;
@@ -40,6 +41,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
   isLoading,
   isUpdating,
   defaultLogoSrc,
+  defaultAvatarSrc,
   onSave,
   eKycId = '',
   showUserManagement,
@@ -73,11 +75,11 @@ const ProfileTab: FC<ProfileTabProps> = ({
       phone: profile?.phone ?? '',
       birthday: profile?.birthday ?? '',
       address: profile?.address ?? '',
-      avatarUrl: profile?.avatarUrl ?? defaultLogoSrc,
+      avatarUrl: profile?.avatarUrl ?? defaultAvatarSrc,
       logoUrl: profile?.logoUrl ?? defaultLogoSrc,
       referrer_code: profile?.referrer_code ?? '',
     }),
-    [profile, defaultLogoSrc],
+    [profile, defaultLogoSrc, defaultAvatarSrc],
   );
 
   const form = useForm<PersonalInfo>({
@@ -176,7 +178,7 @@ const ProfileTab: FC<ProfileTabProps> = ({
 
       // Upload avatar if it's a blob URL (new file)
       if (avatarValue && avatarValue.startsWith('blob:')) {
-        const avatarFile = await convertBlobUrlToFile(avatarValue, 'avatar.jpg');
+        const avatarFile = await convertBlobUrlToFile(avatarValue, 'avatar.png');
         const avatarResult = await uploadFile(avatarFile, 'avatar');
         if (avatarResult) {
           avatarAttachmentId = avatarResult.attachmentId;
