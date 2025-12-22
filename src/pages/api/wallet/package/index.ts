@@ -34,7 +34,7 @@ export const config = {
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { sortBy, page, limit } = req.query;
+    const { sortBy, page, limit, search } = req.query;
     let sortObj: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' };
     if (sortBy) {
       try {
@@ -49,14 +49,20 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       sortBy: sortObj,
       page: safePage,
       limit: safeLimit,
+      search: search ? String(search) : undefined,
     });
     return res.status(RESPONSE_CODE.OK).json({
       status: RESPONSE_CODE.OK,
       message: Messages.GET_PACKAGE_FX_SUCCESS,
-      data: result.data,
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
+      data: {
+        items: result.data,
+        page: result.page,
+        pageSize: result.limit,
+        totalPage: Math.ceil(Number(result.total) / Number(result.limit)),
+        total: result.total,
+        hasMore: Boolean(result.total > result.page * result.limit),
+        limit: Number(result.limit),
+      },
     });
   } catch (error: any) {
     console.error(error.message);

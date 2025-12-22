@@ -1,17 +1,23 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import DebounceSearchInput from '@/components/common/atoms/DebounceSearchInput';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setWalletSearch, setDepositSearch } from '../../slices';
-import debounce from 'lodash/debounce';
-import { useCallback } from 'react';
+import { setDepositSearch, setWalletSearch } from '../../slices';
 
 interface WalletSearchProps {
   searchType?: 'normal' | 'deposit';
+  loading?: boolean;
+  placeholder?: string;
+  debounce?: number;
+  isLoading?: boolean;
 }
 
-const WalletSearch = ({ searchType = 'normal' }: WalletSearchProps) => {
+const WalletSearch = ({
+  searchType = 'normal',
+  loading,
+  debounce = 100,
+  placeholder = 'Search',
+}: WalletSearchProps) => {
   const dispatch = useAppDispatch();
   const search = useAppSelector((state) =>
     searchType === 'deposit'
@@ -19,25 +25,23 @@ const WalletSearch = ({ searchType = 'normal' }: WalletSearchProps) => {
       : state.wallet.filterCriteria.search || '',
   );
 
-  const debouncedSetSearch = useCallback(
-    debounce((value: string) => {
-      if (searchType === 'deposit') {
-        dispatch(setDepositSearch(value));
-      } else {
-        dispatch(setWalletSearch(value));
-      }
-    }, 100),
-    [dispatch, searchType],
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedSetSearch(e.target.value);
+  const handleChange = (value: string) => {
+    if (searchType === 'deposit') {
+      dispatch(setDepositSearch(value));
+    } else {
+      dispatch(setWalletSearch(value));
+    }
   };
 
   return (
     <div className="relative min-w-72 lg:min-w-80">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input placeholder="Search" className="pl-9" value={search} onChange={handleChange} />
+      <DebounceSearchInput
+        value={search}
+        onChange={handleChange}
+        placeholder={placeholder}
+        debounceMs={debounce}
+        isLoading={loading}
+      />
     </div>
   );
 };
