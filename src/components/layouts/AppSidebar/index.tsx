@@ -49,7 +49,7 @@ import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
-import HopperLogo from '@public/images/logo.jpg';
+import FIORALogo from '@public/images/logo.jpg';
 import packageJson from '../../../../package.json';
 import { helpItems, menuSettingItems } from '../DashboardHeader/utils';
 import { filterNavItems as filterNavItemsUtil, isItemActive as isItemActiveUtil } from './utils';
@@ -138,7 +138,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
               {isMobile ? (
                 <div className={`relative transition-all duration-300 overflow-hidden h-35 w-full`}>
                   <Image
-                    src={section?.medias[0]?.media_url || profile?.logoUrl || HopperLogo}
+                    src={section?.medias[0]?.media_url || profile?.logoUrl || FIORALogo}
                     alt="FIORA"
                     width={250}
                     height={250}
@@ -152,7 +152,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     ${open ? 'w-full h-35 ' : 'w-full h-14 md:h-18'}`}
                 >
                   <Image
-                    src={profile?.logoUrl || section?.medias[0]?.media_url || HopperLogo}
+                    src={profile?.logoUrl || section?.medias[0]?.media_url || FIORALogo}
                     alt="FIORA"
                     width={250}
                     height={250}

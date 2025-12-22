@@ -7,9 +7,7 @@ export interface IGetSavingInterestFilterOptionsUseCase {
   execute(): Promise<FilterOptions>;
 }
 
-export class GetSavingInterestFilterOptionsUseCase
-  implements IGetSavingInterestFilterOptionsUseCase
-{
+export class GetSavingInterestFilterOptionsUseCase implements IGetSavingInterestFilterOptionsUseCase {
   constructor(private repository: ISavingInterestRepository) {}
 
   async execute(): Promise<FilterOptions> {

@@ -63,6 +63,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     return createError(res, RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.INTERNAL_ERROR);
   }
 }
+
 async function POST(req: NextApiRequest, res: NextApiResponse) {
   if (req.headers['content-type']?.includes('multipart/form-data')) {
     const busboy = Busboy({ headers: req.headers });
@@ -144,6 +145,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CONTENT_TYPE_MULTIPART);
   }
 }
+
 async function PUT(req: NextApiRequest, res: NextApiResponse) {
   if (req.headers['content-type']?.includes('multipart/form-data')) {
     const busboy = Busboy({ headers: req.headers });
@@ -243,6 +245,7 @@ async function PUT(req: NextApiRequest, res: NextApiResponse) {
     return createError(res, RESPONSE_CODE.BAD_REQUEST, Messages.INVALID_CONTENT_TYPE_MULTIPART);
   }
 }
+
 async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   try {
     const id = req.query.id || req.body?.id;
