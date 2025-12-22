@@ -61,7 +61,10 @@ const DeleteProductDialog = ({
               'transition-colors',
             )}
           >
-            <Icons.close className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <Icons.close
+              data-test="delete-dialog-close-button"
+              className="h-5 w-5 text-gray-500 dark:text-gray-400"
+            />
           </Button>
         </div>
 
@@ -148,7 +151,7 @@ const DeleteProductDialog = ({
               )}
               aria-label="Cancel"
             >
-              <Icons.circleArrowLeft className="h-4 w-4" />
+              <Icons.circleArrowLeft data-test="delete-dialog-cancel-button" className="h-4 w-4" />
             </Button>
             <Button
               variant="destructive"
@@ -168,7 +171,7 @@ const DeleteProductDialog = ({
                   <Icons.spinner className="h-4 w-4 animate-spin" />
                 </span>
               ) : (
-                <Icons.check className="h-4 w-4" />
+                <Icons.check data-test="delete-dialog-confirm-button" className="h-4 w-4" />
               )}
             </Button>
           </div>

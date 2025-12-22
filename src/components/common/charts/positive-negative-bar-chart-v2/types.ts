@@ -31,8 +31,10 @@ export type PositiveAndNegativeBarV2LevelConfig = {
   };
 };
 
-export interface PositiveAndNegativeBarChartV2Props
-  extends Omit<BaseChartProps<TwoSideBarItem>, 'tooltipContent' | 'legendItems'> {
+export interface PositiveAndNegativeBarChartV2Props extends Omit<
+  BaseChartProps<TwoSideBarItem>,
+  'tooltipContent' | 'legendItems'
+> {
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems: { name: string; color: string }[];
   maxBarRatio?: number;

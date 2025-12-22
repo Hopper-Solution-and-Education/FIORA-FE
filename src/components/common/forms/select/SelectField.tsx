@@ -118,7 +118,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
               );
               const fallbackIcon = document.createElement('div');
               fallbackIcon.innerHTML =
-                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-400"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-4 h-4 text-gray-400"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
               e.currentTarget.parentElement?.appendChild(fallbackIcon.firstChild as Node);
             }}
           />
@@ -175,7 +175,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
           className="p-0 w-[--radix-popover-trigger-width] z-[9999] overflow-visible"
           usePortal={usePortal}
         >
-          <Command>
+          <Command data-test={props.name ? `${props.name}-dropdown` : 'select-dropdown'}>
             <CommandInput ref={inputRef} placeholder="Search..." className="h-9" />
             <CommandList className="max-h-[240px] overflow-y-auto">
               {isLoading ? (
@@ -191,6 +191,11 @@ const SelectField: React.FC<SelectFieldProps> = ({
                     <CommandItem
                       key={option.value || 'none'}
                       value={`${option.label} ${option.value}`}
+                      data-test={
+                        props.name
+                          ? `${props.name}-option-${option.value || 'none'}`
+                          : `option-${option.value || 'none'}`
+                      }
                       onSelect={() => {
                         onChange(option.value);
                         setOpen(false);
@@ -215,6 +220,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
               )}
               {onCustomAction && (
                 <Button
+                  data-test={props.name ? `${props.name}-add-new-button` : 'add-new-button'}
                   className="w-full flex justify-center items-center"
                   type="button"
                   variant="ghost"

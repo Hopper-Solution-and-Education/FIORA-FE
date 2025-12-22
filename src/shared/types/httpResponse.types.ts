@@ -11,6 +11,7 @@ export interface _Pagination<T> {
   totalPage: number;
   total: number;
   hasMore?: boolean;
+  limit?: number;
 }
 
 export type _PaginationResponse<T> = HttpResponse<_Pagination<T>>;

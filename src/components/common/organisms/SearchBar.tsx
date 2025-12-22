@@ -99,6 +99,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
         {/* Input */}
         <Input
+          data-test="search-input"
           ref={inputRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}

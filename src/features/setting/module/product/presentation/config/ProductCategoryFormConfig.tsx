@@ -39,8 +39,16 @@ const useProductCategoryFormConfig = () => {
   }, []);
 
   const fields = [
-    <GlobalIconSelect key="icon" name="icon" label="Icon" required disabled={isSubmitting} />,
+    <GlobalIconSelect
+      data-test="category-icon-field"
+      key="icon"
+      name="icon"
+      label="Icon"
+      required
+      disabled={isSubmitting}
+    />,
     <InputField
+      data-test="category-name-input"
       key="name"
       name="name"
       label="Name"
@@ -49,6 +57,7 @@ const useProductCategoryFormConfig = () => {
       disabled={isSubmitting}
     />,
     <TextareaField
+      data-test="category-description-input"
       key="description"
       name="description"
       label="Description"
@@ -56,6 +65,7 @@ const useProductCategoryFormConfig = () => {
       disabled={isSubmitting}
     />,
     <InputField
+      data-test="category-tax-rate-input"
       key="tax-rate"
       name="tax_rate"
       placeholder="0.00%"

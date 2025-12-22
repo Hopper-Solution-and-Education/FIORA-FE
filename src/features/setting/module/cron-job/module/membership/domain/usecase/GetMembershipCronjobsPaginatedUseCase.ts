@@ -12,9 +12,7 @@ export interface IGetMembershipCronjobsPaginatedUseCase {
   ): Promise<MembershipCronjobPaginatedResponse>;
 }
 
-export class GetMembershipCronjobsPaginatedUseCase
-  implements IGetMembershipCronjobsPaginatedUseCase
-{
+export class GetMembershipCronjobsPaginatedUseCase implements IGetMembershipCronjobsPaginatedUseCase {
   private repo: IMembershipCronjobRepository;
 
   constructor(repo: IMembershipCronjobRepository) {
