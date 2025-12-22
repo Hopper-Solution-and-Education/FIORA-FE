@@ -18,7 +18,7 @@ import {
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import { Response } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -115,10 +115,8 @@ export default function CreateAccountForm() {
 
       await dispatch(createAccount(finalData))
         .unwrap()
-        .then((value: Response<Account>) => {
-          // Check both status and statusCode (API may return either)
-          const successStatus = value.status || (value as any).statusCode;
-          if (successStatus === 201 || successStatus === 200) {
+        .then((value: BaseResponse<Account>) => {
+          if (value.statusCode === 201 || value.statusCode === 200) {
             toast.success('You have created the Account successfully!');
             router.push('/account');
           }

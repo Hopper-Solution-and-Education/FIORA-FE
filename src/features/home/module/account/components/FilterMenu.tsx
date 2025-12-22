@@ -428,9 +428,6 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
 
       // Update filter criteria with structured format
       onFilterChange(structuredFilter);
-
-      // NOTE: Don't call searchAccounts here - parent (DashboardHeader) already does it
-      // via the onFilterChange callback to avoid duplicate API calls
     },
     [dispatch, onFilterChange, userId],
   );

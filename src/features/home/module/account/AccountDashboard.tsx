@@ -24,21 +24,12 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const { currency } = useAppSelector((state) => state.settings);
   const { formatCurrency, getExchangeRate } = useCurrencyFormatter();
 
-  // Track refresh count to prevent duplicate calls on same refresh value
-  const lastRefreshRef = useRef<boolean | null>(null);
-
   useEffect(() => {
-    // Skip if this is a duplicate call with same refresh value (React Strict Mode)
-    if (lastRefreshRef.current === refresh) {
-      return;
-    }
-    lastRefreshRef.current = refresh;
-
     // Fetch on component mount and when refresh flag changes
     // Note: DashboardHeader already handles fetching when filter changes
     dispatch(fetchAccounts(filterCriteria));
     dispatch(fetchParents(filterCriteria));
-  }, [dispatch, refresh, filterCriteria]);
+  }, [dispatch, refresh]);
 
   const chartData: BarItem[] = useMemo(() => {
     if (!accounts.data) return [];
