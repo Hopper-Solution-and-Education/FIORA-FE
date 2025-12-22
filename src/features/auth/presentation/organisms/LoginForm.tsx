@@ -203,7 +203,7 @@ export function LoginForm({
             <div className="relative flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span className="relative z-10 px-1">Or Sign in with</span>
               <button
-                onClick={() => handleGoogleSignIn(callbackUrl)}
+                onClick={() => handleGoogleSignIn()}
                 className="flex items-center justify-center w-8 h-8 cursor-pointer"
                 data-test="login-google-button"
               >

@@ -2,11 +2,12 @@
 
 import { SessionTimeoutModal } from '@/components/common/SessionTimeoutModal';
 import KBar from '@/components/kbar';
+import Updater from '@/components/providers/Updater';
 import { Toaster } from '@/components/ui/sonner';
 import growthbook from '@/config/growthbook/growthbook';
 import { swrOptions } from '@/config/swr/swrConfig';
-import Updater from '@/store/Updater';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
@@ -29,23 +30,25 @@ const Providers = ({ children }: PropsWithChildren) => {
           <KBar>
             <ReduxProvider>
               <GrowthBookProvider growthbook={growthbook}>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="light"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-                    <TooltipProvider>
-                      <AutoScrollTopProvider />
-                      <Toaster />
-                      <Updater />
+                <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="light"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+                      <TooltipProvider>
+                        <AutoScrollTopProvider />
+                        <Toaster />
+                        <Updater />
 
-                      {children}
-                      <SessionTimeoutModal />
-                    </TooltipProvider>
-                  </SessionProvider>
-                </ThemeProvider>
+                        {children}
+                        <SessionTimeoutModal />
+                      </TooltipProvider>
+                    </SessionProvider>
+                  </ThemeProvider>
+                </GoogleOAuthProvider>
               </GrowthBookProvider>
             </ReduxProvider>
           </KBar>

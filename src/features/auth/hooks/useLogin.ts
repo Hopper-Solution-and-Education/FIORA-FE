@@ -2,7 +2,10 @@
 
 import { Messages } from '@/shared/constants/message';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
+import { useAppDispatch } from '@/store';
+import { setUserData } from '@/store/slices/user.slice';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useMutation } from '@tanstack/react-query';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -27,6 +30,7 @@ export function useLogin() {
   const { data: session } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
 
   const form = useForm({
     resolver: yupResolver(loginSchema),
@@ -48,6 +52,11 @@ export function useLogin() {
     },
     onSuccess: async (loginResponse, variables) => {
       if (loginResponse.statusCode === RESPONSE_CODE.OK) {
+        dispatch(
+          setUserData({
+            user: loginResponse.data.user,
+          }),
+        );
         // TODO: Remove logic when completed migration
         const response = await signIn('credentials', {
           ...variables,
@@ -63,7 +72,7 @@ export function useLogin() {
           if (response?.error === Messages.USER_BLOCKED_SIGNIN_ERROR) {
             setError('Your account has been blocked. Please contact support for assistance.');
           } else {
-            setError('LoginID or Password is incorrect (Legacy Auth Failed)!');
+            setError('LoginID or Password is incorrect');
           }
         }
       } else {
@@ -84,15 +93,43 @@ export function useLogin() {
     loginMutation.mutate({ ...data, callbackUrl });
   };
 
-  const handleGoogleSignIn = async (callbackUrl?: string) => {
-    setError(null);
-    try {
-      await signIn('google', { redirect: true, callbackUrl: callbackUrl || '/' });
-    } catch (error) {
-      console.error('Google login error:', error);
-      setError('An unexpected error occurred during Google login.');
-    }
-  };
+  const handleGoogleSignIn = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError(null);
+      try {
+        // 1. Login with new BE
+        // Note: useGoogleLogin returns an access_token (implicit flow)
+        const loginResponse = await authService.loginWithGoogle(tokenResponse.access_token);
+
+        if (loginResponse.statusCode === RESPONSE_CODE.OK) {
+          dispatch(
+            setUserData({
+              user: loginResponse.data.user,
+            }),
+          );
+
+          // 2. Trigger Legacy NextAuth
+          // TODO: Remove logic when completed migration
+          await signIn('google-legacy', {
+            googleToken: tokenResponse.access_token,
+            redirect: false,
+            callbackUrl: '/',
+          });
+
+          toast.success('Login successful!');
+          router.push('/');
+        } else {
+          setError('Login failed: ' + loginResponse.message);
+        }
+      } catch (error: any) {
+        console.error('Google login error:', error);
+        setError(error?.message || 'An unexpected error occurred during Google login.');
+      }
+    },
+    onError: () => {
+      setError('Google login failed.');
+    },
+  });
 
   const toggleRememberMe = () => setRememberMe((prev) => !prev);
 
