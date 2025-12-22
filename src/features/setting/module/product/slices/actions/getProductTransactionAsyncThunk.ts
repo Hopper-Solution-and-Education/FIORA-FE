@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { toast } from 'sonner';
 import { productDIContainer } from '../../di/productDIContainer';
 import { TYPES } from '../../di/productDIContainer.type';
 import { ProductGetTransactionResponse } from '../../domain/entities';
@@ -10,7 +11,7 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
   { rejectValue: string }
 >(
   'product/getProductTransaction',
-  async ({ page, pageSize, filters, userId, search }, { rejectWithValue }) => {
+  async ({ page, pageSize, filters, userId, search = '' }, { rejectWithValue }) => {
     try {
       const getProductTransactionUseCase = productDIContainer.get<IGetProductTransactionUseCase>(
         TYPES.IGetProductTransactionUseCase,
@@ -33,6 +34,7 @@ export const getProductTransactionAsyncThunk = createAsyncThunk<
         errorMessage = error;
       }
 
+      toast.error(errorMessage || 'Failed to get product transaction');
       return rejectWithValue(errorMessage);
     }
   },

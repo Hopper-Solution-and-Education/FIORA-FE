@@ -1,11 +1,11 @@
-import { HttpResponse } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { decorate, injectable } from 'inversify';
 import { IAnnouncement } from '../../domain/entities/Announcement';
 import { IAnnouncementAPI } from '../api/announcementApi';
 
 export interface IAnnouncementRepository {
-  getAnnouncement: () => Promise<HttpResponse<IAnnouncement[]>>;
-  updateAnnouncement: (announcement: IAnnouncement[]) => Promise<HttpResponse<IAnnouncement[]>>;
+  getAnnouncement: () => Promise<BaseResponse<IAnnouncement[]>>;
+  updateAnnouncement: (announcement: IAnnouncement[]) => Promise<BaseResponse<IAnnouncement[]>>;
 }
 
 // Define the class without decorators
@@ -16,11 +16,11 @@ export class AnnouncementRepository implements IAnnouncementRepository {
     this.announcementApi = announcementApi;
   }
 
-  async getAnnouncement(): Promise<HttpResponse<IAnnouncement[]>> {
+  async getAnnouncement(): Promise<BaseResponse<IAnnouncement[]>> {
     return await this.announcementApi.fetchAnnouncement();
   }
 
-  async updateAnnouncement(announcement: IAnnouncement[]): Promise<HttpResponse<IAnnouncement[]>> {
+  async updateAnnouncement(announcement: IAnnouncement[]): Promise<BaseResponse<IAnnouncement[]>> {
     return await this.announcementApi.updateAnnouncement(announcement);
   }
 }

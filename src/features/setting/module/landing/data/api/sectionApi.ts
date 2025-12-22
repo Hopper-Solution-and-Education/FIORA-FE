@@ -1,27 +1,31 @@
-import type { IHttpClient } from '@/config/http-client/HttpClient';
+import { ApiClient } from '@/config/http-client';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { decorate, injectable } from 'inversify';
 import { ISection } from '../../slices/types';
+import { routeConfig } from '@/shared/utils/route';
+import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { BaseResponse } from '@/shared/types';
 
 interface ISectionAPI {
-  fetchSection(sectionType: SectionTypeEnum): Promise<ISection>;
-  updateSection(section: ISection): Promise<ISection>;
+  fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>>;
+  updateSection(section: ISection): Promise<BaseResponse<ISection>>;
 }
 
 // Define the class without decorators
 class SectionAPI implements ISectionAPI {
-  private httpClient: IHttpClient;
+  private httpClient: ApiClient;
 
-  constructor(httpClient: IHttpClient) {
+  constructor(httpClient: ApiClient) {
     this.httpClient = httpClient;
   }
 
-  async fetchSection(sectionType: SectionTypeEnum): Promise<ISection> {
-    return await this.httpClient.get<ISection>(`/api/banner/section?sectionType=${sectionType}`);
+  async fetchSection(sectionType: SectionTypeEnum): Promise<BaseResponse<ISection>> {
+    const url = routeConfig(ApiEndpointEnum.BannerSection, undefined, { sectionType });
+    return await this.httpClient.get<ISection>(url);
   }
 
-  async updateSection(section: ISection): Promise<ISection> {
-    return await this.httpClient.put<ISection>(`/api/banner/section`, section);
+  async updateSection(section: ISection): Promise<BaseResponse<ISection>> {
+    return await this.httpClient.put<ISection>(ApiEndpointEnum.BannerSection, section);
   }
 }
 
@@ -29,7 +33,7 @@ class SectionAPI implements ISectionAPI {
 decorate(injectable(), SectionAPI);
 
 // Create a factory function that handles the injection
-const createSectionAPI = (httpClient: IHttpClient): ISectionAPI => {
+const createSectionAPI = (httpClient: ApiClient): ISectionAPI => {
   return new SectionAPI(httpClient);
 };
 

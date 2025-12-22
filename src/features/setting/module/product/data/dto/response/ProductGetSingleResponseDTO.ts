@@ -1,4 +1,4 @@
+import { BaseResponse } from '@/shared/types';
 import { Product } from '../../../domain/entities/Product';
-import { HttpResponse } from '../../../model';
 
-export type ProductGetSingleResponseDTO = HttpResponse<Product>;
+export type ProductGetSingleResponseDTO = BaseResponse<Product>;

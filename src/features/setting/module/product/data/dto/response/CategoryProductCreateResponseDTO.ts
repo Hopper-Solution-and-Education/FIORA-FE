@@ -1,6 +1,6 @@
-import { HttpResponse } from '../../../model';
+import { BaseResponse } from '@/shared/types';
 
-export type CategoryProductCreateResponseDTO = HttpResponse<{
+export type CategoryProductCreateResponseDTO = BaseResponse<{
   id: string;
   userId: string;
   icon: string;

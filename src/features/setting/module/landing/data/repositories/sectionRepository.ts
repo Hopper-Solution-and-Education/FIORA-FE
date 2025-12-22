@@ -69,12 +69,14 @@ export class SectionRepository implements ISectionRepository {
   }
 
   async getSection(sectionType: SectionTypeEnum): Promise<ISection> {
-    return await this.sectionApi.fetchSection(sectionType);
+    const response = await this.sectionApi.fetchSection(sectionType);
+    return response.data;
   }
 
   async updateSection(section: SectionDefaultValues, createdBy: string): Promise<ISection> {
     const mappedSection = mapSectionDefaultValuesToISection(section, createdBy);
-    return await this.sectionApi.updateSection(mappedSection);
+    const response = await this.sectionApi.updateSection(mappedSection);
+    return response.data;
   }
 }
 

@@ -1,7 +1,4 @@
-import { HttpResponse } from '../../../model';
+import { BaseResponse } from '@/shared/types';
 
-export type ProductDeleteResponseDTO = HttpResponse<{ id: string }>;
-
-export type ProductTransferDeleteResponseDTO = HttpResponse<{
-  id: string;
-}>;
+export type ProductDeleteResponseDTO = BaseResponse<{ id: string }>;
+export type ProductTransferDeleteResponseDTO = BaseResponse<{ id: string }>;
