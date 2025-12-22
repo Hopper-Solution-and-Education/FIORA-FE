@@ -14,7 +14,7 @@ export const sendEmail = async (to: string, otp: string, verificationLink: strin
       html: emailTemplate(otp, verificationLink), // HTML template from previous response
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
   } catch (error) {
     console.error('Failed to send email', error);
     throw new InternalServerError('Failed to send email');
@@ -30,7 +30,7 @@ export const sendOtp = async (to: string, otp: string) => {
       html: `<p>Your OTP to reset your password is: <strong>${otp}</strong></p>`,
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
     return otp;
   } catch (error) {
     console.error(error);
@@ -47,7 +47,7 @@ export const sendOtpVerify = async (to: string, otp: string) => {
       html: `<p>Your OTP to verify account is: <strong>${otp}</strong></p>`,
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
     return otp;
   } catch (error) {
     console.error(error);
@@ -72,7 +72,7 @@ export const sendOtpChangeEmail = async (to: string, otp: string) => {
       `,
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
     return otp;
   } catch (error) {
     console.error(error);
@@ -97,7 +97,7 @@ export const sendOtpDeleteAccount = async (to: string, otp: string) => {
       `,
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
     return otp;
   } catch (error) {
     console.error(error);
@@ -166,7 +166,7 @@ export const sendBulkEmailUtility = async (
           html: htmlContent,
         };
 
-        // await sgMail.send(msg);
+        await sgMail.send(msg);
         sentCount += batch.length;
 
         console.log(
@@ -242,7 +242,7 @@ export const sendEmailCronJob = async (
       html,
     };
 
-    // await sgMail.send(msg);
+    await sgMail.send(msg);
     return true;
   } catch (error) {
     console.error('Failed to send email', error);
