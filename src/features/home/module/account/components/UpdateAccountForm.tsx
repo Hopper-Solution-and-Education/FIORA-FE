@@ -150,7 +150,9 @@ export default function UpdateAccountForm({ initialData }: UpdateAccountFormProp
           }
         });
     } catch (error: any) {
-      console.log(error);
+      console.error('Update account error:', error);
+      const errorMessage = error?.message || 'Failed to update account. Please try again.';
+      toast.error(errorMessage);
     }
   };
 

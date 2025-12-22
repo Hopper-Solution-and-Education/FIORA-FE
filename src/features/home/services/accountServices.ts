@@ -1,29 +1,30 @@
-import { httpClient } from '@/config/http-client/HttpClient';
+import apiClient from '@/config/http-client';
 import { Account, AccountFilterResponse } from '@/features/home/module/account/slices/types';
 import {
   NewAccountDefaultValues,
   UpdateAccountDefaultValues,
 } from '@/features/home/module/account/slices/types/formSchema';
-import { FilterCriteria, Response } from '@/shared/types';
+import { BaseResponse, FilterCriteria } from '@/shared/types';
 
+// Use apiClient to call BE directly on port 5555
 const accountServices = {
-  fetchAccounts: async (data: FilterCriteria): Promise<Response<AccountFilterResponse>> => {
-    return httpClient.post<Response<AccountFilterResponse>>('/api/accounts/search', data);
+  fetchAccounts: async (data: FilterCriteria): Promise<BaseResponse<AccountFilterResponse>> => {
+    return apiClient.post<AccountFilterResponse>('/api/accounts/search', data);
   },
-  createAccount: async (data: NewAccountDefaultValues): Promise<Response<Account>> => {
-    return httpClient.post<Response<Account>>('/api/accounts/create', data);
+  createAccount: async (data: NewAccountDefaultValues): Promise<BaseResponse<Account>> => {
+    return apiClient.post<Account>('/api/accounts/create', data);
   },
-  fetchParents: async (data: FilterCriteria): Promise<Response<AccountFilterResponse>> => {
-    return httpClient.post<Response<AccountFilterResponse>>(
-      '/api/accounts/search?isParent=true',
-      data,
-    );
+  fetchParents: async (data: FilterCriteria): Promise<BaseResponse<AccountFilterResponse>> => {
+    return apiClient.post<AccountFilterResponse>('/api/accounts/search?isParent=true', data);
   },
-  updateAccount(id: string, data: Partial<UpdateAccountDefaultValues>): Promise<Response<Account>> {
-    return httpClient.put<Response<Account>>(`/api/accounts/${id}`, data);
+  updateAccount(
+    id: string,
+    data: Partial<UpdateAccountDefaultValues>,
+  ): Promise<BaseResponse<Account>> {
+    return apiClient.put<Account>(`/api/accounts/${id}`, data);
   },
-  deleteAccount(id: string): Promise<Response<Account>> {
-    return httpClient.delete<Response<Account>>(`/api/accounts/${id}`);
+  deleteAccount(id: string): Promise<BaseResponse<Account>> {
+    return apiClient.delete<Account>(`/api/accounts/${id}`);
   },
 };
 

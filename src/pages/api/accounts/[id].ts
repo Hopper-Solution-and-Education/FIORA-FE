@@ -1,21 +1,19 @@
-import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
-import { Messages } from '@/shared/constants/message';
+import { BASE_API } from '@/shared/constants/ApiEndpointEnum';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { sessionWrapper } from '@/shared/utils/sessionWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId: string) =>
+export default sessionWrapper((req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
       switch (request.method) {
         case 'GET':
           return GET(request, response);
         case 'PUT':
-          return PUT(request, response, userId);
+          return PUT(request, response);
         case 'DELETE':
-          return DELETE(request, response, userId);
+          return DELETE(request, response);
         default:
           return response
             .status(RESPONSE_CODE.METHOD_NOT_ALLOWED)
@@ -28,71 +26,71 @@ export default sessionWrapper((req: NextApiRequest, res: NextApiResponse, userId
 );
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Missing account id' });
+    }
+
+    const beResponse = await fetch(`${BASE_API}/accounts/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: req.headers.authorization || '',
+      },
+    });
+
+    const data = await beResponse.json();
+    return res.status(beResponse.status).json(data);
+  } catch (error: any) {
+    console.error('Error proxying GET to BE:', error);
+    res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
-  const { id } = req.query;
-  if (!id) {
-    return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Missing account id to update' });
-  }
-  const account = await AccountUseCaseInstance.findById(id as string);
-  if (!account) {
-    return res.status(RESPONSE_CODE.NOT_FOUND).json({ message: 'Account not found' });
-  }
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, 'Get account successfully', account));
 }
 
-export async function PUT(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  if (req.method !== 'PUT') {
-    return res.status(405).json({ error: 'Method not allowed' });
+export async function PUT(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Missing account id' });
+    }
+
+    const beResponse = await fetch(`${BASE_API}/accounts/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: req.headers.authorization || '',
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await beResponse.json();
+    return res.status(beResponse.status).json(data);
+  } catch (error: any) {
+    console.error('Error proxying PUT to BE:', error);
+    res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
-  const { id } = req.query;
-  const { name, type, currency, balance = 0, limit, icon } = req.body;
-  if (!id) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.MISSING_PARAMS_INPUT));
-  }
-  const accountFound = await AccountUseCaseInstance.findByCondition({
-    id: id.toString(),
-    userId,
-  });
-  if (!accountFound) {
-    return res
-      .status(RESPONSE_CODE.BAD_REQUEST)
-      .json(createResponse(RESPONSE_CODE.BAD_REQUEST, Messages.ACCOUNT_NOT_FOUND));
-  }
-  const isValidType = AccountUseCaseInstance.validateAccountType(type, balance, limit);
-  if (!isValidType) {
-    return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Invalid account type' });
-  }
-  // If this is a sub-account, update the parent's balance
-  const updateRes = await AccountUseCaseInstance.updateAccount(id as string, {
-    name,
-    type,
-    icon,
-    currency,
-    balance: balance,
-    limit: limit,
-    updatedBy: userId,
-  });
-  if (!updateRes) {
-    return res.status(400).json({ message: 'Cannot update sub account' });
-  }
-  return res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, 'Update account successfully'));
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse, userId: string) {
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ error: 'Method not allowed' });
+export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(RESPONSE_CODE.BAD_REQUEST).json({ message: 'Missing account id' });
+    }
+
+    const beResponse = await fetch(`${BASE_API}/accounts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: req.headers.authorization || '',
+      },
+    });
+
+    const data = await beResponse.json();
+    return res.status(beResponse.status).json(data);
+  } catch (error: any) {
+    console.error('Error proxying DELETE to BE:', error);
+    res.status(RESPONSE_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
-  const { id } = req.query;
-  const deletedRes = await AccountUseCaseInstance.deleteAccount(id as string, userId);
-  res
-    .status(RESPONSE_CODE.OK)
-    .json(createResponse(RESPONSE_CODE.OK, 'Delete account successfully', deletedRes));
 }

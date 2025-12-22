@@ -2,7 +2,6 @@ export * from './CategoryProductCreateRequestDTO';
 export * from './CategoryProductDeleteRequestDTO';
 export * from './CategoryProductGetRequestDTO';
 export * from './CategoryProductUpdateRequestDTO';
-export * from './ProductCreateRequestDTO';
 export * from './ProductDeleteRequestDTO';
 export * from './ProductGetSingleRequestDTO';
 export * from './ProductUpdateRequestDTO';

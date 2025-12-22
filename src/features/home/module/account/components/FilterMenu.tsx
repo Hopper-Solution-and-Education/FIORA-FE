@@ -8,7 +8,6 @@ import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { setFilterCriteria } from '../slices';
-import { searchAccounts } from '../slices/actions';
 
 // Define constants for magic numbers
 const DEFAULT_MIN_BALANCE = 0;
@@ -430,10 +429,8 @@ const FilterMenu = ({ onFilterChange, filterCriteria }: FilterMenuProps) => {
       // Update filter criteria with structured format
       onFilterChange(structuredFilter);
 
-      // Fetch filtered data with the structured format
-      if (userId) {
-        dispatch(searchAccounts(structuredFilter));
-      }
+      // NOTE: Don't call searchAccounts here - parent (DashboardHeader) already does it
+      // via the onFilterChange callback to avoid duplicate API calls
     },
     [dispatch, onFilterChange, userId],
   );
