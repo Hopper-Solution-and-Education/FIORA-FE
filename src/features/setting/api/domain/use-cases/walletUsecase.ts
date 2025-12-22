@@ -92,12 +92,14 @@ class WalletUseCase {
     sortBy,
     page,
     limit,
+    search,
   }: {
     sortBy?: Record<string, 'asc' | 'desc'>;
     page?: number;
     limit?: number;
+    search?: string;
   }) {
-    return this._walletRepository.findPackageFXPaginated({ sortBy, page, limit });
+    return this._walletRepository.findPackageFXPaginated({ sortBy, page, limit, search });
   }
   async createPackageFx(data: {
     fxAmount: number;

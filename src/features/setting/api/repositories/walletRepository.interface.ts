@@ -23,6 +23,7 @@ export interface IWalletRepository {
     sortBy?: Record<string, 'asc' | 'desc'>;
     page?: number;
     limit?: number;
+    search?: string;
   }): Promise<any>;
   findAllPackageFX(): Promise<PackageFX[]>;
   getPackageFXById(id: string): Promise<PackageFX | null>;

@@ -6,7 +6,6 @@ import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
 import { useAppSelector } from '@/store';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { FRONTEND_ATTACHMENT_CONSTANTS } from '../../data';
 import { PackageFX } from '../../domain';
@@ -103,14 +102,17 @@ const WalletPaymentDetail = ({ className }: WalletPaymentDetailProps) => {
         </div>
         <div className="flex flex-col items-center gap-2">
           <div className="bg-white rounded-xl p-4 shadow">
-            <Image
-              hidden={loadingImage}
-              src={imageSrc}
-              alt={'QR Code for ' + formatCurrency(actualAmount, currency)}
-              onLoadingComplete={() => setLoadingImage(false)}
-              width={320}
-              height={320}
-            />
+            {imageSrc && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                hidden={loadingImage}
+                src={imageSrc}
+                alt={'QR Code for ' + formatCurrency(actualAmount, currency)}
+                onLoad={() => setLoadingImage(false)}
+                width={320}
+                height={320}
+              />
+            )}
             {loadingImage ? <Skeleton className="w-[320px] h-[320px]" /> : null}
           </div>
           <div className="text-xs text-muted-foreground">
