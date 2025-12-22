@@ -33,6 +33,8 @@ const WalletTopbarAction = ({
   const minBalance = useAppSelector((state) => state.wallet.minBalance);
   const maxBalance = useAppSelector((state) => state.wallet.maxBalance);
   const dashboardMetrics = useAppSelector((state) => state.paymentWallet.dashboardMetrics);
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const depositSearch = useAppSelector((state) => state.wallet.depositSearch);
 
   const metrics = useMemo(() => {
     if (!dashboardMetrics) {
@@ -68,7 +70,11 @@ const WalletTopbarAction = ({
   return (
     <div className="flex flex-wrap gap-2 w-full items-center justify-between">
       <div className="flex items-center gap-2">
-        <WalletSearch searchType={searchType} />
+        <WalletSearch
+          searchType={searchType}
+          loading={loading && !!depositSearch}
+          debounce={1000}
+        />
         {enableFilter && searchType === 'normal' && (
           <WalletFilterMenu
             filterCriteria={filterCriteria}

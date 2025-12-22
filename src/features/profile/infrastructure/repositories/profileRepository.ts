@@ -1,6 +1,9 @@
 import { prisma } from '@/config';
+import { attachmentRepository } from '@/features/setting/api/infrastructure/repositories/attachmentRepository';
 import { UserRole } from '@/shared/constants';
-import { removeFromFirebase } from '@/shared/lib';
+import { removeFromFirebase, uploadToFirebase } from '@/shared/lib';
+import { readFile } from 'fs/promises';
+import path from 'path';
 import type { eKYC, UpdateProfileRequest, UserProfile } from '../../domain/entities/models/profile';
 import type { IProfileRepository } from '../../domain/repositories/profileRepository.interface';
 
@@ -42,6 +45,74 @@ class ProfileRepository implements IProfileRepository {
         logoUrl = attachment.url;
       }
     }
+
+    // If not have avatar or logo, then upload default avatar or logo to firebase and update to database
+    if (!user.avatarId) {
+      try {
+        // Read default avatar file from public directory
+        const avatarFilePath = path.join(process.cwd(), 'public', 'images', 'avatar.png');
+        const avatarBuffer = await readFile(avatarFilePath);
+        const avatarBlob = new Blob([avatarBuffer], { type: 'image/png' });
+
+        const avatarFirebaseUrl = await uploadToFirebase({
+          file: avatarBlob,
+          path: 'images/profile/avatar',
+          fileName: `default_avatar_${userId}`,
+        });
+
+        const avatarAttachment = await attachmentRepository.createAttachment({
+          type: 'image',
+          url: avatarFirebaseUrl,
+          path: 'images/profile/avatar',
+          size: avatarBuffer.length,
+          createdBy: userId,
+        });
+
+        await prisma.user.update({
+          where: { id: userId },
+          data: { avatarId: avatarAttachment.id },
+        });
+
+        avatarUrl = avatarFirebaseUrl;
+      } catch (error) {
+        console.error('Error uploading default avatar:', error);
+        avatarUrl = null;
+      }
+    }
+
+    if (!user.logoId) {
+      try {
+        // Read default logo file from public directory
+        const logoFilePath = path.join(process.cwd(), 'public', 'images', 'logo.jpg');
+        const logoBuffer = await readFile(logoFilePath);
+        const logoBlob = new Blob([logoBuffer], { type: 'image/jpeg' });
+
+        const logoFirebaseUrl = await uploadToFirebase({
+          file: logoBlob,
+          path: 'images/profile/logo',
+          fileName: `default_logo_${userId}`,
+        });
+
+        const logoAttachment = await attachmentRepository.createAttachment({
+          type: 'image',
+          url: logoFirebaseUrl,
+          path: 'images/profile/logo',
+          size: logoBuffer.length,
+          createdBy: userId,
+        });
+
+        await prisma.user.update({
+          where: { id: userId },
+          data: { logoId: logoAttachment.id },
+        });
+
+        logoUrl = logoFirebaseUrl;
+      } catch (error) {
+        console.error('Error uploading default logo:', error);
+        logoUrl = null;
+      }
+    }
+
     return {
       id: user.id,
       name: user.name ?? null,

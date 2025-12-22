@@ -64,8 +64,15 @@ const useProductFormConfig = () => {
   );
 
   const fields = [
-    <IconSelectUpload key="icon" name="icon" required disabled={isSubmitting} />,
+    <IconSelectUpload
+      data-test="product-icon-field"
+      key="icon"
+      name="icon"
+      required
+      disabled={isSubmitting}
+    />,
     <SelectField
+      data-test="product-category-field"
       options={data.map((item: any) => ({ label: item.name, value: item.id, icon: item.icon }))}
       key="catId"
       name="catId"
@@ -85,8 +92,16 @@ const useProductFormConfig = () => {
     //   requiredFrom
     //   requiredTo
     // />,
-    <InputField key="name" name="name" placeholder="Product Name" label="Name" required />,
+    <InputField
+      data-test="product-name-field"
+      key="name"
+      name="name"
+      placeholder="Product Name"
+      label="Name"
+      required
+    />,
     <SelectField
+      data-test="product-type-field"
       options={Object.entries(ProductType).map(([key, value]) => ({
         label: key,
         value,
@@ -98,6 +113,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <SelectField
+      data-test="product-currency-field"
       options={currencyOptions}
       key="currency"
       name="currency"
@@ -107,6 +123,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <InputCurrency
+      data-test="product-price-field"
       key="price"
       name="price"
       label="Price"
@@ -115,6 +132,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <TextareaField
+      data-test="product-description-field"
       key="description"
       name="description"
       label="Description"
@@ -122,6 +140,7 @@ const useProductFormConfig = () => {
       disabled={isSubmitting}
     />,
     <InputField
+      data-test="product-tax-rate-field"
       key="taxRate"
       name="taxRate"
       placeholder="0.00%"
@@ -133,6 +152,7 @@ const useProductFormConfig = () => {
       }}
     />,
     <ArrayField
+      data-test="product-items-field"
       label="Product Items"
       key="items"
       name="items"
@@ -140,6 +160,7 @@ const useProductFormConfig = () => {
       handleDelete={handleDelete}
       fields={[
         <GlobalIconSelect
+          data-test="product-item-icon-field"
           name="icon"
           key="icon"
           label="Item Icon"
@@ -147,6 +168,7 @@ const useProductFormConfig = () => {
           disabled={isSubmitting}
         />,
         <InputField
+          data-test="product-item-name-field"
           name="name"
           placeholder="Name"
           key="name"
@@ -155,6 +177,7 @@ const useProductFormConfig = () => {
           disabled={isSubmitting}
         />,
         <TextareaField
+          data-test="product-item-description-field"
           name="description"
           placeholder="Product Item Description"
           key="description"

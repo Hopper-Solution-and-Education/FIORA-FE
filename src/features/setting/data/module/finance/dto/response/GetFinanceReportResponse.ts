@@ -15,13 +15,11 @@ export interface BaseFinanceReportResponse {
 }
 
 export interface AccountFinanceReportResponse
-  extends Omit<Account, 'currency'>,
-    BaseFinanceReportResponse {}
+  extends Omit<Account, 'currency'>, BaseFinanceReportResponse {}
 
 export type PartnerFinanceReportResponse = Partner & BaseFinanceReportResponse;
 
 export interface ProductFinanceReportResponse
-  extends Omit<Product, 'currency'>,
-    BaseFinanceReportResponse {}
+  extends Omit<Product, 'currency'>, BaseFinanceReportResponse {}
 
 export interface CategoryFinanceReportResponse extends CategoryExtras, BaseFinanceReportResponse {}
