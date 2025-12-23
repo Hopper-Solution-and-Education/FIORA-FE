@@ -1,4 +1,4 @@
-import { BaseChartProps, ColumnConfig, LineConfig } from '@/shared/types/chart.type';
+import { BaseChartProps, ColumnConfig, LineConfig } from '@/shared/types';
 
 export type ComposedChartDataItem = {
   name: string | number;

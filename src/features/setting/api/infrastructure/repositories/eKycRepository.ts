@@ -1,5 +1,5 @@
 import { prisma, sendOtpVerify } from '@/config';
-import { SessionUser } from '@/shared/types/session';
+import { SessionUser } from '@/shared/types';
 import { generateSixDigitNumber } from '@/shared/utils/common';
 import { KYCMethod, KYCType, OtpType } from '@prisma/client';
 

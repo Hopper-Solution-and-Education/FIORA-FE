@@ -4,7 +4,7 @@ import { DropdownOption } from '@/shared/types';
 
 interface MultiSelectFilterProps {
   options: DropdownOption[];
-  selectedValues: string[];
+  selectedValues?: string[] | null;
   onChange: (values: string[]) => void;
   label?: string;
   placeholder?: string;
@@ -25,7 +25,7 @@ const DEFAULT_OPTION: DropdownOption = {
 
 const MultiSelectFilter = ({
   options,
-  selectedValues = [],
+  selectedValues,
   onChange,
   label = 'Select',
   placeholder = 'Select options',
@@ -45,7 +45,7 @@ const MultiSelectFilter = ({
           <MultiSelect
             className="w-full px-4 py-[7px] min-w-full"
             options={resolvedOptions}
-            selected={selectedValues}
+            selected={selectedValues || []}
             onChange={onChange}
             placeholder={placeholder}
             disabled={disabled}

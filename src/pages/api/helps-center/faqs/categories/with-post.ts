@@ -1,7 +1,7 @@
 import { getFaqCategoriesUseCase } from '@/features/helps-center/application/use-cases/faq';
 import { PostType } from '@/features/helps-center/domain/entities/models/faqs';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -1,8 +1,7 @@
 'use client';
 
 import { NavItem } from '@/features/landing/presentation/atoms/NavItem';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE, RouteEnum } from '@/shared/constants';
 import { NewspaperIcon } from 'lucide-react';
 import Link from 'next/link';
 

@@ -1,4 +1,4 @@
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { BaseChartProps } from '@/shared/types';
 import { CustomBarItem, StackBarDisplay } from '../stacked-bar-chart/type';
 
 export interface ChartDataConfig {
@@ -13,8 +13,10 @@ export interface ChartDataConfig {
   calculateRValue: (item: StackBarDisplay) => number;
 }
 
-export interface PositiveNegativeStackBarChartProps
-  extends Omit<BaseChartProps<CustomBarItem>, 'data'> {
+export interface PositiveNegativeStackBarChartProps extends Omit<
+  BaseChartProps<CustomBarItem>,
+  'data'
+> {
   data?: CustomBarItem[];
   icon?: string;
   showButton?: boolean;

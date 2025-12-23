@@ -30,7 +30,6 @@ const useHeaderFormConfig = (mediaPath: string) => {
       key="description"
       name={`${mediaPath}.description`}
       label="Content - Description"
-      required
       disabled={isSubmitting || isLoadingSaveChange}
     />,
 

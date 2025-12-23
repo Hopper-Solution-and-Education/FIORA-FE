@@ -4,7 +4,7 @@ import {
   userRepository,
 } from '@/features/auth/infrastructure/repositories/userRepository';
 import { notificationUseCase } from '@/features/notification/application/use-cases/notificationUseCase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { BadRequestError } from '@/shared/lib';
 import { emailType, NotificationType } from '@prisma/client';
 import bcrypt from 'bcrypt';

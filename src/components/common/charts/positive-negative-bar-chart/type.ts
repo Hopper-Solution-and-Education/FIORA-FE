@@ -1,6 +1,6 @@
-import { BaseChartProps } from '@/shared/types/chart.type';
-import { ContentType } from 'recharts/types/component/Tooltip';
+import { BaseChartProps } from '@/shared/types';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { ContentType } from 'recharts/types/component/Tooltip';
 
 export type BarItem = {
   id?: string;
@@ -25,8 +25,10 @@ export type PositiveAndNegativeBarLevelConfig = {
   };
 };
 
-export interface PositiveAndNegativeBarChartProps
-  extends Omit<BaseChartProps<BarItem>, 'tooltipContent'> {
+export interface PositiveAndNegativeBarChartProps extends Omit<
+  BaseChartProps<BarItem>,
+  'tooltipContent'
+> {
   tooltipContent?: ContentType<ValueType, NameType>;
   maxBarRatio?: number;
   levelConfig?: PositiveAndNegativeBarLevelConfig;

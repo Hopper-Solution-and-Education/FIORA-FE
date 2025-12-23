@@ -1,5 +1,5 @@
 import { CustomBarItem } from '@/components/common/charts/stacked-bar-chart/type';
-import { COLORS, STACK_TYPE } from '@/shared/constants/chart';
+import { COLORS, STACK_TYPE } from '@/shared/constants';
 import { Currency, ExchangeAmountParams, ExchangeAmountResult } from '@/shared/types';
 import { BudgetGetDataResponse } from '../domain/entities/Budget';
 

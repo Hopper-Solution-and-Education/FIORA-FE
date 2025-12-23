@@ -1,5 +1,9 @@
 import { Icons } from '@/components/Icon';
 import { Button } from '@/components/ui/button';
+import {
+  fetchFrozenAmountAsyncThunk,
+  getWalletsAsyncThunk,
+} from '@/features/home/module/wallet/slices/actions';
 import { ATTACHMENT_CONSTANTS } from '@/features/setting/data/module/attachment/constants/attachmentConstants';
 import { uploadToFirebase } from '@/shared/lib/firebase/firebaseUtils';
 import { cn } from '@/shared/utils';
@@ -86,6 +90,10 @@ const WalletSettingActionButton = ({
 
       handleToggleApproveModal();
 
+      // Refresh wallet state (balance/frozen) in case the admin approved their own request
+      dispatch(fetchFrozenAmountAsyncThunk());
+      dispatch(getWalletsAsyncThunk());
+
       toast.success('Request Approved Success', {
         description: 'Request approved, wallet updated',
       });
@@ -111,6 +119,10 @@ const WalletSettingActionButton = ({
       });
 
       handleToggleRejectModal();
+
+      // Refresh wallet state (balance/frozen) in case the admin rejected their own request
+      dispatch(fetchFrozenAmountAsyncThunk());
+      dispatch(getWalletsAsyncThunk());
 
       toast.success('Request Rejected Success', {
         description: 'Request rejected, wallet updated',

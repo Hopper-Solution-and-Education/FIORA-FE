@@ -1,8 +1,8 @@
-import { Messages } from '@/shared/constants/message';
-import { PartnerValidationData, ValidationError } from './partnerException.type';
+import { Messages } from '@/shared/constants';
 import { Prisma } from '@prisma/client';
-import { basePartnerSchema } from '../schema/basePartner.schema';
 import * as Yup from 'yup';
+import { basePartnerSchema } from '../schema/basePartner.schema';
+import { PartnerValidationData, ValidationError } from './partnerException.type';
 
 export async function validatePartnerData(
   data: PartnerValidationData,

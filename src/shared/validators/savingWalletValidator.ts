@@ -1,6 +1,6 @@
 import { WalletType } from '@prisma/client';
 import Joi from 'joi';
-import { SavingWalletAction } from '../constants/savingWallet';
+import { SavingWalletAction } from '../constants';
 
 export const transferSavingWalletBodySchema = Joi.object({
   packageFXId: Joi.string().uuid().required().messages({

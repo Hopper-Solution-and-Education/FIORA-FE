@@ -11,7 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { iconOptions } from '@/shared/constants/data';
+import { iconOptions } from '@/shared/constants';
 import { cn, useGetIconLabel } from '@/shared/utils';
 import { Check } from 'lucide-react';
 import React, { memo, useEffect, useRef, useState } from 'react';
@@ -83,6 +83,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
+            data-test="icon-select-button"
             className={cn(
               'w-full justify-between',
               isCheckError && required && !selectedIcon ? 'border-red-500' : '',
@@ -120,6 +121,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
                         onIconChange(item.value);
                         setOpen(false);
                       }}
+                      data-test={`icon-option-${item.value || 'none'}`}
                       className="data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50"
                     >
                       <div className="flex items-center gap-2 w-full">

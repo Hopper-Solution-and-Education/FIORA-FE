@@ -1,6 +1,6 @@
 import { postCategoryUsecase } from '@/features/news/api/application/usecase/postCategoryUsecase';
 import { PostCategoryResponse } from '@/features/news/api/types/postCategoryDTO';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { errorHandler } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';

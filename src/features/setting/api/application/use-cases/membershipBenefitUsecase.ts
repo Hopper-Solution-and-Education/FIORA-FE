@@ -1,14 +1,14 @@
 import { prisma } from '@/config';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
+import { BadRequestError } from '@/shared/lib';
 import {
   MembershipBenefitCreatePayload,
   MembershipBenefitCreateUpdateAllPayload,
   MembershipBenefitDeletePayload,
-} from '@/shared/types/membership-benefit';
+} from '@/shared/types';
 import { v4 as uuid } from 'uuid';
 import { membershipBenefitRepository } from '../../infrastructure/repositories/memBenefitRepository';
 import { tierBenefitRepository } from '../../infrastructure/repositories/tierBenefitRepository';
-import { BadRequestError } from '@/shared/lib';
 
 class MembershipBenefitService {
   async create(payload: MembershipBenefitCreatePayload, userId: string) {

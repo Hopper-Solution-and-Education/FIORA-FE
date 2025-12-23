@@ -4,8 +4,8 @@ import {
   GetFinanceReportRequest,
   GetFinanceReportSchema,
 } from '@/features/setting/data/module/finance/dto/request/GetFinanceReportRequest';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';

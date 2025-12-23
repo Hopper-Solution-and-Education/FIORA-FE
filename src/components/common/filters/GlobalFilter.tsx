@@ -222,6 +222,7 @@ const GlobalFilter = (props: GlobalFilterProps) => {
       <CommonTooltip content="Filters">
         <DropdownMenuTrigger asChild>
           <Button
+            data-test="filter-button"
             variant={shouldShowFilterIcon ? 'default' : 'secondary'}
             className="px-3 py-2"
             onClick={() => setIsOpen((prev) => !prev)}
@@ -277,12 +278,21 @@ const GlobalFilter = (props: GlobalFilterProps) => {
         <DropdownMenuSeparator />
         <div className="w-full flex justify-end items-center gap-2">
           <CommonTooltip content="Clear">
-            <Button variant={'destructive'} className="px-3 py-2" onClick={handleResetFilter}>
+            <Button
+              data-test="filter-clear-button"
+              variant={'destructive'}
+              className="px-3 py-2"
+              onClick={handleResetFilter}
+            >
               <FunnelX className="h-4 w-4" />
             </Button>
           </CommonTooltip>
           <CommonTooltip content="Apply filters">
-            <Button className="px-3 py-2" onClick={handleSaveFilterChanges}>
+            <Button
+              data-test="filter-apply-button"
+              className="px-3 py-2"
+              onClick={handleSaveFilterChanges}
+            >
               <Check className="h-4 w-4" />
             </Button>
           </CommonTooltip>

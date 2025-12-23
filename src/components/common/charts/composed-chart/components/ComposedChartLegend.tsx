@@ -1,4 +1,4 @@
-import { ColumnConfig, LineConfig } from '@/shared/types/chart.type';
+import { ColumnConfig, LineConfig } from '@/shared/types';
 
 interface RenderCustomLegendProps {
   columns: ColumnConfig[];

@@ -177,6 +177,7 @@ export default function MediaItem({
               onClick={onMoveUp}
               disabled={isFirst}
               className="h-7 w-7 p-0"
+              data-test={`${sectionType}-media-${mediaIndex}-move-up-button`}
               aria-label="Move up"
             >
               <ArrowUp className="h-4 w-4" />
@@ -187,6 +188,7 @@ export default function MediaItem({
               onClick={onMoveDown}
               disabled={isLast}
               className="h-7 w-7 p-0"
+              data-test={`${sectionType}-media-${mediaIndex}-move-down-button`}
               aria-label="Move down"
             >
               <ArrowDown className="h-4 w-4" />
@@ -197,6 +199,7 @@ export default function MediaItem({
               size="sm"
               onClick={onDelete}
               className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+              data-test={`${sectionType}-media-${mediaIndex}-delete-button`}
               aria-label="Delete"
             >
               <Trash2 className="h-4 w-4" />

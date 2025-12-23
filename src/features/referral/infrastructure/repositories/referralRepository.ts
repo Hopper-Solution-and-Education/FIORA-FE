@@ -1,6 +1,17 @@
 import { prisma } from '@/config';
 import { sendBulkEmailUtility } from '@/config/send-grid/sendGrid';
-import { Prisma, Referral, Transaction, TransactionType, Wallet, WalletType } from '@prisma/client';
+import { Messages } from '@/shared/constants';
+import { BadRequestError } from '@/shared/lib';
+import { buildReferralCodeCandidate, REFERRAL_CODE_MAX_ATTEMPTS } from '@/shared/utils/server';
+import {
+  CommonSetting,
+  Prisma,
+  Referral,
+  Transaction,
+  TransactionType,
+  Wallet,
+  WalletType,
+} from '@prisma/client';
 import { readFileSync } from 'fs';
 import { randomUUID } from 'node:crypto';
 import { join } from 'path';
@@ -14,6 +25,8 @@ import type {
   ReferralDashboardSummary,
   TransactionFilters,
 } from '../../types';
+
+const REFERRAL_CAMPAIGN_SYMBOL = 'REFERRAL_CAMPAIGN';
 
 class ReferralRepository implements IReferralRepository {
   constructor(private _prisma = prisma) {}
@@ -36,6 +49,12 @@ class ReferralRepository implements IReferralRepository {
 
     if (!wallet) throw new Error('Referral wallet not found');
 
+    // Ensure user has a referral code, create one if missing
+    let referralCode = user?.referral_code;
+    if (!referralCode) {
+      referralCode = await this.ensureUserHasReferralCode(userId);
+    }
+
     const totalEarned = Number(txIn._sum.amount || 0);
     const totalWithdrawn = Number(txOut._sum.amount || 0);
     const availableBalance = Number(wallet.frBalanceActive || 0);
@@ -44,7 +63,7 @@ class ReferralRepository implements IReferralRepository {
       totalEarned,
       totalWithdrawn,
       availableBalance,
-      referralCode: user?.referral_code ?? null,
+      referralCode,
     };
   }
 
@@ -401,6 +420,135 @@ class ReferralRepository implements IReferralRepository {
 
     // Non-null assertion safe due to prior operations
     return { fromWallet: fromWallet!, toWallet: toWallet! };
+  }
+
+  // Get referral campaign
+  async getCampaign(): Promise<Omit<
+    CommonSetting,
+    'symbol' | 'createdAt' | 'updatedAt' | 'createdBy' | 'updatedBy'
+  > | null> {
+    const setting = await this._prisma.commonSetting.findFirst({
+      where: { symbol: REFERRAL_CAMPAIGN_SYMBOL },
+      select: {
+        id: true,
+        name: true,
+        dynamicValue: true,
+      },
+    });
+    return setting;
+  }
+
+  // Upsert referral campaign
+  async upsertCampaign(
+    userId: string,
+    payload: {
+      bonus_1st_amount: number;
+      minimumWithdrawal: number;
+      isActive: boolean;
+    },
+  ): Promise<CommonSetting> {
+    // Check if a campaign setting already exists
+    const existingSetting = await this._prisma.commonSetting.findFirst({
+      where: { symbol: REFERRAL_CAMPAIGN_SYMBOL },
+    });
+
+    if (existingSetting) {
+      // Update existing record - only update the allowed fields in dynamicValue
+      const currentDynamicValue = existingSetting.dynamicValue as any;
+      const updatedDynamicValue = {
+        ...currentDynamicValue,
+        bonus_1st_amount: payload.bonus_1st_amount,
+        minimumWithdrawal: payload.minimumWithdrawal,
+        isActive: payload.isActive,
+      };
+
+      return this._prisma.commonSetting.update({
+        where: { id: existingSetting.id },
+        data: {
+          dynamicValue: updatedDynamicValue,
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // Create new record
+      return this._prisma.commonSetting.create({
+        data: {
+          name: 'Referral Campaign Bonus',
+          symbol: REFERRAL_CAMPAIGN_SYMBOL,
+          dynamicValue: {
+            bonus_1st_amount: payload.bonus_1st_amount,
+            minimumWithdrawal: payload.minimumWithdrawal,
+            isActive: payload.isActive,
+          },
+          createdBy: userId,
+          updatedBy: userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  /**
+   * Ensures a user has a referral code, creating one if it doesn't exist
+   */
+  private async ensureUserHasReferralCode(userId: string): Promise<string> {
+    for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
+      const referralCode = await this.generateUniqueReferralCode();
+
+      try {
+        const updatedUser = await this._prisma.user.update({
+          where: { id: userId },
+          data: { referral_code: referralCode },
+          select: { referral_code: true },
+        });
+
+        return updatedUser.referral_code!;
+      } catch (error) {
+        if (this.isReferralCodeUniqueConstraintError(error)) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw new BadRequestError(Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER);
+  }
+
+  /**
+   * Generates a unique referral code by checking for existing codes
+   */
+  private async generateUniqueReferralCode(): Promise<string> {
+    for (let attempt = 0; attempt < REFERRAL_CODE_MAX_ATTEMPTS; attempt += 1) {
+      const code = buildReferralCodeCandidate();
+      const existing = await this._prisma.user.findUnique({ where: { referral_code: code } });
+      if (!existing) {
+        return code;
+      }
+    }
+
+    throw new BadRequestError(Messages.FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER);
+  }
+
+  /**
+   * Checks if an error is a Prisma unique constraint error for referral_code
+   */
+  private isReferralCodeUniqueConstraintError(error: unknown): boolean {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+      return false;
+    }
+
+    if (error.code !== 'P2002') {
+      return false;
+    }
+
+    const target = error.meta?.target;
+    if (Array.isArray(target)) {
+      return target.includes('referral_code');
+    }
+
+    return typeof target === 'string' && target.includes('referral_code');
   }
 }
 

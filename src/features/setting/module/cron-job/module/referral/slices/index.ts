@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CampaignSettings } from '../presentation/types/referral.type';
 import { initialState, ReferralCronjobState } from './types';
 
 const referralCronjobSlice = createSlice({
@@ -48,10 +49,24 @@ const referralCronjobSlice = createSlice({
     setTypeOfBenefitFilter: (state, action: PayloadAction<string[]>) => {
       state.filter.typeOfBenefit = action.payload;
     },
+    setCampaignSettings: (state, action: PayloadAction<CampaignSettings | null>) => {
+      state.campaignSettings = action.payload;
+    },
+    setSubmitting: (state, action: PayloadAction<boolean>) => {
+      state.isSubmitting = action.payload;
+    },
   },
 });
 
-export const { setLoading, setError, setFilter, setSearch, clearFilter, setTypeOfBenefitFilter } =
-  referralCronjobSlice.actions;
+export const {
+  setLoading,
+  setError,
+  setFilter,
+  setSearch,
+  clearFilter,
+  setTypeOfBenefitFilter,
+  setCampaignSettings,
+  setSubmitting,
+} = referralCronjobSlice.actions;
 
 export default referralCronjobSlice.reducer;

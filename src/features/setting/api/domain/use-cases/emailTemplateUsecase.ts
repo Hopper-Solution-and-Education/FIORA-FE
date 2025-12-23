@@ -1,4 +1,4 @@
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import { EmailTemplate, Prisma } from '@prisma/client';
 import { emailTemplateRepository } from '../../infrastructure/repositories/emailTemplateRepository';
 import { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository.interface';

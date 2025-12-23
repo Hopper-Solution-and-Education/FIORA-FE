@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { httpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import { routeConfig } from '@/shared/utils/route';
 import { debounce } from 'lodash';

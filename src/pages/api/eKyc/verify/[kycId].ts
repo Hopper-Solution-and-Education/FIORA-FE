@@ -6,9 +6,8 @@ import { bankAccountRepository } from '@/features/setting/api/infrastructure/rep
 import { eKycRepository } from '@/features/setting/api/infrastructure/repositories/eKycRepository';
 import { identificationRepository } from '@/features/setting/api/infrastructure/repositories/indentificationRepository';
 import { userRepository } from '@/features/setting/api/infrastructure/repositories/userRepository';
-import { Messages } from '@/shared/constants/message';
+import { Messages, UserRole } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { UserRole } from '@/shared/constants/userRole';
 import { createErrorResponse } from '@/shared/lib';
 import { createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { errorHandler } from '@/shared/lib/responseUtils/errors';

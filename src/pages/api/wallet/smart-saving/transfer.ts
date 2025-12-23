@@ -1,5 +1,5 @@
 import { walletUseCase } from '@/features/setting/api/domain/use-cases/walletUsecase';
-import { Messages } from '@/shared/constants/message';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
 import { createError, createResponse } from '@/shared/lib/responseUtils/createResponse';
 import { createErrorResponse } from '@/shared/lib/utils';

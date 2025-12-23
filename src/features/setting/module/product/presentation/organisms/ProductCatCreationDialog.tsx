@@ -79,7 +79,7 @@ const ProductCatCreationDialog = ({ setValue }: ProductCatCreationDialogType) =>
           handleCloseDialog();
         }}
       >
-        <DialogContent>
+        <DialogContent data-test="category-dialog">
           <DialogHeader>
             <DialogTitle>
               {ProductCategoryFormState === 'add'

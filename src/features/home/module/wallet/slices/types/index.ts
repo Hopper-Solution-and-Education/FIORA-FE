@@ -1,4 +1,4 @@
-import type { FilterCriteria } from '@/shared/types/filter.types';
+import type { FilterCriteria } from '@/shared/types';
 import type { PackageFX } from '../../domain/entity/PackageFX';
 import type { Wallet } from '../../domain/entity/Wallet';
 import type { WalletType } from '../../domain/enum';
@@ -19,6 +19,13 @@ export interface WalletState {
   frozenAmount: number | null;
   isShowSendingFXForm: boolean;
   isShowWithdrawFXForm: boolean;
+  // Pagination metadata for packageFX
+  packageFXPagination: {
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  } | null;
 }
 
 export const initialWalletState: WalletState = {
@@ -36,6 +43,7 @@ export const initialWalletState: WalletState = {
   frozenAmount: null,
   isShowSendingFXForm: false,
   isShowWithdrawFXForm: false,
+  packageFXPagination: null,
 };
 
 export interface GetWalletRequest {

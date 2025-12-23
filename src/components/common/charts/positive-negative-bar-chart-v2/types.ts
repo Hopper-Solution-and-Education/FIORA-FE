@@ -1,4 +1,4 @@
-import { BaseChartProps } from '@/shared/types/chart.type';
+import { BaseChartProps } from '@/shared/types';
 import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { ContentType } from 'recharts/types/component/Tooltip';
 
@@ -31,8 +31,10 @@ export type PositiveAndNegativeBarV2LevelConfig = {
   };
 };
 
-export interface PositiveAndNegativeBarChartV2Props
-  extends Omit<BaseChartProps<TwoSideBarItem>, 'tooltipContent' | 'legendItems'> {
+export interface PositiveAndNegativeBarChartV2Props extends Omit<
+  BaseChartProps<TwoSideBarItem>,
+  'tooltipContent' | 'legendItems'
+> {
   tooltipContent?: ContentType<ValueType, NameType>;
   legendItems: { name: string; color: string }[];
   maxBarRatio?: number;

@@ -1,6 +1,6 @@
 import { smartSavingUsecaseInstance } from '@/features/setting/module/cron-job/module/smart-saving/application/smartSavingUsecase';
+import { Messages } from '@/shared/constants';
 import RESPONSE_CODE from '@/shared/constants/RESPONSE_CODE';
-import { Messages } from '@/shared/constants/message';
 import { withAuthorization } from '@/shared/utils/authorizationWrapper';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createResponse } from '../../../shared/lib/responseUtils/createResponse';

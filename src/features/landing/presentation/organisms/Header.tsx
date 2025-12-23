@@ -18,8 +18,7 @@ import {
 } from '@/components/layouts/DashboardHeader/components/SettingCenter';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE, RouteEnum } from '@/shared/constants';
 import useAnnouncementManager from '@/shared/hooks/useAnnouncementManager';
 import { useSession } from 'next-auth/react';
 import { SectionTypeEnum } from '../../constants';
@@ -68,6 +67,7 @@ export default function Header() {
                   className="object-contain"
                   priority
                   data-test="header-logo-image"
+                  sizes="(max-width: 640px) 80px, (max-width: 768px) 90px, (max-width: 1024px) 100px, (max-width: 1280px) 110px, 120px"
                 />
               </div>
             )}

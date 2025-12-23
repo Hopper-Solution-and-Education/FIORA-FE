@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { CURRENCY } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { cn } from '@/shared/utils';
-import { formatCurrencyNumber, RoundingMode } from '@/shared/utils/currencyFormat';
+import { formatCurrencyNumber, RoundingMode } from '@/shared/utils/currency';
 import { useAppSelector } from '@/store';
 import { debounce } from 'lodash';
 import { useCallback, useMemo } from 'react';

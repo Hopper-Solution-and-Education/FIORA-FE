@@ -1,11 +1,7 @@
 import GlobalFilter from '@/components/common/filters/GlobalFilter';
 import MultiSelectFilter from '@/components/common/filters/MultiSelectFilter';
 import NumberRangeFilter from '@/components/common/filters/NumberRangeFilter';
-import {
-  DynamicFilterGroup,
-  FilterColumn,
-  FilterComponentConfig,
-} from '@/shared/types/filter.types';
+import { DynamicFilterGroup, FilterColumn, FilterComponentConfig } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   DEFAULT_MAX_AMOUNT,

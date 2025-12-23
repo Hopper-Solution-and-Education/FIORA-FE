@@ -1,4 +1,4 @@
-import { iconOptions } from '@/shared/constants/data';
+import { iconOptions } from '@/shared/constants';
 import { CategoryType } from '@prisma/client';
 import * as yup from 'yup';
 
@@ -60,10 +60,10 @@ const defaultUpdateCategoryValues = {
 // * 3. Delete Category Schema
 
 export {
-  validateNewCategorySchema,
-  validateUpdateCategorySchema,
   defaultNewCategoryValues,
   defaultUpdateCategoryValues,
+  validateNewCategorySchema,
+  validateUpdateCategorySchema,
 };
 export type NewCategoryDefaultValues = yup.InferType<typeof validateNewCategorySchema>;
 export type UpdateCategoryDefaultValues = yup.InferType<typeof validateUpdateCategorySchema>;

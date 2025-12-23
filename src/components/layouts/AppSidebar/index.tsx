@@ -1,7 +1,7 @@
 'use client';
 import growthbook from '@/config/growthbook/growthbook';
 import { NavItem } from '@/features/home/types/Nav.types';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { ICON_SIZE } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import {
   ChevronRight,
@@ -42,13 +42,15 @@ import {
   useSidebar,
 } from '../../ui/sidebar';
 
+import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import { SectionTypeEnum } from '@/features/landing/constants';
 import { useGetSection } from '@/features/landing/hooks/useGetSection';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import useMatchBreakpoint from '@/shared/hooks/useMatchBreakpoint';
-import HopperLogo from '@public/images/logo.jpg';
+import FIORALogo from '@public/images/logo.jpg';
+import packageJson from '../../../../package.json';
 import { helpItems, menuSettingItems } from '../DashboardHeader/utils';
 import { filterNavItems as filterNavItemsUtil, isItemActive as isItemActiveUtil } from './utils';
 
@@ -136,7 +138,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
               {isMobile ? (
                 <div className={`relative transition-all duration-300 overflow-hidden h-35 w-full`}>
                   <Image
-                    src={section?.medias[0]?.media_url || profile?.logoUrl || HopperLogo}
+                    src={section?.medias[0]?.media_url || profile?.logoUrl || FIORALogo}
                     alt="FIORA"
                     width={250}
                     height={250}
@@ -150,7 +152,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                     ${open ? 'w-full h-35 ' : 'w-full h-14 md:h-18'}`}
                 >
                   <Image
-                    src={profile?.logoUrl || section?.medias[0]?.media_url || HopperLogo}
+                    src={profile?.logoUrl || section?.medias[0]?.media_url || FIORALogo}
                     alt="FIORA"
                     width={250}
                     height={250}
@@ -256,6 +258,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
+
           {isTablet ||
             (isMobile && (
               <SidebarFooter>
@@ -365,6 +368,33 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
                 </SidebarMenu>
               </SidebarFooter>
             ))}
+
+          {/* Version Display */}
+          <SidebarFooter className="border-t border-sidebar-border/50 p-2">
+            <div
+              className={cn(
+                'flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors',
+                open ? 'bg-muted/40' : 'justify-center',
+              )}
+            >
+              <CommonTooltip content={`v${packageJson.version}`}>
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border bg-background text-[10px] font-bold shadow-sm">
+                  V
+                </div>
+              </CommonTooltip>
+              {open && (
+                <div className="flex flex-col overflow-hidden">
+                  <span className="truncate text-[11px] font-medium leading-none text-sidebar-foreground/70">
+                    Version
+                  </span>
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {packageJson.version}
+                  </span>
+                </div>
+              )}
+            </div>
+          </SidebarFooter>
+
           <SidebarRail className="!after:hidden" />
         </Sidebar>
       </div>

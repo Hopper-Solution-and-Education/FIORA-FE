@@ -1,9 +1,7 @@
 'use client';
 
 import { ChartSkeleton } from '@/components/common/organisms';
-import { COLORS } from '@/shared/constants/chart';
-import { RouteEnum } from '@/shared/constants/RouteEnum';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { COLORS, ICON_SIZE, RouteEnum } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { Currency } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';

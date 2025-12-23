@@ -3,10 +3,14 @@
 import { useAppDispatch } from '@/store';
 import { useEffect } from 'react';
 import { resetColumns, setColumnConfig } from '../../slices';
-import { loadColumnConfigFromStorage } from '../../slices/persist';
+import { loadColumnConfigFromStorage, saveColumnConfigToStorage } from '../../slices/persist';
 import { DispatchTableProvider, TableProvider } from '../context';
 import { useWalletSetting } from '../hooks';
 import { WalletSettingTable, WalletSettingTopBarAction } from '../organisms';
+import {
+  WALLET_SETTING_TABLE_COLUMN_CONFIG,
+  WalletSettingTableColumnKey,
+} from '../types/setting.type';
 
 /**
  * Main wallet setting page component
@@ -20,11 +24,42 @@ const WalletSetting = () => {
   useEffect(() => {
     // Load saved column configuration from localStorage
     const config = loadColumnConfigFromStorage();
-    if (config && config.Type) {
-      // Only use saved config if it has the Type column
-      dispatch(setColumnConfig(config));
+
+    if (config) {
+      // Check if all required column keys are present
+      const requiredKeys = Object.keys(
+        WALLET_SETTING_TABLE_COLUMN_CONFIG,
+      ) as WalletSettingTableColumnKey[];
+      const loadedKeys = Object.keys(config) as WalletSettingTableColumnKey[];
+
+      // Find missing keys and redundant keys
+      const missingKeys = requiredKeys.filter((key) => !loadedKeys.includes(key));
+      const redundantKeys = loadedKeys.filter((key) => !requiredKeys.includes(key));
+
+      if (missingKeys.length > 0 || redundantKeys.length > 0) {
+        // Remove redundant keys from loaded config
+        const cleanedConfig = Object.fromEntries(
+          Object.entries(config).filter(([key]) =>
+            requiredKeys.includes(key as WalletSettingTableColumnKey),
+          ),
+        );
+
+        // Merge with default config to add missing fields
+        const updatedConfig = {
+          ...WALLET_SETTING_TABLE_COLUMN_CONFIG,
+          ...cleanedConfig,
+        };
+
+        // Save updated config to storage
+        saveColumnConfigToStorage(updatedConfig);
+        dispatch(setColumnConfig(updatedConfig));
+      } else {
+        // All required keys are present and no redundant keys, use loaded config as-is
+        dispatch(setColumnConfig(config));
+      }
     } else {
-      // Force reset to default config with Type column
+      // No saved config, use default and save it
+      saveColumnConfigToStorage(WALLET_SETTING_TABLE_COLUMN_CONFIG);
       dispatch(resetColumns());
     }
   }, [dispatch]);

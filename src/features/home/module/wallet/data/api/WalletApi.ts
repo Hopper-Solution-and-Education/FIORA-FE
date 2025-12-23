@@ -1,14 +1,15 @@
 import type { IHttpClient } from '@/config';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { ApiEndpointEnum } from '@/shared/constants';
 import { _PaginationResponse, Currency } from '@/shared/types';
 import { routeConfig } from '@/shared/utils/route';
 import { inject, injectable } from 'inversify';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { DepositRequestStatus } from '../../domain/enum';
 import type { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import type { GetPackageFXPaginatedRequest } from '../dto/request/GetPackageFXPaginatedRequest';
 import type { GetWalletByTypeRequest } from '../dto/request/GetWalletRequest';
 import type { DepositRequestResponse } from '../dto/response/DepositRequestResponse';
-import type { PackageFXResponse } from '../dto/response/PackageFXResponse';
+import type { PackageFXPaginatedResponse } from '../dto/response/PackageFXResponse';
 import type { WalletResponse, WalletsResponse } from '../dto/response/WalletResponse';
 import type { IWalletApi } from './IWalletApi';
 
@@ -32,8 +33,33 @@ export class WalletApi implements IWalletApi {
     );
   }
 
-  getAllPackageFX(): Promise<PackageFXResponse> {
-    return this.httpClient.get<PackageFXResponse>(routeConfig(ApiEndpointEnum.WalletPackage));
+  getAllPackageFX(): Promise<PackageFXPaginatedResponse> {
+    return this.httpClient.get<PackageFXPaginatedResponse>(
+      routeConfig(ApiEndpointEnum.WalletPackage),
+    );
+  }
+
+  getPackageFXPaginated(
+    request: GetPackageFXPaginatedRequest,
+  ): Promise<PackageFXPaginatedResponse> {
+    const queryParams: Record<string, string | number> = {};
+
+    if (request.sortBy) {
+      queryParams.sortBy = JSON.stringify(request.sortBy);
+    }
+    if (request.page) {
+      queryParams.page = request.page;
+    }
+    if (request.limit) {
+      queryParams.limit = request.limit;
+    }
+    if (request.search) {
+      queryParams.search = request.search;
+    }
+
+    return this.httpClient.get<PackageFXPaginatedResponse>(
+      routeConfig(ApiEndpointEnum.WalletPackage, {}, queryParams),
+    );
   }
 
   createDepositRequest(

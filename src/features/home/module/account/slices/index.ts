@@ -1,5 +1,4 @@
-import { Response } from '@/shared/types';
-import { FilterCriteria } from '@/shared/types/filter.types';
+import { FilterCriteria, Response } from '@/shared/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   createAccount,

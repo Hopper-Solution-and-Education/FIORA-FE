@@ -1,5 +1,5 @@
 import ModuleAccessLayout from '@/components/layouts/access-layout/ModuleAccessLayout';
-import { USER_ROLES } from '@/shared/constants/featuresFlags';
+import { USER_ROLES } from '@/shared/constants';
 import { Metadata } from 'next';
 import React from 'react';
 

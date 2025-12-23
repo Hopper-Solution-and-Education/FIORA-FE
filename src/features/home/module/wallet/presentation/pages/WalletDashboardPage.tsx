@@ -1,7 +1,5 @@
 'use client';
 
-import { SendingFXForm } from '@/features/sending';
-import { WithdrawFXForm } from '@/features/wallet-withdraw/presentation/views';
 import { WalletBarChart, WalletOverview, WalletTopbarAction } from '../organisms';
 
 const WalletDashboardPage = () => {
@@ -10,8 +8,6 @@ const WalletDashboardPage = () => {
       <WalletTopbarAction />
       <WalletOverview />
       <WalletBarChart />
-      <SendingFXForm />
-      <WithdrawFXForm />
     </div>
   );
 };

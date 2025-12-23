@@ -9,8 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { COLORS } from '@/shared/constants/chart';
-import { ICON_SIZE } from '@/shared/constants/size';
+import { COLORS, ICON_SIZE } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
 import { useAppSelector } from '@/store';
 import { ArrowUpDown } from 'lucide-react';
