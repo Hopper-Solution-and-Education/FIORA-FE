@@ -15,7 +15,7 @@ import { helpItems } from '../utils';
 export default function HelpCenter() {
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild data-test="help-icon">
         <div>
           <NavItem
             label="Helps"
@@ -32,12 +32,14 @@ export default function HelpCenter() {
         align="end"
         sideOffset={8}
         className="p-4 grid grid-cols-5 gap-4 border-border/50 shadow-lg w-[300px] bg-background/95 backdrop-blur-sm"
+        data-test="help-dropdown"
       >
         {helpItems.map((item, index) => (
           <CommonTooltip content={item.label} key={index}>
             <Link
               href={item.url}
               className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105"
+              data-test={`help-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <item.icon
                 size={ICON_SIZE.MD}

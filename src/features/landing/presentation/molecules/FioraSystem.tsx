@@ -78,6 +78,7 @@ const OrbitalCategoryLabel = ({
               height: `${scaledCategoryDotSize}px`,
               cursor: 'pointer',
             }}
+            data-test={`fiora-system-orbit-category-label-${label.replace(/\s+/g, '-').toLowerCase()}`}
           >
             {iconSrc &&
               (iconSrc.startsWith('http') ? (
@@ -87,9 +88,10 @@ const OrbitalCategoryLabel = ({
                   width={scaledCategoryDotSize}
                   height={scaledCategoryDotSize}
                   className="w-full h-full object-contain"
+                  data-test="orbit-category-icon"
                 />
               ) : (
-                <Icon className="w-[60%] h-[60%] text-white" />
+                <Icon className="w-[60%] h-[60%] text-white" data-test="orbit-category-icon" />
               ))}
           </div>
         </TooltipTrigger>
@@ -158,11 +160,17 @@ export const FioraSystem = () => {
   const fioraLogo = section?.medias?.[0]?.media_url;
 
   return (
-    <section className="font-sans pt-8 sm:pt-12 md:pt-0 lg:pt-0 lg:mt-2">
+    <section
+      className="font-sans pt-8 sm:pt-12 md:pt-0 lg:pt-0 lg:mt-2"
+      data-test="fiora-system-section"
+    >
       <div className="mx-auto">
         <div>
           <div className="mx-auto max-w-3xl text-center -mb-2">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
+            <h1
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold"
+              data-test="fiora-system-title"
+            >
               {section?.name}
             </h1>
           </div>
@@ -171,6 +179,7 @@ export const FioraSystem = () => {
             <div
               ref={containerRef}
               className="relative flex items-center justify-center w-full max-w-[1200px] aspect-square mx-auto overflow-hidden"
+              data-test="fiora-system-diagram"
             >
               <motion.div
                 className="absolute flex flex-col items-center justify-center bg-white rounded-full shadow-lg z-10"
@@ -182,6 +191,7 @@ export const FioraSystem = () => {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
+                data-test="fiora-system-center-logo"
               >
                 {fioraLogo ? (
                   fioraLogo.startsWith('http') ? (
@@ -191,6 +201,7 @@ export const FioraSystem = () => {
                       width={120 * scaleFactor}
                       height={120 * scaleFactor}
                       className="rounded-full object-contain"
+                      data-test="fiora-system-logo"
                     />
                   ) : (
                     <Icons.dashboard className="w-[100%] h-[100%] text-white" />
@@ -202,6 +213,7 @@ export const FioraSystem = () => {
                     width={120 * scaleFactor}
                     height={120 * scaleFactor}
                     className="rounded-full object-contain"
+                    data-test="fiora-system-logo"
                   />
                 )}
               </motion.div>
@@ -236,6 +248,7 @@ export const FioraSystem = () => {
                     }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: orbit.speed * 1.5, repeat: Infinity, ease: 'linear' }}
+                    data-test={`fiora-system-orbit-${orbit.id}`}
                   >
                     <circle
                       cx={center}
@@ -254,7 +267,13 @@ export const FioraSystem = () => {
 
               {scaledOrbitLevels.map((orbit) =>
                 orbit.items.map((item) => (
-                  <OrbitalItem key={item.id} item={item} orbit={orbit} scaleFactor={scaleFactor} />
+                  <OrbitalItem
+                    key={item.id}
+                    item={item}
+                    orbit={orbit}
+                    scaleFactor={scaleFactor}
+                    data-test={`fiora-system-orbit-item-${item.id}`}
+                  />
                 )),
               )}
 
@@ -269,6 +288,7 @@ export const FioraSystem = () => {
                       height: `${ring.radius * 2}px`,
                       boxShadow: `0 0 ${spreadRadius}px 5px rgba(117, 117, 117, 0.2)`,
                     }}
+                    data-test={`fiora-system-shadow-ring-${ring.id}`}
                   />
                 );
               })}

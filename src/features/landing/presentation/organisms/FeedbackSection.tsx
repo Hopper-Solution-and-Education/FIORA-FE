@@ -19,7 +19,7 @@ export const FeedbackSection = () => {
   // Skeleton Component for the new review card UI
   const SkeletonReview = () => (
     // Adjusted max-w and h to match the new card size
-    <CarouselItem className="basis-full px-1 sm:px-2">
+    <CarouselItem className="basis-full px-1 sm:px-2" data-test="feedback-skelenton-item">
       <Card className="w-full max-w-[950px] h-[300px] mx-auto shadow-md flex rounded-xl">
         <CardContent className="p-4 flex flex-col justify-between w-1/3">
           {/* Reviewer Info Skeleton */}
@@ -59,18 +59,20 @@ export const FeedbackSection = () => {
   );
 
   return (
-    <section className="my-8 sm:my-10 w-full">
+    <section className="my-8 sm:my-10 w-full" data-test="feedback-section">
       <div className="w-full mx-auto">
         <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-8">
           {isLoading ? (
             <div
               className="h-8 sm:h-10 md:h-12 w-1/4 sm:w-1/3 mx-auto bg-gray-200 rounded animate-pulse mb-4 sm:mb-6"
               data-aos="fade-up"
+              data-test="feedback-section-title-loading"
             />
           ) : (
             <h1
               data-aos="fade-up"
               className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-pretty mb-4 sm:mb-6"
+              data-test="feedback-section-title"
             >
               {section?.name}
             </h1>
@@ -78,8 +80,8 @@ export const FeedbackSection = () => {
         </div>
 
         {isLoading ? (
-          <Carousel className="w-full">
-            <CarouselContent>
+          <Carousel className="w-full" data-test="feedback-loading">
+            <CarouselContent data-test="feedback-content-loading">
               {Array.from({ length: 4 }).map((_, index) => (
                 <SkeletonReview key={index} />
               ))}
@@ -96,28 +98,52 @@ export const FeedbackSection = () => {
               plugins={[autoplayRef.current]}
               onMouseEnter={() => autoplayRef.current.stop()}
               onMouseLeave={() => autoplayRef.current.play()}
+              data-test="feedback-carousel"
             >
-              <CarouselContent>
+              <CarouselContent data-test="feedback-carousel-content">
                 {section?.medias && section.medias.length > 0 ? (
                   section.medias.map((media, index) => {
                     return (
-                      <CarouselItem key={media.id ?? index} className="basis-full">
-                        <Card className="w-full max-w-[1300px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0">
+                      <CarouselItem
+                        key={media.id ?? index}
+                        className="basis-full"
+                        data-test={`feedback-card-item-${index}`}
+                      >
+                        <Card
+                          className="w-full max-w-[1300px] min-h-[350px] h-auto mx-auto shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row rounded-xl px-2 md:px-8 lg:px-16 py-4 md:py-8 gap-4 md:gap-0"
+                          data-test={`feedback-card-container-${index}`}
+                        >
                           {/* CardContent: Reviewer info and review */}
-                          <CardContent className="flex flex-col gap-4 w-full md:w-2/5 justify-center items-center md:items-start px-2 md:px-6 lg:px-10 py-4 md:py-10">
-                            <div className="flex flex-col sm:flex-row items-center md:items-start w-full gap-4">
+                          <CardContent
+                            className="flex flex-col gap-4 w-full md:w-2/5 justify-center items-center md:items-start px-2 md:px-6 lg:px-10 py-4 md:py-10"
+                            data-test={`feedback-card-content-${index}`}
+                          >
+                            <div
+                              className="flex flex-col sm:flex-row items-center md:items-start w-full gap-4"
+                              data-test={`feedback-card-reviewer-info-${index}`}
+                            >
                               <Image
                                 src={media.mediaReviewUser?.media_user_avatar || ''}
                                 alt="Reviewer Avatar"
                                 width={120}
                                 height={120}
                                 className="rounded-full object-cover flex-shrink-0 w-[120px] h-[120px] sm:w-[120px] sm:h-[120px] md:w-[120px] md:h-[120px] lg:w-[120px] lg:h-[120px]"
+                                data-test={`feedback-card-avatar-${index}`}
                               />
-                              <div className="flex flex-col items-center md:items-start gap-2 w-full mt-4">
-                                <h3 className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl text-center md:text-left">
+                              <div
+                                className="flex flex-col items-center md:items-start gap-2 w-full mt-4"
+                                data-test={`feedback-card-reviewer-details-${index}`}
+                              >
+                                <h3
+                                  className="font-bold text-base sm:text-lg md:text-xl lg:text-2xl text-center md:text-left"
+                                  data-test={`feedback-card-reviewer-name-${index}`}
+                                >
                                   {media.mediaReviewUser?.media_user_name}
                                 </h3>
-                                <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 text-center md:text-left">
+                                <p
+                                  className="text-xs sm:text-sm md:text-base text-gray-600 mb-1 text-center md:text-left"
+                                  data-test={`feedback-card-reviewer-title-${index}`}
+                                >
                                   {media.mediaReviewUser?.media_user_title}
                                 </p>
                                 <div className="flex items-center gap-1 sm:gap-2">
@@ -125,6 +151,7 @@ export const FeedbackSection = () => {
                                     <StarIcon
                                       key={idx}
                                       className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-yellow-400"
+                                      data-test={`feedback-card-star-${index}-${idx}`}
                                     />
                                   ))}
                                 </div>
@@ -139,13 +166,17 @@ export const FeedbackSection = () => {
                             </div>
                           </CardContent>
                           {/* Media section */}
-                          <div className="w-full md:w-3/5 p-2 md:p-6 lg:p-10 flex items-center justify-center">
+                          <div
+                            className="w-full md:w-3/5 p-2 md:p-6 lg:p-10 flex items-center justify-center"
+                            data-test={`feedback-card-media-${index}`}
+                          >
                             {media.media_type === MediaType.EMBEDDED && media.embed_code ? (
                               <div
                                 className="w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] rounded-xl overflow-hidden"
                                 dangerouslySetInnerHTML={{
                                   __html: `<style>iframe { width: 100% !important; height: 100% !important; border: none; }</style>${media.embed_code}`,
                                 }}
+                                data-test={`feedback-card-embed-${index}`}
                               />
                             ) : (
                               <div className="w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] flex items-center justify-center bg-gray-100 rounded-xl">
@@ -158,7 +189,7 @@ export const FeedbackSection = () => {
                     );
                   })
                 ) : (
-                  <div className="text-center py-8 sm:py-10 w-full">
+                  <div className="text-center py-8 sm:py-10 w-full" data-test="feedback-no-reviews">
                     <p className="text-gray-500 text-sm sm:text-base">
                       No reviews available at the moment.
                     </p>
