@@ -5,10 +5,12 @@ const OrbitalItem = ({
   item,
   orbit,
   scaleFactor,
+  ...props
 }: {
   item: any;
   orbit: any;
   scaleFactor: number;
+  [key: string]: any;
 }) => {
   const angle = useMotionValue(item.initialAngle);
 
@@ -45,6 +47,7 @@ const OrbitalItem = ({
         x: x,
         y: y,
       }}
+      {...props}
     >
       <div
         className="bg-green-800 rounded-full shadow-xl -translate-x-1/2 -translate-y-1/2 relative flex items-center justify-center overflow-hidden"

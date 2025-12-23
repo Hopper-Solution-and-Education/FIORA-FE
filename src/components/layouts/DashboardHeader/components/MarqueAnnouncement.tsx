@@ -4,9 +4,15 @@ interface MarqueeProps {
   children: React.ReactNode;
   speed?: number; // px per second
   className?: string;
+  'data-test'?: string;
 }
 
-const MarqueeAnnouncement: React.FC<MarqueeProps> = ({ children, speed = 90, className }) => {
+const MarqueeAnnouncement: React.FC<MarqueeProps> = ({
+  children,
+  speed = 90,
+  className,
+  'data-test': DataTest,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
@@ -30,6 +36,7 @@ const MarqueeAnnouncement: React.FC<MarqueeProps> = ({ children, speed = 90, cla
       ref={containerRef}
       className={`overflow-hidden relative w-full ${className || ''}`}
       style={{ minHeight: '1.5rem' }}
+      data-test={DataTest}
     >
       <div
         ref={textRef}
