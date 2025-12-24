@@ -25,6 +25,7 @@ const initialState: WalletState = {
   frozenAmount: null,
   isShowSendingFXForm: false,
   isShowWithdrawFXForm: false,
+  packageFXPagination: null,
 };
 
 const walletSlice = createSlice({
@@ -122,7 +123,16 @@ const walletSlice = createSlice({
       })
       .addCase(getPackageFXAsyncThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.packageFX = action.payload;
+        const { packages, pagination, append } = action.payload;
+
+        // Append or replace packages based on the append flag
+        if (append && state.packageFX) {
+          state.packageFX = [...state.packageFX, ...packages];
+        } else {
+          state.packageFX = packages;
+        }
+
+        state.packageFXPagination = pagination;
         state.error = null;
       })
       .addCase(getPackageFXAsyncThunk.rejected, (state, action) => {

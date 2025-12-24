@@ -87,7 +87,7 @@ const Loading: FC<LoadingProps> = ({
         initial="hidden"
         animate="visible"
       >
-        <div className="relative">
+        <div className="relative" data-test="loading">
           {spinners[spinnerType]}
           {/* Optional glowing effect */}
           <div

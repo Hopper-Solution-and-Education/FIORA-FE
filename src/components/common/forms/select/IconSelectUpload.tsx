@@ -64,10 +64,14 @@ const IconSelectUpload = ({
         </label>
       )}
 
-      <Tabs value={selectedTab} onValueChange={handleOnTabChange}>
+      <Tabs value={selectedTab} onValueChange={handleOnTabChange} data-test="icon-select-tabs">
         <TabsList>
-          <TabsTrigger value="dropdown">Select Icon</TabsTrigger>
-          <TabsTrigger value="uploader">Upload Icon</TabsTrigger>
+          <TabsTrigger value="dropdown" data-test="icon-select-tab">
+            Select Icon
+          </TabsTrigger>
+          <TabsTrigger value="uploader" data-test="icon-upload-tab">
+            Upload Icon
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="uploader">

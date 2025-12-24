@@ -54,7 +54,11 @@ const TextareaField: React.FC<TextareaFieldProps> = ({
         data-test={props['data-test'] || (name ? `${name}-textarea` : undefined)}
         {...props}
       />
-      {error && <p className="text-sm text-red-500">{error.message}</p>}
+      {error && (
+        <p data-test={name ? `${name}-error` : undefined} className="text-sm text-red-500">
+          {error.message}
+        </p>
+      )}
     </div>
   );
 };

@@ -16,7 +16,7 @@ const sections = [
   { value: 'banner', label: 'Banner', type: SectionTypeEnum.BANNER },
   { value: 'vision', label: 'Vision & Mission', type: SectionTypeEnum.VISION_MISSION },
   { value: 'system', label: 'System', type: SectionTypeEnum.SYSTEM },
-  { value: 'kps', label: 'KSP', type: SectionTypeEnum.KPS },
+  { value: 'ksp', label: 'KSP', type: SectionTypeEnum.KPS },
   { value: 'partners', label: 'Partners', type: SectionTypeEnum.PARTNER_LOGO },
   { value: 'review', label: 'Review', type: SectionTypeEnum.REVIEW },
   { value: 'footer', label: 'Footer', type: SectionTypeEnum.FOOTER },
@@ -40,7 +40,6 @@ export default function MediaDashboard() {
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
       {(isLoadingSaveChange || isLoading) && <Loading />}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {isMobile ? (
           <div className="mb-4">
@@ -57,6 +56,7 @@ export default function MediaDashboard() {
               <TabsTrigger
                 key={section.value}
                 value={section.value}
+                data-test={section.value}
                 className="flex-1 min-w-[100px] text-center rounded-md bg-transparent hover:bg-gray-100 active:text-white transition-colors duration-200"
               >
                 {section.label}

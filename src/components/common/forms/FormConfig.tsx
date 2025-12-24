@@ -74,7 +74,12 @@ const FormConfig = <T extends yup.AnyObject>({
       <CommonTooltip content={formState.isSubmitting ? 'Submiting...' : 'Submit'}>
         <Button
           type="submit"
-          disabled={!formState.isValid || formState.isSubmitting || formState.isValidating}
+          disabled={
+            !formState.isValid ||
+            formState.isSubmitting ||
+            formState.isValidating ||
+            !formState.isDirty
+          }
           className="w-32 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200"
           data-test="form-submit-button"
         >

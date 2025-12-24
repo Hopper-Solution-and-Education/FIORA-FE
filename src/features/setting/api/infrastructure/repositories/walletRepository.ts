@@ -63,24 +63,35 @@ class WalletRepository implements IWalletRepository {
     sortBy = { createdAt: 'desc' },
     page,
     limit,
+    search,
   }: {
     sortBy?: Record<string, 'asc' | 'desc'>;
     page?: number;
     limit?: number;
+    search?: string;
   }): Promise<{ data: PackageFX[]; total: number; page: number; limit: number }> {
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.max(1, Math.min(Number(limit) || 20, 100));
     const orderBy: Record<string, 'asc' | 'desc'> = {};
+    const where: Record<string, any> = {};
     Object.entries(sortBy || {}).forEach(([key, value]) => {
       orderBy[key] = value;
     });
+    if (search) {
+      where.fxAmount = {
+        equals: Number(search),
+      };
+    }
     const [packages, total] = await Promise.all([
       this._prisma.packageFX.findMany({
         skip: (safePage - 1) * safeLimit,
         take: safeLimit,
         orderBy,
+        where,
       }),
-      this._prisma.packageFX.count(),
+      this._prisma.packageFX.count({
+        where,
+      }),
     ]);
     const data: PackageFXWithAttachments[] = await Promise.all(
       packages.map(async (pkg: PackageFX): Promise<PackageFXWithAttachments> => {

@@ -34,25 +34,36 @@ const KSPSection = () => {
 
   if (isLoading) {
     return (
-      <section className="py-6 sm:py-8">
-        <div className="mx-auto max-w-3xl text-center mt-8 sm:mt-10">
-          <h1 className={`my-4 sm:my-6 text-2xl sm:text-3xl md:text-5xl font-bold text-pretty`}>
+      <section className="py-6 sm:py-8" data-test="ksp-loading-section">
+        <div
+          className="mx-auto max-w-3xl text-center mt-8 sm:mt-10"
+          data-test="ksp-loading-container"
+        >
+          <h1
+            className={`my-4 sm:my-6 text-2xl sm:text-3xl md:text-5xl font-bold text-pretty`}
+            data-test="ksp-loading-title"
+          >
             Why FIORA?
           </h1>
-          <p>Loading...</p>
+          <p data-test="ksp-loading-text">Loading...</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="sm:pt-10 font-inter">
-      <div className="mx-auto max-w-6xl text-center pt-6">
-        <h1 data-aos="fade-up" className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold">
+    <section className="sm:pt-10 font-inter" data-test="ksp-section">
+      <div className="mx-auto max-w-6xl text-center pt-6" data-test="ksp-title-container">
+        <h1
+          data-aos="fade-up"
+          className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold"
+          data-test="ksp-title"
+        >
           {section?.name}
         </h1>
       </div>
       <Carousel
+        data-test="ksp-carousel"
         className={`mx-auto  ${isMobile ? 'max-w-[100vw]' : 'max-w-[1300px]'}`}
         opts={{
           loop: true,
@@ -69,7 +80,11 @@ const KSPSection = () => {
           }),
         ]}
       >
-        <CarouselContent className="flex" style={{ height: itemHeight }}>
+        <CarouselContent
+          className="flex"
+          style={{ height: itemHeight }}
+          data-test="ksp-carousel-content"
+        >
           {section?.medias?.map((item, index) => (
             <CarouselItem
               key={item.id ?? index}
@@ -79,6 +94,7 @@ const KSPSection = () => {
                 maxWidth: itemWidth,
                 height: itemHeight,
               }}
+              data-test={`ksp-item-${index}`}
             >
               <FlippingItemContent
                 item={item as unknown as Media}
@@ -87,6 +103,7 @@ const KSPSection = () => {
                   maxWidth: itemWidth,
                   height: itemHeight,
                 }}
+                data-test={`ksp-item-flip-content-${index}`}
               />
             </CarouselItem>
           ))}
@@ -109,12 +126,17 @@ const FlippingItemContent = ({
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <Link href={item.redirect_url || ''} target="_blank">
+    <Link
+      href={item.redirect_url || ''}
+      target="_blank"
+      data-test={`flipping-item-link-${item.id}`}
+    >
       <div
         className={`w-full rounded-lg shadow-md border relative overflow-hidden card-container cursor-pointer ${className} `}
         style={{ perspective: '1000px', ...style }} // Added perspective to the container for 3D effect
         onMouseEnter={() => setIsFlipped(true)}
         onMouseLeave={() => setIsFlipped(false)}
+        data-test="flipping-item-content"
       >
         <motion.div
           className="card w-full h-full relative"
@@ -123,6 +145,7 @@ const FlippingItemContent = ({
           style={{
             transformStyle: 'preserve-3d',
           }}
+          data-test="flipping-item-motion"
         >
           {/* Front Side - pass item data */}
           <div
@@ -130,6 +153,7 @@ const FlippingItemContent = ({
             style={{
               backfaceVisibility: 'hidden',
             }}
+            data-test="flipping-item-front"
           >
             <CardFront item={item} />
           </div>
@@ -141,6 +165,7 @@ const FlippingItemContent = ({
               backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
             }}
+            data-test="flipping-item-back"
           >
             <CardBack item={item} />
           </div>
@@ -152,7 +177,7 @@ const FlippingItemContent = ({
 
 const CardFront = ({ item }: { item: Media }) => {
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" data-test="card-front-container">
       {item.media_url ? (
         <Image
           src={item.media_url}
@@ -160,9 +185,13 @@ const CardFront = ({ item }: { item: Media }) => {
           className="w-full h-full object-cover rounded-lg"
           fill
           sizes="100%"
+          data-test={`card-front-image-${item.id}`}
         />
       ) : (
-        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+        <div
+          className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center"
+          data-test="card-front-placeholder"
+        >
           <ImageIcon />
         </div>
       )}
@@ -172,7 +201,7 @@ const CardFront = ({ item }: { item: Media }) => {
 
 const CardBack = ({ item }: { item: Media }) => {
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" data-test="card-back-container">
       {item.media_url_2 ? (
         <Image
           src={item.media_url_2}
@@ -180,9 +209,13 @@ const CardBack = ({ item }: { item: Media }) => {
           className="w-full h-full object-cover rounded-lg"
           fill
           sizes="100%"
+          data-test="card-back-image"
         />
       ) : (
-        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+        <div
+          className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center"
+          data-test="card-back-placeholder"
+        >
           <ImageIcon />
         </div>
       )}

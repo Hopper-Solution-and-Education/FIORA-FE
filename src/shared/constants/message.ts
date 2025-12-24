@@ -438,6 +438,17 @@ export enum Messages {
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
   // ───────────────────────────────
+  // Referral Campaign
+  // ───────────────────────────────
+  REFERRAL_CAMPAIGN_GET_SUCCESS = 'Get referral campaign successfully',
+  REFERRAL_CAMPAIGN_GET_FAIL = 'Get referral campaign fail!',
+  REFERRAL_CAMPAIGN_NOT_FOUND = 'Referral campaign not found',
+  REFERRAL_CAMPAIGN_UPSERT_SUCCESS = 'Update referral campaign successfully',
+  REFERRAL_CAMPAIGN_UPSERT_FAIL = 'Update referral campaign fail!',
+  // Validation
+  REFERRAL_CAMPAIGN_FORM_INVALID = 'Referral campaign form invalid',
+
+  // ───────────────────────────────
   // User & Auth
   // ───────────────────────────────
   INVALID_USER = 'Invalid user.',
@@ -454,7 +465,6 @@ export enum Messages {
   // General / Common
   // ───────────────────────────────
   INTERNAL_ERROR = 'An error occurred, please try again later',
-  MISSING_PARAMS_INPUT = 'Missing required parameters',
+  MISSING_PARAMS_INPUT = 'Missing required fields',
   METHOD_NOT_ALLOWED = 'Method not allowed',
-  VALIDATION_ERROR = 'Validation error.',
 }

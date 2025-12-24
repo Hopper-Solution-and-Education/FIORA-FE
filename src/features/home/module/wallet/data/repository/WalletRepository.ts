@@ -2,14 +2,14 @@ import { Currency } from '@/shared/types';
 import { inject, injectable } from 'inversify';
 import { WALLET_TYPES } from '../../di/walletDIContainer.type';
 import { DepositRequest } from '../../domain/entity/DepositRequest';
-import { PackageFX } from '../../domain/entity/PackageFX';
 import { Wallet } from '../../domain/entity/Wallet';
 import type { WalletType } from '../../domain/enum';
 import { DepositRequestStatus } from '../../domain/enum/DepositRequestStatus';
 import type { IWalletApi } from '../api';
 import { CreateDepositRequestDto } from '../dto/request/CreateDepositRequestDto';
+import { GetPackageFXPaginatedRequest } from '../dto/request/GetPackageFXPaginatedRequest';
 import { DepositRequestMapper } from '../mapper/DepositRequestMapper';
-import { PackageFXMapper } from '../mapper/PackageFXMapper';
+import { PackageFXMappedResult, PackageFXMapper } from '../mapper/PackageFXMapper';
 import WalletMapper from '../mapper/WalletMapper';
 import type { IWalletRepository } from './IWalletRepository';
 
@@ -31,8 +31,14 @@ export class WalletRepository implements IWalletRepository {
       .then(DepositRequestMapper.toDepositRequests);
   }
 
-  getAllPackageFX(): Promise<PackageFX[]> {
-    return this._walletApi.getAllPackageFX().then(PackageFXMapper.toPackageFXs);
+  getAllPackageFX(): Promise<PackageFXMappedResult> {
+    return this._walletApi.getAllPackageFX().then(PackageFXMapper.toPackageFXsWithPagination);
+  }
+
+  getPackageFXPaginated(request: GetPackageFXPaginatedRequest): Promise<PackageFXMappedResult> {
+    return this._walletApi
+      .getPackageFXPaginated(request)
+      .then(PackageFXMapper.toPackageFXsWithPagination);
   }
 
   createDepositRequest(data: CreateDepositRequestDto, currency: Currency): Promise<DepositRequest> {

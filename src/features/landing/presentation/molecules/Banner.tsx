@@ -14,15 +14,25 @@ export function Banner() {
   const { section, isError, isLoading } = useGetSection(SectionTypeEnum.BANNER);
 
   const BannerSkeleton = () => (
-    <Carousel className="w-full">
-      <CarouselContent className="flex">
+    <Carousel className="w-full" data-test="banner-skeleton">
+      <CarouselContent className="flex" data-test="banner-skeleton-content">
         {Array.from({ length: 3 }).map((_, index) => (
-          <CarouselItem key={index} className="flex-[0_0_100%]">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative w-full">
-                  <div className="w-full h-[800px] sm:h-[750px] md:h-[920px] lg:h-[1460px]">
-                    <Skeleton className="w-full h-full bg-gray-300 animate-pulse" />
+          <CarouselItem
+            key={index}
+            className="flex-[0_0_100%]"
+            data-test={`banner-skeleton-item-${index}`}
+          >
+            <Card data-test="banner-skeleton-card">
+              <CardContent className="p-0" data-test="banner-skeleton-card-content">
+                <div className="relative w-full" data-test="banner-skeleton-image-container">
+                  <div
+                    className="w-full h-[800px] sm:h-[750px] md:h-[920px] lg:h-[1460px]"
+                    data-test="banner-skeleton-image-wrapper"
+                  >
+                    <Skeleton
+                      className="w-full h-full bg-gray-300 animate-pulse"
+                      data-test="banner-skeleton-image"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -34,7 +44,7 @@ export function Banner() {
   );
 
   if (isLoading) return <BannerSkeleton />;
-  if (isError || !section) return <p>Error loading banners.</p>;
+  if (isError || !section) return <p data-test="banner-error">Error loading banners.</p>;
 
   return (
     <Carousel
@@ -48,18 +58,24 @@ export function Banner() {
         }),
       ]}
       className="w-full"
+      data-test="banner-section"
     >
-      <CarouselContent className="flex">
+      <CarouselContent className="flex" data-test="banner-content">
         {section?.medias.map((image, index) => {
           const isFirst = index === 0;
           return (
-            <CarouselItem key={image.id ?? index} className="flex-[0_0_100%]">
-              <Card>
-                <CardContent className="p-0 relative">
+            <CarouselItem
+              key={image.id ?? index}
+              className="flex-[0_0_100%]"
+              data-test={`banner-item-${index}`}
+            >
+              <Card data-test={`banner-card-${index}`}>
+                <CardContent className="p-0 relative" data-test={`banner-card-content-${index}`}>
                   <Link
                     target="_blank"
                     href={image.redirect_url || defaultURL}
                     className="block cursor-pointer"
+                    data-test={`banner-link-${index}`}
                   >
                     <div className="relative w-full">
                       <div className="w-full aspect-[16/9] md:aspect-[21/9]">
@@ -74,6 +90,7 @@ export function Banner() {
                           decoding="async"
                           sizes="(min-width: 1024px) 100vw, (min-width: 768px) 100vw, 100vw"
                           quality={70}
+                          data-test={`banner-image-${index}`}
                         />
                       </div>
                     </div>
