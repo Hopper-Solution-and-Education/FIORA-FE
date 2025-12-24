@@ -10,6 +10,7 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/shared/**/*.{js,ts,jsx,tsx,mdx}',
     './src/features/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/onborda/dist/**/*.{js,ts,jsx,tsx}',
   ],
   variants: {
     extend: {

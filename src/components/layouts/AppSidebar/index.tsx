@@ -134,6 +134,7 @@ export default function AppSidebar({ navItems, appLabel }: AppSideBarProps) {
             <div
               onClick={handlePressLogo}
               className="flex gap-3 text-sidebar-accent-foreground items-center cursor-pointer justify-center rounded-lg"
+              data-tour="homepage-logo"
             >
               {isMobile ? (
                 <div className={`relative transition-all duration-300 overflow-hidden h-35 w-full`}>

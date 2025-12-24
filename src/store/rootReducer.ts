@@ -1,3 +1,4 @@
+import acknowledgmentSlice from '@/features/acknowledgment/slides';
 import emailSlice from '@/features/email-template/store/slices/emailSlice';
 import financeControlSlice from '@/features/finance/report/slices';
 import { helpsCenterApi } from '@/features/helps-center/store/api/helpsCenterApi';
@@ -77,6 +78,7 @@ const reducer = {
   savingWallet: savingWalletSlice,
   limitData: limitDataSlice,
   catalogData: catalogDataSlice,
+  acknowledgment: acknowledgmentSlice,
 
   // RTK Query API slices
   [helpsCenterApi.reducerPath]: helpsCenterApi.reducer,

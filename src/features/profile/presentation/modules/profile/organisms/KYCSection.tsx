@@ -13,6 +13,7 @@ type KYCSectionProps = {
   className?: string;
   status?: EKYCStatus;
   eKycId?: string;
+  props?: any;
 };
 
 export const KYCSection: FC<KYCSectionProps> = ({
@@ -23,6 +24,7 @@ export const KYCSection: FC<KYCSectionProps> = ({
   className = '',
   status,
   eKycId = '',
+  ...props
 }) => {
   const { taxDocument, identificationDocument, bankAccount } = useKYCData({
     kycType,
@@ -34,7 +36,7 @@ export const KYCSection: FC<KYCSectionProps> = ({
 
   return (
     <>
-      <div className={`flex justify-between items-center ${className}`}>
+      <div className={`flex justify-between items-center ${className}`} {...props}>
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
           <p className="text-xs text-gray-500 my-2 flex items-center">

@@ -93,6 +93,7 @@ export default function FinanceSummary() {
     <div
       className="flex flex-col gap-1 w-full flex-grow md:flex-grow-0 cursor-pointer hover:opacity-90 transition-opacity"
       onClick={handleClick}
+      data-tour="homepage-finance-summary"
     >
       <CommonTooltip content="Go to Wallet Dashboard">
         <Bar

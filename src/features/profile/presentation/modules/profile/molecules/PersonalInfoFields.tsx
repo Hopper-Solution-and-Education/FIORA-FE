@@ -17,14 +17,16 @@ export type PersonalInfo = {
 type PersonalInfoFieldsProps = {
   control: Control<PersonalInfo>;
   hasReferrerCode?: boolean;
+  props?: any;
 };
 
 export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   control,
   hasReferrerCode = false,
+  ...props
 }) => {
   return (
-    <div className="mb-8">
+    <div className="mb-8" {...props}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}

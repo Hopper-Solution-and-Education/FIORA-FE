@@ -259,3 +259,9 @@ export enum EmailTemplateEnum {
   WITHDRAWAL_APPROVED_EMAIL_TEMPLATE_ID = 'a42b478c-0ba7-4bba-9a69-e10cdc5e9bc5',
   WITHDRAWAL_REJECTED_EMAIL_TEMPLATE_ID = '806deaf6-a528-4254-a3d7-2f6e8ba21d4c',
 }
+
+// ACKNOWLEDGMENT
+export enum AcknowledgmentFeatureKey {
+  HOMEPAGE = 'homepage_tour',
+  PROFILE = 'profile_tour',
+}

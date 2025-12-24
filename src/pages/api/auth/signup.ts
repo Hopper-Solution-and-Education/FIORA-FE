@@ -1,4 +1,5 @@
 import { prisma } from '@/config';
+import { createUserAcknowledgments } from '@/features/acknowledgment/infrastructure/services/acknowledgment.service';
 import { AccountUseCaseInstance } from '@/features/auth/application/use-cases/accountUseCase';
 import { createDefaultCategories } from '@/features/auth/application/use-cases/defaultCategories';
 import { UserUSeCaseInstance } from '@/features/auth/application/use-cases/userUseCase';
@@ -61,6 +62,16 @@ async function rollbackWallets(userId: string | null) {
   }
 }
 
+async function rollbackAcknowledgments(userId: string | null) {
+  if (!userId) return;
+  try {
+    await prisma.userAcknowledgment.deleteMany({ where: { userId } });
+    console.log(`Rolled back acknowledgments for user: ${userId}`);
+  } catch (error) {
+    console.error(`Failed to rollback acknowledgments for user ${userId}:`, error);
+  }
+}
+
 export default (req: NextApiRequest, res: NextApiResponse) =>
   errorHandler(
     async (request, response) => {
@@ -85,6 +96,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   let membershipProgressCreated = false;
   let categoriesCreated = false;
   let walletsCreated = false;
+  let acknowledgmentsCreated = false;
 
   try {
     // Step 1: Create user
@@ -178,6 +190,29 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
         .json(createResponse(RESPONSE_CODE.INTERNAL_SERVER_ERROR, Messages.WALLET_CREATE_FAILED));
     }
 
+    // Step 6: Create default acknowledgments
+    try {
+      await createUserAcknowledgments(createdUserId);
+      acknowledgmentsCreated = true;
+    } catch (acknowledgmentsError) {
+      console.error('Acknowledgments creation failed:', acknowledgmentsError);
+      // Rollback: Delete wallets, categories, membership progress, account, and user
+      await rollbackAcknowledgments(createdUserId);
+      await rollbackWallets(createdUserId);
+      await rollbackCategories(createdUserId);
+      await rollbackMembershipProgress(createdUserId);
+      await rollbackAccount(createdAccountId);
+      await rollbackUser(createdUserId);
+      return res
+        .status(RESPONSE_CODE.INTERNAL_SERVER_ERROR)
+        .json(
+          createResponse(
+            RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+            Messages.ACKNOWLEDGMENT_CREATE_FAILED,
+          ),
+        );
+    }
+
     // All steps successful
     return res
       .status(RESPONSE_CODE.CREATED)
@@ -185,6 +220,7 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
   } catch (error) {
     // Unexpected error - rollback everything that was created
     console.error('Unexpected error during signup:', error);
+    if (acknowledgmentsCreated && createdUserId) await rollbackAcknowledgments(createdUserId);
     if (walletsCreated && createdUserId) await rollbackWallets(createdUserId);
     if (categoriesCreated && createdUserId) await rollbackCategories(createdUserId);
     if (membershipProgressCreated && createdUserId) await rollbackMembershipProgress(createdUserId);

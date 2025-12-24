@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function NewsCenter() {
   return (
-    <Link href={RouteEnum.News}>
+    <Link href={RouteEnum.News} data-tour="homepage-news">
       <NavItem
         label="News"
         icon={

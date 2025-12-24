@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 const Rewards = () => {
   return (
-    <Link href={RouteEnum.WalletReferral}>
+    <Link href={RouteEnum.WalletReferral} data-tour="homepage-rewards">
       <NavItem
         label="Rewards"
         icon={

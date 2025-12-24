@@ -263,11 +263,13 @@ const ProfileTab: FC<ProfileTabProps> = ({
               kycType={EKYCType.CONTACT_INFORMATION}
               onNavigateToKYC={() => handleNavigateToKYC(KYC_ITEMS.CONTACT_INFORMATION.route)}
               status={getEKYCStatus(EKYCType.CONTACT_INFORMATION)}
+              data-tour="profile-personal-info-section"
             />
 
             <PersonalInfoFields
               control={control}
               hasReferrerCode={!!profile?.referrer_code && profile.referrer_code.trim().length > 0}
+              data-tour="profile-personal-info-details"
             />
 
             <KYCSection

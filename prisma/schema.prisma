@@ -55,6 +55,7 @@ model User {
   Referral                  Referral[]
   sessions                  Session[]
   transactions              Transaction[]            @relation("UserTransactions")
+  UserAcknowledgment        UserAcknowledgment[]
   authentication            UserAuthentication?
   UserNotification          UserNotification[]
   wallet                    Wallet[]                 @relation("UserWallet")
@@ -218,6 +219,7 @@ model Transaction {
   isExpired           Boolean              @default(false)
   membershipBenefitId String?              @db.Uuid
   commonId            String?              @db.Uuid
+  flowType            TransactionFlow?
   CronJobLog          CronJobLog[]         @relation("CronJobLogTransactions")
   productsRelation    ProductTransaction[] @relation("ProductTransactions")
   CommonSetting       CommonSetting?       @relation(fields: [commonId], references: [id])
@@ -269,8 +271,6 @@ model Partner {
   updatedBy    String?       @db.Uuid
   parentId     String?       @db.Uuid
   bankAccount  String?       @db.VarChar(255)
-  attachmentId String?       @unique @db.Uuid
-  Attachment   Attachment?   @relation(fields: [attachmentId], references: [id])
   parent       Partner?      @relation("ParentChildPartners", fields: [parentId], references: [id])
   children     Partner[]     @relation("ParentChildPartners")
   user         User          @relation("UserPartners", fields: [userId], references: [id])
@@ -616,7 +616,6 @@ model Attachment {
   IdentificationDocument_IdentificationDocument_fileFrontIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_fileFrontIdToAttachment")
   IdentificationDocument_IdentificationDocument_fileLocationIdToAttachment IdentificationDocument[] @relation("IdentificationDocument_fileLocationIdToAttachment")
   IdentificationDocument_IdentificationDocument_filePhotoIdToAttachment    IdentificationDocument[] @relation("IdentificationDocument_filePhotoIdToAttachment")
-  Partner                                                                  Partner?
 
   @@index([url])
   @@index([path])
@@ -974,6 +973,52 @@ model ReferralSetting {
   updatedBy         String?  @db.Uuid
 }
 
+model AcknowledgmentFeature {
+  id                 String               @id @db.Uuid
+  featureKey         String               @unique @db.VarChar(50)
+  description        String?              @db.VarChar(500)
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now()) @db.Timestamptz(0)
+  updatedAt          DateTime             @db.Timestamptz(0)
+  createdBy          String?              @db.Uuid
+  updatedBy          String?              @db.Uuid
+  AcknowledgmentStep AcknowledgmentStep[]
+  UserAcknowledgment UserAcknowledgment[]
+}
+
+model AcknowledgmentStep {
+  id                    String                @id @db.Uuid
+  featureId             String                @db.Uuid
+  stepOrder             Int
+  title                 String                @db.VarChar(50)
+  description           String?               @db.VarChar(500)
+  createdAt             DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt             DateTime              @db.Timestamptz(0)
+  createdBy             String?               @db.Uuid
+  updatedBy             String?               @db.Uuid
+  AcknowledgmentFeature AcknowledgmentFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([featureId, stepOrder])
+}
+
+model UserAcknowledgment {
+  id                    String                @id @db.Uuid
+  userId                String                @db.Uuid
+  featureId             String                @db.Uuid
+  isCompleted           Boolean               @default(false)
+  completedAt           DateTime?
+  createdAt             DateTime              @default(now()) @db.Timestamptz(0)
+  updatedAt             DateTime              @db.Timestamptz(0)
+  createdBy             String?               @db.Uuid
+  updatedBy             String?               @db.Uuid
+  AcknowledgmentFeature AcknowledgmentFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  User                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, featureId])
+  @@index([featureId])
+  @@index([userId])
+}
+
 enum BudgetType {
   Top
   Bot
@@ -1119,16 +1164,15 @@ enum emailType {
   KYC_REJECT
   KYC_SUCCESSFUL
   OTP
-  DEPOSIT_APPROVE
-  DEPOSIT_REJECT
+  DEPOPSIT_APPROVE
+  DEPOPSIT_REJECT
   WITHDRAW_APPROVE
   WITHDRAW_REJECT
-  FLEXI_INTEREST
-  MEMBERSHIP_CHANGE
-  WITHDRAW_OTP
   SENDING_OTP
   SENDING_SUCCESSFUL
-  RESET_PASSWORD_OTP
+  WITHDRAW_OTP
+  FLEXI_INTEREST
+  MEMBERSHIP_CHANGE
 }
 
 enum CronJobStatus {
@@ -1171,4 +1215,10 @@ enum ReferralStatus {
 enum FxRequestType {
   DEPOSIT
   WITHDRAW
+}
+
+enum TransactionFlow {
+  DEPOSIT
+  WITHDRAW
+  SENDING
 }

@@ -457,4 +457,9 @@ export enum Messages {
   GET_SUCCESS = 'Get successfully',
   UPDATE_SUCCESS = 'Update successfully',
   UPDATE_FAIL = 'Update fail!',
+
+  // ───────────────────────────────
+  // Acknowledgment
+  // ───────────────────────────────
+  ACKNOWLEDGMENT_CREATE_FAILED = 'Failed to create acknowledgment',
 }

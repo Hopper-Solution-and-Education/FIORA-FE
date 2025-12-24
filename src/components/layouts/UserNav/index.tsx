@@ -2,6 +2,7 @@
 
 import { SegmentProgressBar } from '@/components/common/atoms';
 import { Icons } from '@/components/Icon';
+import { resetAcknowledgment } from '@/features/acknowledgment/slides';
 import { useGetProfileQuery } from '@/features/profile/store/api/profileApi';
 import UserAvatar from '@/features/setting/module/user-management/presentation/atoms/UserAvatar';
 import { useGetUsersQuery } from '@/features/setting/module/user-management/store/api/userApi';
@@ -14,6 +15,7 @@ import {
   UserRole,
 } from '@/shared/constants';
 import { useCurrencyFormatter } from '@/shared/hooks';
+import { clearSkip } from '@/shared/utils/skipTour';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { getCurrentTierAsyncThunk } from '@/store/actions';
 import { LogOut } from 'lucide-react';
@@ -176,6 +178,8 @@ function UserNav() {
             <DropdownMenuItem
               onClick={async () => {
                 clearExchangeRateData();
+                clearSkip(); // Clear skip tour data
+                dispatch(resetAcknowledgment());
                 signOut();
               }}
               className="cursor-pointer"

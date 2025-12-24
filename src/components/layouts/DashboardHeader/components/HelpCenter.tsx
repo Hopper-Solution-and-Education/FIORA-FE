@@ -16,7 +16,7 @@ export default function HelpCenter() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <div>
+        <div data-tour="homepage-help-center">
           <NavItem
             label="Helps"
             icon={

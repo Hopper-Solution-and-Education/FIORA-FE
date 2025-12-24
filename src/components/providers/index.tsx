@@ -14,6 +14,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { PropsWithChildren } from 'react';
 import { SWRConfig } from 'swr';
 import { TooltipProvider } from '../ui/tooltip';
+import AcknowledgmentProvider from './AcknowledgmentProvider';
 import { AutoScrollTopProvider } from './AutoScrollTopProvider';
 import { ReduxProvider } from './ReduxProvider';
 
@@ -37,7 +38,8 @@ const Providers = ({ children }: PropsWithChildren) => {
                     <Toaster />
                     <Updater />
 
-                    {children}
+                    <AcknowledgmentProvider>{children}</AcknowledgmentProvider>
+
                     <SessionTimeoutModal />
                   </TooltipProvider>
                 </SessionProvider>

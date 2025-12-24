@@ -100,7 +100,7 @@ export function NotificationContent({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="relative">
+        <div className="relative" data-tour="homepage-notification">
           <NavItem
             label="Notifications"
             icon={
