@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { OtpState } from '@/shared/types';
 import { cn } from '@/shared/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type ChildProps = {
   state?: OtpState;
@@ -24,22 +24,44 @@ function SendOtpButton({
 }: ChildProps) {
   const [count, setCount] = useState<number>(0);
 
-  useEffect(() => {
-    if (count <= 0) return;
-    const timer = setInterval(() => {
-      setCount((prev) => (prev <= 1 ? 0 : prev - 1));
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start countdown
+  const startCountdown = () => {
+    setCount(countdown);
+
+    // Clear old interval
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setInterval(() => {
+      setCount((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
-    return () => clearInterval(timer);
-  }, [count]);
+  };
+
+  // Auto-start if prop is true
+  useEffect(() => {
+    if (isStartCountdown && count === 0) {
+      startCountdown();
+    }
+  }, [isStartCountdown]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const handleButtonClick = () => {
     callback();
-    if (isStartCountdown && count === 0) setCount(countdown);
+    if (isStartCountdown && count === 0) startCountdown();
   };
-
-  useEffect(() => {
-    if (isStartCountdown && count === 0) setCount(countdown);
-  }, [isStartCountdown, count, countdown]);
 
   return (
     <div className={classNameBtn}>

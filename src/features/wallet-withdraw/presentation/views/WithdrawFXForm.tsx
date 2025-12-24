@@ -1,7 +1,6 @@
 import { MetricCard } from '@/components/common/metric';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
 
-import { Loading } from '@/components/common/atoms';
 import SendOtpButton from '@/components/common/atoms/SendOtpButton';
 import InputOtp from '@/components/common/forms/input/InputOtp';
 import { GlobalDialog } from '@/components/common/molecules';
@@ -74,6 +73,7 @@ function WithdrawFXForm() {
         type: 'required',
         message: 'Bank account is required!',
       });
+      toast.error('Bank account is required!');
 
       return true;
     } else if (!amountInput || Number(amountInput) <= 0) {
@@ -81,6 +81,7 @@ function WithdrawFXForm() {
         type: 'value',
         message: 'Amount must be greater than 0!',
       });
+      toast.error('Amount must be greater than 0!');
 
       return true;
     } else if (paymentBalance !== 0 && Number(amountInput) > paymentBalance) {
@@ -88,6 +89,7 @@ function WithdrawFXForm() {
         type: 'value',
         message: Messages.INSUFFICIENT_BALANCE,
       });
+      toast.error(Messages.INSUFFICIENT_BALANCE);
 
       return true;
     }
@@ -123,15 +125,17 @@ function WithdrawFXForm() {
     if (!otp) {
       setErrorOtp({
         type: 'value',
-        message: 'OTP is required!',
+        message: Messages.OTP_REQUIRED,
       });
+      toast.error(Messages.OTP_REQUIRED);
 
       return;
     } else if (!/^\d+$/.test(otp)) {
       setErrorOtp({
         type: 'value',
-        message: 'OTP must be a number!',
+        message: Messages.OTP_INVALID,
       });
+      toast.error(Messages.OTP_INVALID);
 
       return;
     } else if (otp.length !== 6) {
@@ -139,16 +143,29 @@ function WithdrawFXForm() {
         type: 'value',
         message: 'OTP must be 6 digits!',
       });
+      setErrorOtp({
+        type: 'value',
+        message: Messages.OTP_INVALID,
+      });
+      toast.error(Messages.OTP_INVALID);
 
       return;
     }
 
     if (amountInput > (overviewData?.data?.data?.onetime_moving_limit ?? 0)) {
+      setErrorAmount({
+        type: 'value',
+        message: 'Exceeded the allowable one-time withdrawal limit',
+      });
       toast.error('Exceeded the allowable one-time withdrawal limit');
       return;
     }
 
     if (amountInput > (overviewData?.data?.data?.available_limit ?? 0)) {
+      setErrorAmount({
+        type: 'value',
+        message: 'Exceeded the allowable daily withdrawal limit',
+      });
       toast.error('Exceeded the allowable daily withdrawal limit');
       return;
     }
@@ -174,13 +191,19 @@ function WithdrawFXForm() {
 
         setLoading(false);
         handleClose();
-      } else {
-        setLoading(false);
-        toast.error(response.message || 'Something went wrong!');
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       setLoading(false);
-      toast.error(errorCatching(error)?.message);
+
+      if (error?.statusCode === RESPONSE_CODE.BAD_REQUEST) {
+        setErrorOtp({
+          type: 'value',
+          message: error?.message,
+        });
+        toast.error(error?.message);
+      } else {
+        toast.error(errorCatching(error)?.message);
+      }
     }
   };
 
@@ -290,8 +313,6 @@ function WithdrawFXForm() {
 
     fetchWalletData();
   }, [isShowWithdrawFXForm]);
-
-  if (isShowWithdrawFXForm && (isLoading || loading)) return <Loading />;
 
   return (
     <>

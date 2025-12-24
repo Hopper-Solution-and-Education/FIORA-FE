@@ -315,6 +315,108 @@ export enum Messages {
   FAQ_TITLE_ALREADY_EXISTS = 'FAQ title already exists',
   CREATE_FAQ_SUCCESS = 'Create FAQ successfully',
 
+  GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
+  NOTIFICATION_NOT_BELONG_TO_USER = 'Notification not belong to user',
+
+  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or pageSize.',
+  INVALID_FILTER_FORMAT = 'Invalid filter format.',
+  INVALID_CONTENT_TYPE_MULTIPART = 'Content-Type must be multipart/form-data',
+
+  // Email template
+  CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
+  UPDATE_EMAIL_TEMPLATE_SUCCESS = 'Update email template successfully',
+  DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
+  GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
+  EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
+  NOT_DELETE_TEMPLATE = 'Do not delete template default',
+  ID_REQUIRE = 'You must provide an ID',
+  DUPLICATE_EMAIL_TEMPLATE = 'Do not duplicate email template of the same type or name',
+  EMAIL_TEMPLATE_DEFAULT_EXIT = 'Email template default already exists',
+
+  //Bank Account
+  EXIT_BANK_ACCOUNT = 'Bank account already exists',
+  CREATE_BANK_ACCOUNT_SUCCESS = 'Create bank account successfully',
+  VERIFY_BANK_ACCOUNT_SUCCESS = 'Verify bank account successfully',
+  GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
+  BANK_ACCOUNT_NOT_FOUND = 'BankAccount not found',
+  UPDATE_BANK_ACCOUNT_SUCCESS = 'Update bank account successfully',
+
+  //Identification
+  IDENTIFICATION_ACCOUNT = 'Identification already exists',
+  CREATE_IDENTIFICATION_SUCCESS = 'Create identification successfully',
+  GET_IDENTIFICATION_SUCCESS = 'Get identification successfully',
+  VERIFY_IDENTIFICATION_SUCCESS = 'Verify identification successfully',
+  IDENTIFICATION_NOT_FOUND = 'Identification not found',
+  UPDATE_IDENTIFICATION_SUCCESS = 'Update identification successfully',
+
+  //eKyc
+  KYC_ACCOUNT = 'eKyc already exists',
+  CREATE_KYC_SUCCESS = 'Create eKyc successfully',
+  GET_KYC_SUCCESS = 'Get eKyc successfully',
+  KYC_NOT_FOUND = 'Kyc not found',
+  KYC_CHECK = 'Kyc is used',
+  KYC_NOT_MATCH = 'Kyc not match',
+  BLOCK_USER_SUCCESS = 'Block user successfully',
+  UNBLOCK_USER_SUCCESS = 'Unblock user successfully',
+  BLOCK_USER_FAILED = 'Block user failed',
+  ASSIGN_ROLE_SUCCESS = 'Assign role successfully',
+  ASSIGN_ROLE_FAILED = 'Assign role failed',
+  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked',
+  USER_NOT_FOUND = 'User not found',
+  GET_LIST_USER_ERROR = 'Failed to fetch users data',
+  GET_COUNT_USER_ERROR = 'Failed to fetch count users data',
+  GET_COUNT_USER_SUCCESS = 'Get count users successfully',
+  CANNOT_ASSIGN_ROLE_TO_YOURSELF = 'Cannot assign role to yourself',
+  CANNOT_BLOCK_YOURSELF = 'Cannot block yourself',
+  USER_DELETED_SIGNIN_ERROR = 'Account has been deleted. Please contact support if this is a mistake.',
+  SEND_OTP_SUCCESS = 'Send OTP successfully',
+  SEND_OTP_FAILED = 'Send OTP failed',
+  VERIFY_OTP_SUCCESS = 'Verify OTP successfully',
+  VERIFY_OTP_FAILED = 'Verify OTP failed',
+  OTP_REQUIRED = 'OTP is required',
+  OTP_NOT_REQUESTED = 'Please request an OTP first',
+  OTP_EXPIRED = 'OTP has expired',
+  OTP_INVALID = 'Sorry! OTP is not valid',
+
+  //Common
+  DELETE_SUCCESS = 'Delete successfully',
+  SEND_SUCCESS = 'Send successfully',
+  VERIFY_SUCCESS = 'Verify successfully',
+  VERIFY_EXIT = 'Verify already exists',
+  GET_SUCCESS = 'Get successfully',
+  UPDATE_SUCCESS = 'Update successfully',
+  UPDATE_FAIL = 'Update fail!',
+
+  //Email template type
+  EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
+
+  // Smart Saving
+  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
+  GET_SMART_SAVING_SUCCESS_OPTIONS = 'Get smart saving filter options list successfully',
+  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
+  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
+  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
+  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
+  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
+  // Flexi Interest
+  GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
+  GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
+  GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
+  // Referral Chart
+  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
+  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
+  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
+
+  // Cronjob
+  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
+  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE_ALREADY_UPDATED = 'Referral cronjob failed to update since it has already been success',
+  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update',
+  //Payment Wallet
+  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
+  GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
+  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
+  //News
   // News
   GET_LISTNEW_SUCCESS = 'Get list news success',
   CREATE_NEWS_SUCCESS = 'Create news successfully',
@@ -336,36 +438,6 @@ export enum Messages {
   DELETE_COMMENT_SUCESS = 'Delete news comment successfully',
 
   // ───────────────────────────────
-  // Smart Saving & Flexi Interest
-  // ───────────────────────────────
-  GET_SMART_SAVING_SUCCESS = 'Get smart saving list successfully',
-  GET_SMART_SAVING_SUCCESS_OPTIONS = 'Get smart saving filter options list successfully',
-  GET_SMART_SAVING_STATISTICS_SUCCESS = 'Get smart saving statistics successfully',
-  UPDATE_SMART_SAVING_SUCCESS = 'Update smart saving successfully',
-  SMART_SAVING_NOT_FOUND = 'Update smart saving failded',
-  SMART_SAVING_AMOUNT_MUST_BE_POSITIVE = 'Smart saving amount must be a positive number',
-  MISSSING_SMART_REQUEST_BODY = 'Request body is missing',
-
-  GET_FLEXI_INTEREST_SUCCESS = 'Get flexi interest list successfully',
-  GET_FLEXI_NO_CONTENT = 'No content found for flexi interest',
-  GET_FLEXI_INTEREST_FILTEROPTION_SUCCESS = 'Get flexi interest filter options successfully',
-
-  // ───────────────────────────────
-  // Referral & Dashboard
-  // ───────────────────────────────
-  GET_REFERRAL_CHART_SUCCESS = 'Get referral chart successfully',
-  GET_LIST_REFERRAL_ITEMS_SUCCESS = 'Get list referral items successfully',
-  GET_REFERRAL_DASHBOARD_PAYLOAD_FILTERS_SUCCESS = 'Get referral dashboard payload filters successfully',
-  REFERRAL_CRONJOB_NOT_FOUND = 'Referral cronjob not found',
-  UPDATE_REFERRAL_CRONJOB_SUCCESS = 'Update referral cronjob successfully',
-  REFERRAL_CRONJOB_FAILED_TO_UPDATE_ALREADY_UPDATED = 'Referral cronjob failed to update since it has already been success',
-  REFERRAL_CRONJOB_FAILED_TO_UPDATE = 'Referral cronjob failed to update',
-
-  GET_PAYMENT_WALLET_DETAILS_SUCCESS = 'Get payment wallet details successfully',
-  GET_PAYMENT_WALLET_OPTIONS_SUCCESS = 'Get payment wallet filter options successfully',
-  FETCH_PAYMENT_WALLET_DASHBOARD_METRICS_SUCCESS = 'Fetch payment wallet dashboard metrics successfully',
-
-  // ───────────────────────────────
   // Referral Campaign
   // ───────────────────────────────
   REFERRAL_CAMPAIGN_GET_SUCCESS = 'Get referral campaign successfully',
@@ -377,44 +449,6 @@ export enum Messages {
   REFERRAL_CAMPAIGN_FORM_INVALID = 'Referral campaign form invalid',
 
   // ───────────────────────────────
-  // Email Template
-  // ───────────────────────────────
-  CREATE_EMAIL_TEMPLATE_SUCCESS = 'Create email template successfully',
-  UPDATE_EMAIL_TEMPLATE_SUCCESS = 'Update email template successfully',
-  DELETE_EMAIL_TEMPLATE_SUCCESS = 'Delete email template successfully',
-  GET_EMAIL_TEMPLATE_SUCCESS = 'Get email template successfully',
-  EMAIL_TEMPLATE_NOT_FOUND = 'Email template not found',
-  NOT_DELETE_TEMPLATE = 'Do not delete template default',
-  ID_REQUIRE = 'You must provide an ID',
-  DUPLICATE_EMAIL_TEMPLATE = 'Do not duplicate email template of the same type or name',
-  EMAIL_TEMPLATE_DEFAULT_EXIT = 'Email template default already exists',
-  EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
-
-  // ───────────────────────────────
-  // Bank Account & Identification & eKYC
-  // ───────────────────────────────
-  EXIT_BANK_ACCOUNT = 'Bank account already exists',
-  CREATE_BANK_ACCOUNT_SUCCESS = 'Create bank account successfully',
-  VERIFY_BANK_ACCOUNT_SUCCESS = 'Verify bank account successfully',
-  GET_BANK_ACCOUNT_SUCCESS = 'Get bank account successfully',
-  BANK_ACCOUNT_NOT_FOUND = 'BankAccount not found',
-  UPDATE_BANK_ACCOUNT_SUCCESS = 'Update bank account successfully',
-
-  IDENTIFICATION_ACCOUNT = 'Identification already exists',
-  CREATE_IDENTIFICATION_SUCCESS = 'Create identification successfully',
-  GET_IDENTIFICATION_SUCCESS = 'Get identification successfully',
-  VERIFY_IDENTIFICATION_SUCCESS = 'Verify identification successfully',
-  IDENTIFICATION_NOT_FOUND = 'Identification not found',
-  UPDATE_IDENTIFICATION_SUCCESS = 'Update identification successfully',
-
-  KYC_ACCOUNT = 'eKyc already exists',
-  CREATE_KYC_SUCCESS = 'Create eKyc successfully',
-  GET_KYC_SUCCESS = 'Get eKyc successfully',
-  KYC_NOT_FOUND = 'Kyc not found',
-  KYC_CHECK = 'Kyc is used',
-  KYC_NOT_MATCH = 'Kyc not match',
-
-  // ───────────────────────────────
   // User & Auth
   // ───────────────────────────────
   INVALID_USER = 'Invalid user.',
@@ -423,33 +457,9 @@ export enum Messages {
   INVALID_PHONE = 'Invalid phone number.',
   INVALID_DOB = 'Invalid date of birth.',
   UNAUTHORIZED = 'Not logged in',
-  BLOCK_USER_SUCCESS = 'Block user successfully',
-  UNBLOCK_USER_SUCCESS = 'Unblock user successfully',
-  BLOCK_USER_FAILED = 'Block user failed',
-  ASSIGN_ROLE_SUCCESS = 'Assign role successfully',
-  ASSIGN_ROLE_FAILED = 'Assign role failed',
-  USER_BLOCKED_SIGNIN_ERROR = 'Account has been blocked',
-  USER_NOT_FOUND = 'User not found',
-  GET_LIST_USER_ERROR = 'Failed to fetch users data',
-  GET_COUNT_USER_ERROR = 'Failed to fetch count users data',
-  GET_COUNT_USER_SUCCESS = 'Get count users successfully',
-  CANNOT_ASSIGN_ROLE_TO_YOURSELF = 'Cannot assign role to yourself',
-  CANNOT_BLOCK_YOURSELF = 'Cannot block yourself',
-  USER_DELETED_SIGNIN_ERROR = 'Account has been deleted. Please contact support if this is a mistake.',
-  SEND_OTP_SUCCESS = 'Send OTP successfully',
-  SEND_OTP_FAILED = 'Send OTP failed',
-  VERIFY_OTP_SUCCESS = 'Verify OTP successfully',
-  VERIFY_OTP_FAILED = 'Verify OTP failed',
-  OTP_REQUIRED = 'OTP is required',
   FAILED_TO_GENERATE_UNIQUE_REFERRAL_CODE_FOR_USER = 'Failed to generate unique referral code for user',
   SIGNUP_USER_FAILED = 'Failed to sign up user',
   SIGNUP_SUCCESS = 'You have registered for an account successfully!',
-
-  // ───────────────────────────────
-  // Notification
-  // ───────────────────────────────
-  GET_NOTIFICATION_SUCCESS = 'Get notification list successfully.',
-  NOTIFICATION_NOT_BELONG_TO_USER = 'Notification not belong to user',
 
   // ───────────────────────────────
   // General / Common
@@ -457,15 +467,4 @@ export enum Messages {
   INTERNAL_ERROR = 'An error occurred, please try again later',
   MISSING_PARAMS_INPUT = 'Missing required fields',
   METHOD_NOT_ALLOWED = 'Method not allowed',
-  INVALID_PAGE_OR_PAGE_SIZE = 'Invalid page or page size',
-  INVALID_FILTER_FORMAT = 'Invalid filter format',
-  INVALID_CONTENT_TYPE_MULTIPART = 'Content-Type must be multipart/form-data',
-  VALIDATION_ERROR = 'One or more fields contain invalid values',
-  DELETE_SUCCESS = 'Delete successfully',
-  SEND_SUCCESS = 'Send successfully',
-  VERIFY_SUCCESS = 'Verify successfully',
-  VERIFY_EXIT = 'Verify already exists',
-  GET_SUCCESS = 'Get successfully',
-  UPDATE_SUCCESS = 'Update successfully',
-  UPDATE_FAIL = 'Update failed',
 }
