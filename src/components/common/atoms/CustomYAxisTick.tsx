@@ -87,6 +87,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
               isHovered={isIconHovered}
               className={cn(expandedItems[payload.value] && 'bg-primary/10')}
               onClick={handleEditClick}
+              data-test={`${item?.isChild ? 'product' : 'category'}-${payload.value}`}
             />
           </foreignObject>
         </TooltipTrigger>
@@ -123,6 +124,7 @@ const CustomYAxisTick: React.FC<CustomYAxisTickProps> = ({
                   expandedItems[payload.value] && 'bg-primary/10',
                 )}
                 onClick={handleArrowClick}
+                data-test={`category-expand-${payload.value}`}
               >
                 {expandedItems[payload.value] ? (
                   <Icons.circleChevronUp

@@ -150,8 +150,9 @@ const DeleteProductDialog = ({
                 'order-2 sm:order-1',
               )}
               aria-label="Cancel"
+              data-test="delete-dialog-cancel-button"
             >
-              <Icons.circleArrowLeft data-test="delete-dialog-cancel-button" className="h-4 w-4" />
+              <Icons.circleArrowLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="destructive"
@@ -165,13 +166,14 @@ const DeleteProductDialog = ({
                 'order-1 sm:order-2',
               )}
               aria-label="Delete"
+              data-test="delete-dialog-confirm-button"
             >
               {isDeletingProduct ? (
                 <span className="flex items-center justify-center gap-2">
                   <Icons.spinner className="h-4 w-4 animate-spin" />
                 </span>
               ) : (
-                <Icons.check data-test="delete-dialog-confirm-button" className="h-4 w-4" />
+                <Icons.check className="h-4 w-4" />
               )}
             </Button>
           </div>

@@ -169,6 +169,7 @@ export const GlobalDialog = ({
                 onClick={() => (onConfirm ? onConfirm() : onOpenChange(false))}
                 variant={VARIANT_BUTTON_MAP[variant]}
                 className={clsx(VARIANT_BUTTON_BG_MAP[variant])}
+                data-test="form-confirm-button"
               >
                 {isLoading ? <Icons.spinner className="animate-spin h-5 w-5" /> : iconConfirm}
               </Button>

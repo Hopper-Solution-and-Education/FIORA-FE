@@ -70,6 +70,7 @@ const ArrayField = <T extends FieldValues>({
           return (
             <div
               key={item.id}
+              data-test-item={index}
               className="border p-4 rounded-xl relative bg-white dark:bg-zinc-900 shadow-sm space-y-4 transition hover:shadow-md"
             >
               {/* Delete Button */}
@@ -80,6 +81,7 @@ const ArrayField = <T extends FieldValues>({
                   setDeleteIndex(index);
                 }}
                 className="absolute top-4 right-4 text-destructive hover:bg-destructive/10 rounded-full transition"
+                data-test={`delete-item-${index}-button`}
               >
                 <Trash2 size={ICON_SIZE.SM} />
               </Button>
@@ -94,6 +96,12 @@ const ArrayField = <T extends FieldValues>({
                   const fieldName: string = element.props.name;
                   const indexedName = `${name}.${index}.${fieldName}` as Path<T>;
 
+                  // Get original data-test and append index
+                  const originalDataTest = element.props['data-test'];
+                  const dataTestWithIndex = originalDataTest
+                    ? `${originalDataTest}-${index}`
+                    : undefined;
+
                   return (
                     <Controller
                       key={indexedName}
@@ -103,7 +111,8 @@ const ArrayField = <T extends FieldValues>({
                         React.cloneElement(element, {
                           ...field,
                           error,
-                        })
+                          'data-test': dataTestWithIndex,
+                        } as any)
                       }
                     />
                   );
@@ -120,6 +129,7 @@ const ArrayField = <T extends FieldValues>({
         variant="default"
         onClick={() => append(emptyItem)}
         className="w-full mt-2"
+        data-test="add-item-button"
       >
         <Plus className="h-4 w-4" />
         {addButtonText}

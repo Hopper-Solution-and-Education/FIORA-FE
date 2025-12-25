@@ -13,6 +13,7 @@ interface IconDisplayProps {
   iconClassName?: string;
   onClick?: (e: React.MouseEvent) => void;
   isHovered?: boolean;
+  'data-test'?: string;
 }
 
 export const IconDisplay: React.FC<IconDisplayProps> = ({
@@ -21,6 +22,7 @@ export const IconDisplay: React.FC<IconDisplayProps> = ({
   iconClassName,
   onClick,
   isHovered,
+  'data-test': dataTest,
 }) => {
   if (isImageUrl(icon)) {
     return (
@@ -31,6 +33,7 @@ export const IconDisplay: React.FC<IconDisplayProps> = ({
           className,
         )}
         onClick={onClick}
+        data-test={dataTest}
       >
         <Image
           src={icon}
@@ -53,6 +56,7 @@ export const IconDisplay: React.FC<IconDisplayProps> = ({
         className,
       )}
       onClick={onClick}
+      data-test={dataTest}
     >
       <LucieIcon
         icon={icon}

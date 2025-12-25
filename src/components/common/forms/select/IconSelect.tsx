@@ -40,6 +40,7 @@ interface IconSelectProps {
   label?: string;
   isCheckError?: boolean;
   disabled?: boolean;
+  'data-test'?: string;
 }
 
 const IconSelect: React.FC<IconSelectProps> = ({
@@ -51,6 +52,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
   label,
   isCheckError = true,
   disabled = false,
+  'data-test': dataTest,
 }) => {
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +85,7 @@ const IconSelect: React.FC<IconSelectProps> = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            data-test="icon-select-button"
+            data-test={dataTest || 'icon-select-button'}
             className={cn(
               'w-full justify-between',
               isCheckError && required && !selectedIcon ? 'border-red-500' : '',
