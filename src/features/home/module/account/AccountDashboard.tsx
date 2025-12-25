@@ -25,8 +25,6 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
   const { formatCurrency, getExchangeRate } = useCurrencyFormatter();
 
   useEffect(() => {
-    // Fetch on component mount and when refresh flag changes
-    // Note: DashboardHeader already handles fetching when filter changes
     dispatch(fetchAccounts(filterCriteria));
     dispatch(fetchParents(filterCriteria));
   }, [dispatch, refresh]);
