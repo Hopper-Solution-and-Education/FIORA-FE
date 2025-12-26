@@ -22,3 +22,5 @@ export type AcknowledgmentStep = {
 export type AcknowledgmentFeatureStepsResponse = HttpResponse<AcknowledgmentFeatureSteps[]>;
 
 export type AcknowledgmentSingleFeatureStepsResponse = HttpResponse<AcknowledgmentFeatureSteps>;
+
+export type SingleAcknowledgmentFeatureStepsResponse = HttpResponse<AcknowledgmentFeatureSteps>;

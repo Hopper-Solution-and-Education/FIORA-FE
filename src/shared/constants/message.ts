@@ -462,4 +462,6 @@ export enum Messages {
   // Acknowledgment
   // ───────────────────────────────
   ACKNOWLEDGMENT_CREATE_FAILED = 'Failed to create acknowledgment',
+  ACKNOWLEDGMENT_FEATURE_NOT_FOUND = 'Feature not found',
+  ACKNOWLEDGMENT_FEATURE_STEPS_NOT_FOUND = 'Feature steps not found',
 }

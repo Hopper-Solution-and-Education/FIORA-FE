@@ -26,6 +26,7 @@ const WalletWithdrawButton = () => {
         aria-label="Deposit"
         onClick={handleDeposit}
         className="h-fit w-fit !px-4 !py-2"
+        data-tour="homepage-withdraw-button"
       >
         <Icons.banknoteArrowDown className="!h-6 !w-6 text-red-600" />
       </Button>

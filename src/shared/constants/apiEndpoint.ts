@@ -110,8 +110,8 @@ export enum ApiEndpointEnum {
 
   // Acknowledgment
   Acknowledgment = '/api/acknowledgments',
-  AcknowledgmentFeatureCreate = '/api/acknowledgments/features',
-  AcknowledgmentFeatureStepsCreate = '/api/acknowledgments/features/steps',
+  AcknowledgmentFeature = '/api/acknowledgments/features',
+  AcknowledgmentFeatureSteps = '/api/acknowledgments/features/steps',
 }
 
 export const BASE_API = process.env.NEXT_PUBLIC_BASE_API;

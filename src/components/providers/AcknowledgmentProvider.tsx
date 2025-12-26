@@ -1,165 +1,134 @@
 'use client';
 
-import { featureMap } from '@/config/acknowledgment/pages';
-import { Step, Tour } from '@/config/acknowledgment/types';
 import { getAcknowledgmentAsyncThunk } from '@/features/acknowledgment/slides/actions/getAcknowledgmentAsyncThunk';
+import { getAcknowledgmentFeatureStepsAsyncThunk } from '@/features/acknowledgment/slides/actions/getAcknowledgmentFeatureStepsAsyncThunk';
+import { AcknowledgmentFeatureSteps } from '@/shared/constants';
 import { useTourMapper } from '@/shared/hooks/useTourMapper';
+import { Tour } from '@/shared/types';
+import { htmlToReactNode } from '@/shared/utils/parserHTML2ReactNode';
+import { isSkipped } from '@/shared/utils/skipTour';
 import { RootState, useAppDispatch } from '@/store';
 import { useSession } from 'next-auth/react';
 import { Onborda, OnbordaProvider, useOnborda } from 'onborda';
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { TourCard } from '../ui/acknowledgment';
 
-import { getTourFirstSelector } from '@/config/acknowledgment/tourUtils';
-import { isSkipped } from '@/shared/utils/skipTour';
+/* ---------- constants ---------- */
+const POLL_MS = 200;
+const MAX_WAIT_MS = 10_000;
 
-/**
- * Inner component that handles auto-starting tours based on route
- */
-function TourAutoStarter({ children }: { children: React.ReactNode }) {
-  const { startOnborda } = useOnborda();
+/* ---------- helpers ---------- */
+const pollElement = (
+  selector: string,
+  onFound: () => void,
+  onTimeout?: () => void,
+): (() => void) => {
+  let id: ReturnType<typeof setTimeout>;
+  const start = Date.now();
+
+  const run = () => {
+    if (document.querySelector(selector)) return onFound();
+    if (Date.now() - start > MAX_WAIT_MS) return onTimeout?.();
+    id = setTimeout(run, POLL_MS);
+  };
+  run();
+
+  return () => clearTimeout(id);
+};
+
+/* ---------- components ---------- */
+function TourAutoStarter({ children }: { children: ReactNode }) {
+  const { startOnborda, closeOnborda } = useOnborda();
   const { data } = useSelector((state: RootState) => state.acknowledgment);
-  const hasStartedRef = useRef<string | null>(null);
-  const [firstSelector, setFirstSelector] = useState<string | null>(null);
-
-  // Get the feature key for current route using useTourMapper
   const featureKey = useTourMapper();
 
-  // Load the first step's selector when feature key changes
+  const shouldStart =
+    featureKey && !isSkipped(featureKey) && Boolean(data?.[featureKey]?.steps?.length);
+
   useEffect(() => {
-    if (!featureKey) {
-      setFirstSelector(null);
+    if (!shouldStart) {
+      closeOnborda();
       return;
     }
 
-    // Skip tours if user has skipped
-    if (isSkipped(featureKey)) return;
+    const selector = AcknowledgmentFeatureSteps[featureKey]?.[0]?.selector;
+    if (!selector) return;
 
-    const loadFeatureConfig = async () => {
-      try {
-        const featureLoader = featureMap[featureKey];
-        if (!featureLoader) return;
-
-        const mod = await featureLoader();
-
-        // Extract selector using utility
-        const selector = getTourFirstSelector(mod);
-        if (selector) {
-          setFirstSelector(selector);
-        }
-      } catch (error) {
-        console.error(`[TourAutoStarter] Failed to load feature config:`, error);
-      }
-    };
-
-    loadFeatureConfig();
-  }, [featureKey, data]);
-
-  // Auto-start tour when element exists and data is loaded
-  useEffect(() => {
-    if (!featureKey || !firstSelector || !data?.[featureKey]) return;
-    if (hasStartedRef.current === featureKey) return; // Already started for this route
-
-    let cancelled = false;
-    const startTime = Date.now();
-    const maxWaitTime = 10000;
-    const pollInterval = 200;
-
-    const checkAndStartTour = () => {
-      if (cancelled) return;
-
-      const elapsed = Date.now() - startTime;
-      if (elapsed > maxWaitTime) {
-        console.warn(`[TourAutoStarter] Timeout: Element "${firstSelector}" not found`);
-        return;
-      }
-
-      const targetElement = document.querySelector(firstSelector);
-      if (targetElement) {
-        hasStartedRef.current = featureKey;
-        startOnborda(featureKey);
-      } else {
-        setTimeout(checkAndStartTour, pollInterval);
-      }
-    };
-
-    setTimeout(checkAndStartTour, pollInterval);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [featureKey, firstSelector, data, startOnborda]);
-
-  // Reset when route changes
-  useEffect(() => {
-    hasStartedRef.current = null;
-  }, [featureKey]);
+    const cancel = pollElement(selector, () => startOnborda(featureKey));
+    return cancel;
+  }, [shouldStart, featureKey, data, startOnborda, closeOnborda]);
 
   return <>{children}</>;
 }
 
-function AcknowledgmentProvider({ children }: { children: React.ReactNode }) {
+function AcknowledgmentProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const { status } = useSession();
-  const { data, isLoaded } = useSelector((state: RootState) => state.acknowledgment);
-  const [tours, setTours] = useState<Tour[]>([]);
+  const { data, isLoaded, isVisible } = useSelector((state: RootState) => state.acknowledgment);
+  const featureKey = useTourMapper();
 
-  // Fetch data if missing or user just logged in
+  /* 1. fetch acknowledgment feature completed yet if missing */
   useEffect(() => {
     if (status === 'authenticated' && !isLoaded) {
       dispatch(getAcknowledgmentAsyncThunk(false));
     }
   }, [status, isLoaded, dispatch]);
 
-  // Load all feature tours from the featureMap
+  /* 2. fetch steps only when needed */
   useEffect(() => {
-    const loadAllTours = async () => {
-      const loadedTours: Tour[] = [];
+    if (!featureKey) return;
+    const feature = data?.[featureKey];
+    if (!feature) return;
+    if (feature.steps) return;
+    if (isSkipped(featureKey)) return;
 
-      for (const [featureKey, loader] of Object.entries(featureMap)) {
-        try {
-          const mod = await loader();
-          const featureData = data?.[featureKey];
+    dispatch(getAcknowledgmentFeatureStepsAsyncThunk(feature.id));
+  }, [featureKey, data, dispatch]);
 
-          const steps: Step[] = featureData?.steps ? mod.default(featureData.steps) : [];
+  /* 3. build tours – pure compute */
+  const tours = useMemo<Tour[]>(() => {
+    if (!featureKey) return [];
+    const steps = data?.[featureKey]?.steps;
+    if (!steps?.length) return [];
 
-          if (steps.length > 0) {
-            loadedTours.push({
-              tour: featureKey,
-              steps,
-            });
-          }
-        } catch (error) {
-          console.error(`[AcknowledgmentProvider] Failed to load feature "${featureKey}":`, error);
-        }
-      }
+    const configSteps = AcknowledgmentFeatureSteps[featureKey];
+    if (!configSteps?.length) return [];
 
-      setTours(loadedTours);
-    };
+    return [
+      {
+        tour: featureKey,
+        steps: configSteps.map((cfg, i) => ({
+          icon: cfg.icon ?? null,
+          ...cfg,
+          title: steps[i]?.title ?? '',
+          content: htmlToReactNode(steps[i]?.description ?? ''),
+        })),
+      },
+    ];
+  }, [featureKey, data]);
 
-    loadAllTours();
-  }, [data]);
-
-  // Resize on scroll to fix popper position
-  useEffect(() => {
-    const handleScroll = () => window.dispatchEvent(new Event('resize'));
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const shouldRenderTour =
+    tours.length > 0 && !isSkipped(featureKey as keyof typeof AcknowledgmentFeatureSteps);
+  const tourKey = `${featureKey}-${shouldRenderTour}`;
 
   return (
     <OnbordaProvider>
-      <Onborda
-        steps={tours}
-        showOnborda={true}
-        shadowRgb="0, 0, 0"
-        shadowOpacity="0.8"
-        cardComponent={TourCard}
-        cardTransition={{ duration: 0.35, type: 'tween' }}
-      >
-        <TourAutoStarter>{children}</TourAutoStarter>
-      </Onborda>
+      {shouldRenderTour && isVisible ? (
+        <Onborda
+          key={tourKey}
+          steps={tours}
+          showOnborda
+          shadowRgb="0, 0, 0"
+          shadowOpacity="0.8"
+          cardComponent={TourCard}
+          cardTransition={{ duration: 0.35, type: 'tween' }}
+        >
+          <TourAutoStarter>{children}</TourAutoStarter>
+        </Onborda>
+      ) : (
+        <>{children}</>
+      )}
     </OnbordaProvider>
   );
 }

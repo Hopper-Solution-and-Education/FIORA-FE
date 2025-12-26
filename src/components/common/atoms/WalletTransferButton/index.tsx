@@ -26,6 +26,7 @@ const WalletTransferButton = () => {
         aria-label="Deposit"
         onClick={handleSending}
         className="h-fit w-fit !px-[1.20rem] !py-2.5"
+        data-tour="homepage-transfer-button"
       >
         <Icons.arrowLeftRight className="!h-5 !w-5 text-orange-600" />
       </Button>

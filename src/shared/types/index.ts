@@ -1,3 +1,4 @@
+export * from './acknowledgment.types';
 export * from './budget.types';
 export * from './budgetDetail.types';
 export * from './category.types';

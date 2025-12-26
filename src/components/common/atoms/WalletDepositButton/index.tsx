@@ -22,6 +22,7 @@ const WalletDepositButton = () => {
         aria-label="Deposit"
         onClick={handleDeposit}
         className="h-fit w-fit !px-4 !py-2"
+        data-tour="homepage-deposit-button"
       >
         <Icons.banknoteArrowUp className="!h-6 !w-6 text-green-600" />
       </Button>

@@ -39,7 +39,10 @@ export default function HomePage() {
             </div>
 
             {/* Right Section: Transactions & Recommendations */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 space-y-4">
+            <div
+              className="col-span-1 md:col-span-2 lg:col-span-3 space-y-4"
+              data-tour="homepage-recent-transactions"
+            >
               <RecentTransactions />
             </div>
           </div>

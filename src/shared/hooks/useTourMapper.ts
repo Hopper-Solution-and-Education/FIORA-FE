@@ -1,14 +1,14 @@
 import { routeMapping } from '@/config/acknowledgment';
-import { FeatureKey } from '@/config/acknowledgment/pages';
+import { AcknowledgmentFeatureKey } from '@/shared/constants';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
-export function useTourMapper(): FeatureKey | null {
+export function useTourMapper(): AcknowledgmentFeatureKey | null {
   const pathname = (usePathname() || '').replace(/\/+$/, '');
 
   return useMemo(() => {
     const featureKeyMapping = routeMapping[pathname];
 
-    return featureKeyMapping as FeatureKey | null;
+    return featureKeyMapping as AcknowledgmentFeatureKey | null;
   }, [pathname]);
 }

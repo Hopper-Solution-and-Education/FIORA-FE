@@ -79,6 +79,7 @@ const AccountDashboard = ({ module = MODULE.ACCOUNT }: { module: string | undefi
         <div
           ref={chartRef}
           onClick={handleChartClick}
+          data-tour="homepage-account-dashboard"
           className={module === MODULE.HOME ? 'cursor-pointer relative' : ''}
         >
           {module === 'HOME' && (

@@ -3,6 +3,9 @@ import {
   AcknowledgmentFeatureResponse,
   AcknowledgmentFeatureStepsResponse,
   AcknowledgmentSingleFeatureStepsResponse,
+  CompleteAcknowledgmentResponse,
+  CompleteAcknowledgmentResponseDto,
+  SingleAcknowledgmentFeatureStepsResponse,
 } from '../dto/response';
 
 export class AcknowledgmentMapper {
@@ -34,6 +37,22 @@ export class AcknowledgmentMapper {
   ): AcknowledgmentFeatureSteps {
     return {
       [response.data.featureKey]: response.data,
+    };
+  }
+
+  static toGetAcknowledgmentFeatureStepsResponse(
+    response: SingleAcknowledgmentFeatureStepsResponse,
+  ): AcknowledgmentFeatureSteps {
+    return {
+      [response.data.featureKey]: response.data,
+    };
+  }
+
+  static toCompleteAcknowledgmentResponse(
+    response: CompleteAcknowledgmentResponse,
+  ): CompleteAcknowledgmentResponseDto {
+    return {
+      featureKey: response.data.featureKey,
     };
   }
 }

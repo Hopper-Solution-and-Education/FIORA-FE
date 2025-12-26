@@ -1,6 +1,10 @@
 import { Container } from 'inversify';
 import { createAcknowledgmentAPI } from '../data/api';
 import {
+  CompleteAcknowledgmentUseCase,
+  ICompleteAcknowledgmentUseCase,
+} from '../domain/usecases/completeAcknowledgment.usecase';
+import {
   CreateAcknowledgmentFeatureUseCase,
   ICreateAcknowledgmentFeatureUseCase,
 } from '../domain/usecases/createAcknowledgment.usecase';
@@ -12,6 +16,10 @@ import {
   GetAcknowledgmentUseCase,
   IGetAcknowledgmentUseCase,
 } from '../domain/usecases/getAcknowledgment.usecase';
+import {
+  GetAcknowledgmentStepsUseCase,
+  IGetAcknowledgmentStepsUseCase,
+} from '../domain/usecases/getAcknowledgmentSteps.usecase';
 import { createAcknowledgmentRepository } from '../repositories';
 import { TYPES } from './acknowledgmentDIContainer.type';
 
@@ -31,6 +39,8 @@ const createAcknowledgmentFeatureUseCase = new CreateAcknowledgmentFeatureUseCas
 const createAcknowledgmentFeatureStepsUseCase = new CreateAcknowledgmentStepsUseCase(
   acknowledgmentRepository,
 );
+const getAcknowledgmentStepsUseCase = new GetAcknowledgmentStepsUseCase(acknowledgmentRepository);
+const completeAcknowledgmentUseCase = new CompleteAcknowledgmentUseCase(acknowledgmentRepository);
 
 // Bind all instances to the container
 acknowledgmentDIContainer
@@ -44,5 +54,13 @@ acknowledgmentDIContainer
 acknowledgmentDIContainer
   .bind<ICreateAcknowledgmentStepsUseCase>(TYPES.ICreateAcknowledgmentFeatureStepsUseCase)
   .toConstantValue(createAcknowledgmentFeatureStepsUseCase);
+
+acknowledgmentDIContainer
+  .bind<IGetAcknowledgmentStepsUseCase>(TYPES.IGetAcknowledgmentFeatureStepsUseCase)
+  .toConstantValue(getAcknowledgmentStepsUseCase);
+
+acknowledgmentDIContainer
+  .bind<ICompleteAcknowledgmentUseCase>(TYPES.ICompleteAcknowledgmentUseCase)
+  .toConstantValue(completeAcknowledgmentUseCase);
 
 export { acknowledgmentDIContainer };

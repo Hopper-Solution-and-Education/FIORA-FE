@@ -2,7 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { decorate, injectable } from 'inversify';
 import { AcknowledgmentFeatureStepRequestDto } from '../../data/dto/request';
-import { AcknowledgmentFeatureSteps, AcknowledgmentStep } from '../../data/dto/response';
+import {
+  AcknowledgmentFeatureSteps,
+  AcknowledgmentStep,
+  CompleteAcknowledgmentResponseDto,
+} from '../../data/dto/response';
 import { AcknowledgmentFeature } from '../../domain/entities';
 
 export interface IAcknowledgmentRepository {
@@ -19,6 +23,11 @@ export interface IAcknowledgmentRepository {
     tour: AcknowledgmentFeatureStepRequestDto,
   ): Promise<AcknowledgmentFeatureSteps>;
   createUserAcknowledgments(userId: string): Promise<void>;
+  getFeatureSteps(userId: string, featureId: string): Promise<AcknowledgmentFeatureSteps | null>;
+  updateCompletedFeature(
+    userId: string,
+    featureId: string,
+  ): Promise<CompleteAcknowledgmentResponseDto>;
 }
 
 export class AcknowledgmentRepository implements IAcknowledgmentRepository {
@@ -33,7 +42,7 @@ export class AcknowledgmentRepository implements IAcknowledgmentRepository {
     isCompleted: boolean,
   ): Promise<AcknowledgmentFeatureSteps[]> {
     const response = await this.database.userAcknowledgment.findMany({
-      where: { userId, isCompleted },
+      where: { userId, isCompleted, AcknowledgmentFeature: { isActive: true } },
       select: {
         AcknowledgmentFeature: {
           select: {
@@ -167,6 +176,81 @@ export class AcknowledgmentRepository implements IAcknowledgmentRepository {
       // 3. Bulk insert
       await tx.userAcknowledgment.createMany({ data: rows, skipDuplicates: true });
     });
+  }
+
+  async getFeatureSteps(
+    userId: string,
+    featureId: string,
+  ): Promise<AcknowledgmentFeatureSteps | null> {
+    const raw = await this.database.acknowledgmentFeature.findUnique({
+      where: {
+        id: featureId,
+        isActive: true,
+        UserAcknowledgment: {
+          some: {
+            userId,
+            isCompleted: false,
+          },
+        },
+      },
+      select: {
+        id: true,
+        featureKey: true,
+        description: true,
+        AcknowledgmentStep: {
+          select: {
+            id: true,
+            stepOrder: true,
+            title: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: true,
+            updatedBy: true,
+            featureId: true,
+          },
+          orderBy: { stepOrder: 'asc' },
+        },
+      },
+    });
+
+    if (!raw) return null;
+
+    return {
+      id: raw.id,
+      featureKey: raw.featureKey,
+      description: raw.description,
+      steps: raw.AcknowledgmentStep,
+    };
+  }
+
+  async updateCompletedFeature(
+    userId: string,
+    featureId: string,
+  ): Promise<CompleteAcknowledgmentResponseDto> {
+    const response = await this.database.userAcknowledgment.update({
+      where: {
+        userId_featureId: {
+          userId,
+          featureId,
+        },
+      },
+      data: {
+        isCompleted: true,
+        completedAt: new Date(),
+        updatedAt: new Date(),
+        updatedBy: userId,
+      },
+      select: {
+        AcknowledgmentFeature: {
+          select: {
+            featureKey: true,
+          },
+        },
+      },
+    });
+
+    return response.AcknowledgmentFeature;
   }
 }
 

@@ -1,7 +1,10 @@
 import { decorate, injectable } from 'inversify';
 import { IAcknowledgmentAPI } from '../data/api';
 import { AcknowledgmentFeatureStepRequestDto } from '../data/dto/request';
-import { AcknowledgmentFeatureSteps } from '../data/dto/response';
+import {
+  AcknowledgmentFeatureSteps,
+  CompleteAcknowledgmentResponseDto,
+} from '../data/dto/response';
 import { AcknowledgmentFeature } from '../domain/entities';
 
 export interface IAcknowledgmentRepository {
@@ -10,6 +13,8 @@ export interface IAcknowledgmentRepository {
   createFeatureSteps(
     data: AcknowledgmentFeatureStepRequestDto,
   ): Promise<AcknowledgmentFeatureSteps>;
+  getFeatureSteps(featureId: string): Promise<AcknowledgmentFeatureSteps>;
+  updateCompletedFeature(featureKey: string): Promise<CompleteAcknowledgmentResponseDto>;
 }
 
 export class AcknowledgmentRepository implements IAcknowledgmentRepository {
@@ -33,6 +38,16 @@ export class AcknowledgmentRepository implements IAcknowledgmentRepository {
     data: AcknowledgmentFeatureStepRequestDto,
   ): Promise<AcknowledgmentFeatureSteps> {
     const response = await this.acknowledgmentApi.createFeatureSteps(data);
+    return response.data;
+  }
+
+  async getFeatureSteps(featureId: string): Promise<AcknowledgmentFeatureSteps> {
+    const response = await this.acknowledgmentApi.getFeatureSteps(featureId);
+    return response.data;
+  }
+
+  async updateCompletedFeature(featureKey: string): Promise<CompleteAcknowledgmentResponseDto> {
+    const response = await this.acknowledgmentApi.updateCompletedFeature(featureKey);
     return response.data;
   }
 }

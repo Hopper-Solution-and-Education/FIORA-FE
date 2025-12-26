@@ -50,7 +50,7 @@ const ChartByDate = ({ title }: ChartByDateProps) => {
   }, [financeByDate, getExchangeAmount, currency]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-tour="homepage-finance-chart">
       {isLoading ? (
         <ChartSkeleton />
       ) : (

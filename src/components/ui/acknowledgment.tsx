@@ -16,8 +16,11 @@ import {
 import { cn } from '@/shared/utils';
 
 // Icons
+import { hideAcknowledgment } from '@/features/acknowledgment/slides';
+import { updateCompleteAcknowledgmentAsyncThunk } from '@/features/acknowledgment/slides/actions/updateCompleteAcknowledgmentAsyncThunk';
 import { useTourMapper } from '@/shared/hooks/useTourMapper';
 import { setSkip } from '@/shared/utils/skipTour';
+import { useAppDispatch } from '@/store';
 import { CheckCircle, ChevronLeft, ChevronRight, SkipForward } from 'lucide-react';
 
 export const TourCard: React.FC<CardComponentProps> = ({
@@ -30,19 +33,19 @@ export const TourCard: React.FC<CardComponentProps> = ({
 }) => {
   const { closeOnborda } = useOnborda();
   const featureKey = useTourMapper();
+  const dispatch = useAppDispatch();
 
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep + 1 === totalSteps;
 
-  // Handle "Skip this time" - close without completing
   const handleSkip = () => {
     setSkip(featureKey as string);
+    dispatch(hideAcknowledgment());
     closeOnborda();
   };
 
-  // Handle "I got it" - close and mark as completed
   const handleComplete = () => {
-    // TODO: You can add logic here to mark the tour as completed in the backend
+    dispatch(updateCompleteAcknowledgmentAsyncThunk(featureKey as string));
     closeOnborda();
   };
 
@@ -50,6 +53,8 @@ export const TourCard: React.FC<CardComponentProps> = ({
     // Delay slightly to ensure DOM updates
     setTimeout(() => window.dispatchEvent(new Event('resize')), 400);
   }, [currentStep]);
+
+  if (!step) return null;
 
   return (
     <Card
@@ -59,7 +64,7 @@ export const TourCard: React.FC<CardComponentProps> = ({
         'bg-gradient-to-br from-white to-gray-50',
         'dark:from-gray-900 dark:to-gray-800',
         // Responsive width
-        'w-[90vw] max-w-sm sm:max-w-md lg:max-w-lg rounded-xl',
+        'w-[90vw] max-w-sm sm:max-w-md lg:max-w-3xl rounded-xl',
         // Smooth animations
         'transition-all duration-500 ease-in-out',
       )}

@@ -58,7 +58,7 @@ export default function SettingCenter() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <div>
+        <div data-tour="homepage-setting-center">
           <NavItem
             label="Settings"
             icon={
