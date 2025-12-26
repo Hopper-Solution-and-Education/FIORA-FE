@@ -14,6 +14,7 @@ export type Language = 'vi' | 'en';
 export type Currency = 'vnd' | 'usd';
 export type MenuSettingItem = {
   label: string;
+  shortLabel?: string;
   icon: any;
   url: string;
   featureFlags?: FeatureFlags;
@@ -23,6 +24,7 @@ export type MenuSettingItem = {
 export const menuSettingItems: MenuSettingItem[] = [
   {
     label: 'Products & Services',
+    shortLabel: 'Products',
     icon: Icons.package,
     url: '/setting/product',
     featureFlags: FeatureFlags.PRODUCT_FEATURE,
@@ -34,10 +36,22 @@ export const menuSettingItems: MenuSettingItem[] = [
     featureFlags: FeatureFlags.PARTNER_FEATURE,
   },
   { label: 'Users', icon: Icons.users, url: '/setting/user' },
-  { label: 'Role & Permission', icon: Icons.clipboardList, url: '/setting/role-permission' },
-  { label: 'Global Setting', icon: Icons.dashboard, url: '/setting/landing', role: 'Admin' },
+  {
+    label: 'Role & Permission',
+    shortLabel: 'Role',
+    icon: Icons.clipboardList,
+    url: '/setting/role-permission',
+  },
+  {
+    label: 'Global Setting',
+    shortLabel: 'Global',
+    icon: Icons.dashboard,
+    url: '/setting/landing',
+    role: 'Admin',
+  },
   {
     label: 'User Management',
+    shortLabel: 'Management',
     icon: Icons.shieldCheck,
     url: '/setting/user-management',
     role: ['Admin', 'CS'],
@@ -45,12 +59,18 @@ export const menuSettingItems: MenuSettingItem[] = [
 ];
 
 export const helpItems = [
-  { label: 'FAQs', icon: BookIcon, url: '/helps-center/faqs' },
-  { label: 'User Tutorials', icon: PlayCircleIcon, url: '/helps-center/user-tutorial' },
-  { label: 'About Us', icon: InfoIcon, url: '/helps-center/about-us' },
-  { label: 'Contact Us', icon: MailIcon, url: '/helps-center/contact-us' },
+  { label: 'FAQs', shortLabel: 'FAQs', icon: BookIcon, url: '/helps-center/faqs' },
+  {
+    label: 'User Tutorials',
+    shortLabel: 'Tutorials',
+    icon: PlayCircleIcon,
+    url: '/helps-center/user-tutorial',
+  },
+  { label: 'About Us', shortLabel: 'About', icon: InfoIcon, url: '/helps-center/about-us' },
+  { label: 'Contact Us', shortLabel: 'Contact', icon: MailIcon, url: '/helps-center/contact-us' },
   {
     label: 'Terms and Conditions',
+    shortLabel: 'Terms',
     icon: ScrollTextIcon,
     url: '/helps-center/terms-and-conditions',
   },

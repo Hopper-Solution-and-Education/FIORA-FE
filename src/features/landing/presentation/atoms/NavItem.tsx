@@ -7,6 +7,7 @@ interface NavItemProps extends React.ComponentProps<'div'> {
   tooltip?: string;
   icon?: ReactNode;
   showLabel?: boolean;
+  iconActive?: boolean;
 }
 
 export const NavItem = ({
@@ -17,6 +18,7 @@ export const NavItem = ({
   children,
   className,
   showLabel = true,
+  iconActive = false,
   ...props
 }: NavItemProps) => {
   const content = (
@@ -25,9 +27,15 @@ export const NavItem = ({
         'flex flex-col gap-1 justify-center items-center cursor-pointer group',
         className,
       )}
+      onClick={onClick}
       {...props}
     >
-      <div className="p-2 rounded-lg transition-all duration-200 group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
+      <div
+        className={cn(
+          'p-2 rounded-lg transition-all duration-200 group-hover:bg-primary/10 dark:group-hover:bg-primary/20',
+          iconActive && 'bg-primary/10 dark:bg-primary/20',
+        )}
+      >
         {children || icon}
       </div>
       {showLabel && (

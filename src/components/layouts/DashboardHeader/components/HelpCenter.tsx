@@ -1,6 +1,5 @@
 'use client';
 
-import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,18 +34,23 @@ export default function HelpCenter() {
         data-test="help-dropdown"
       >
         {helpItems.map((item, index) => (
-          <CommonTooltip content={item.label} key={index}>
-            <Link
-              href={item.url}
-              className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105"
-              data-test={`help-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <item.icon
-                size={ICON_SIZE.MD}
-                className="text-foreground hover:text-primary transition-colors"
-              />
-            </Link>
-          </CommonTooltip>
+          <Link
+            href={item.url}
+            data-test={`help-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+            key={index}
+          >
+            <NavItem
+              label={item.shortLabel || item.label}
+              className="text-center"
+              tooltip={item.label}
+              icon={
+                <item.icon
+                  size={ICON_SIZE.MD}
+                  className="text-foreground hover:text-primary transition-colors"
+                />
+              }
+            />
+          </Link>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

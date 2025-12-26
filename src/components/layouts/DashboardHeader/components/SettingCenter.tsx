@@ -1,6 +1,5 @@
 'use client';
 
-import { CommonTooltip } from '@/components/common/atoms/CommonTooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,40 +75,41 @@ export default function SettingCenter() {
         align="end"
         data-test="setting-dropdown-content"
         className={`${
-          session?.user ? 'w-[300px] grid-cols-5' : 'w-[180px] grid-cols-3'
+          session?.user ? 'w-[350px] grid-cols-5' : 'w-[180px] grid-cols-3'
         } p-4 grid gap-4 border-border/50 shadow-lg bg-background/95 backdrop-blur-sm`}
       >
-        <CommonTooltip content={<span>Currency Display</span>} side="top" delayDuration={0}>
-          <div
-            data-test="currency-toggle-button"
-            onClick={handleOpenCurrencyDropdown}
-            className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105"
-          >
-            <Image src={usdIcon} alt="USD" width={20} height={20} className="dark:invert" />
-          </div>
-        </CommonTooltip>
+        <NavItem
+          label={'Currency'}
+          className="text-center"
+          onClick={handleOpenCurrencyDropdown}
+          tooltip="Currency Display"
+          icon={
+            <div data-test="currency-toggle-button">
+              <Image src={usdIcon} alt="USD" width={21} height={21} className="dark:invert" />
+            </div>
+          }
+        />
 
         {session?.user &&
           filteredMenuItems.map((item, index) => (
-            <CommonTooltip
-              content={<span>{item.label}</span>}
-              side="top"
-              delayDuration={0}
+            <Link
               key={index}
+              href={item.url}
+              passHref
+              data-test={`menu-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
-              <Link
-                href={item.url}
-                passHref
-                data-test={`menu-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105">
+              <NavItem
+                label={item.shortLabel || item.label}
+                className="text-center"
+                tooltip={item.label}
+                icon={
                   <item.icon
                     size={ICON_SIZE.MD}
                     className="text-foreground hover:text-primary transition-colors"
                   />
-                </div>
-              </Link>
-            </CommonTooltip>
+                }
+              />
+            </Link>
           ))}
 
         {showCurrencyDropdown && (
@@ -118,26 +118,18 @@ export default function SettingCenter() {
             className="col-span-5 py-2 border-t-[1px] border-border/60 grid grid-cols-5 gap-2"
           >
             {getSupportedCurrencies().map((currency: string) => (
-              <CommonTooltip
-                content={<span>{currency}</span>}
-                side="top"
-                delayDuration={0}
+              <NavItem
                 key={currency}
-              >
-                <div
-                  data-test={`currency-option-${currency.toLowerCase()}`}
-                  onClick={(e) => handleToggleCurrency(e, currency)}
-                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border border-border/60 transition-all duration-200 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/50 hover:scale-105 ${
-                    selectedCurrency === currency
-                      ? 'bg-primary/10 dark:bg-primary/20 border-primary/50'
-                      : ''
-                  }`}
-                >
-                  <span className="text-md font-semibold text-foreground">
+                label={currency}
+                data-test={`currency-option-${currency.toLowerCase()}`}
+                onClick={(e) => handleToggleCurrency(e, currency)}
+                icon={
+                  <div className={'w-6 h-6 text-center text-md font-semibold text-foreground'}>
                     {exchangeRates[currency].suffix}
-                  </span>
-                </div>
-              </CommonTooltip>
+                  </div>
+                }
+                iconActive={selectedCurrency === currency}
+              />
             ))}
           </div>
         )}
