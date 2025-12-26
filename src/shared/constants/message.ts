@@ -386,6 +386,7 @@ export enum Messages {
   GET_SUCCESS = 'Get successfully',
   UPDATE_SUCCESS = 'Update successfully',
   UPDATE_FAIL = 'Update fail!',
+  VALIDATION_ERROR = 'One or more fields contain invalid values',
 
   //Email template type
   EMAIL_TEMPLATE_TYPE_NOT_FOUND = 'Email template type not found',
