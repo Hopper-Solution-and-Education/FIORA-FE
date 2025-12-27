@@ -1,6 +1,23 @@
 import { ApiEndpointEnum, BASE_API } from '@/shared/constants/ApiEndpointEnum';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
 import { BaseResponse, ErrorResponse } from '@/shared/types';
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
+import { toast } from 'sonner';
+
+// Endpoints that should not be retried on 401
+const nonRetryEndpoints: string[] = [ApiEndpointEnum.Refresh];
+
+export interface ApiRequestOptions {
+  disableToast?: boolean;
+  exclude?: string[];
+  headers?: Record<string, string>;
+}
 
 export class ApiClient {
   private axiosInstance: AxiosInstance;
@@ -42,7 +59,7 @@ export class ApiClient {
           error.response?.status === 401 &&
           originalRequest &&
           !originalRequest._retry &&
-          !originalRequest.url?.includes('/auth/')
+          !nonRetryEndpoints.includes(originalRequest.url || '')
         ) {
           originalRequest._retry = true;
 
@@ -108,14 +125,14 @@ export class ApiClient {
 
       const data = response.data;
 
-      const { accessToken, refreshToken: _refreshToken } = data.data;
+      // Assuming successful refresh returns new tokens in data.data
+      const { accessToken, refreshToken: _refreshToken } = data.data || {};
 
-      // Assuming successful refresh returns new tokens in data
       if (accessToken && _refreshToken) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', _refreshToken);
       } else {
-        throw new Error('Refresh failed');
+        throw new Error('Refresh failed - invalid response format');
       }
     } catch (error) {
       console.error('❌ Token refresh failed, clearing auth data:', error);
@@ -127,99 +144,150 @@ export class ApiClient {
       // Dispatch session-expired event to disconnect wallet
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('session-expired'));
-        window.location.href = ApiEndpointEnum.Login;
+        window.location.href = RouteEnum.SignIn;
       }
       throw error;
     }
   }
 
-  private handleResponse<T>(response: any): BaseResponse<T> {
-    // The BE always returns { statusCode, message, data }
-    // Axios response.data contains this object
+  private async request<T>(
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
+    endpoint: string,
+    payload?: any,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    try {
+      let response: AxiosResponse;
+      const requestConfig: AxiosRequestConfig = {
+        headers: options?.headers,
+      };
 
-    // Check if the response is a BaseResponse
-    if (!response.data || typeof response.data !== 'object') {
-      throw new Error('Invalid response format');
-    }
-
-    return response.data as BaseResponse<T>;
-  }
-
-  private handleError(error: any): never {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-
-      if (axiosError.response?.data) {
-        // Throw the actual error response from BE
-        throw axiosError.response.data;
+      // Make the request based on method
+      if (method === 'get' || method === 'delete') {
+        response = await this.axiosInstance[method](endpoint, {
+          ...requestConfig,
+          params: payload,
+        });
+      } else {
+        response = await this.axiosInstance[method](endpoint, payload, requestConfig);
       }
-    }
 
-    throw error;
+      const data = response.data;
+
+      // Check if response follows our standard format
+      // Adjust this check based on your actual BaseResponse structure
+      if (data && typeof data === 'object') {
+        return data as BaseResponse<T>;
+      } else {
+        // Fallback for non-standard responses
+        return {
+          statusCode: response.status,
+          message: 'Success',
+          data: data,
+        } as BaseResponse<T>;
+      }
+    } catch (error: any) {
+      // Handle all errors in one place
+      let apiError: ErrorResponse;
+
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.response?.data) {
+          // Assume the backend returns ErrorResponse structure
+          apiError = axiosError.response.data as ErrorResponse;
+        } else {
+          // Network or other errors - Synthesize ErrorResponse
+          apiError = {
+            statusCode: axiosError.response?.status || 0,
+            message: axiosError.message || 'Network error or server unavailable',
+            errors: {
+              errorCode: 'NETWORK_ERROR',
+              details: [],
+            },
+          };
+        }
+      } else {
+        // Unknown error
+        apiError = {
+          statusCode: 0,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          errors: {
+            errorCode: 'UNKNOWN_ERROR',
+            details: [],
+          },
+        };
+      }
+
+      // Show toast notification for errors (unless disabled)
+      if (!options?.disableToast && !options?.exclude?.includes(endpoint)) {
+        toast.error(apiError.message || 'Oops!, something went wrong...');
+      }
+
+      throw apiError;
+    }
   }
 
   // GET request
-  async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.get(endpoint, { params });
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async get<T = any>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>('get', endpoint, params, options);
   }
 
   // POST request
-  async post<T = any>(endpoint: string, data?: any): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.post(endpoint, data);
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async post<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>('post', endpoint, data, options);
   }
 
   // PUT request
-  async put<T = any>(endpoint: string, data?: any): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.put(endpoint, data);
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async put<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>('put', endpoint, data, options);
   }
 
   // PATCH request
-  async patch<T = any>(endpoint: string, data?: any): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.patch(endpoint, data);
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async patch<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>('patch', endpoint, data, options);
   }
 
   // DELETE request
-  async delete<T = any>(endpoint: string, params?: Record<string, any>): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.delete(endpoint, { params });
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async delete<T = any>(
+    endpoint: string,
+    params?: Record<string, any>,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    return this.request<T>('delete', endpoint, params, options);
   }
 
   // File upload (FormData)
-  async upload<T = any>(endpoint: string, formData: FormData): Promise<BaseResponse<T>> {
-    try {
-      const response = await this.axiosInstance.post(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
+  async upload<T = any>(
+    endpoint: string,
+    formData: FormData,
+    options?: ApiRequestOptions,
+  ): Promise<BaseResponse<T>> {
+    // Specialized upload handling to ensure correct headers
+    const uploadOptions: ApiRequestOptions = {
+      ...options,
+      headers: {
+        ...options?.headers,
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    return this.request<T>('post', endpoint, formData, uploadOptions);
   }
 }
 

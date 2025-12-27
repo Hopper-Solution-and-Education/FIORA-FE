@@ -1,9 +1,12 @@
 export enum ApiEndpointEnum {
   // Auth
   Login = '/api/auth/sign-in',
+  GoogleLogin = '/api/oauth2/google',
   SignUp = '/api/auth/sign-up',
   SignOut = '/api/auth/sign-out',
   Refresh = '/api/auth/refresh',
+  SendOtpForgotPassword = '/api/auth/send-otp',
+  ResetPassword = '/api/auth/reset-password',
 
   // User
   Me = '/api/users/me',
@@ -113,10 +116,6 @@ export enum ApiEndpointEnum {
   BannerSection = '/api/banner/section',
   BannerAnnouncements = '/api/banners/announcements',
   BannerAnnouncement = '/api/banners/announcement',
-
-  // Auth
-  SendOtpForgotPassword = '/api/auth/send-otp',
-  ResetPassword = '/api/auth/forgot-password',
 
   // Products
   Products = '/api/products',

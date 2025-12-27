@@ -1,8 +1,8 @@
-// useForgotPassword.ts
 'use client';
 
-import { httpClient } from '@/config/http-client/HttpClient';
-import { ApiEndpointEnum } from '@/shared/constants/ApiEndpointEnum';
+import { authService } from '@/features/auth/services/auth.service';
+import { RouteEnum } from '@/shared/constants/RouteEnum';
+import { routeConfig } from '@/shared/utils/route';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -29,9 +29,9 @@ const resetPasswordSchema = Yup.object().shape({
 
 export const useForgotPassword = () => {
   const router = useRouter();
-  const [otp, setOtp] = useState('');
+  const [userOtp, setUserOtp] = useState(''); // Stores the OTP entered by the user
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false); // Transitions UI from OTP step to Password step
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -65,7 +65,7 @@ export const useForgotPassword = () => {
           const newCount = prev - 1;
           if (newCount <= 0) {
             setIsOtpSent(false);
-            setOtp('');
+            setUserOtp('');
           }
           return newCount;
         }
@@ -84,22 +84,16 @@ export const useForgotPassword = () => {
       return;
     }
 
-    // Execute the function only if the email is valid
     setIsLoading(true);
     try {
-      const data = await httpClient.post<{ message: string; otp: string; notificationId: string }>(
-        ApiEndpointEnum.SendOtpForgotPassword,
-        { email },
-      );
+      await authService.sendOtp(email);
 
-      setOtp(data.otp); // Store OTP from backend response
       setIsOtpSent(true);
       setCountdown(60); // Start countdown
       toast.success('OTP sent to your email');
     } catch (error: any) {
       console.error(error);
       const errorMessage = error?.message || 'Failed to send OTP';
-
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -111,13 +105,9 @@ export const useForgotPassword = () => {
       toast.error('Please request an OTP first');
       return;
     }
-    if (otp === data.otp) {
-      setIsOtpVerified(true);
-      toast.success('OTP verified successfully');
-    } else {
-      toast.error('Sorry! OTP is not valid');
-      emailOtpForm.setValue('otp', '');
-    }
+
+    setUserOtp(data.otp);
+    setIsOtpVerified(true);
   };
 
   const handleResetPasswordSubmit = async (data: {
@@ -126,13 +116,16 @@ export const useForgotPassword = () => {
   }) => {
     setIsLoading(true);
     try {
-      await httpClient.post<{ message: string; user: any }>(ApiEndpointEnum.ResetPassword, {
+      await authService.resetPassword({
         email: emailOtpForm.getValues('email'),
         newPassword: data.newPassword,
+        otp: userOtp,
       });
 
       localStorage.setItem('resetPasswordSuccess', 'true');
-      router.push('/auth/sign-in?reset=success');
+
+      router.push(routeConfig(RouteEnum.SignIn, {}, { reset: 'success' }));
+      toast.success('Password reset successfully');
     } catch (error: any) {
       let errorMessage = 'Failed to reset password';
 
@@ -158,7 +151,7 @@ export const useForgotPassword = () => {
     onSubmitForgotPassword,
     handleOtpSubmit,
     handleResetPasswordSubmit,
-    otp,
+    otp: userOtp, // expose as 'otp' to maintain compatibility if UI uses it
     isOtpSent,
     isOtpVerified,
     showNewPassword,
