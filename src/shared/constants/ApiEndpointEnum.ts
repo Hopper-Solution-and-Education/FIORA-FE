@@ -125,6 +125,13 @@ export enum ApiEndpointEnum {
   // Products Category
   ProductsCategory = '/api/products/category',
   SingleProductsCategory = '/api/products/category/{id}',
+
+  // Account
+  AccountsSearch = '/api/accounts/search',
+  AccountsCreate = '/api/accounts/create',
+  SingleAccount = '/api/accounts/{id}',
+  SubAccountDelete = '/api/accounts/sub-account/delete',
+  AccountBalance = '/api/accounts/balance',
 }
 
 export const BASE_API: string = process.env.NEXT_PUBLIC_BASE_API || '';

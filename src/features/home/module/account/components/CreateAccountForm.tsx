@@ -18,7 +18,7 @@ import {
   validateNewAccountSchema,
 } from '@/features/home/module/account/slices/types/formSchema';
 import { ACCOUNT_TYPES } from '@/shared/constants/account';
-import { Response } from '@/shared/types';
+import { BaseResponse } from '@/shared/types';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -28,15 +28,19 @@ export default function CreateAccountForm() {
   const dispatch = useAppDispatch();
   const { parentAccounts } = useAppSelector((state) => state.account);
 
+  // Only show true parent accounts (accounts without parentId)
+  // Rule: Each type has only 1 parent account, which can have many children
   const parentOptions =
     (parentAccounts.data &&
       parentAccounts.data.length > 0 &&
-      parentAccounts.data.map((account) => ({
-        value: account.id,
-        label: account.name,
-        type: account.type,
-        icon: account.icon,
-      }))) ||
+      parentAccounts.data
+        .filter((account) => !account.parentId) // Only parent accounts, not children
+        .map((account) => ({
+          value: account.id,
+          label: account.name,
+          type: account.type,
+          icon: account.icon,
+        }))) ||
     [];
 
   const accountTypeOptions: Array<Option> = [
@@ -111,14 +115,16 @@ export default function CreateAccountForm() {
 
       await dispatch(createAccount(finalData))
         .unwrap()
-        .then((value: Response<Account>) => {
-          if (value.status == 201) {
-            router.push('/account');
+        .then((value: BaseResponse<Account>) => {
+          if (value.statusCode === 201 || value.statusCode === 200) {
             toast.success('You have created the Account successfully!');
+            router.push('/account');
           }
         });
     } catch (error: any) {
-      console.log(error);
+      console.error('Create account error:', error);
+      const errorMessage = error?.message || 'Failed to create account. Please try again.';
+      toast.error(errorMessage);
     }
   };
 

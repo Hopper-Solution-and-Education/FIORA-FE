@@ -1,6 +1,6 @@
 import { NewAccountDefaultValues } from '@/features/home/module/account/slices/types/formSchema';
 import accountServices from '@/features/home/services/accountServices';
-import { FilterCriteria, Response } from '@/shared/types';
+import { BaseResponse, FilterCriteria } from '@/shared/types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { Account, AccountFilterResponse } from '../types';
 
@@ -8,7 +8,8 @@ export const fetchAccounts = createAsyncThunk(
   'account/fetchAccounts',
   async (data: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<AccountFilterResponse> = await accountServices.fetchAccounts(data);
+      const response: BaseResponse<AccountFilterResponse> =
+        await accountServices.fetchAccounts(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -22,7 +23,8 @@ export const searchAccounts = createAsyncThunk(
   'account/searchAccounts',
   async (data: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<AccountFilterResponse> = await accountServices.fetchAccounts(data);
+      const response: BaseResponse<AccountFilterResponse> =
+        await accountServices.fetchAccounts(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -36,7 +38,8 @@ export const fetchParents = createAsyncThunk(
   'account/fetchParents',
   async (data: FilterCriteria, { rejectWithValue }) => {
     try {
-      const response: Response<AccountFilterResponse> = await accountServices.fetchParents(data);
+      const response: BaseResponse<AccountFilterResponse> =
+        await accountServices.fetchParents(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -50,7 +53,7 @@ export const createAccount = createAsyncThunk(
   'account/createAccount',
   async (data: NewAccountDefaultValues, { rejectWithValue }) => {
     try {
-      const response: Response<Account> = await accountServices.createAccount(data);
+      const response: BaseResponse<Account> = await accountServices.createAccount(data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -67,7 +70,7 @@ export const updateAccount = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response: Response<Account> = await accountServices.updateAccount(id, data);
+      const response: BaseResponse<Account> = await accountServices.updateAccount(id, data);
       return response;
     } catch (error: any) {
       return rejectWithValue({
@@ -81,7 +84,7 @@ export const deleteAccount = createAsyncThunk(
   'account/deleteAccount',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response: Response<Account> = await accountServices.deleteAccount(id);
+      const response: BaseResponse<Account> = await accountServices.deleteAccount(id);
       return response;
     } catch (error: any) {
       return rejectWithValue({
